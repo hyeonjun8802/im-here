@@ -52,6 +52,7 @@ export class ApocalypseSetDressingV201{
   this.world=world;this.group=new THREE.Group();this.group.name='AFTERDAY v2.01 apocalypse environment pass';world.scene.add(this.group);
   this.materials=[];this.meshes=[];this.stats={};
   this.makeForegroundRuins();
+  this.makeDistantSkyline();
   this.makeStreetStory();
   this.makeRooftopStory();
   this.makeSmoke();
@@ -136,13 +137,35 @@ export class ApocalypseSetDressingV201{
   this.meshes.push(addInstances(this.group,'Rooftop fuel and water cans',new THREE.CylinderGeometry(.5,.5,1,8),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.76,metalness:.20}),cans,true));
   this.stats.rooftopStory=crates.length+sacks.length+scrap.length+cans.length;
  }
+ makeDistantSkyline(){
+  const w=this.world,count=w.isMobile?18:32,bases=Array.from({length:4},(_,i)=>createFracturedTowerGeometry(i+8));
+  const sets=[[],[],[],[]],antennas=[],topDebris=[];
+  for(let i=0;i<count;i++){
+   const a=i/count*TAU+.11*Math.sin(i*1.73),radius=305+hash(i*43+12)*220;
+   const width=17+hash(i*23+3)*22,depth=width*(.62+hash(i*31+4)*.32),height=44+hash(i*57+8)*62;
+   const x=Math.sin(a)*radius,z=Math.cos(a)*radius,rot=Math.round(hash(i+90)*3)*Math.PI/2;
+   sets[i%4].push({p:[x,GROUND,z],r:[0,rot,0],s:[width,height,depth]});
+   if(i%3===0)antennas.push({p:[x,GROUND+height+4,z],r:[0,0,(hash(i+7)-.5)*.18],s:[.16,8+hash(i+4)*9,.16],c:tint('#4b4f4b')});
+   if(i%2===0){
+    const pieces=2+(i%3);
+    for(let j=0;j<pieces;j++)topDebris.push({p:[x+(hash(i*11+j)-.5)*width*.55,GROUND+height*.92+(hash(i*7+j)-.5)*3,z+(hash(i*13+j)-.5)*depth*.55],r:[hash(i+j)*1.2,hash(i+j+2)*TAU,hash(i+j+4)*1.2],s:[1.2+hash(i+j+6)*3,.25+hash(i+j+8)*.8,1+hash(i+j+10)*2.8],c:tint(i%4?'#555852':'#6a5144')});
+   }
+  }
+  for(let v=0;v<4;v++){
+   const tex=grimeTexture(v+9),wall=new THREE.MeshStandardMaterial({color:['#777a72','#6a706b','#7b766e','#626b69'][v],map:tex,roughness:.98,metalness:.015}),roof=new THREE.MeshStandardMaterial({color:'#3e4441',roughness:1});
+   this.materials.push(wall,roof);this.meshes.push(addInstances(this.group,`Distant fractured high-rise skyline v${v}`,bases[v],[wall,roof],sets[v]));
+  }
+  this.meshes.push(addInstances(this.group,'Broken skyline antennas and mast silhouettes',new THREE.CylinderGeometry(.5,.5,1,6),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.84,metalness:.46}),antennas));
+  this.meshes.push(addInstances(this.group,'Collapsed high-rise rooftop debris',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.96}),topDebris));
+  this.stats.distantHighRises=count;this.stats.skylineDamage=antennas.length+topDebris.length;
+ }
  makeSmoke(){
-  const count=this.world.isMobile?72:126,pos=new Float32Array(count*3),seed=new Float32Array(count),centers=[[-245,-170],[230,-210],[-310,90],[280,170]];
+  const count=this.world.isMobile?84:144,pos=new Float32Array(count*3),seed=new Float32Array(count),centers=[[-285,-205],[270,-245],[-350,115],[325,205]];
   for(let i=0;i<count;i++){
    const c=centers[i%centers.length],phase=hash(i*13+7);seed[i]=phase;pos[i*3]=c[0]+(hash(i+1)-.5)*10;pos[i*3+1]=GROUND+5+phase*72;pos[i*3+2]=c[1]+(hash(i+2)-.5)*10;
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3).setUsage(THREE.DynamicDrawUsage));
-  const m=new THREE.PointsMaterial({map:smokeTexture(),color:'#575b57',size:this.world.isMobile?12:15,transparent:true,opacity:.18,depthWrite:false,sizeAttenuation:true,alphaTest:.01});
+  const m=new THREE.PointsMaterial({map:smokeTexture(),color:'#575b57',size:this.world.isMobile?15:18,transparent:true,opacity:.22,depthWrite:false,sizeAttenuation:true,alphaTest:.01});
   const p=new THREE.Points(g,m);p.name='Distant smoke columns from ruined blocks';this.group.add(p);this.smoke=p;this.smokePos=pos;this.smokeSeed=seed;this.smokeCenters=centers;this.materials.push(m);this.stats.smokeParticles=count;
  }
  update(dt,weather,night){
@@ -153,11 +176,11 @@ export class ApocalypseSetDressingV201{
    this.smokePos[j]=c[0]+sway+wind*p*18;this.smokePos[j+1]=GROUND+5+p*78;this.smokePos[j+2]=c[1]+Math.cos(p*TAU+i*.6)*5;
   }
   this.smoke.geometry.attributes.position.needsUpdate=true;
-  this.smoke.material.opacity=.11+night*.07+(1-(weather?.rain||0))*.05;
+  this.smoke.material.opacity=.15+night*.08+(1-(weather?.rain||0))*.07;
   this.smoke.material.color.set((weather?.storm||0)>.35?'#4c5558':'#575b57');
  }
  dispose(){
   this.group.parent?.remove(this.group);for(const m of this.meshes){m.geometry?.dispose();if(Array.isArray(m.material))m.material.forEach(x=>x.dispose());else m.material?.dispose();}
-  this.smoke?.geometry.dispose();this.smoke?.material.map?.dispose();this.smoke?.material.dispose();
+  for(const mat of this.materials)mat?.map?.dispose?.();this.smoke?.geometry.dispose();this.smoke?.material.map?.dispose();this.smoke?.material.dispose();
  }
 }
