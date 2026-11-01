@@ -1,0 +1,147 @@
+--- /mnt/data/AFTERDAY_THREEJS_BEARD_SURVIVOR_v190/scripts/build_bearded_survivor_v190.py	2026-10-31 04:01:45.579660265 +0000
++++ /mnt/data/AFTERDAY_THREEJS_BEARD_SURVIVOR_v191/scripts/build_bearded_survivor_v190.py	2026-10-31 04:18:13.393659216 +0000
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Author an original articulated stylized AFTERDAY bearded-survivor GLB.
++"""Refine AFTERDAY bearded-survivor GLB: softer cheek/ear/brow and reduced clothing volume.
+ No image billboards and no flat face: every visible character component is 3D geometry.
+ Neutral, local Y-up and looking along +Z. Rig joints use glTF named node pivots.
+ """
+@@ -133,47 +133,46 @@
+ # -------------------------------------------------------
+ # Big sturdy torso. Proportion target: chibi adult, NOT teenage student.
+ # -------------------------------------------------------
+-ball('Torso','heavy rounded coat body',(0,.08,0),(.68,.70,.48),COAT,36)
+-ball('Torso','dark shirt opening',(0,.33,.425),(.28,.36,.07),SHIRT,24)
++ball('Torso','heavy rounded coat body',(0,.08,0),(.635,.68,.455),COAT,36)
++ball('Torso','subtle dark inner layer',(0,.35,.414),(.18,.225,.048),SHIRT,24)
+ # coat collar flaps, belly bottom, front panels
+ for s in (-1,1):
+- ball('Torso','rounded padded shoulder',(s*.53,.49,-.01),(.175,.225,.285),COAT,24)
+- ball('Torso','coat front panel',(s*.235,-.08,.408),(.27,.53,.093),COAT,24)
+- roundbox('Torso','square but soft coat chest pocket',(s*.38,.08,.486),(.28,.26,.10),COAT_SHADE,.042)
+- roundbox('Torso','rectangular pocket flap',(s*.38,.21,.546),(.28,.06,.09),COAT_LIGHT,.016)
+- disk('Torso','pocket press stud',(s*.39,.20,.575),.025,.018,BRASS,'z')
++ ball('Torso','soft tailored shoulder',(s*.48,.46,-.01),(.108,.155,.19),COAT,24)
++ ball('Torso','subtle coat front panel',(s*.235,-.08,.402),(.245,.47,.055),COAT,24)
++ roundbox('Torso','small low profile coat pocket',(s*.365,.055,.454),(.215,.19,.048),COAT_SHADE,.035)
++ roundbox('Torso','thin pocket flap',(s*.365,.15,.478),(.22,.044,.046),COAT_LIGHT,.016)
++ # removed shiny decorative press stud: simplified utilitarian jacket
+  path('Torso','jacket edge seam',[(s*.05,.46,.45),(s*.067,.16,.51),(s*.07,-.24,.505),(s*.075,-.53,.34)],.015,COAT_SHADE)
+  # side hip pouches
+- roundbox('Torso','rounded tool pouch',(s*.65,-.38,.065),(.27,.39,.32),LEATHER,.085)
+- path('Torso','pouch strap',[(s*.72,-.15,.18),(s*.74,-.34,.18),(s*.70,-.52,.18)],.019,LEATHER_EDGE)
+-ball('Torso','padded hood collar',(0,.60,.035),(.47,.17,.42),COAT_SHADE,32)
++ roundbox('Torso','compact tool pouch',(s*.565,-.40,.04),(.20,.25,.205),LEATHER,.055)
++ # removed oversize hanging pouch strap
++ball('Torso','low profile coat collar',(0,.56,.035),(.42,.10,.36),COAT_SHADE,32)
+ # thick neck wrap with 3D folds, helps connect large head to body
+-for i in range(3):
+- y=.57+i*.08
+- ball('Torso','fabric neck-wrap crease',(0,y,.04+i*.005),(.46-i*.017,.116,.385-i*.01),SCARF if i%2==0 else SCARF_SHADE,24)
++for i in range(2):
++ y=.57+i*.065
++ ball('Torso','soft scarf fold',(0,y,.025+i*.008),(.41-i*.02,.072,.335-i*.016),SCARF if i%2==0 else SCARF_SHADE,24)
+ path('Torso','jacket zip',[(0,.40,.521),(0,.13,.53),(0,-.20,.525),(0,-.49,.38)],.014,METAL)
+-for y in (-.39,-.14,.10,.31):disk('Torso','coat metal snap',(.028,y,.535),.018,.01,BRASS,'z',14)
++# jacket hardware reduced: no extra shiny row of snaps
+ # leather belt and buckle
+-ball('Torso','tactical waist belt',(0,-.48,.005),(.64,.095,.50),LEATHER,28)
+-roundbox('Torso','belt buckle',(0,-.46,.52),(.19,.12,.038),BRASS,.035)
++ball('Torso','subtle waist belt',(0,-.46,.005),(.60,.065,.455),LEATHER,28)
++roundbox('Torso','matte belt buckle',(0,-.46,.45),(.14,.09,.028),METAL,.025)
+ # large but subtle backpack; not piled geometric gimmicks
+-ball('Torso','soft rucksack',(0,.02,-.47),(.46,.54,.28),LEATHER,30)
+-roundbox('Torso','rucksack cover flap',(0,.25,-.67),(.60,.31,.12),LEATHER_EDGE,.08)
++ball('Torso','compact rucksack',(0,.02,-.455),(.375,.46,.21),LEATHER,30)
++roundbox('Torso','rucksack low profile flap',(0,.24,-.62),(.48,.23,.078),LEATHER_EDGE,.06)
+ for s in (-1,1):
+- path('Torso','wide backpack harness',[(s*.45,.58,.06),(s*.46,.33,.37),(s*.43,-.10,.45),(s*.39,-.36,.38)],.048,LEATHER)
+- disk('Torso','strap metal button',(s*.42,.00,.477),.040,.017,BRASS,'z')
++ path('Torso','subtle backpack harness',[(s*.42,.55,.055),(s*.44,.30,.35),(s*.40,-.10,.435),(s*.37,-.31,.36)],.033,LEATHER)
++ # removed oversized shiny harness studs
+ # arms short, rounded with no long noodles
+ for side,s in [('L',-1),('R',1)]:
+  p='UpperArm_'+side
+- ball(p,'short padded sleeve',(s*.025,-.225,.015),(.204,.32,.208),COAT,28)
+- ball(p,'glove cuff',(s*.03,-.49,.02),(.20,.115,.20),COAT_SHADE,24)
+- ball(p,'fingerless brown glove',(s*.045,-.61,.075),(.18,.15,.18),GLOVE,28)
+- ball(p,'thumb rounded',(s*.15,-.58,.18),(.09,.10,.09),GLOVE,20)
++ ball(p,'slim work sleeve',(s*.025,-.225,.015),(.145,.273,.160),COAT,28)
++ ball(p,'glove cuff',(s*.03,-.49,.02),(.16,.095,.165),COAT_SHADE,24)
++ ball(p,'work glove',(s*.045,-.605,.065),(.15,.14,.145),GLOVE,28)
++ ball(p,'small thumb',(s*.125,-.58,.155),(.066,.079,.069),GLOVE,20)
+  path(p,'sleeve rolled seam',[(s*-.11,-.42,.16),(s*0,-.43,.239),(s*.11,-.43,.16)],.017,COAT_LIGHT)
+- for j in range(2):
+-  path(p,'elbow stitched cuff',[(s*-.15,-.54+j*.038,-.07),(s*.02,-.56+j*.038,-.18),(s*.15,-.55+j*.038,-.06)],.015,COAT_SHADE)
++ # extra decorative double elbow stitches removed
+  # seam patch on sleeve
+- roundbox(p,'old field patch',(s*.03,-.15,.235),(.21,.13,.037),LEATHER_EDGE,.035)
++ # oversized arm patch removed
+ # short legs and boots
+ for side,s in [('L',-1),('R',1)]:
+  thigh='UpperLeg_'+side;knee='Knee_'+side
+@@ -202,34 +201,34 @@
+ add(skull,SKIN,'Head','sculpted adult head')
+ # ears are genuinely three-dimensional
+ for s in (-1,1):
+- ball('Head','ear curved helix',(s*.493,-.055,.02),(.118,.16,.102),SKIN,26)
+- ball('Head','inner ear shadow',(s*.563,-.065,.080),(.041,.077,.026),SKIN_SHADE,20)
++ ball('Head','small anatomical ear',(s*.47,-.055,-.008),(.066,.114,.064),SKIN,28)
++ # removed separate oval inner-ear blob; neutral anatomical ear silhouette instead
+  # cheeks add soft facial contour instead of flat face
+- ball('Head','rounded cheeks',(s*.27,-.105,.337),(.19,.17,.16),SKIN,30)
++ # exaggerated cheek spheres removed; cheek contour is sculpted into skull surface
+  # eyebrow ridge above eyes, eye aperture integrated at surface
+- ball('Head','brow ridge',(s*.20,.191,.369),(.166,.068,.065),SKIN,26)
++ # removed protruding brow ridge; relaxed subtle single eyebrow line only
+  # sockets, short curved eyelids, eye spheres (not flat PNG stickers)
+- ball('Head','eye sclera',(s*.195,.082,.414),(.083,.059,.037),EYE_WHITE,32)
+- ball('Head','deep brown iris',(s*.195,.080,.450),(.039,.043,.017),IRIS,28)
+- ball('Head','small black pupil',(s*.195,.079,.464),(.021,.026,.011),PUPIL,24)
+- ball('Head','natural tiny catchlight',(s*.181,.091,.474),(.006,.007,.005),CATCH,18)
+- path('Head','relaxed eyelid upper',[(s*.115,.125,.440),(s*.158,.141,.454),(s*.228,.137,.453),(s*.268,.113,.431)],.018,SKIN_SHADE)
+- path('Head','thick eyebrow',[(s*.088,.237,.402),(s*.154,.250,.418),(s*.225,.247,.402),(s*.285,.232,.361)],.029,BROW)
++ ball('Head','small calm sclera',(s*.190,.080,.419),(.064,.042,.027),EYE_WHITE,32)
++ ball('Head','natural brown iris',(s*.190,.080,.445),(.029,.032,.012),IRIS,28)
++ ball('Head','small dark pupil',(s*.190,.079,.456),(.016,.021,.008),PUPIL,24)
++ ball('Head','tiny subtle catchlight',(s*.182,.090,.463),(.004,.004,.003),CATCH,18)
++ path('Head','unobtrusive eyelid upper',[(s*.127,.114,.439),(s*.16,.124,.449),(s*.213,.121,.451),(s*.248,.108,.434)],.011,SKIN_SHADE)
++ path('Head','thin relaxed eyebrow',[(s*.12,.207,.408),(s*.16,.217,.418),(s*.214,.215,.411),(s*.262,.203,.386)],.014,BROW)
+ # bridge and rounded tip sculpted, beard will cover lower chin
+-ball('Head','nose bridge',(0,-.041,.458),(.073,.15,.076),NOSE,28)
+-ball('Head','rounded nose tip',(0,-.147,.504),(.093,.074,.077),NOSE,30)
+-for s in (-1,1):ball('Head','nostril wings',(s*.085,-.178,.515),(.047,.033,.055),SKIN_SHADE,20)
++ball('Head','soft nose bridge',(0,-.045,.431),(.056,.125,.049),NOSE,28)
++ball('Head','soft nose tip',(0,-.148,.477),(.074,.054,.053),NOSE,30)
++for s in (-1,1):ball('Head','small nostril wings',(s*.068,-.17,.483),(.035,.024,.038),SKIN_SHADE,20)
+ # luscious black beard volume: one unified broad lower facial mass, cheeks and jaw;
+ # hair curves along surface, not long spikes obstructing the mouth.
+-ball('Head','jaw beard volume',(0,-.355,.228),(.440,.29,.395),BEARD,48)
+-ball('Head','chin beard deep volume',(0,-.515,.289),(.345,.20,.31),BEARD,36)
++ball('Head','natural restrained jaw beard',(0,-.375,.175),(.400,.242,.315),BEARD,48)
++ball('Head','compact chin beard',(0,-.505,.215),(.302,.17,.265),BEARD,36)
+ for s in (-1,1):
+- ball('Head','thick side beard',(s*.342,-.260,.245),(.17,.23,.25),BEARD,30)
+- ball('Head','moustache curls',(s*.116,-.243,.504),(.147,.068,.078),BEARD_SHADE,32)
+- path('Head','beard cheek contour',[(s*.44,-.09,.232),(s*.445,-.19,.314),(s*.385,-.365,.405),(s*.26,-.522,.42)],.040,BEARD_EDGE)
++ ball('Head','blended beard side',(s*.31,-.263,.213),(.124,.195,.185),BEARD,30)
++ ball('Head','natural short moustache',(s*.107,-.229,.472),(.114,.045,.056),BEARD_SHADE,32)
++ path('Head','smooth beard cheek contour',[(s*.398,-.13,.207),(s*.401,-.23,.275),(s*.339,-.36,.351),(s*.235,-.50,.375)],.019,BEARD_EDGE)
+ # beard center split beneath mouth (mouth not creepy sticker)
+-ball('Head','lower lip',(0,-.260,.584),(.09,.035,.028),SKIN_SHADE,20)
+-path('Head','mouth dark line',[(-.07,-.277,.59),(0,-.280,.60),(.07,-.277,.59)],.010,BEARD_SHADE)
++ball('Head','subtle lower lip',(0,-.258,.486),(.054,.023,.014),SKIN_SHADE,20)
++path('Head','subtle mouth line',[(-.047,-.275,.505),(0,-.275,.511),(.047,-.275,.505)],.006,BEARD_SHADE)
+ # Curved beard silhouette is one calm dark volume, with no overlapping hair tubes.
+ # visible black hair beneath cap, curls at temples only
+ for s in (-1,1):
+@@ -249,7 +248,7 @@
+ 
+ # add 3D accessory prop for guitar separately in-game, not to every frame
+ # metadata for game acceptance checks
+-S.metadata.update({'afterday_version':'1.9.0','character':'adult black-bearded survivor, brown cap',
++S.metadata.update({'afterday_version':'1.9.1','character':'adult black-bearded survivor, brown cap',
+  'coordinate_system':'Y up, forward +Z','license':'Original generated geometry',
+  'rig_nodes':['RigRoot','Torso','Head','UpperArm_L','UpperArm_R','UpperLeg_L','UpperLeg_R','Knee_L','Knee_R']})
+ blob=S.export(file_type='glb',include_normals=True)

@@ -1,0 +1,18 @@
+{
+  "eat": {
+    "skinned_vertices": 54997,
+    "props": 2
+  },
+  "drink": {
+    "skinned_vertices": 54997,
+    "props": 1
+  },
+  "radio": {
+    "skinned_vertices": 54997,
+    "props": 1
+  },
+  "guitar": {
+    "skinned_vertices": 54997,
+    "props": 1
+  }
+}

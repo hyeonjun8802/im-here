@@ -1,0 +1,50 @@
+{
+  "source": "Measured from geometric bounds of actual binary GLB meshes; not game screenshot",
+  "comparison": {
+    "added_cheek_spheres": {
+      "before": 2,
+      "after": 0,
+      "reduction_percent": 100.0
+    },
+    "ear_outer_extent_x": {
+      "before": 0.6108,
+      "after": 0.5359,
+      "reduction_percent": 12.3
+    },
+    "ear_individual_width": {
+      "before": 0.2355,
+      "after": 0.1318,
+      "reduction_percent": 44.0
+    },
+    "shoulder_outer_extent_x": {
+      "before": 0.7046,
+      "after": 0.5877,
+      "reduction_percent": 16.6
+    },
+    "shoulder_individual_width": {
+      "before": 0.3492,
+      "after": 0.2155,
+      "reduction_percent": 38.3
+    },
+    "eye_individual_width": {
+      "before": 0.1658,
+      "after": 0.1278,
+      "reduction_percent": 22.9
+    },
+    "brow_individual_height": {
+      "before": 0.0689,
+      "after": 0.0388,
+      "reduction_percent": 43.7
+    },
+    "coat_pocket_width": {
+      "before": 0.28,
+      "after": 0.215,
+      "reduction_percent": 23.2
+    },
+    "beard_front_z": {
+      "before": 0.693,
+      "after": 0.56,
+      "reduction_percent": 19.2
+    }
+  }
+}

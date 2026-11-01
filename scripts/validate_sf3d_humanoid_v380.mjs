@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=path.resolve(import.meta.dirname,'..');
+const file=path.join(root,'public/assets/models/afterday/afterday_bearded_survivor_v190.glb');
+const bytes=fs.readFileSync(file);
+if(bytes.toString('ascii',0,4)!=='glTF'||bytes.readUInt32LE(4)!==2||bytes.readUInt32LE(8)!==bytes.length)throw Error('Invalid GLB 2.0 header');
+const jsonLength=bytes.readUInt32LE(12),gltf=JSON.parse(bytes.subarray(20,20+jsonLength).toString('utf8'));
+const joints=['RigRoot','Pelvis','Spine','Chest','Neck','Head','Shoulder_L','UpperArm_L','ForeArm_L','Hand_L','Shoulder_R','UpperArm_R','ForeArm_R','Hand_R','UpperLeg_L','LowerLeg_L','Foot_L','UpperLeg_R','LowerLeg_R','Foot_R'];
+const clips=['Idle','Walk','Run','Wave','Point','Radio'];
+const names=new Set(gltf.nodes.map(node=>node.name));
+for(const name of joints)if(!names.has(name))throw Error('Missing humanoid joint: '+name);
+for(const name of ['Backpack_Main','Backpack_Handle','Backpack_Pouch_L','Backpack_Pouch_R'])if(!names.has(name))throw Error('Missing backpack part: '+name);
+if(gltf.skins?.length!==1||gltf.skins[0].joints.length!==20)throw Error('Expected one 20-joint skin');
+const actualClips=gltf.animations.map(animation=>animation.name).sort();
+if(JSON.stringify(actualClips)!==JSON.stringify(clips.toSorted()))throw Error('Unexpected clips: '+actualClips.join(', '));
+const skinned=gltf.meshes.flatMap(mesh=>mesh.primitives).some(p=>['POSITION','NORMAL','TEXCOORD_0','JOINTS_0','WEIGHTS_0'].every(key=>key in p.attributes));
+if(!skinned)throw Error('No UV-mapped skinned PBR primitive');
+if(!names.has('Pixal3D_Humanoid_Survivor_Surface'))throw Error('Active mesh is not the approved Pixal3D surface');
+console.log(JSON.stringify({generator:'TencentARC Pixal3D · Apple Silicon MLX',file:path.relative(root,file),bytes:bytes.length,joints:joints.length,clips:actualClips,meshes:gltf.meshes.length,materials:gltf.materials.length,images:gltf.images.length},null,2));

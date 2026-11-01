@@ -1,0 +1,86 @@
+{
+  "afterday_shelter_pbr.glb": {
+    "bytes": 7005480,
+    "nodes": 75,
+    "meshes": 75,
+    "triangles": 11556,
+    "bounds": [
+      [
+        -7.795783519744873,
+        0.03500000014901161,
+        -5.8579840660095215
+      ],
+      [
+        7.7957305908203125,
+        5.8217058181762695,
+        5.858037948608398
+      ]
+    ],
+    "texturedMeshes": 37,
+    "materials": [
+      "aged rubber",
+      "concrete anchor",
+      "dull silver galvanized metal",
+      "faded cotton cloth",
+      "oxidized galvanized steel",
+      "patched olive canvas",
+      "reclaimed timber",
+      "rusted painted steel",
+      "weathered amber glass",
+      "weathered olive woven canvas"
+    ]
+  },
+  "afterday_water_tank_pbr.glb": {
+    "bytes": 2404004,
+    "nodes": 48,
+    "meshes": 48,
+    "triangles": 7652,
+    "bounds": [
+      [
+        -2.8340001106262207,
+        0.03999999910593033,
+        -2.9670000076293945
+      ],
+      [
+        5.581999778747559,
+        8.555000305175781,
+        2.8340001106262207
+      ]
+    ],
+    "texturedMeshes": 10,
+    "materials": [
+      "aged rubber",
+      "concrete anchor",
+      "dull silver galvanized metal",
+      "oxidized galvanized steel",
+      "rusted painted steel",
+      "weathered amber glass"
+    ]
+  },
+  "afterday_storage_pbr.glb": {
+    "bytes": 4646800,
+    "nodes": 50,
+    "meshes": 50,
+    "triangles": 780,
+    "bounds": [
+      [
+        -0.6499999761581421,
+        0.15000000596046448,
+        -0.6840000152587891
+      ],
+      [
+        3.549999952316284,
+        1.7200000286102295,
+        2.744999885559082
+      ]
+    ],
+    "texturedMeshes": 5,
+    "materials": [
+      "aged rubber",
+      "dull silver galvanized metal",
+      "oxidized galvanized steel",
+      "reclaimed timber",
+      "rusted painted steel"
+    ]
+  }
+}

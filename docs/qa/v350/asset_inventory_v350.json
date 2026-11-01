@@ -1,0 +1,50 @@
+{
+  "method": "GLB JSON header geometry counts, not browser rendering",
+  "assets": [
+    {
+      "name": "afterday_shelter_pbr.glb",
+      "before": {
+        "bytes": 7005480,
+        "meshes": 75,
+        "primitives": 75,
+        "vertices": 6091
+      },
+      "after": {
+        "bytes": 7149860,
+        "meshes": 83,
+        "primitives": 83,
+        "vertices": 9344
+      }
+    },
+    {
+      "name": "afterday_water_tank_pbr.glb",
+      "before": {
+        "bytes": 2404004,
+        "meshes": 48,
+        "primitives": 48,
+        "vertices": 3898
+      },
+      "after": {
+        "bytes": 2413776,
+        "meshes": 50,
+        "primitives": 50,
+        "vertices": 4106
+      }
+    },
+    {
+      "name": "afterday_storage_pbr.glb",
+      "before": {
+        "bytes": 4646800,
+        "meshes": 50,
+        "primitives": 50,
+        "vertices": 490
+      },
+      "after": {
+        "bytes": 4654968,
+        "meshes": 52,
+        "primitives": 52,
+        "vertices": 650
+      }
+    }
+  ]
+}

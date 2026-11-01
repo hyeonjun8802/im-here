@@ -1,0 +1,167 @@
+{
+  "product": "AFTERDAY",
+  "version": "3.9.2",
+  "scope": "Repair the active Pixal3D character's torn surface and opaque 4K colour atlas, rebuild Walk/Run upper-arm swing in parent-space X, and correct seated leg/ankle articulation while preserving the game environment and systems.",
+  "tested": {
+    "node_tests": "207 passed / 0 failed",
+    "glb_geometry": "Full-detail game GLB: 517,805 triangles after exact-position welding; direct decimation disabled",
+    "rig": "1 skin with 20 named humanoid bones and 6 embedded clips",
+    "offline_blender_views": "four directions plus Idle, Walk, Run, Wave, Point and Radio skin deformation",
+    "actual_threejs_browser": "Verified on local Vite WebGL: character preview and full game loaded with no console errors.",
+    "retail_quality": "Character preview and game WebGL visuals verified; FPS not measured"
+  },
+  "model": "TencentARC/Pixal3D via pixal3d-mlx on Apple Silicon, 4096 PBR texture output",
+  "assets_from_old_model": "v3.7 TripoSR and v2.0 procedural GLBs retained only as rollback archives",
+  "environment_patch": {
+    "name": "Hero-adjacent dense urban background v2.7",
+    "version": "2026-11-01 v2.7",
+    "baseline": "AFTERDAY v2.6 Closer City",
+    "node_tests": "162 passed",
+    "distribution": "Source + standalone ES modules bundled with Three.js",
+    "actual_browser_capture": "FAILED: Chromium EGL initialization; not taken",
+    "actual_fps": "NOT MEASURED",
+    "actual_visual_similarity": "NOT VERIFIED",
+    "scene_objects_pc": 451,
+    "scene_objects_mobile": 390,
+    "primary_buildings_pc": 160,
+    "infill_buildings_pc": 291,
+    "scene_3d_collision_count": 0,
+    "city_radius_center_world_units": [
+      35.3,
+      257.69
+    ],
+    "previous_city_radius_center_world_units": [
+      65.1,
+      278.37
+    ],
+    "hero_roof_y": 16,
+    "ground_y": -23.5,
+    "camera_projection_qa": {
+      "viewport": [
+        1536,
+        940
+      ],
+      "visible_building_footprints_before": 155,
+      "visible_building_footprints_after": 176,
+      "visible_within_190_before": 83,
+      "visible_within_190_after": 116,
+      "method": "3D world-space projection (not screenshot)"
+    },
+    "mac_capture_helper": "CAPTURE_GAME_MAC.command (untested on Mac)",
+    "changed_core": [
+      "src/cityComposition.js",
+      "src/cityContraction.js",
+      "src/cityInfillPlanV150.js"
+    ],
+    "protected_unchanged": [
+      "src/main.js",
+      "src/simulation.js",
+      "src/advancedWeather.js",
+      "src/spatialLayout.js",
+      "src/world.js",
+      "src/cityArchitecture.js",
+      "src/cityReclamation.js"
+    ],
+    "design_reference": "Bring city buildings directly next to the hero rooftop on all sides, pack denser, preserve lower elevations, real 3D architectural detail and fog.",
+    "hero_roof_halfwidth_world_units": 23,
+    "hero_building_min_gap_world_units": 5.5
+  },
+  "celestial_sky_patch": {
+    "name": "AFTERDAY Sky Cycle v2.8",
+    "date": "2026-11-01",
+    "sun": "Existing Seoul NOAA-derived sun position, new moving solar disk, clouds overlay",
+    "moon": "Seoul approximated lunar altitude/azimuth, 29.530588853-day lunar phase; GLSL terminator, reflected glow, moonlight",
+    "preview": "Weather panel visual-only lunar phases and KST time; save game unchanged",
+    "node_tests": "169 passed",
+    "assets": "83/83",
+    "webgl_browser_screenshot": "NOT CAPTURED: Chromium EGL GPU initialization failed",
+    "fps": "NOT MEASURED",
+    "distribution": "Updated full source and bundled standalone dist"
+  },
+  "sleep_patch_v320": {
+    "node_tests": "191 passed",
+    "real_three_geometry_qa": "passed (head/face vectors, pillow, blanket unfolding)",
+    "webgl_screenshot": "not captured: Chromium EGL initialization failure",
+    "fps": "not measured",
+    "new_modules": [
+      "src/sleepBedPlan.js",
+      "src/sleepBedding.js"
+    ],
+    "removed_duplicate_sleep_surfaces": [
+      "src/world.js",
+      "src/cinematicStage.js"
+    ],
+    "entry": "RUN_STANDALONE_MAC.command"
+  },
+  "v350_asset_polish": {
+    "asset_qa": "docs/qa/v350/AFTERDAY_V350_GLBS_BEFORE_AFTER.png",
+    "capture_type": "offscreen VTK render of real bundled GLB; NOT live browser WebGL",
+    "asset_meshes_before_after": {
+      "shelter": [
+        75,
+        83
+      ],
+      "water_tank": [
+        48,
+        50
+      ],
+      "storage": [
+        50,
+        52
+      ]
+    },
+    "sleep_anchor_unchanged": true,
+    "runtime_webgl_capture": "NOT VERIFIED / browser environment restricted",
+    "node_tests": "198/198 passed",
+    "asset_validator": "83 of 83 present"
+  },
+  "v370_validation": {
+    "node_tests": 205,
+    "failed": 0,
+    "source_dist_in_sync": true,
+    "qa_method": "actual GLB CPU skinning, NOT browser screenshot",
+    "actual_browser_qa": "unverified",
+    "mac_integration": "not tested on macOS"
+  },
+  "v380_validation": {
+    "node_tests": 206,
+    "failed": 0,
+    "asset_validator": "20 bones, six clips, PBR UV skin and backpack passed",
+    "candidate_selection": "A-pose accepted; three-quarter candidate rejected for torso/arm deformation",
+    "offline_qa": "four-direction and six-clip Blender renders in docs/qa/v380",
+    "rollback": "afterday_survivor_triposr_v370.glb",
+    "actual_browser_qa": "verified: docs/qa/v380/WEBGL_CHARACTER_RADIO.png, WEBGL_CHARACTER_WAVE.png and WEBGL_IN_GAME.png",
+    "fps": "not measured"
+  },
+  "v390_validation": {
+    "source": "GLB_Minimal_Assets/01_GLB_Input/01_A_Pose_Front.png",
+    "generation": "Pixal3D MLX at 512 reconstruction resolution, 4096 texture bake, manual FOV 0.2",
+    "source_glb": "artifacts/pixal3d-v390/afterday_pixal3d_front_source_v390.glb",
+    "active_glb": "public/assets/models/afterday/afterday_bearded_survivor_v190.glb",
+    "rig": "one skin, 20 named humanoid bones, six embedded clips",
+    "offline_qa": "four source directions and six rig deformation renders in docs/qa/v390",
+    "rollback": "afterday_survivor_sf3d_v380_pre_pixal3d.glb",
+    "actual_browser_qa": "verified on local Vite WebGL: Idle, Walk, Wave and Radio clip selection plus full game load; captures in docs/qa/v390",
+    "fps": "not measured"
+  },
+  "v391_uv_forward_walk_fix": {
+    "texture_issue": "black unused atlas texels leaked through WebGL mipmaps across fragmented UV islands",
+    "texture_fix": "rasterize actual GLB UV triangles, inpaint 68,892 isolated bake-defect pixels and add 48px nearest-valid-colour padding",
+    "direction_fix": "explicit PI yaw offset for standing routes and activity facing; GLB and sleep transforms unchanged",
+    "walk_fix": "post-mixer symmetric inward local-Z upper-arm correction (-0.24 rad Walk, -0.18 rad Run) while preserving fore/aft swing",
+    "offline_qa": "docs/qa/v391/uv-padded front, quarter, side and back",
+    "rollback": "afterday_survivor_pixal3d_v390_pre_uv_fix.glb",
+    "browser_qa": "verified on local Vite WebGL: clean front surface, arms close to torso during Walk, and full-game movement faces its route; captures in docs/qa/v391"
+  },
+  "v392_topology_texture_motion_fix": {
+    "root_cause": "Pixal3D duplicates coincident positions across dense UV/normal islands; collapse decimation before welding tore those disconnected copies into visible surface gaps. The input image and base-colour alpha were not the cause.",
+    "geometry_fix": "Exact-position weld before skinning and no collapse decimation; 517,805 active triangles; source-level boundary topology retained instead of multiplying open edges.",
+    "texture_fix": "4096 fully opaque base colour, 48px UV padding, isolated defect inpaint and 36,275 local colour-outlier replacements; alpha min/max 255/255.",
+    "walk_run_fix": "Reconstruct UpperArm_L/R clip deltas as parent-space X rotations around the rest quaternion; no runtime Z spread is added.",
+    "sit_fix": "Correct thigh and knee bend signs for Pixal3D's front-facing local -Z basis and add foot counter-rotation.",
+    "active_glb_sha256": "129692c0f1c0c49cca499f15effcbeec4f8bf1422f5697d7a9344e03e3f61d36",
+    "rollback": "afterday_survivor_pixal3d_v391_pre_topology_fix.glb",
+    "browser_qa": "Actual local Vite WebGL captures for clean Idle, side Sit and side Walk are stored in docs/qa/v392; full-game load also verified.",
+    "fps": "not measured"
+  }
+}

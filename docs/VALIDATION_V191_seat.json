@@ -1,0 +1,41 @@
+{
+  "source": "afterday_bearded_survivor_v190.glb",
+  "type": "offline GLB transformed geometry (NOT Three.js browser capture)",
+  "checks": {
+    "articulated_meshes": true,
+    "standing_feet_close_to_floor": true,
+    "seated_hip_touching_cushion": true,
+    "seated_feet_not_below_roof": true,
+    "seated_feet_not_float": true
+  },
+  "chairHeightAboveRoof": 0.8416,
+  "seatedHipAboveRoof": 0.9700000000000001,
+  "hipClearanceError": 0.006599999999999939,
+  "standingFeet": [
+    {
+      "mesh": "weathered thick sole_047",
+      "bottomY": -0.01982402563095076,
+      "topY": 0.21982401847839372
+    },
+    {
+      "mesh": "weathered thick sole_037",
+      "bottomY": -0.01982402563095076,
+      "topY": 0.21982401847839372
+    }
+  ],
+  "seatedFeet": [
+    {
+      "mesh": "weathered thick sole_047",
+      "bottomY": -0.2251947028389062,
+      "topY": 0.06646981982837985
+    },
+    {
+      "mesh": "weathered thick sole_037",
+      "bottomY": -0.2251947028389062,
+      "topY": 0.06646981982837985
+    }
+  ],
+  "floorPenetration": 0,
+  "footHover": 0,
+  "passed": true
+}

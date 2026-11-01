@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "source": "original from scratch; approval art projected onto curved face and jacket GLB",
+  "model_path": "public/assets/models/afterday/afterday_bearded_survivor_v190.glb",
+  "mesh_count": 22,
+  "rig_nodes": 9,
+  "glb_bytes": 2687192,
+  "bounds": [
+    [
+      -0.7450000023841858,
+      -0.18999999523162825,
+      -0.4050000011920929
+    ],
+    [
+      0.7450000023841858,
+      3.163999979496002,
+      0.7300000262260438
+    ]
+  ],
+  "extents": [
+    1.4900000047683717,
+    3.35399997472763,
+    1.1350000274181367
+  ],
+  "offline_render_files": [
+    "docs/qa/v200/APPROVED_VS_NEW_FACE.jpg",
+    "docs/qa/v200/BEFORE_AFTER_MULTIVIEW.jpg",
+    "docs/qa/v200/ACTUAL_GLB_POSES_OFFLINE.jpg"
+  ],
+  "browser_screenshot": "not performed",
+  "release_approval": "not approved"
+}

@@ -1,0 +1,19 @@
+{
+  "version": "v0.5.2 single rooftop",
+  "originalRepository": "https://github.com/dgreenheck/simcity-threejs-clone",
+  "modelInventory": 83,
+  "approvedCityModels": 24,
+  "referenceImages": [
+    "docs/visual-reference/rooftop_target.png",
+    "docs/visual-reference/weather_target.png"
+  ],
+  "provenance": "The original GLB binaries are NOT contained in the package and require npm run download:assets.",
+  "singleHeroRoof": true,
+  "heroRoofCount": 1,
+  "clearZoneRadiusWorldUnits": 160,
+  "distantBuildingRadiusRangeWorldUnits": [
+    180,
+    385
+  ],
+  "scenePlacementQA": "25 Node tests passed; GPU render not available in current container"
+}

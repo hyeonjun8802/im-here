@@ -1,0 +1,150 @@
+{
+  "before": {
+    "filename": "afterday_bearded_survivor_v191_BEFORE.glb",
+    "bytes": 2796096,
+    "mesh_count": 93,
+    "metrics": {
+      "cap sculpted crown": [
+        {
+          "name": "cap sculpted crown_087",
+          "local_width": 1.039419174194336,
+          "local_height": 0.539698451757431,
+          "local_depth": 0.949999988079071,
+          "local_mid_y": 0.40800000727176666,
+          "local_top_y": 0.6778492331504822
+        }
+      ],
+      "rounded baseball visor": [
+        {
+          "name": "rounded baseball visor_088",
+          "local_width": 0.9832019805908203,
+          "local_height": 0.15987026691436768,
+          "local_depth": 0.8499999940395355,
+          "local_mid_y": 0.33799999952316284,
+          "local_top_y": 0.4179351329803467
+        }
+      ],
+      "structured baseball cap bill": [],
+      "soft tailored shoulder": [
+        {
+          "name": "soft tailored shoulder_008",
+          "local_width": 0.21549645066261292,
+          "local_height": 0.30927735567092896,
+          "local_depth": 0.3800000101327896,
+          "local_mid_y": 0.46000000834465027,
+          "local_top_y": 0.6146386861801147
+        },
+        {
+          "name": "soft tailored shoulder_002",
+          "local_width": 0.21549645066261292,
+          "local_height": 0.30927735567092896,
+          "local_depth": 0.3800000101327896,
+          "local_mid_y": 0.46000000834465027,
+          "local_top_y": 0.6146386861801147
+        }
+      ],
+      "slim work sleeve": [
+        {
+          "name": "slim work sleeve_029",
+          "local_width": 0.2895093634724617,
+          "local_height": 0.545076247304678,
+          "local_depth": 0.3199999928474426,
+          "local_mid_y": -0.22499999590218067,
+          "local_top_y": 0.04753812775015831
+        },
+        {
+          "name": "slim work sleeve_024",
+          "local_width": 0.2895093634724617,
+          "local_height": 0.545076247304678,
+          "local_depth": 0.3199999928474426,
+          "local_mid_y": -0.22499999590218067,
+          "local_top_y": 0.04753812775015831
+        }
+      ],
+      "UpperArm_L": {
+        "joint_x": -0.64,
+        "joint_y": 1.95,
+        "joint_z": 0.0
+      },
+      "UpperArm_R": {
+        "joint_x": 0.64,
+        "joint_y": 1.95,
+        "joint_z": 0.0
+      }
+    }
+  },
+  "after": {
+    "filename": "afterday_bearded_survivor_v190.glb",
+    "bytes": 2566200,
+    "mesh_count": 93,
+    "metrics": {
+      "cap sculpted crown": [
+        {
+          "name": "cap sculpted crown_087",
+          "local_width": 1.003999948501587,
+          "local_height": 0.4690000116825104,
+          "local_depth": 0.9079999923706055,
+          "local_mid_y": 0.4495000094175339,
+          "local_top_y": 0.6840000152587891
+        }
+      ],
+      "rounded baseball visor": [],
+      "structured baseball cap bill": [
+        {
+          "name": "structured baseball cap bill_088",
+          "local_width": 0.9660000205039978,
+          "local_height": 0.12000000476837158,
+          "local_depth": 0.4910000264644623,
+          "local_mid_y": 0.3009999990463257,
+          "local_top_y": 0.3610000014305115
+        }
+      ],
+      "soft tailored shoulder": [
+        {
+          "name": "soft tailored shoulder_008",
+          "local_width": 0.17969545722007751,
+          "local_height": 0.2296108901500702,
+          "local_depth": 0.2900000065565109,
+          "local_mid_y": 0.3200000077486038,
+          "local_top_y": 0.4348054528236389
+        },
+        {
+          "name": "soft tailored shoulder_002",
+          "local_width": 0.17969545722007751,
+          "local_height": 0.2296108901500702,
+          "local_depth": 0.2900000065565109,
+          "local_mid_y": 0.3200000077486038,
+          "local_top_y": 0.4348054528236389
+        }
+      ],
+      "slim work sleeve": [
+        {
+          "name": "slim work sleeve_029",
+          "local_width": 0.294000007212162,
+          "local_height": 0.48399998992681503,
+          "local_depth": 0.3020000010728836,
+          "local_mid_y": -0.2239999957382679,
+          "local_top_y": 0.017999999225139618
+        },
+        {
+          "name": "slim work sleeve_024",
+          "local_width": 0.294000007212162,
+          "local_height": 0.48399998992681503,
+          "local_depth": 0.3020000010728836,
+          "local_mid_y": -0.2239999957382679,
+          "local_top_y": 0.017999999225139618
+        }
+      ],
+      "UpperArm_L": {
+        "joint_x": -0.57,
+        "joint_y": 1.79,
+        "joint_z": 0.0
+      },
+      "UpperArm_R": {
+        "joint_x": 0.57,
+        "joint_y": 1.79,
+        "joint_z": 0.0
+      }
+    }
+  }
+}

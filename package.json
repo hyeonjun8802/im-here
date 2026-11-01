@@ -1,0 +1,46 @@
+{
+  "name": "afterday-threejs-survival",
+  "version": "3.9.2",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "download:assets": "node scripts/download-assets.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "setup": "npm install && npm run download:assets",
+    "check": "npm test && node scripts/validate-assets.mjs",
+    "build:hero-assets": "python3 scripts/build_hero_glb.py",
+    "build:materials": "python3 scripts/generate_cinematic_materials.py",
+    "qa:visual": "node scripts/visual_qa.mjs",
+    "qa:survivor": "node scripts/qa_survivor.mjs",
+    "build:survivor-pbr": "python3 scripts/create_survivor_pbr_v120.py",
+    "qa:premium": "node scripts/qa_premium_v140.mjs",
+    "qa:visual-v150": "node scripts/qa_visual_v150.mjs",
+    "qa:compare-v150": "python3 scripts/compare_visual_v150.py",
+    "qa:offline-glb-v150": "python3 scripts/offline_3d_asset_review_v150.py",
+    "build:roof-v150": "python3 scripts/refine_roof_v150.py",
+    "qa:motion": "node scripts/qa_release_motion_v180.mjs",
+    "build:bearded-survivor": "python3 scripts/build_bearded_survivor_v190.py",
+    "qa:bearded-offline": "python3 scripts/render_3d_qa_v190.py",
+    "qa:bearded-browser": "node scripts/qa_bearded_browser_v190.mjs",
+    "qa:motion-offline": "python3 scripts/render_motion_qa_v190.py",
+    "qa:character": "node --test tests/bearded-character-v190.test.mjs",
+    "qa:sf3d": "node scripts/validate_sf3d_humanoid_v380.mjs",
+    "qa:pixal3d": "node scripts/validate_sf3d_humanoid_v380.mjs",
+    "qa:face-proportions": "node --test tests/face-proportions-v191.test.mjs",
+    "qa:cap-shoulder": "node --test tests/cap-shoulder-v192.test.mjs",
+    "qa:premium-character": "node --test tests/premium-character-v193.test.mjs",
+    "qa:premium-character-offline": "python3 scripts/render_v193_premium_qa.py",
+    "build:simple-survivor": "python3 scripts/build_simple_survivor_v200.py",
+    "qa:simple-survivor": "python3 scripts/render_simple_survivor_v200.py",
+    "preview:standalone": "node scripts/serve_standalone.mjs"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}

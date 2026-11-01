@@ -1,0 +1,53 @@
+{
+  "camera": {
+    "width": 1536,
+    "height": 940,
+    "position": [
+      53.383106546276615,
+      41.19254912946805,
+      53.96258174033843
+    ],
+    "target": [
+      0,
+      19.3,
+      0
+    ]
+  },
+  "gameBuildingCount": 451,
+  "visible": 176,
+  "visibleWithin190": 116,
+  "visibleTallEnough30px": 176,
+  "visibleTallEnough60px": 176,
+  "projected": {
+    "near": {
+      "count": 16,
+      "medianHeightPx": 333
+    },
+    "mid": {
+      "count": 25,
+      "medianHeightPx": 225
+    },
+    "far": {
+      "count": 27,
+      "medianHeightPx": 145
+    },
+    "inner": {
+      "count": 27,
+      "medianHeightPx": 338
+    },
+    "middle": {
+      "count": 29,
+      "medianHeightPx": 160
+    },
+    "outer": {
+      "count": 52,
+      "medianHeightPx": 101
+    }
+  },
+  "bounds": {
+    "minHeight": 13.012054756593916,
+    "maxHeight": 36.87911317045084,
+    "minRadius": 35.30066536901793,
+    "maxRadius": 257.6894054380346
+  }
+}
