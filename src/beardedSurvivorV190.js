@@ -216,10 +216,19 @@ export class BeardedSurvivorV190{
    this.solveArmIK('R',rt,Math.min(.82,w+.07),5);return;
   }
   if(a==='sleep'&&['enter','perform','exit'].includes(life.stage)){
-   const lie=p.sleeping||0,sit=Math.max(0,Math.min(1,1-lie));
-   const y=.72*sit+1.18*lie,z=-.30*sit-.08*lie,x=.34;
-   this.actionHandTarget(this.root,[-x,y,z],this.ikTarget);this.solveArmIK('L',this.ikTarget,w,3);
-   this.actionHandTarget(this.root,[x,y,z],this.ikTarget);this.solveArmIK('R',this.ikTarget,w,3);
+   const lie=Math.max(0,Math.min(1,p.sleeping||0));
+   const sm=lie*lie*(3-2*lie);
+   // While sitting/reclining the hands brace on the mattress. As the torso
+   // reaches supine, transition to relaxed positions beside the hips. Using
+   // Chest-local end targets prevents the rotated root from carrying both
+   // hands underneath the body.
+   const Lbrace=this.actionHandTarget(this.root,[-.38,.66,-.34],new THREE.Vector3());
+   const Rbrace=this.actionHandTarget(this.root,[ .38,.66,-.34],new THREE.Vector3());
+   const Lrest=this.actionHandTarget(n.Chest,[-.31,-.38,-.10],new THREE.Vector3());
+   const Rrest=this.actionHandTarget(n.Chest,[ .31,-.38,-.10],new THREE.Vector3());
+   const Lt=Lbrace.lerp(Lrest,sm),Rt=Rbrace.lerp(Rrest,sm);
+   this.solveArmIK('L',Lt,Math.min(.82,w+.08),5);
+   this.solveArmIK('R',Rt,Math.min(.82,w+.08),5);
   }
  }
  update(dt,life=this.world.life){
