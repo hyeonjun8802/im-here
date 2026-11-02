@@ -7,7 +7,7 @@ export const clamp=(v,lo=0,hi=1)=>Math.min(hi,Math.max(lo,v));
 export const smoothstep=v=>{const x=clamp(v);return x*x*(3-2*x);};
 export const SEAT={chairScale:.76,seatAboveRoof:.15+.91*.76,hipAboveFeet:1.12,survivorSpawnAboveRoof:.25,desiredClearance:.135};
 export function seatedWeight(life={}){
- const seated=['sit','eat','guitar'].includes(life.current);
+ const seated=['sit','eat','guitar','rest'].includes(life.current);
  if(!seated)return 0;
  if(life.stage==='perform')return 1;
  if(life.stage==='enter')return smoothstep((life.stageTime||0)/.65);
@@ -93,8 +93,11 @@ export function pose(life={},elapsed=0){
   L.armZ=-.20+.08*sit;R.armZ=.20-.08*sit;
   L.forearmX=-.92*sit-.10*lie;R.forearmX=-.88*sit-.08*lie;
   L.handZ=-.08*sit;R.handZ=.08*sit;
-  L.thighX=1.12*sit+.04*lie;R.thighX=1.12*sit-.04*lie;
-  L.kneeX=-1.22*sit-.08*lie;R.kneeX=-1.22*sit-.08*lie;
+  // Legs fold while sitting on the cot, then fully extend once supine.
+  // Residual +/- thigh and knee offsets made the final sleeping pose look
+  // twisted even though the body was already flat on the mattress.
+  L.thighX=1.12*sit;R.thighX=1.12*sit;
+  L.kneeX=-1.22*sit;R.kneeX=-1.22*sit;
   L.footX=-.44*sit;R.footX=-.44*sit;
  }
 
@@ -102,7 +105,10 @@ export function pose(life={},elapsed=0){
  return {phase,activity,walking,seat,sleeping,sleepSit:sleep.sit,lieHeight:sleep.height,lieTravel:sleep.travel,rootY:seatDrop()*seat+(walking?Math.abs(Math.sin(elapsed*7.5))*.035:Math.sin(elapsed*1.6)*.012),
   torsoX:stretching?stretching.torsoX:performing&&['repair','cook','radio'].includes(activity)?.10:0,
   torsoZ:stretching?stretching.torsoZ:0,
-  headX:activity==='sleep'?.12*sleep.roll:stretching?stretching.headX:performing&&activity==='eat'?.06+.11*bite:performing&&activity==='drink'?.04+.08*sip:performing&&['cook','watch'].includes(activity)?.075:Math.sin(elapsed*.55)*.015,
-  headY:performing&&activity==='watch'?.16:Math.sin(elapsed*.3)*.045,
+  // Local face is -Z: negative head-X looks slightly down, positive looks up.
+  // Eating now looks toward the bowl/food and returns near neutral at the bite
+  // instead of tilting upward as the hand reaches the mouth.
+  headX:activity==='sleep'?.12*sleep.roll:stretching?stretching.headX:performing&&activity==='eat'?-.08+.07*bite:performing&&activity==='guitar'?-.055:performing&&activity==='radio'?-.015:performing&&activity==='drink'?.04+.08*sip:performing&&['cook','watch'].includes(activity)?.075:Math.sin(elapsed*.55)*.015,
+  headY:performing&&activity==='watch'?.16:performing&&activity==='radio'?.075:Math.sin(elapsed*.3)*.045,
   L,R,bite,sip,showFood:performing&&activity==='eat'&&bite>.07,showGuitar:performing&&activity==='guitar',showRadio:performing&&activity==='radio',showBowl:performing&&activity==='eat',showCanteen:performing&&activity==='drink'};
 }

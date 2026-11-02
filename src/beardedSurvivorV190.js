@@ -264,10 +264,11 @@ export class BeardedSurvivorV190{
   const lerp=(o,axis,v)=>{const rest=this.restRotations.get(o)?.[axis]??0;o.rotation[axis]=THREE.MathUtils.lerp(o.rotation[axis],rest+v,blend);};
   this.model.position.y=THREE.MathUtils.lerp(this.model.position.y,p.rootY,blend);
   // Time-keyed standing -> seated on edge -> recline -> mattress -> wake.
-  // Lay SUPINE: head points to -X (the actual pillow), face turns UP to +Y.
-  // A world-X back rotation composed after the Z tilt avoids lying on the face.
+  // Pixal3D faces local -Z. Rotating +90° around X maps -Z -> +Y, so the
+  // character lies SUPINE and looks at the sky. The previous -90° sign mapped
+  // -Z -> -Y and made the character lie face-down toward the floor.
   this.sleepTilt.setFromAxisAngle(this.sleepAxisZ,Math.PI*.5*p.sleeping);
-  this.sleepBack.setFromAxisAngle(this.sleepAxisX,-Math.PI*.5*p.sleeping);
+  this.sleepBack.setFromAxisAngle(this.sleepAxisX,Math.PI*.5*p.sleeping);
   this.sleepTarget.copy(this.sleepBack).multiply(this.sleepTilt);
   this.root.quaternion.slerp(this.sleepTarget,blend);
   const breathing=p.sleeping>.95&&life?.stage==='perform'?Math.sin(this.elapsed*1.55)*.012:0;
