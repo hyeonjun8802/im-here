@@ -21,8 +21,13 @@ Durable resume checkpoint.
 - [x] Audio stays browser-safe user opt-in through the existing environment-sound button.
 
 ## Validation
-- [ ] Run full npm test gate + Vite production build in Vercel preview.
-- [ ] Fix any regression.
-- [ ] Restore normal build command after gate.
+- [x] Run full npm test gate + Vite production build in Vercel preview: **228/228 PASS, fail 0**.
+- [x] Fix any regression: no product regression found; existing synthetic-thunder-only test was updated to preserve opt-in + fallback semantics.
+- [x] Restore normal build command after gate.
 - [ ] Confirm normal preview READY.
 - [ ] Merge to main and confirm production READY.
+
+## Validated gated preview
+- Deployment: `dpl_U3F6wZZtiYiMd58QBGSvRfmfznV8` — READY.
+- Tests: 228 passed / 0 failed.
+- Vite production build: PASS.
