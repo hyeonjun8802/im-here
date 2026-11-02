@@ -49,3 +49,14 @@ Durable resume checkpoint.
 - Tests: 230 passed / 0 failed.
 - Runtime design: decoded PCM loop + 0.65s equal-power tail/head crossfade; no HTMLAudio hard loop boundary.
 - Recorded thunder: 0.08s attack + 0.72s tail fade.
+
+## Waveform/decibel refinement
+- [x] User feedback applied: do not choose loop points only by time; compare waveform energy at the start/end.
+- [x] Source-wave analysis found no long silence in the four rain beds, so full fade-to-zero was intentionally avoided because it would create a repeating volume pulse.
+- [x] Runtime now measures decoded PCM RMS and trims only weak outer-edge energy / encoder padding.
+- [x] Loop boundary candidates reject near-silence and prefer start/end RMS within the smallest available dB delta.
+- [x] Equal-power crossfade length increased from 0.65s to **0.9s**.
+- [x] Thunder attack/tail changed to **0.05s / 0.85s** for a softer one-shot ending.
+- [x] Offline source analysis for the selected stable segments produced head/tail RMS deltas of approximately: medium rain 0.03dB, heavy rain 0.01dB, downpour 0.02dB, storm rain 0.03dB.
+- [ ] Re-run full test gate + preview after RMS-boundary engine update.
+- [ ] Merge to current main and confirm production READY.
