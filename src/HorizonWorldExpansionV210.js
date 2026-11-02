@@ -51,12 +51,15 @@ function mountainGeometry(seed=1){
 
 function ridgeArcGeometry(radius,seed,height,span=1.72,segments=86){
   const pos=[],uv=[],idx=[],center=5*Math.PI/4;
+  const p1=seed*.17,p2=seed*.31,p3=seed*.53;
   for(let i=0;i<=segments;i++){
     const t=i/segments,a=center-span*.5+t*span;
-    const n=hash(seed+i*17),n2=hash(seed*7+i*31);
-    const crest=GROUND+28+height*(.28+.72*(.52*n+.48*n2))+Math.sin(t*Math.PI*7+seed)*height*.08;
-    const r=radius+Math.sin(t*Math.PI*5+seed)*18+Math.sin(t*Math.PI*17)*7;
-    pos.push(Math.sin(a)*r,crest,Math.cos(a)*r,Math.sin(a)*(r+32),GROUND-48,Math.cos(a)*(r+32));
+    // Continuous low-frequency harmonics: a mountain ridge, not independent
+    // random spikes. Small high-frequency terms only texture the silhouette.
+    const shape=.48+.22*Math.sin(t*Math.PI*2.1+p1)+.14*Math.sin(t*Math.PI*4.7+p2)+.07*Math.sin(t*Math.PI*9.3+p3)+.035*Math.sin(t*Math.PI*17.1+seed);
+    const crest=GROUND+25+height*Math.max(.16,shape);
+    const r=radius+18*Math.sin(t*Math.PI*2.4+p2)+7*Math.sin(t*Math.PI*7.2+p3);
+    pos.push(Math.sin(a)*r,crest,Math.cos(a)*r,Math.sin(a)*(r+36),GROUND-48,Math.cos(a)*(r+36));
     uv.push(t,1,t,0);
     if(i<segments){const k=i*2;idx.push(k,k+1,k+2,k+2,k+1,k+3);}
   }
@@ -147,7 +150,7 @@ export class HorizonWorldExpansionV210{
       fragmentShader:`precision highp float;varying vec2 vUv;varying vec3 vWorld;uniform float uTime,uStorm,uNight,uWet;
         float wave(vec2 p){return sin(p.x*.11+uTime*.65)*.5+sin(p.y*.17-uTime*.42)*.31+sin((p.x+p.y)*.055+uTime*.31)*.19;}
         void main(){float w=wave(vWorld.xz);float glint=.5+.5*sin(vUv.y*165.+w*2.7+uTime*.7);
-          vec3 base=mix(vec3(.13,.24,.27),vec3(.28,.42,.44),glint*.24);
+          vec3 base=mix(vec3(.10,.15,.16),vec3(.23,.27,.26),glint*.20);
           base=mix(base,vec3(.08,.12,.16),uNight*.58+uStorm*.28);
           gl_FragColor=vec4(base,1.);}`
     });
@@ -167,9 +170,9 @@ export class HorizonWorldExpansionV210{
   makeBridge(){
     const bridge=new THREE.Group();bridge.name='Cinematic ruined suspension bridge';
     const cx=-188,cz=-610,deckY=GROUND+14.2;bridge.position.set(cx,0,cz);bridge.rotation.y=2.25;this.group.add(bridge);
-    const concrete=new THREE.MeshStandardMaterial({color:'#777d78',roughness:.90,metalness:.025});
+    const concrete=new THREE.MeshStandardMaterial({color:'#696e6a',roughness:.92,metalness:.025});
     const asphalt=new THREE.MeshStandardMaterial({color:'#303634',roughness:.97});
-    const steel=new THREE.MeshStandardMaterial({color:'#596361',roughness:.76,metalness:.34});
+    const steel=new THREE.MeshStandardMaterial({color:'#505957',roughness:.80,metalness:.34});
     const rust=new THREE.MeshStandardMaterial({color:'#76584b',roughness:.82,metalness:.40});
     this.materials.push(concrete,asphalt,steel,rust);
     const deck=new THREE.Mesh(new THREE.BoxGeometry(17.5,.75,214),concrete);deck.position.y=deckY;bridge.add(deck);this.meshes.push(deck);
@@ -183,7 +186,7 @@ export class HorizonWorldExpansionV210{
       const archPts=[new THREE.Vector3(-8.2,deckY+41,z),new THREE.Vector3(0,deckY+48,z),new THREE.Vector3(8.2,deckY+41,z)];
       const a=tube(bridge,archPts,.72,steel,'Bridge pylon crown',24);this.meshes.push(a);
     }
-    const cableMat=new THREE.MeshStandardMaterial({color:'#5e6967',roughness:.70,metalness:.38});
+    const cableMat=new THREE.MeshStandardMaterial({color:'#505a58',roughness:.74,metalness:.38});
     this.materials.push(cableMat);
     for(const side of [-1,1]){
       const x=side*8.0,pts=[];
