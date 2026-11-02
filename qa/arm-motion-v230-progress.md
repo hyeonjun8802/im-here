@@ -37,7 +37,9 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Stretch baseline 10/10: FAIL — frames 5-7 nearly identical; both hands remain clustered beside/above head instead of reading as lateral/release phases.
 - [x] Stretch fix applied: staged neutral→overhead→lateral→forward-release→neutral world-space IK trajectories.
 - [x] Stretch fixed 10-frame recapture/review: PASS — clear neutral→overhead→lateral→forward-release→neutral phases, stable limb lengths, runtime issues 0.
-- [ ] Sleep-enter baseline 10/10 — NEXT.
+- [x] Sleep-enter baseline 10/10: FAIL — frames 6-8 show arms behind the torso instead of mattress support.
+- [x] Sleep arm fix applied: authored sleepSit + parent-frame mattress targets, X=bed length, Z=left/right width, local mattress Y=.865.
+- [ ] Sleep-enter fixed 10-frame recapture/review — NEXT.
 - [ ] Apply remaining arm/hand coordinate fixes. Shared forearmZ/handX/handZ support is already added for wave and later actions.
 - [ ] Recapture every changed motion, 10/10.
 - [ ] Run npm test / npm run check / npm run build.
@@ -84,3 +86,5 @@ On any interruption, read this file first and continue at the first unchecked it
 - 2026-11-03: stretch baseline captured 10/10; runtime issues 0 but visual FAIL. Root cause: coarse 3-state head-relative IK ignored 4-part stretch intent. Staged IK fix committed.
 
 - 2026-11-03: stretch fixed version recaptured 10/10 and visually PASS; staged phases are now readable.
+
+- 2026-11-03: sleep arm solver corrected against real mattress axes. Previous root-local brace rotated behind the reclining body.
