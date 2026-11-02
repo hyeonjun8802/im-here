@@ -74,3 +74,5 @@ On any interruption, read this file first and continue at the first unchecked it
 - 2026-11-03: guitar v2 independently re-captured 10/10 in qa3; visual PASS and runtime issues 0. Next: eat.
 
 - 2026-11-03: eat captured/reviewed 10/10; PASS. Peak bite frame inspected enlarged; no penetration.
+
+- 2026-11-03: QA3 captured eat 10/10 successfully; runtime issues=0 and joint/prop distances were coherent. Sandbox stopped before visual sheet review, so eat must be recaptured/reviewed visually before PASS.
