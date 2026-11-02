@@ -41,7 +41,8 @@ Durable resume checkpoint.
 - [x] Adopted the low-energy/fade principle: the runtime no longer depends on a hard MP3 `loop=true` boundary.
 - [x] PCM crossfade is used instead of fading both ends fully to zero, avoiding a noticeable volume pulse every loop.
 - [x] Re-run full test gate + production build after seam-engine change: **230/230 PASS, fail 0**, Vite build PASS.
-- [ ] Confirm normal preview READY, then merge/production.
+- [x] Confirm normal preview READY — `dpl_5JuxRJWFoWBGuKwMn3gCJwKpmmsV`.
+- [ ] Merge to main and confirm production READY.
 
 ## Gapless seam validation
 - Gated deployment `dpl_9qXdqQ8BwKaRAKu3cBo9jG4EDPip`: READY.
