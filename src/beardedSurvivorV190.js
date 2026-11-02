@@ -153,9 +153,11 @@ export class BeardedSurvivorV190{
   const a=life.current,n=this.nodes,w=Math.max(.42,Math.min(.82,.46+blend*.42));
   this.root.updateMatrixWorld(true);
   if(a==='wave'){
-   const wob=Math.sin(this.elapsed*8.2);
-   this.actionHandTarget(n.Head,[.40+.025*wob,.16+.035*Math.cos(this.elapsed*8.2),-.10],this.ikTarget);
-   this.solveArmIK('R',this.ikTarget,w,4);return;
+   const wob=Math.sin(this.elapsed*7.0),counter=Math.cos(this.elapsed*7.0);
+   // A real hand path around the temple: the target travels laterally instead
+   // of pinning the hand to one point while the whole arm rotates.
+   this.actionHandTarget(n.Head,[.41+.085*wob,.115+.028*counter,-.10],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,Math.min(.76,w),4);return;
   }
   if(a==='radio'){
    this.actionHandTarget(n.Head,[.19,-.015,-.135],this.ikTarget);
