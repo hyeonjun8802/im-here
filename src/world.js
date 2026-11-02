@@ -567,7 +567,7 @@ export class AfterWorld {
   this.ambient.intensity+=lightningStrength*1.65;
   this.fill.intensity+=lightningStrength*.95;
   this.weatherVfx.update(dt,vw,night,this.sun.position,twilight,lightningStrength);
-  this.cinematic?.update(dt,vw,night);this.premiumEnvironment?.update(dt,vw,night,performance.now()*.001);updateSurvivorArt(this,vw);animateSurvivorFinishingV130(this,performance.now()*.001,vw.wind||0);this.weatherAudio.update(vw,this.advancedWeather.flashTime>0 && this.advancedWeather.flashTime>=.105);
+  this.cinematic?.update(dt,vw,night);this.premiumEnvironment?.update(dt,vw,night,performance.now()*.001);updateSurvivorArt(this,vw);animateSurvivorFinishingV130(this,performance.now()*.001,vw.wind||0);this.weatherAudio.update(vw,this.advancedWeather.flashTime>0 && this.advancedWeather.flashTime>=.105,preset);
   // SurvivorLife controls physical movement, location-aware gestures and seating.
   this.life.update(dt,now,game,preset);
   this.beardedSurvivor?.update(dt,this.life);
