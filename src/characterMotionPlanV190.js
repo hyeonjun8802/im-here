@@ -7,7 +7,7 @@ export const clamp=(v,lo=0,hi=1)=>Math.min(hi,Math.max(lo,v));
 export const smoothstep=v=>{const x=clamp(v);return x*x*(3-2*x);};
 export const SEAT={chairScale:.76,seatAboveRoof:.15+.91*.76,hipAboveFeet:1.12,survivorSpawnAboveRoof:.25,desiredClearance:.135};
 export function seatedWeight(life={}){
- const seated=['sit','eat','guitar'].includes(life.current);
+ const seated=['sit','eat','guitar','rest'].includes(life.current);
  if(!seated)return 0;
  if(life.stage==='perform')return 1;
  if(life.stage==='enter')return smoothstep((life.stageTime||0)/.65);
