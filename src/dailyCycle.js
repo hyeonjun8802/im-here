@@ -50,7 +50,9 @@ export function stretchKeyframes(seconds=0,duration=16){
     rightArmZ:.20+.10*overhead+.035*lateral,
     torsoX:.18*release,
     torsoZ:Math.sin((q-.39)/.24*Math.PI)*.14*lateral,
-    headX:-.10*overhead+.10*release
+    // A gentle overhead reach should lift the gaze slightly; the old negative
+    // sign tucked the chin toward the chest while both arms were raised.
+    headX:.045*overhead-.035*release
   };
 }
 /** v3.2: stand at original cot -> plant feet -> SIT visibly ->
