@@ -46,18 +46,32 @@ export function pose(life={},elapsed=0){
  const sip=performing&&activity==='drink'?drinkSipMotion(life.stageTime||0):0;
  const seat=seatedWeight(life);
  const step=walking?Math.sin(elapsed*7.5)*.47:0;
- const L={armX:0,armZ:-.22,forearmX:0,thighX:step,kneeX:Math.max(0,-step)*.35,footX:0};
- const R={armX:0,armZ:.22,forearmX:0,thighX:-step,kneeX:Math.max(0,step)*.35,footX:0};
+ const L={armX:0,armZ:-.22,forearmX:0,handX:0,handY:0,handZ:0,thighX:step,kneeX:Math.max(0,-step)*.35,footX:0};
+ const R={armX:0,armZ:.22,forearmX:0,handX:0,handY:0,handZ:0,thighX:-step,kneeX:Math.max(0,step)*.35,footX:0};
  if(walking){L.armX=-step*.64;R.armX=step*.64;}
  if(performing){
   // Pixal3D faces local -Z, so positive X brings an arm toward the face/front.
   const pair={sit:[.22,.25],eat:[.88,1.06],guitar:[1.05,.78],radio:[.18,1.55],cook:[.64,.93],repair:[.85,1.08],drink:[.18,1.05],stretch:[2.1,2.1],watch:[.15,.15],rest:[.22,.30],wave:[0,.35],point:[0,1.48]}[activity];
   if(pair){L.armX=pair[0];R.armX=pair[1]}
-  if(activity==='guitar'){R.armX+=.12*Math.sin(elapsed*8.6);L.armZ=-.34;R.armZ=-.37;}
-  if(activity==='eat'){R.armX=1.02+.58*bite;R.armZ=.08;R.forearmX=-1.08;L.armX=.72;L.armZ=-.08;L.forearmX=-.62;}
-  if(activity==='radio'){R.armX=1.42;R.armZ=.12;R.forearmX=-1.38;}
+  if(activity==='guitar'){
+   const strum=Math.sin(elapsed*8.6);
+   L.armX=.48;L.armZ=-.26;L.forearmX=-1.02;L.handZ=-.08;
+   R.armX=.42+.035*strum;R.armZ=.22;R.forearmX=-.92+.10*strum;R.handZ=.18*strum;
+  }
+  if(activity==='eat'){
+   R.armX=.68+.48*bite;R.armZ=.18;R.forearmX=-1.12-.38*bite;R.handX=-.10*bite;
+   L.armX=.52;L.armZ=-.20;L.forearmX=-1.08;L.handZ=-.08;
+  }
+  if(activity==='radio'){R.armX=1.08;R.armZ=.34;R.forearmX=-1.48;R.handZ=.12;L.armX=.16;L.armZ=-.24;}
   if(activity==='drink'){R.armX=.98+.58*sip;R.armZ=.06;R.forearmX=-1.18;L.armX=.16;L.armZ=-.12;}
-  if(activity==='wave'){R.armX=2.10+.10*Math.sin(elapsed*5.8);R.armZ=.54+.12*Math.sin(elapsed*8.2);R.forearmX=-.46+.20*Math.sin(elapsed*8.2);}
+  if(activity==='wave'){
+   // Keep the shoulder stable and let the elbow/wrist do the visible wave.
+   // The previous pose moved almost as one rigid block next to the head.
+   const wave=Math.sin(elapsed*7.0),counter=Math.cos(elapsed*7.0);
+   R.armX=1.13+.025*counter;R.armZ=.33+.020*wave;
+   R.forearmX=-1.24+.16*wave;R.handY=.10*counter;R.handZ=.48*wave;
+   L.armX=.04;L.armZ=-.24;
+  }
   if(activity==='point'){R.armX=1.50;R.armZ=.08;R.forearmX=.05;}
   if(activity==='stretch'){
    const stretch=stretchKeyframes(life.stageTime||0,life.performDuration||16);
@@ -76,14 +90,16 @@ export function pose(life={},elapsed=0){
  if(activity==='sleep'&&['enter','perform','exit'].includes(phase)){
   const sit=sleep.sit,lie=sleep.roll;
   L.armX=.12+.62*sit+.16*lie;R.armX=.12+.56*sit+.20*lie;
-  L.armZ=.18-.13*sit;R.armZ=-.18+.12*sit;
+  L.armZ=-.20+.08*sit;R.armZ=.20-.08*sit;
+  L.forearmX=-.92*sit-.10*lie;R.forearmX=-.88*sit-.08*lie;
+  L.handZ=-.08*sit;R.handZ=.08*sit;
   L.thighX=1.12*sit+.04*lie;R.thighX=1.12*sit-.04*lie;
   L.kneeX=-1.22*sit-.08*lie;R.kneeX=-1.22*sit-.08*lie;
   L.footX=-.44*sit;R.footX=-.44*sit;
  }
 
  const stretching=performing&&activity==='stretch'?stretchKeyframes(life.stageTime||0,life.performDuration||16):null;
- return {phase,activity,walking,seat,sleeping,lieHeight:sleep.height,lieTravel:sleep.travel,rootY:seatDrop()*seat+(walking?Math.abs(Math.sin(elapsed*7.5))*.035:Math.sin(elapsed*1.6)*.012),
+ return {phase,activity,walking,seat,sleeping,sleepSit:sleep.sit,lieHeight:sleep.height,lieTravel:sleep.travel,rootY:seatDrop()*seat+(walking?Math.abs(Math.sin(elapsed*7.5))*.035:Math.sin(elapsed*1.6)*.012),
   torsoX:stretching?stretching.torsoX:performing&&['repair','cook','radio'].includes(activity)?.10:0,
   torsoZ:stretching?stretching.torsoZ:0,
   headX:activity==='sleep'?.12*sleep.roll:stretching?stretching.headX:performing&&activity==='eat'?.06+.11*bite:performing&&activity==='drink'?.04+.08*sip:performing&&['cook','watch'].includes(activity)?.075:Math.sin(elapsed*.55)*.015,

@@ -131,7 +131,19 @@ function frame(now){const dt=Math.min(.05,(now-previous)/1000||0);previous=now;e
  actor.update(dt,state);
  if(qaPaused&&actor.clipAction){actor.mixer.setTime(qaAt);actor.update(0,state)}
  controls.update();renderer.render(scene,camera);
- window.qaAfterdayCharacter={status:actor.status,pose:selected,view:selectedView,time:state.stageTime,rigCount:actor.status==='ready'?20:0,clipCount:actor.clips?.size||0,activeClip:actor.embeddedClip,seatAboveRoof:SEAT.seatAboveRoof,poseRootY:actor.model?.position.y??null,modelLoaded:actor.status==='ready'};
+ const qaWorldPos=name=>{const o=actor.nodes?.[name];if(!o)return null;const v=new THREE.Vector3();o.getWorldPosition(v);return v.toArray().map(n=>Number(n.toFixed(4)));};
+ const qaObjectPos=o=>{if(!o)return null;const v=new THREE.Vector3();o.getWorldPosition(v);return v.toArray().map(n=>Number(n.toFixed(4)));};
+ window.qaAfterdayCharacter={
+  status:actor.status,pose:selected,view:selectedView,time:state.stageTime,rigCount:actor.status==='ready'?20:0,
+  clipCount:actor.clips?.size||0,activeClip:actor.embeddedClip,seatAboveRoof:SEAT.seatAboveRoof,
+  poseRootY:actor.model?.position.y??null,modelLoaded:actor.status==='ready',
+  joints:actor.status==='ready'?{
+   shoulderL:qaWorldPos('Shoulder_L'),upperL:qaWorldPos('UpperArm_L'),elbowL:qaWorldPos('ForeArm_L'),handL:qaWorldPos('Hand_L'),
+   shoulderR:qaWorldPos('Shoulder_R'),upperR:qaWorldPos('UpperArm_R'),elbowR:qaWorldPos('ForeArm_R'),handR:qaWorldPos('Hand_R'),
+   head:qaWorldPos('Head'),chest:qaWorldPos('Chest')
+  }:null,
+  props:actor.status==='ready'?{guitar:qaObjectPos(actor.guitar),radio:qaObjectPos(actor.radio),bowl:qaObjectPos(actor.bowl),ration:qaObjectPos(actor.ration)}:null
+ };
  requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
