@@ -19,6 +19,7 @@ function fogPointMaterial(){
   transparent:true,depthWrite:false,depthTest:true,fog:false,
   uniforms:{uTime:{value:0},uOpacity:{value:.22},uColor:{value:new THREE.Color('#b6c0bd')},uWind:{value:.2}},
   vertexShader:`
+   precision highp float;
    attribute float aSize;attribute float aPhase;attribute float aDrift;attribute float aSpeed;attribute float aDepthFade;
    varying float vPhase;varying float vDepthFade;
    uniform float uTime,uWind;
@@ -34,7 +35,7 @@ function fogPointMaterial(){
     vPhase=aPhase;vDepthFade=aDepthFade;
    }`,
   fragmentShader:`
-   precision mediump float;varying float vPhase;varying float vDepthFade;uniform float uTime,uOpacity;uniform vec3 uColor;
+   precision highp float;varying float vPhase;varying float vDepthFade;uniform float uTime,uOpacity;uniform vec3 uColor;
    float h(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
    void main(){
     vec2 uv=gl_PointCoord*2.0-1.0;float d=length(uv);
