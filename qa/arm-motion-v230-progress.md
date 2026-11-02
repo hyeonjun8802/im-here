@@ -39,7 +39,9 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Stretch fixed 10-frame recapture/review: PASS — clear neutral→overhead→lateral→forward-release→neutral phases, stable limb lengths, runtime issues 0.
 - [x] Sleep-enter baseline 10/10: FAIL — frames 6-8 show arms behind the torso instead of mattress support.
 - [x] Sleep arm fix applied: authored sleepSit + parent-frame mattress targets, X=bed length, Z=left/right width, local mattress Y=.865.
-- [ ] Sleep-enter fixed 10-frame recapture/review — NEXT.
+- [x] Sleep-enter fixed-v1 10-frame recapture: FAIL — target error remains high on right arm during recline (0.64–1.15m).
+- [x] Sleep fixed-v2 applied: project each real shoulder onto mattress world plane with reachable x shift; 6-iteration stronger IK.
+- [ ] Sleep-enter fixed-v2 10-frame recapture/review — NEXT.
 - [x] Apply remaining arm/hand coordinate fixes. Wave, stretch, and sleep-enter required coordinate/IK corrections; guitar v2 placement was retained; eat/radio passed without additional changes.
 - [x] Recapture every changed motion, 10/10. All six requested motions have been reviewed at ten timeline samples.
 - [ ] Run npm test / npm run check / npm run build.
@@ -88,3 +90,5 @@ On any interruption, read this file first and continue at the first unchecked it
 - 2026-11-03: stretch fixed version recaptured 10/10 and visually PASS; staged phases are now readable.
 
 - 2026-11-03: sleep arm solver corrected against real mattress axes. Previous root-local brace rotated behind the reclining body.
+
+- 2026-11-03: sleep fixed-v1 rejected quantitatively. Right hand target error peaked >1m; switched to shoulder-projected world-space mattress contacts.
