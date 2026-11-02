@@ -17,11 +17,16 @@ Durable resume checkpoint. Continue from the first unchecked item.
 - [x] Added 10-sample whole-activity and transition regression tests.
 
 ## Validation
-- [ ] Gate preview build with full npm test suite.
-- [ ] Fix any regression found by the gate.
-- [ ] Restore normal build command.
+- [x] Gate preview build with full npm test suite: **222/222 PASS, fail 0**.
+- [x] Fix regression found by the gate: legacy stretch test expected backward torso-X; corrected to the model's local-front negative-X convention.
+- [x] Restore normal build command.
 - [ ] Normal preview READY.
 - [ ] Merge to main and confirm production READY.
 
 ## Environment
 Vercel Sandbox quota is exhausted until 2026-12-01, so validation uses Vercel preview builds with a temporary test-before-build gate.
+
+## Latest validated gate
+- Vercel gated preview `dpl_Cviu7svYh4jGNQHU5anHPiSCoTXn`: READY.
+- Tests: 222 pass / 0 fail.
+- Vite production build: PASS.
