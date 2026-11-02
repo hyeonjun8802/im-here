@@ -92,3 +92,15 @@ test('walking lower body alternates without changing limb length targets',()=>{
     assert.equal(p.L.footX,0);assert.equal(p.R.footX,0);
   }
 });
+
+test('rest activity uses the same seated pelvis and lower-body posture as other chair/bed-edge actions',()=>{
+  const rest=pose({current:'rest',stage:'perform',stageTime:1},1);
+  const sit=pose({current:'sit',stage:'perform',stageTime:1},1);
+  assert.equal(rest.seat,1);
+  assert.equal(rest.rootY,sit.rootY);
+  for(const side of ['L','R']){
+    assert.equal(rest[side].thighX,sit[side].thighX);
+    assert.equal(rest[side].kneeX,sit[side].kneeX);
+    assert.equal(rest[side].footX,sit[side].footX);
+  }
+});
