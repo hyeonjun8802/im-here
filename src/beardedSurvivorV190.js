@@ -220,19 +220,18 @@ export class BeardedSurvivorV190{
    const sit=Math.max(0,Math.min(1,p.sleepSit||0));
    const engaged=Math.max(sit,lie);
    if(engaged>.04){
-    // Mattress coordinates: the bed runs along X (feet -> pillow toward -X)
-    // and its left/right width is Z. Keep hand targets in the survivor-parent
-    // frame so they stay fixed to the mattress while CharacterRoot reclines.
-    const mattressY=.865;
-    const braceX=-.18-.18*sit;
-    const restX=-.72;
-    const x=THREE.MathUtils.lerp(braceX,restX,lie);
-    const side=THREE.MathUtils.lerp(.50,.43,lie);
-    const y=mattressY+.025+.035*lie;
-    this.actionHandTarget(this.world.survivor,[x,y,-side],this.ikTarget);
-    this.solveArmIK('L',this.ikTarget,Math.min(.84,w+.08),5);
-    this.actionHandTarget(this.world.survivor,[x,y, side],this.ikTarget);
-    this.solveArmIK('R',this.ikTarget,Math.min(.84,w+.08),5);
+    // Project each real shoulder toward the mattress instead of guessing a
+    // symmetric local hand coordinate. This keeps both arms reachable through
+    // the 90-degree root recline and prevents one arm folding behind the body.
+    const bedY=this.world.survivor.position.y+.90+.05*lie;
+    const xShift=THREE.MathUtils.lerp(-.08,.42,lie);
+    const place=(side,shoulder,zBias)=>{
+      shoulder.getWorldPosition(this.ikJoint);
+      this.ikTarget.set(this.ikJoint.x+xShift,bedY,this.ikJoint.z+zBias*(1-.35*lie));
+      this.solveArmIK(side,this.ikTarget,Math.min(.88,w+.12),6);
+    };
+    place('L',n.Shoulder_L,-.07);
+    place('R',n.Shoulder_R, .07);
    }
   }
  }
