@@ -61,3 +61,5 @@ On any interruption, read this file first and continue at the first unchecked it
 - Branch: `afterday-arm-motion-v230`
 - Last durable commit state: wave arm fix and resilient frame-isolated capture harness are committed.
 - Next action: recapture fixed `wave` frames 01..10, inspect all ten, then mark PASS or iterate before starting guitar.
+
+- 2026-11-03: second QA sandbox expired during retry; harness redesigned to load the GLB once and change the frozen QA time in-place for all 10 frames.
