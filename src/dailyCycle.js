@@ -32,23 +32,25 @@ export function routineDecision(now,record={},activity='idle',stage='idle',weath
   }
   return {type:'free',day,hour};
 }
-/** 4-part gentle morning animation over a single stretch session. */
+/** 4-part gentle morning animation over a single stretch session.
+ * v2.30 arm audit: preserve equal limb reach. Side stretching is expressed
+ * through torso lean, not by lengthening one arm relative to the other.
+ */
 export function stretchKeyframes(seconds=0,duration=16){
   const q=Math.max(0,Math.min(1,Number(seconds)/Math.max(.01,duration)));
   const smooth=v=>{const u=Math.max(0,Math.min(1,v));return u*u*(3-2*u);};
-  const envelope=smooth(q/.12)*(1-smooth((q-.88)/.12));
-  // Two overhead reaches, a gentle lateral stretch and forward release.
-  const reach=smooth((q-.08)/.17)*(1-smooth((q-.46)/.12));
-  const lateral=smooth((q-.43)/.12)*(1-smooth((q-.73)/.11));
-  const bend=smooth((q-.69)/.10)*(1-smooth((q-.90)/.08));
+  const overhead=smooth((q-.04)/.18)*(1-smooth((q-.73)/.18));
+  const lateral=smooth((q-.39)/.12)*(1-smooth((q-.63)/.12));
+  const release=smooth((q-.68)/.12)*(1-smooth((q-.90)/.08));
+  const arm=-.10-1.66*overhead-.16*release;
   return {
-    leftArm:-.10-1.72*reach-1.30*lateral-.42*bend,
-    rightArm:-.10-1.72*reach-.88*lateral-.42*bend,
-    leftArmZ:-.20-.26*lateral,
-    rightArmZ:.20+.34*lateral,
-    torsoX:.22*bend,
-    torsoZ:Math.sin((q-.43)/.30*Math.PI)*.19*lateral*envelope,
-    headX:-.14*reach+.13*bend
+    leftArm:arm,
+    rightArm:arm,
+    leftArmZ:-.20-.10*overhead-.035*lateral,
+    rightArmZ:.20+.10*overhead+.035*lateral,
+    torsoX:.18*release,
+    torsoZ:Math.sin((q-.39)/.24*Math.PI)*.14*lateral,
+    headX:-.10*overhead+.10*release
   };
 }
 /** v3.2: stand at original cot -> plant feet -> SIT visibly ->
