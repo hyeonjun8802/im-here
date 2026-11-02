@@ -33,8 +33,8 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Guitar v2 fix applied: scale .82, lowered to lap, shifted laterally, steeper neck angle, IK retargeted to neck/string zones.
 - [x] Guitar v2 10-frame recapture/review: PASS — lap placement readable, neck visible, left hand stays on neck zone, right hand stays at strings/body, runtime issues 0.
 - [x] Eat baseline 10/10: PASS — right hand completes bowl→mouth→bowl cycle; left hand supports bowl; no visible penetration.
-- [ ] Radio baseline 10/10 — NEXT.
-- [ ] Stretch baseline 10/10.
+- [x] Radio 10-frame audit: PASS — radio stays at ear/cheek, right arm stable, no prop drift or joint pop, runtime issues 0.
+- [ ] Stretch baseline 10/10 — NEXT.
 - [ ] Sleep-enter baseline 10/10.
 - [ ] Apply remaining arm/hand coordinate fixes. Shared forearmZ/handX/handZ support is already added for wave and later actions.
 - [ ] Recapture every changed motion, 10/10.
@@ -76,3 +76,5 @@ On any interruption, read this file first and continue at the first unchecked it
 - 2026-11-03: eat captured/reviewed 10/10; PASS. Peak bite frame inspected enlarged; no penetration.
 
 - 2026-11-03: QA3 captured eat 10/10 successfully; runtime issues=0 and joint/prop distances were coherent. Sandbox stopped before visual sheet review, so eat must be recaptured/reviewed visually before PASS.
+
+- 2026-11-03: radio captured/reviewed 10/10; PASS. Hand-head distance ~0.24m, hand-radio ~0.08m, runtime issues 0.
