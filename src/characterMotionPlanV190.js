@@ -55,8 +55,8 @@ export function pose(life={},elapsed=0){
   if(pair){L.armX=pair[0];R.armX=pair[1]}
   if(activity==='guitar'){
    const strum=Math.sin(elapsed*8.6);
-   L.armX=.72;L.armZ=-.30;L.forearmX=-1.18;L.handZ=-.10;
-   R.armX=.62+.07*strum;R.armZ=.26;R.forearmX=-1.04+.13*strum;R.handZ=.10*strum;
+   L.armX=.48;L.armZ=-.26;L.forearmX=-1.02;L.handZ=-.08;
+   R.armX=.42+.035*strum;R.armZ=.22;R.forearmX=-.92+.10*strum;R.handZ=.18*strum;
   }
   if(activity==='eat'){
    R.armX=.68+.48*bite;R.armZ=.18;R.forearmX=-1.12-.38*bite;R.handX=-.10*bite;
