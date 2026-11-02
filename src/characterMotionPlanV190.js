@@ -65,8 +65,11 @@ export function pose(life={},elapsed=0){
   if(activity==='radio'){R.armX=1.08;R.armZ=.34;R.forearmX=-1.48;R.handZ=.12;L.armX=.16;L.armZ=-.24;}
   if(activity==='drink'){R.armX=.98+.58*sip;R.armZ=.06;R.forearmX=-1.18;L.armX=.16;L.armZ=-.12;}
   if(activity==='wave'){
-   const wave=Math.sin(elapsed*8.2);
-   R.armX=1.22+.06*Math.sin(elapsed*5.8);R.armZ=.38+.06*wave;R.forearmX=-1.42+.08*wave;R.handZ=.34*wave;
+   // Keep the shoulder stable and let the elbow/wrist do the visible wave.
+   // The previous pose moved almost as one rigid block next to the head.
+   const wave=Math.sin(elapsed*7.0),counter=Math.cos(elapsed*7.0);
+   R.armX=1.10+.025*counter;R.armZ=.31+.025*wave;
+   R.forearmX=-1.24+.16*wave;R.handY=.10*counter;R.handZ=.48*wave;
    L.armX=.04;L.armZ=-.24;
   }
   if(activity==='point'){R.armX=1.50;R.armZ=.08;R.forearmX=.05;}
