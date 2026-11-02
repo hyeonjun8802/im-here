@@ -53,6 +53,7 @@ export class ApocalypseSetDressingV201{
   this.materials=[];this.meshes=[];this.stats={};
   this.makeForegroundRuins();
   this.makeDistantSkyline();
+  this.makeExposedHighRiseFrames();
   this.makeStreetStory();
   this.makeRooftopStory();
   this.makeSmoke();
@@ -84,6 +85,47 @@ export class ApocalypseSetDressingV201{
   this.meshes.push(addInstances(this.group,'Exposed rusted reinforcement bars',new THREE.CylinderGeometry(.5,.5,1,6),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.38}),rebar));
   this.meshes.push(addInstances(this.group,'Collapsed concrete floor slabs',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.97}),slabs));
   this.stats.foregroundRuins=count;this.stats.facadeDamage=cavities.length+rebar.length+slabs.length;
+ }
+ makeExposedHighRiseFrames(){
+  const mobile=this.world.isMobile;
+  const towers=mobile?10:16;
+  const columns=[],floors=[],cross=[],hanging=[];
+  for(let i=0;i<towers;i++){
+   const a=i/towers*TAU+.24;
+   const radius=205+hash(i*71+9)*92;
+   const x=Math.sin(a)*radius,z=Math.cos(a)*radius;
+   const width=12+hash(i*17+2)*10,depth=9+hash(i*23+4)*8,height=38+hash(i*29+6)*42;
+   const levels=5+(i%4);
+   const rot=Math.round(hash(i+30)*3)*Math.PI/2;
+   const sy=Math.sin(rot),cy=Math.cos(rot);
+   const tx=(lx,lz)=>[x+lx*cy+lz*sy,z-lx*sy+lz*cy];
+   for(const sx of [-1,1])for(const sz of [-1,1]){
+    const [px,pz]=tx(sx*width*.46,sz*depth*.46);
+    columns.push({p:[px,GROUND+height*.5,pz],r:[0,rot,0],s:[.55,height,.55],c:tint('#4f514c')});
+   }
+   for(let l=1;l<levels;l++){
+    if((l+i)%5===0)continue;
+    const y=GROUND+(height/levels)*l;
+    floors.push({p:[x,y,z],r:[0,rot,(hash(i*13+l)-.5)*.04],s:[width,.32,depth],c:tint(l%2?'#555852':'#615a50')});
+    if((l+i)%2===0){
+     const [x1,z1]=tx(-width*.43,depth*.47),[x2,z2]=tx(width*.43,depth*.47);
+     const midx=(x1+x2)/2,midz=(z1+z2)/2,len=Math.hypot(x2-x1,z2-z1);
+     cross.push({p:[midx,y+1.5,midz],r:[0,rot,Math.PI/4],s:[.16,len*.68,.16],c:tint('#684d3d')});
+    }
+   }
+   const cableCount=1+(i%2);
+   for(let j=0;j<cableCount;j++){
+    const [px,pz]=tx((hash(i*7+j)-.5)*width*.7,(hash(i*11+j)-.5)*depth*.7);
+    hanging.push({p:[px,GROUND+height*.72,pz],r:[0,0,(hash(i+j+5)-.5)*.18],s:[.06,height*(.13+.08*hash(i+j+8)),.06],c:tint('#343a38')});
+   }
+  }
+  const steel=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.82,metalness:.48});
+  const concrete=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.98,metalness:.01});
+  this.meshes.push(addInstances(this.group,'Exposed ruined high-rise columns',new THREE.BoxGeometry(1,1,1),steel,columns));
+  this.meshes.push(addInstances(this.group,'Exposed ruined high-rise floor plates',new THREE.BoxGeometry(1,1,1),concrete,floors));
+  this.meshes.push(addInstances(this.group,'Collapsed structural cross bracing',new THREE.CylinderGeometry(.5,.5,1,5),steel,cross));
+  this.meshes.push(addInstances(this.group,'Hanging utility cables from ruins',new THREE.CylinderGeometry(.5,.5,1,5),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.3}),hanging));
+  this.stats.exposedFrames=towers;
  }
  makeStreetStory(){
   const mobile=this.world.isMobile,roadMat=new THREE.MeshStandardMaterial({color:'#242a29',roughness:1});
