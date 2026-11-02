@@ -29,6 +29,7 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Wave baseline 10-frame visual review: FAIL — hand remains almost pinned beside head; rigid-arm look.
 - [x] Wave first fix applied: separate shoulder/elbow/wrist motion + lateral hand IK path.
 - [x] Wave fixed 10-frame recapture: PASS — visible lateral hand travel, stable elbow length, no head/body penetration.
+- [x] Wave final micro-retune (armX/armZ regression threshold) recaptured 10/10: PASS — same natural wave path retained, runtime issues 0.
 - [x] Guitar baseline/fixed-v1 10-frame review: FAIL — guitar body still reads as an oversized circular shield over the chest; neck is not visually readable.
 - [x] Guitar v2 fix applied: scale .82, lowered to lap, shifted laterally, steeper neck angle, IK retargeted to neck/string zones.
 - [x] Guitar v2 10-frame recapture/review: PASS — lap placement readable, neck visible, left hand stays on neck zone, right hand stays at strings/body, runtime issues 0.
@@ -44,7 +45,7 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [ ] Sleep-enter fixed-v2 10-frame recapture/review — NEXT.
 - [x] Apply remaining arm/hand coordinate fixes. Wave, stretch, and sleep-enter required coordinate/IK corrections; guitar v2 placement was retained; eat/radio passed without additional changes.
 - [x] Recapture every changed motion, 10/10. All six requested motions have been reviewed at ten timeline samples.
-- [ ] Run npm test / npm run check / npm run build.
+- [ ] Run npm test / npm run check / npm run build. Previous full test found only the legacy wave visibility threshold; wave was micro-retuned and recaptured PASS.
 - [ ] Browser/WebGL runtime validation.
 - [ ] Merge only after all motions PASS.
 
