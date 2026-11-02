@@ -47,8 +47,8 @@ function ridgeArcGeometry(radius,seed,height,span=1.72,segments=86){
 function riverGeometry(){
   const segments=44,pos=[],uv=[],idx=[];
   const center=t=>{
-    const x=-760+t*660;
-    const z=-420-Math.sin(t*Math.PI)*72+Math.sin(t*TAU*2.1)*20;
+    const x=-520+t*680;
+    const z=-180-t*650-Math.sin(t*Math.PI)*48+Math.sin(t*TAU*1.6)*18;
     return new THREE.Vector3(x,GROUND+.24,z);
   };
   for(let i=0;i<=segments;i++){
@@ -85,8 +85,8 @@ export class HorizonWorldExpansionV210{
       const radius=vista?520+hash(i*29+4)*470:560+hash(i*31+7)*360;
       const x=Math.sin(a)*radius,z=Math.cos(a)*radius;
       // Keep a broad river corridor readable from the default cinematic view.
-      const t=THREE.MathUtils.clamp((x+760)/660,0,1);
-      const riverZ=-420-Math.sin(t*Math.PI)*72+Math.sin(t*TAU*2.1)*20;
+      const t=THREE.MathUtils.clamp((x+520)/680,0,1);
+      const riverZ=-180-t*650-Math.sin(t*Math.PI)*48+Math.sin(t*TAU*1.6)*18;
       if(Math.abs(z-riverZ)<92)continue;
       const w=12+hash(i*17+5)*20,d=11+hash(i*23+2)*19;
       const high=hash(i*97+6)>.86;const h=18+Math.pow(hash(i*37+9),.72)*(high?(mobile?78:96):(mobile?44:58));
@@ -112,7 +112,7 @@ export class HorizonWorldExpansionV210{
       fragmentShader:`precision highp float;varying vec2 vUv;varying vec3 vWorld;uniform float uTime,uStorm,uNight,uWet;
         float wave(vec2 p){return sin(p.x*.11+uTime*.65)*.5+sin(p.y*.17-uTime*.42)*.31+sin((p.x+p.y)*.055+uTime*.31)*.19;}
         void main(){float w=wave(vWorld.xz);float glint=.5+.5*sin(vUv.y*165.+w*2.7+uTime*.7);
-          vec3 base=mix(vec3(.11,.19,.20),vec3(.18,.29,.31),glint*.16);
+          vec3 base=mix(vec3(.13,.24,.27),vec3(.28,.42,.44),glint*.24);
           base=mix(base,vec3(.08,.12,.16),uNight*.58+uStorm*.28);
           gl_FragColor=vec4(base,1.);}`
     });
@@ -121,7 +121,7 @@ export class HorizonWorldExpansionV210{
     const bankMat=new THREE.MeshStandardMaterial({color:'#34443d',roughness:1});
     const banks=[];
     for(let i=0;i<36;i++){
-      const t=i/35,x=-760+t*660,z=-420-Math.sin(t*Math.PI)*72+Math.sin(t*TAU*2.1)*20;
+      const t=i/35,x=-520+t*680,z=-180-t*650-Math.sin(t*Math.PI)*48+Math.sin(t*TAU*1.6)*18;
       const w=57+Math.sin(t*Math.PI)*23;
       banks.push({p:[x,GROUND+.52,z+w+9],r:[0,hash(i)*.25,0],s:[16,.75,9+hash(i+4)*13]});
       banks.push({p:[x,GROUND+.52,z-w-9],r:[0,hash(i+9)*.25,0],s:[16,.75,9+hash(i+7)*13]});
@@ -131,9 +131,9 @@ export class HorizonWorldExpansionV210{
 
   makeBridge(){
     const bridge=new THREE.Group();bridge.name='Ruined suspension bridge over river';this.group.add(bridge);
-    const cx=-398,cz=-492,deckY=GROUND+9.4;
-    const concrete=new THREE.MeshStandardMaterial({color:'#555d59',roughness:.93,metalness:.04});
-    const steel=new THREE.MeshStandardMaterial({color:'#596362',roughness:.76,metalness:.46});
+    const cx=-94,cz=-602,deckY=GROUND+10.8;
+    const concrete=new THREE.MeshStandardMaterial({color:'#68716e',roughness:.93,metalness:.04});
+    const steel=new THREE.MeshStandardMaterial({color:'#697674',roughness:.76,metalness:.46});
     const rust=new THREE.MeshStandardMaterial({color:'#705648',roughness:.84,metalness:.35});
     this.materials.push(concrete,steel,rust);
     const deck=new THREE.Mesh(new THREE.BoxGeometry(15,1.35,212),concrete);deck.position.set(cx,deckY,cz);deck.rotation.y=.06;bridge.add(deck);this.meshes.push(deck);
