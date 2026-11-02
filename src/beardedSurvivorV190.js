@@ -170,6 +170,7 @@ export class BeardedSurvivorV190{
    this.armTarget.copy(this.armSwing).multiply(this.armBase);
    arm.quaternion.slerp(this.armTarget,blend);
    lerp(n['ForeArm_'+s],'x',p[s].forearmX||0);
+   lerp(n['Hand_'+s],'x',p[s].handX||0);lerp(n['Hand_'+s],'y',p[s].handY||0);lerp(n['Hand_'+s],'z',p[s].handZ||0);
    lerp(n['UpperLeg_'+s],'x',p[s].thighX);lerp(n['LowerLeg_'+s],'x',p[s].kneeX);lerp(n['Foot_'+s],'x',p[s].footX);
   }
   this.alignProps(p,life);
