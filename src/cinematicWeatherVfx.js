@@ -153,20 +153,30 @@ function dynamicCloudSky(scene,isMobile){
     float fbm(vec3 p){float result=0.;float weight=.54;
       for(int i=0;i<4;i++){result+=noise3(p)*weight;p=p*2.03+vec3(4.1,7.7,3.1);weight*=.49;}return result;}
     void main(){vec3 dir=normalize(vDirection);
-      if(dir.y<-.05)discard;
-      vec3 flow=vec3(uTime*(.002+uWind*.013),0.,uTime*.0018);
-      vec3 p=dir*4.4+flow;
-      float n=fbm(p);float detail=fbm(p*2.7+8.4);
-      float density=n*.82+detail*.18;
-      float cover=smoothstep(mix(.70,.36,uCover),mix(.82,.53,uCover),density);
-      float altitude=smoothstep(-.035,.19,dir.y);
-      float bloom=pow(max(0.,dot(dir,normalize(uSunDirection))),9.);
-      vec3 white=mix(vec3(.73,.79,.82),vec3(1.,.74,.54),uSunset*.63);
-      vec3 dark=mix(vec3(.34,.40,.48),vec3(.075,.12,.18),uStorm*.82);
-      vec3 col=mix(dark,white,clamp(.57+.28*detail+.26*bloom-uStorm*.45,0.,1.));
-      col=mix(col,vec3(.21,.27,.38),uNight*.72);
-      float alpha=cover*altitude*(.25+uCover*.48);
-      gl_FragColor=vec4(col,clamp(alpha,0.,.9));
+      if(dir.y<-.055)discard;
+      // Broad world-space billows. Sampling the unit direction keeps the field
+      // continuous across the entire sky dome with no UV/card boundaries.
+      vec3 flow=vec3(uTime*(.0016+uWind*.010),uTime*.00018,uTime*.0011);
+      vec3 p=dir*3.15+flow;
+      float broad=fbm(p);
+      float billow=fbm(p*1.72+vec3(6.1,2.7,9.4));
+      float detail=fbm(p*3.65+vec3(11.3,4.2,3.6));
+      float density=broad*.66+billow*.27+detail*.07;
+      float low=mix(.715,.34,uCover),high=mix(.835,.535,uCover);
+      float cover=smoothstep(low,high,density);
+      // Feather clouds into atmospheric haze at the horizon and gently thin
+      // them toward zenith; there is never a visible rectangular termination.
+      float horizonFade=smoothstep(-.045,.135,dir.y);
+      float zenithFade=1.-smoothstep(.88,1.,dir.y)*.18;
+      float altitude=horizonFade*zenithFade;
+      float bloom=pow(max(0.,dot(dir,normalize(uSunDirection))),8.);
+      vec3 white=mix(vec3(.69,.76,.80),vec3(1.,.72,.50),uSunset*.60);
+      vec3 dark=mix(vec3(.31,.37,.45),vec3(.065,.10,.15),uStorm*.86);
+      float light=clamp(.50+.32*billow+.18*detail+.30*bloom-uStorm*.46,0.,1.);
+      vec3 col=mix(dark,white,light);
+      col=mix(col,vec3(.19,.25,.35),uNight*.74);
+      float alpha=cover*altitude*(.20+uCover*.56);
+      gl_FragColor=vec4(col,clamp(alpha,0.,.88));
     }`,
   side:THREE.BackSide,transparent:true,depthWrite:false,depthTest:true,blending:THREE.NormalBlending
  });
