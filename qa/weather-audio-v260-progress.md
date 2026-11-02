@@ -40,5 +40,11 @@ Durable resume checkpoint.
 ## User loop-boundary feedback
 - [x] Adopted the low-energy/fade principle: the runtime no longer depends on a hard MP3 `loop=true` boundary.
 - [x] PCM crossfade is used instead of fading both ends fully to zero, avoiding a noticeable volume pulse every loop.
-- [ ] Re-run full test gate + production build after seam-engine change.
+- [x] Re-run full test gate + production build after seam-engine change: **230/230 PASS, fail 0**, Vite build PASS.
 - [ ] Confirm normal preview READY, then merge/production.
+
+## Gapless seam validation
+- Gated deployment `dpl_9qXdqQ8BwKaRAKu3cBo9jG4EDPip`: READY.
+- Tests: 230 passed / 0 failed.
+- Runtime design: decoded PCM loop + 0.65s equal-power tail/head crossfade; no HTMLAudio hard loop boundary.
+- Recorded thunder: 0.08s attack + 0.72s tail fade.
