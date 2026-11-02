@@ -51,9 +51,9 @@ export class CityAtmosphere{
   this.scene=scene;this.time=0;this.bankTiers=[];this.rainCurtains=[];this.dummy=new THREE.Object3D();
   const geo=new THREE.SphereGeometry(1,12,7);this.bankGeometry=geo;
   const specs=[
-   {count:isMobile?18:34,min:90,max:300,y:-15,rx:[26,55],ry:[3.2,6.5],rz:[18,44],opacity:.10},
-   {count:isMobile?23:42,min:230,max:590,y:-7,rx:[38,82],ry:[4.2,8.5],rz:[28,65],opacity:.14},
-   {count:isMobile?20:38,min:430,max:900,y:1,rx:[52,118],ry:[5.5,11],rz:[34,82],opacity:.17}
+   {count:isMobile?20:38,min:90,max:300,y:-11,rx:[28,60],ry:[4.5,7.5],rz:[20,48],opacity:.15},
+   {count:isMobile?26:48,min:230,max:590,y:-1,rx:[42,90],ry:[6.0,10.5],rz:[30,70],opacity:.20},
+   {count:isMobile?24:44,min:430,max:900,y:10,rx:[58,128],ry:[7.5,14],rz:[38,88],opacity:.24}
   ];
   for(let tier=0;tier<specs.length;tier++){
    const spec=specs[tier],legacyLayer=INFILL_LAYERS[tier],records=[],mat=makeFogMaterial();
@@ -89,7 +89,7 @@ export class CityAtmosphere{
    const {mesh,material,records,spec}=this.bankTiers[tier];
    material.uniforms.uTime.value=this.time;material.uniforms.uWind.value=weatherValues.wind;
    material.uniforms.uColor.value.lerp(tint,1-Math.exp(-dt*.8));
-   material.uniforms.uOpacity.value=THREE.MathUtils.damp(material.uniforms.uOpacity.value,(spec.opacity+mist*.11+weatherValues.rain*.025)*Math.max(.45,atmosphere.cloudBankOpacity*2.1),.55,dt);
+   material.uniforms.uOpacity.value=THREE.MathUtils.damp(material.uniforms.uOpacity.value,(spec.opacity+mist*.14+weatherValues.rain*.035)*Math.max(.45,atmosphere.cloudBankOpacity*2.1),.55,dt);
    for(let i=0;i<records.length;i++){
     const r=records[i],span=125+tier*95,travel=((this.time*r.speed*wind+r.phase*31)%(span*2))-span;
     const curl=Math.sin(this.time*(.045+.014*tier)+r.phase)*(12+tier*10);
