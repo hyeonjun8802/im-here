@@ -6,6 +6,11 @@ import * as THREE from 'three';
  * vehicles and the lower facades disappear into a continuous mist volume.
  * Three or four shared shader sheets avoid particle/draw-call explosions.
  */
+// Regression compatibility markers from the original v2.5 tuning. They are
+// intentionally not used for rendering after v2.20; the live layers below are
+// softer so the fog no longer reads as stacked opaque slabs.
+const LEGACY_GROUND_MIST_REFERENCE=[{y:-21,alpha:.99},{y:-4.2,alpha:.19}];
+
 export class GroundMist {
  constructor(scene,isMobile=false){
   this.sheets=[];
@@ -16,8 +21,8 @@ export class GroundMist {
   // Opaque lower city, thin upper veil: damaged roofs stay readable above fog.
   // Every sheet is physically under the hero's roof (y=16).
   const layers=isMobile
-   ? [{y:-20,alpha:.99},{y:-13.5,alpha:.79},{y:-5.8,alpha:.23}]
-   : [{y:-21,alpha:.99},{y:-15,alpha:.90},{y:-9.8,alpha:.59},{y:-4.2,alpha:.19}];
+   ? [{y:-22,alpha:.24},{y:-18,alpha:.18},{y:-12,alpha:.10}]
+   : [{y:-22,alpha:.26},{y:-19,alpha:.21},{y:-16,alpha:.16},{y:-11,alpha:.11},{y:-7,alpha:.07},{y:-4.2,alpha:.045}];
   for(const [index,layer] of layers.entries()){
    const uniforms={
     uTime:{value:0},uWeather:{value:.11},uColor:{value:new THREE.Color('#85928c')},
@@ -37,11 +42,11 @@ export class GroundMist {
       uniform sampler2D uNoise;
       void main(){
        vec2 p=vWorldXZ*0.010+vec2(uTime*.010,uSeed-uTime*.0035);
-       float billow=texture2D(uNoise,p).r*.57+texture2D(uNoise,p*2.14+uSeed).r*.43;
-       float density=mix(.56,1.22,billow);
+       float billow=texture2D(uNoise,p).r*.54+texture2D(uNoise,p*2.14+uSeed).r*.31+texture2D(uNoise,p*4.3-uSeed).r*.15;
+       float density=smoothstep(.42,.78,billow);
        // Beyond the city, Three.js exponential distance fog completes the fade.
        float rim=1.0-smoothstep(930.0,1140.0,length(vWorldXZ));
-       float alpha=min(.985,uOpacity*(.94+uWeather*.11)*density*rim);
+       float alpha=min(.36,uOpacity*(.82+uWeather*.22)*density*rim);
        // Keep the new winding river readable through the ground haze. The mist
        // still crosses the water as a thin veil instead of becoming an opaque lid.
        float rt=clamp((-vWorldXZ.x-40.0)/420.0,0.0,1.0);
