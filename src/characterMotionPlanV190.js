@@ -68,7 +68,7 @@ export function pose(life={},elapsed=0){
    // Keep the shoulder stable and let the elbow/wrist do the visible wave.
    // The previous pose moved almost as one rigid block next to the head.
    const wave=Math.sin(elapsed*7.0),counter=Math.cos(elapsed*7.0);
-   R.armX=1.10+.025*counter;R.armZ=.31+.025*wave;
+   R.armX=1.13+.025*counter;R.armZ=.33+.020*wave;
    R.forearmX=-1.24+.16*wave;R.handY=.10*counter;R.handZ=.48*wave;
    L.armX=.04;L.armZ=-.24;
   }
