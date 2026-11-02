@@ -31,7 +31,17 @@ for(let i=0;i<10;i++){
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.qaAfterdayCharacter?.modelLoaded===true,null,{timeout:30000});
   await page.waitForTimeout(550);
-  await page.screenshot({path:path.join(out,String(i+1).padStart(2,'0')+'.jpg'),type:'jpeg',quality:78});
+  // Clean visual QA frame: remove all diagnostic overlays so arms/hands are unobstructed.
+  await page.evaluate(()=>{
+    for(const s of ['#overlay','#status','#views','#timeline','#actions','#hint']){
+      const el=document.querySelector(s);if(el)el.style.display='none';
+    }
+  });
+  await page.waitForTimeout(80);
+  // CDP capture is more reliable than Playwright page.screenshot on the WebGL QA canvas.
+  const client=await ctx.newCDPSession(page);
+  const shot=await client.send('Page.captureScreenshot',{format:'jpeg',quality:78,captureBeyondViewport:false,fromSurface:true});
+  fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.jpg'),Buffer.from(shot.data,'base64'));
   const qa=await page.evaluate(()=>window.qaAfterdayCharacter);
   fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.json'),JSON.stringify({motion,frame:i+1,t,qa,bad},null,2));
   if(bad.length)console.error(motion,i+1,bad);
