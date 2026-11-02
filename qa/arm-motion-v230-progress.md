@@ -29,7 +29,7 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Wave baseline 10-frame visual review: FAIL — hand remains almost pinned beside head; rigid-arm look.
 - [x] Wave first fix applied: separate shoulder/elbow/wrist motion + lateral hand IK path.
 - [x] Wave fixed 10-frame recapture: PASS — visible lateral hand travel, stable elbow length, no head/body penetration.
-- [ ] Guitar baseline capture: previous sandbox stopped after frame 1/10. Recapture from scratch.
+- [ ] Guitar baseline capture/review: next.
 - [ ] Eat baseline 10/10.
 - [ ] Radio baseline 10/10.
 - [ ] Stretch baseline 10/10.
@@ -63,3 +63,5 @@ On any interruption, read this file first and continue at the first unchecked it
 - Next action: recapture fixed `wave` frames 01..10, inspect all ten, then mark PASS or iterate before starting guitar.
 
 - 2026-11-03: second QA sandbox expired during retry; harness redesigned to load the GLB once and change the frozen QA time in-place for all 10 frames.
+
+- Wave PASS commit lineage includes widened head-relative IK hand path (`.46 ± .145`) and wrist articulation.
