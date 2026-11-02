@@ -99,7 +99,7 @@ export function pose(life={},elapsed=0){
  }
 
  const stretching=performing&&activity==='stretch'?stretchKeyframes(life.stageTime||0,life.performDuration||16):null;
- return {phase,activity,walking,seat,sleeping,lieHeight:sleep.height,lieTravel:sleep.travel,rootY:seatDrop()*seat+(walking?Math.abs(Math.sin(elapsed*7.5))*.035:Math.sin(elapsed*1.6)*.012),
+ return {phase,activity,walking,seat,sleeping,sleepSit:sleep.sit,lieHeight:sleep.height,lieTravel:sleep.travel,rootY:seatDrop()*seat+(walking?Math.abs(Math.sin(elapsed*7.5))*.035:Math.sin(elapsed*1.6)*.012),
   torsoX:stretching?stretching.torsoX:performing&&['repair','cook','radio'].includes(activity)?.10:0,
   torsoZ:stretching?stretching.torsoZ:0,
   headX:activity==='sleep'?.12*sleep.roll:stretching?stretching.headX:performing&&activity==='eat'?.06+.11*bite:performing&&activity==='drink'?.04+.08*sip:performing&&['cook','watch'].includes(activity)?.075:Math.sin(elapsed*.55)*.015,
