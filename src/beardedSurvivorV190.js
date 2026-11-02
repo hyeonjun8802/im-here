@@ -187,9 +187,10 @@ export class BeardedSurvivorV190{
    this.solveArmIK('R',this.ikTarget,Math.min(.78,w),4);return;
   }
   if(a==='medicine'){
-   // Self-treatment: left forearm is presented while the right hand works on it.
-   n.ForeArm_L.getWorldPosition(this.ikTarget);
-   this.ikTarget.y+=.02;this.ikTarget.z-=.035;
+   // Self-treatment: right hand works around the middle of the presented
+   // left forearm, not the elbow origin.
+   n.ForeArm_L.getWorldPosition(this.ikTarget);n.Hand_L.getWorldPosition(this.ikHand);
+   this.ikTarget.lerp(this.ikHand,.55);this.ikTarget.y+=.02;this.ikTarget.z-=.025;
    this.solveArmIK('R',this.ikTarget,Math.min(.80,w+.04),5);
    this.actionHandTarget(n.Chest,[-.23,-.20,-.28],this.ikTarget);
    this.solveArmIK('L',this.ikTarget,Math.min(.76,w),4);return;
