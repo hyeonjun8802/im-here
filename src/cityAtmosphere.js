@@ -51,9 +51,9 @@ export class CityAtmosphere{
   this.scene=scene;this.time=0;this.bankTiers=[];this.rainCurtains=[];this.dummy=new THREE.Object3D();
   const geo=new THREE.SphereGeometry(1,12,7);this.bankGeometry=geo;
   const specs=[
-   {count:isMobile?20:38,min:90,max:300,y:-11,rx:[28,60],ry:[4.5,7.5],rz:[20,48],opacity:.15},
-   {count:isMobile?26:48,min:230,max:590,y:-1,rx:[42,90],ry:[6.0,10.5],rz:[30,70],opacity:.20},
-   {count:isMobile?24:44,min:430,max:900,y:10,rx:[58,128],ry:[7.5,14],rz:[38,88],opacity:.24}
+   {count:isMobile?20:38,min:90,max:300,y:-11,rx:[28,60],ry:[4.5,7.5],rz:[20,48],opacity:.19},
+   {count:isMobile?26:48,min:230,max:590,y:-1,rx:[42,90],ry:[6.0,10.5],rz:[30,70],opacity:.25},
+   {count:isMobile?24:44,min:430,max:900,y:10,rx:[58,128],ry:[7.5,14],rz:[38,88],opacity:.30}
   ];
   for(let tier=0;tier<specs.length;tier++){
    const spec=specs[tier],legacyLayer=INFILL_LAYERS[tier],records=[],mat=makeFogMaterial();
@@ -84,12 +84,12 @@ export class CityAtmosphere{
  update(dt,weatherValues,night,skyColor){
   this.time+=dt;this.rainTexture.offset.y=(this.rainTexture.offset.y-dt*(.45+weatherValues.wind*.35))%1;
   for(let i=0;i<this.rainCurtains.length;i++)this.rainCurtains[i].material.opacity=THREE.MathUtils.damp(this.rainCurtains[i].material.opacity,weatherValues.rain*(.10+hash(i*11)*.08),.7,dt);
-  const mist=weatherValues.mist,atmosphere=depthAtmosphere(mist,night),tint=new THREE.Color(skyColor).lerp(new THREE.Color('#a9b8b8'),.28),wind=.55+weatherValues.wind*2.4;
+  const mist=weatherValues.mist,atmosphere=depthAtmosphere(mist,night),tint=new THREE.Color(skyColor).lerp(new THREE.Color('#b7c0bc'),.34),wind=.55+weatherValues.wind*2.4;
   for(let tier=0;tier<this.bankTiers.length;tier++){
    const {mesh,material,records,spec}=this.bankTiers[tier];
    material.uniforms.uTime.value=this.time;material.uniforms.uWind.value=weatherValues.wind;
    material.uniforms.uColor.value.lerp(tint,1-Math.exp(-dt*.8));
-   material.uniforms.uOpacity.value=THREE.MathUtils.damp(material.uniforms.uOpacity.value,(spec.opacity+mist*.14+weatherValues.rain*.035)*Math.max(.45,atmosphere.cloudBankOpacity*2.1),.55,dt);
+   material.uniforms.uOpacity.value=THREE.MathUtils.damp(material.uniforms.uOpacity.value,(spec.opacity+mist*.17+weatherValues.rain*.045)*Math.max(.45,atmosphere.cloudBankOpacity*2.1),.55,dt);
    for(let i=0;i<records.length;i++){
     const r=records[i],span=125+tier*95,travel=((this.time*r.speed*wind+r.phase*31)%(span*2))-span;
     const curl=Math.sin(this.time*(.045+.014*tier)+r.phase)*(12+tier*10);
