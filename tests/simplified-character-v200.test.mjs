@@ -59,7 +59,7 @@ test('walking, eating, radio and guitar remain distinct usable actions',()=>{
 });
 test('wave, point and stretch use visible forward/upward Pixal3D arm poses',()=>{
  const wave=pose({current:'wave',stage:'perform'},.6),point=pose({current:'point',stage:'perform'},.6),stretch=pose({current:'stretch',stage:'perform',stageTime:3,performDuration:16},.6);
- assert.ok(wave.R.armX>2&&wave.R.armZ>.3);assert.ok(point.R.armX>1.4);assert.ok(stretch.L.armX>1&&stretch.R.armX>1);
+ assert.ok(wave.R.armX>1.1&&wave.R.armZ>.3&&wave.R.forearmX<-1.2&&Math.abs(wave.R.handZ)>.01);assert.ok(point.R.armX>1.4);assert.ok(stretch.L.armX>1&&stretch.R.armX>1);
 });
 test('v3.9.2 corrects forward axis and rebuilds locomotion swing in parent space',()=>{
  assert.equal(PIXAL3D_FORWARD_YAW,Math.PI);
