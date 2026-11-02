@@ -10,7 +10,9 @@ Durable resume checkpoint.
 - [x] `폭풍_1_번개_강하게.mp3` -> lightning-synchronized thunder one-shot.
 
 ## Implementation
-- [x] Five web-optimized ~8s MP3 assets created from the supplied recordings (~151 KB total).
+- [x] Five web-optimized MP3 assets created from the supplied recordings.
+- [x] Loop seam hardening: rain/storm MP3s are decoded to PCM, then the last/first **0.65s** are equal-power crossfaded into a reconstructed loop buffer. This removes MP3 boundary clicks/gaps without a recurring fade-to-silence dip.
+- [x] Thunder one-shot gets a 0.08s attack and 0.72s tail fade so its cut never snaps.
 - [x] Rain/storm beds loop continuously after user audio opt-in.
 - [x] Exact weather title is passed from World to WeatherAudio.
 - [x] 폭우 crossfades medium -> heavy -> no-thunder downpour as visual rain intensity ramps.
@@ -33,3 +35,10 @@ Durable resume checkpoint.
 - Vite production build: PASS.
 
 - Static asset check: `downpour_no_thunder.mp3` returned HTTP 200, `audio/mpeg`, 30,572 bytes from the normal preview.
+
+
+## User loop-boundary feedback
+- [x] Adopted the low-energy/fade principle: the runtime no longer depends on a hard MP3 `loop=true` boundary.
+- [x] PCM crossfade is used instead of fading both ends fully to zero, avoiding a noticeable volume pulse every loop.
+- [ ] Re-run full test gate + production build after seam-engine change.
+- [ ] Confirm normal preview READY, then merge/production.
