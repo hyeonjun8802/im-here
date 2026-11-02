@@ -95,44 +95,47 @@ export class HorizonWorldExpansionV210{
 
   makeFarCity(){
     const mobile=this.world.isMobile;
-    const groups=[[],[],[],[]],crowns=[],tanks=[],masts=[];
-    const target=mobile?340:620;
+    const boxes=[[],[],[],[]],rounds=[],setbacks=[],crowns=[],tanks=[],masts=[];
+    const target=mobile?430:760;
     const forward=new THREE.Vector2(-.7071,-.7071),right=new THREE.Vector2(.7071,-.7071);
     let made=0,attempt=0;
-    while(made<target&&attempt<target*3.2){
+    while(made<target&&attempt<target*3.5){
       const i=attempt++;
-      const d=320+Math.pow(hash(i*17+4),.82)*760;
-      const spread=180+d*.47;
-      const lateral=(hash(i*29+8)-.5)*spread*2;
-      const jitterF=(hash(i*31+2)-.5)*18,jitterR=(hash(i*41+7)-.5)*16;
-      const x=forward.x*(d+jitterF)+right.x*(lateral+jitterR);
-      const z=forward.y*(d+jitterF)+right.y*(lateral+jitterR);
+      const d=310+Math.pow(hash(i*17+4),.86)*790;
+      const spread=155+d*.43,lateral=(hash(i*29+8)-.5)*spread*2;
+      const x=forward.x*(d+(hash(i*31+2)-.5)*15)+right.x*(lateral+(hash(i*41+7)-.5)*13);
+      const z=forward.y*(d+(hash(i*31+2)-.5)*15)+right.y*(lateral+(hash(i*41+7)-.5)*13);
       const rt=THREE.MathUtils.clamp((-x-40)/420,0,1);
       const riverZ=-390-rt*520-Math.sin(rt*Math.PI)*42+Math.sin(rt*TAU*1.55)*15;
-      if(Math.abs(z-riverZ)<(d<650?105:82))continue;
-      // Preserve a few real street canyons instead of filling every cell.
-      if(hash(i*73+3)>.93)continue;
-      const near=d<520,far=d>800,landmark=hash(i*97+6)>.91;
-      const w=(near?12:9)+hash(i*13+5)*(near?20:17);
-      const dep=(near?11:8)+hash(i*19+9)*(near?19:16);
-      let h=(near?24:far?20:22)+Math.pow(hash(i*37+11),.62)*(near?50:far?66:58);
-      if(landmark)h+=35+hash(i+77)*55;
-      const tier=(Math.floor(d/145)+i)%4;
-      groups[tier].push({p:[x,GROUND+h*.5,z],r:[0,Math.round(hash(i+80)*3)*Math.PI/2,0],s:[w,h,dep],c:color(['#626a66','#6b6860','#555f5e','#716d64','#515a57'][i%5]).multiplyScalar(.84+.14*hash(i+21))});
-      if(made%6===0)crowns.push({p:[x,GROUND+h+1.5,z],s:[w*(.42+.18*hash(i+1)),2.5+hash(i+2)*5,dep*(.42+.18*hash(i+3))],c:color('#505754')});
-      if(made%11===0)tanks.push({p:[x+(hash(i+2)-.5)*w*.35,GROUND+h+3.4,z+(hash(i+4)-.5)*dep*.35],s:[1.8+hash(i)*1.4,5.2,1.8+hash(i+3)*1.4],c:color('#565d59')});
-      if(made%17===0)masts.push({p:[x,GROUND+h+7,z],s:[.12,13+hash(i+4)*13,.12],c:color('#4f5755')});
+      if(Math.abs(z-riverZ)<(d<650?98:74)||hash(i*73+3)>.955)continue;
+      const near=d<500,far=d>820,landmark=hash(i*97+6)>.92,round=hash(i*101+3)>.94;
+      const w=(near?8:6.5)+hash(i*13+5)*(near?14:11.5),dep=(near?8:6.5)+hash(i*19+9)*(near?13:11);
+      let h=(near?20:far?18:19)+Math.pow(hash(i*37+11),.68)*(near?43:far?50:46);
+      if(landmark)h+=28+hash(i+77)*46;
+      const stepped=landmark||hash(i*59+4)>.80,bodyH=stepped?h*(.76+.08*hash(i+6)):h;
+      const rec={p:[x,GROUND+bodyH*.5,z],r:[0,Math.round(hash(i+80)*3)*Math.PI/2,0],s:[w,bodyH,dep],c:color(['#626a66','#6b6860','#555f5e','#716d64','#515a57'][i%5]).multiplyScalar(.87+.11*hash(i+21))};
+      if(round)rounds.push(rec);else boxes[(Math.floor(d/150)+i)%4].push(rec);
+      if(stepped){
+        const topH=h-bodyH;
+        setbacks.push({p:[x,GROUND+bodyH+topH*.5,z],r:[0,rec.r[1],0],s:[w*(.54+.14*hash(i+1)),topH,dep*(.54+.14*hash(i+2))],c:rec.c.clone().multiplyScalar(.92)});
+      }
+      if(made%4===0)crowns.push({p:[x,GROUND+h+1.2,z],s:[w*(.34+.18*hash(i+1)),1.8+hash(i+2)*3.8,dep*(.34+.18*hash(i+3))],c:color('#4f5754')});
+      if(made%9===0)tanks.push({p:[x+(hash(i+2)-.5)*w*.35,GROUND+h+2.8,z+(hash(i+4)-.5)*dep*.35],s:[1.4+hash(i)*1.1,4.2,1.4+hash(i+3)*1.1],c:color('#555d59')});
+      if(made%14===0)masts.push({p:[x,GROUND+h+6,z],s:[.10,11+hash(i+4)*12,.10],c:color('#4e5654')});
       made++;
     }
     const base=new THREE.BoxGeometry(1,1,1);this.farCityMaterials=[];this.farCityTextures=[];
     for(let t=0;t<4;t++){
-      const tex=farFacadeTexture(t+21),mat=new THREE.MeshStandardMaterial({color:'#ffffff',map:tex,roughness:.94,metalness:.035,vertexColors:true,fog:true});
+      const tex=farFacadeTexture(t+21),mat=new THREE.MeshStandardMaterial({color:'#ffffff',map:tex,roughness:.94,metalness:.025,vertexColors:true,fog:true});
       this.farCityTextures.push(tex);this.farCityMaterials.push(mat);this.materials.push(mat);
-      this.meshes.push(addInstances(this.group,`Dense far-city block layer ${t+1}`,base,mat,groups[t]));
+      this.meshes.push(addInstances(this.group,`Dense far-city slender block layer ${t+1}`,base,mat,boxes[t]));
     }
+    const roundMat=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.90,metalness:.07,vertexColors:true,fog:true});this.materials.push(roundMat);
+    this.meshes.push(addInstances(this.group,'Far-city rounded towers',new THREE.CylinderGeometry(.5,.56,1,12),roundMat,rounds));
+    this.meshes.push(addInstances(this.group,'Far-city stepped tower tops',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.92,vertexColors:true,fog:true}),setbacks));
     this.meshes.push(addInstances(this.group,'Far skyline rooftop crowns',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,vertexColors:true}),crowns));
-    this.meshes.push(addInstances(this.group,'Far rooftop water tanks',new THREE.CylinderGeometry(.5,.5,1,10),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.16,vertexColors:true}),tanks));
-    this.meshes.push(addInstances(this.group,'Far skyline antenna masts',new THREE.CylinderGeometry(.5,.5,1,7),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.78,metalness:.52,vertexColors:true}),masts));
+    this.meshes.push(addInstances(this.group,'Far rooftop water tanks',new THREE.CylinderGeometry(.5,.5,1,10),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.14,vertexColors:true}),tanks));
+    this.meshes.push(addInstances(this.group,'Far skyline antenna masts',new THREE.CylinderGeometry(.5,.5,1,7),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.78,metalness:.48,vertexColors:true}),masts));
     this.farBuildingCount=made;
   }
 
@@ -166,7 +169,7 @@ export class HorizonWorldExpansionV210{
     const cx=-188,cz=-610,deckY=GROUND+14.2;bridge.position.set(cx,0,cz);bridge.rotation.y=2.25;this.group.add(bridge);
     const concrete=new THREE.MeshStandardMaterial({color:'#777d78',roughness:.90,metalness:.025});
     const asphalt=new THREE.MeshStandardMaterial({color:'#303634',roughness:.97});
-    const steel=new THREE.MeshStandardMaterial({color:'#687472',roughness:.68,metalness:.54});
+    const steel=new THREE.MeshStandardMaterial({color:'#596361',roughness:.76,metalness:.34});
     const rust=new THREE.MeshStandardMaterial({color:'#76584b',roughness:.82,metalness:.40});
     this.materials.push(concrete,asphalt,steel,rust);
     const deck=new THREE.Mesh(new THREE.BoxGeometry(17.5,.75,214),concrete);deck.position.y=deckY;bridge.add(deck);this.meshes.push(deck);
@@ -180,7 +183,7 @@ export class HorizonWorldExpansionV210{
       const archPts=[new THREE.Vector3(-8.2,deckY+41,z),new THREE.Vector3(0,deckY+48,z),new THREE.Vector3(8.2,deckY+41,z)];
       const a=tube(bridge,archPts,.72,steel,'Bridge pylon crown',24);this.meshes.push(a);
     }
-    const cableMat=new THREE.MeshStandardMaterial({color:'#788482',roughness:.55,metalness:.62});
+    const cableMat=new THREE.MeshStandardMaterial({color:'#5e6967',roughness:.70,metalness:.38});
     this.materials.push(cableMat);
     for(const side of [-1,1]){
       const x=side*8.0,pts=[];
