@@ -56,8 +56,11 @@ test('original one-rooftop 3D city and game time remain unchanged',()=>{
 test('weather audio remains user-opt-in and keeps procedural fallback for failed recordings',()=>{
  const s=source('src/weatherAudio.js');
  assert.match(s,/this\.enabled=false/);
- assert.match(s,/new Audio\(url\)/);
- assert.match(s,/createMediaElementSource/);
+ assert.match(s,/fetch\(url/);
+ assert.match(s,/decodeAudioData/);
+ assert.match(s,/makeSeamlessLoopBuffer\(ctx,decoded\)/);
+ assert.match(s,/createBufferSource/);
+ assert.doesNotMatch(s,/createMediaElementSource/);
  assert.match(s,/this\.parts\.noiseBuffer/);
  assert.match(s,/syntheticThunder/);
  assert.match(s,/lowpass/);
