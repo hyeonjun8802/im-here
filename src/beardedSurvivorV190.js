@@ -55,6 +55,8 @@ export class BeardedSurvivorV190{
   this.sleepTilt=new THREE.Quaternion();this.sleepBack=new THREE.Quaternion();this.sleepTarget=new THREE.Quaternion();
   this.sleepAxisX=new THREE.Vector3(1,0,0);this.sleepAxisZ=new THREE.Vector3(0,0,1);
   this.armDelta=new THREE.Quaternion();this.armSwing=new THREE.Quaternion();this.armTarget=new THREE.Quaternion();this.armBase=new THREE.Quaternion();this.armTuck=new THREE.Quaternion();
+  this.ikJoint=new THREE.Vector3();this.ikHand=new THREE.Vector3();this.ikTarget=new THREE.Vector3();this.ikFrom=new THREE.Vector3();this.ikTo=new THREE.Vector3();
+  this.ikWorldQ=new THREE.Quaternion();this.ikParentQ=new THREE.Quaternion();this.ikDeltaQ=new THREE.Quaternion();this.ikLocalQ=new THREE.Quaternion();this.ikTempQ=new THREE.Quaternion();
   world.survivor.add(this.root);
   this.guitar=makeGuitar();this.root.add(this.guitar);
   this.radio=accessory('radio');this.root.add(this.radio);
@@ -120,8 +122,77 @@ export class BeardedSurvivorV190{
   this.setTransform(this.bowl,{pos:[-.012,.000,.115],rot:[0,0,.04],scale:1});
   // Body of the guitar rests across the lap at the same Y as the hands;
   // torso bind origin is near y=1.02, so a negative y would drop below the lap.
-  this.setTransform(this.guitar,{pos:[0,.28,.47],rot:[-.10,.05,-.32],scale:1.04});
+  // Pixal3D faces local -Z: the guitar must sit in FRONT of the torso.
+  this.setTransform(this.guitar,{pos:[0,.28,-.47],rot:[-.10,-.05,.32],scale:1.04});
   if(a==='guitar')this.guitar.rotation.z+=Math.sin(this.elapsed*8.3)*.025;
+ }
+ solveArmIK(side,target,weight=.72,iterations=3){
+  const n=this.nodes,hand=n['Hand_'+side],fore=n['ForeArm_'+side],upper=n['UpperArm_'+side];
+  if(!hand||!fore||!upper)return;
+  for(let pass=0;pass<iterations;pass++){
+   for(const joint of [fore,upper]){
+    this.root.updateMatrixWorld(true);
+    joint.getWorldPosition(this.ikJoint);hand.getWorldPosition(this.ikHand);
+    this.ikFrom.copy(this.ikHand).sub(this.ikJoint);this.ikTo.copy(target).sub(this.ikJoint);
+    if(this.ikFrom.lengthSq()<1e-6||this.ikTo.lengthSq()<1e-6)continue;
+    this.ikFrom.normalize();this.ikTo.normalize();
+    this.ikDeltaQ.setFromUnitVectors(this.ikFrom,this.ikTo);
+    joint.getWorldQuaternion(this.ikWorldQ);
+    this.ikWorldQ.premultiply(this.ikDeltaQ);
+    joint.parent.getWorldQuaternion(this.ikParentQ).invert();
+    this.ikLocalQ.copy(this.ikParentQ).multiply(this.ikWorldQ).normalize();
+    joint.quaternion.slerp(this.ikLocalQ,weight);
+   }
+  }
+ }
+ actionHandTarget(anchor,offset,out=this.ikTarget){
+  out.set(...offset);anchor.localToWorld(out);return out;
+ }
+ applyActionArmIK(p,life,blend){
+  if(!life||life.stage!=='perform'&&life.current!=='sleep')return;
+  const a=life.current,n=this.nodes,w=Math.max(.42,Math.min(.82,.46+blend*.42));
+  this.root.updateMatrixWorld(true);
+  if(a==='wave'){
+   const wob=Math.sin(this.elapsed*8.2);
+   this.actionHandTarget(n.Head,[.40+.025*wob,.16+.035*Math.cos(this.elapsed*8.2),-.10],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,w,4);return;
+  }
+  if(a==='radio'){
+   this.actionHandTarget(n.Head,[.19,-.015,-.135],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,w,4);return;
+  }
+  if(a==='eat'){
+   const bite=p.bite||0;
+   const start=this.actionHandTarget(n.Chest,[.22,-.36,-.31],new THREE.Vector3());
+   const end=this.actionHandTarget(n.Head,[.055,-.105,-.205],new THREE.Vector3());
+   this.ikTarget.copy(start).lerp(end,bite);
+   this.solveArmIK('R',this.ikTarget,w,4);
+   this.actionHandTarget(n.Chest,[-.20,-.34,-.30],this.ikTarget);
+   this.solveArmIK('L',this.ikTarget,w,4);return;
+  }
+  if(a==='guitar'){
+   this.guitar.updateWorldMatrix(true,true);
+   this.actionHandTarget(this.guitar,[-.035,.56,.11],this.ikTarget);
+   this.solveArmIK('L',this.ikTarget,w,4);
+   const strum=.025*Math.sin(this.elapsed*8.6);
+   this.actionHandTarget(this.guitar,[.045+strum,.07,.16],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,w,4);return;
+  }
+  if(a==='stretch'){
+   const q=Math.max(0,Math.min(1,(life.stageTime||0)/Math.max(.01,life.performDuration||16)));
+   let lo,ro;
+   if(q<.43){lo=[-.27,.62,-.06];ro=[.27,.62,-.06];}
+   else if(q<.73){lo=[-.54,.42,-.04];ro=[.25,.60,-.05];}
+   else {lo=[-.28,.26,-.30];ro=[.28,.26,-.30];}
+   this.actionHandTarget(n.Head,lo,this.ikTarget);this.solveArmIK('L',this.ikTarget,w,4);
+   this.actionHandTarget(n.Head,ro,this.ikTarget);this.solveArmIK('R',this.ikTarget,w,4);return;
+  }
+  if(a==='sleep'&&['enter','perform','exit'].includes(life.stage)){
+   const lie=p.sleeping||0,sit=Math.max(0,Math.min(1,1-lie));
+   const y=.72*sit+1.18*lie,z=-.30*sit-.08*lie,x=.34;
+   this.actionHandTarget(this.root,[-x,y,z],this.ikTarget);this.solveArmIK('L',this.ikTarget,w,3);
+   this.actionHandTarget(this.root,[x,y,z],this.ikTarget);this.solveArmIK('R',this.ikTarget,w,3);
+  }
  }
  update(dt,life=this.world.life){
   if(this.status!=='ready')return;
@@ -173,6 +244,7 @@ export class BeardedSurvivorV190{
    lerp(n['Hand_'+s],'x',p[s].handX||0);lerp(n['Hand_'+s],'y',p[s].handY||0);lerp(n['Hand_'+s],'z',p[s].handZ||0);
    lerp(n['UpperLeg_'+s],'x',p[s].thighX);lerp(n['LowerLeg_'+s],'x',p[s].kneeX);lerp(n['Foot_'+s],'x',p[s].footX);
   }
+  this.applyActionArmIK(p,life,blend);
   this.alignProps(p,life);
   this.guitar.visible=p.showGuitar;this.radio.visible=p.showRadio;this.bowl.visible=p.showBowl;this.ration.visible=p.showFood;this.canteen.visible=p.showCanteen;
   // The guitar is animated inside alignProps; avoid cumulative rotation drift.
