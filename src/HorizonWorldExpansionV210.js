@@ -6,6 +6,25 @@ const TAU=Math.PI*2;
 const hash=n=>{const v=Math.sin(n*127.17+31.71)*43758.5453;return v-Math.floor(v);};
 const color=v=>new THREE.Color(v);
 
+function farFacadeTexture(seed=1){
+ const c=document.createElement('canvas');c.width=96;c.height=192;const x=c.getContext('2d');
+ const walls=['#626863','#6c6962','#58615f','#737069'];x.fillStyle=walls[seed%walls.length];x.fillRect(0,0,96,192);
+ for(let y=10;y<184;y+=13)for(let col=0;col<6;col++){
+  const n=seed*700+y*11+col*37,lit=hash(n)>.82,broken=hash(n+4)>.88;
+  x.fillStyle=broken?'#171d1c':lit?'#9a7652':'#293231';
+  x.globalAlpha=lit?.64:.88;x.fillRect(7+col*15,y,8,6);
+ }
+ x.globalAlpha=1;
+ for(let i=0;i<18;i++){const n=seed*90+i*17;x.fillStyle='rgba(38,43,39,.12)';x.fillRect(hash(n)*96,hash(n+1)*192,3+hash(n+2)*13,18+hash(n+3)*60);}
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=2;return t;
+}
+
+function tube(parent,points,radius,material,name,segments=52){
+ const curve=new THREE.CatmullRomCurve3(points);
+ const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,segments,radius,6,false),material);
+ mesh.name=name;parent.add(mesh);return mesh;
+}
+
 function addInstances(parent,name,geometry,material,records){
   const mesh=new THREE.InstancedMesh(geometry,material,records.length);
   mesh.name=name;
@@ -69,39 +88,52 @@ function line(parent,points,material,name){
 
 export class HorizonWorldExpansionV210{
   constructor(world){
-    this.world=world;this.group=new THREE.Group();this.group.name='AFTERDAY v2.10 horizon world expansion';
+    this.world=world;this.group=new THREE.Group();this.group.name='AFTERDAY v2.20 cinematic dense horizon';
     world.scene.add(this.group);this.meshes=[];this.materials=[];this.time=0;
     this.makeFarCity();this.makeRiver();this.makeBridge();this.makeMountainMass();this.makeDistantInfrastructure();
   }
 
   makeFarCity(){
     const mobile=this.world.isMobile;
-    const records=[[],[],[]],roofTanks=[],masts=[];
-    const count=mobile?86:150;
-    const palette=['#59615f','#63655e','#505a5b','#6b655c','#4d5754','#69645b'];
-    for(let i=0;i<count;i++){
-      const vista=i<count*.78;
-      const a=vista?5*Math.PI/4+(hash(i*41+3)-.5)*1.72:hash(i*53+8)*TAU;
-      const radius=vista?520+hash(i*29+4)*470:560+hash(i*31+7)*360;
-      const x=Math.sin(a)*radius,z=Math.cos(a)*radius;
-      // Keep a broad river corridor readable from the default cinematic view.
-      const t=THREE.MathUtils.clamp((-x-40)/420,0,1);
-      const riverZ=-390-t*520-Math.sin(t*Math.PI)*42+Math.sin(t*TAU*1.55)*15;
-      if(Math.abs(z-riverZ)<92)continue;
-      const w=12+hash(i*17+5)*20,d=11+hash(i*23+2)*19;
-      const high=hash(i*97+6)>.86;const h=18+Math.pow(hash(i*37+9),.72)*(high?(mobile?78:96):(mobile?44:58));
-      const tier=i%3;
-      records[tier].push({p:[x,GROUND+h*.5,z],r:[0,Math.round(hash(i+80)*3)*Math.PI/2,0],s:[w,h,d],c:color(palette[i%palette.length]).multiplyScalar(.78+.18*hash(i+12))});
-      if(i%5===0)roofTanks.push({p:[x,GROUND+h+2.3,z],s:[2.2+hash(i)*1.8,4.6,2.2+hash(i+3)*1.8],c:color('#555c58')});
-      if(i%7===0)masts.push({p:[x,GROUND+h+7,z],s:[.13,13+hash(i+4)*11,.13],c:color('#4d5554')});
+    const groups=[[],[],[],[]],crowns=[],tanks=[],masts=[];
+    const target=mobile?340:620;
+    const forward=new THREE.Vector2(-.7071,-.7071),right=new THREE.Vector2(.7071,-.7071);
+    let made=0,attempt=0;
+    while(made<target&&attempt<target*3.2){
+      const i=attempt++;
+      const d=320+Math.pow(hash(i*17+4),.82)*760;
+      const spread=180+d*.47;
+      const lateral=(hash(i*29+8)-.5)*spread*2;
+      const jitterF=(hash(i*31+2)-.5)*18,jitterR=(hash(i*41+7)-.5)*16;
+      const x=forward.x*(d+jitterF)+right.x*(lateral+jitterR);
+      const z=forward.y*(d+jitterF)+right.y*(lateral+jitterR);
+      const rt=THREE.MathUtils.clamp((-x-40)/420,0,1);
+      const riverZ=-390-rt*520-Math.sin(rt*Math.PI)*42+Math.sin(rt*TAU*1.55)*15;
+      if(Math.abs(z-riverZ)<(d<650?105:82))continue;
+      // Preserve a few real street canyons instead of filling every cell.
+      if(hash(i*73+3)>.93)continue;
+      const near=d<520,far=d>800,landmark=hash(i*97+6)>.91;
+      const w=(near?12:9)+hash(i*13+5)*(near?20:17);
+      const dep=(near?11:8)+hash(i*19+9)*(near?19:16);
+      let h=(near?24:far?20:22)+Math.pow(hash(i*37+11),.62)*(near?50:far?66:58);
+      if(landmark)h+=35+hash(i+77)*55;
+      const tier=(Math.floor(d/145)+i)%4;
+      groups[tier].push({p:[x,GROUND+h*.5,z],r:[0,Math.round(hash(i+80)*3)*Math.PI/2,0],s:[w,h,dep],c:color(['#626a66','#6b6860','#555f5e','#716d64','#515a57'][i%5]).multiplyScalar(.84+.14*hash(i+21))});
+      if(made%6===0)crowns.push({p:[x,GROUND+h+1.5,z],s:[w*(.42+.18*hash(i+1)),2.5+hash(i+2)*5,dep*(.42+.18*hash(i+3))],c:color('#505754')});
+      if(made%11===0)tanks.push({p:[x+(hash(i+2)-.5)*w*.35,GROUND+h+3.4,z+(hash(i+4)-.5)*dep*.35],s:[1.8+hash(i)*1.4,5.2,1.8+hash(i+3)*1.4],c:color('#565d59')});
+      if(made%17===0)masts.push({p:[x,GROUND+h+7,z],s:[.12,13+hash(i+4)*13,.12],c:color('#4f5755')});
+      made++;
     }
-    const geom=new THREE.BoxGeometry(1,1,1);
-    for(let t=0;t<3;t++){
-      const mat=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.96,metalness:.025,vertexColors:true});
-      this.materials.push(mat);this.meshes.push(addInstances(this.group,`Far urban depth band ${t+1}`,geom,mat,records[t]));
+    const base=new THREE.BoxGeometry(1,1,1);this.farCityMaterials=[];this.farCityTextures=[];
+    for(let t=0;t<4;t++){
+      const tex=farFacadeTexture(t+21),mat=new THREE.MeshStandardMaterial({color:'#ffffff',map:tex,roughness:.94,metalness:.035,vertexColors:true,fog:true});
+      this.farCityTextures.push(tex);this.farCityMaterials.push(mat);this.materials.push(mat);
+      this.meshes.push(addInstances(this.group,`Dense far-city block layer ${t+1}`,base,mat,groups[t]));
     }
-    this.meshes.push(addInstances(this.group,'Far rooftop water tanks',new THREE.CylinderGeometry(.5,.5,1,8),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.92,metalness:.12,vertexColors:true}),roofTanks));
-    this.meshes.push(addInstances(this.group,'Far skyline antenna masts',new THREE.CylinderGeometry(.5,.5,1,6),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.8,metalness:.5,vertexColors:true}),masts));
+    this.meshes.push(addInstances(this.group,'Far skyline rooftop crowns',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,vertexColors:true}),crowns));
+    this.meshes.push(addInstances(this.group,'Far rooftop water tanks',new THREE.CylinderGeometry(.5,.5,1,10),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.16,vertexColors:true}),tanks));
+    this.meshes.push(addInstances(this.group,'Far skyline antenna masts',new THREE.CylinderGeometry(.5,.5,1,7),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.78,metalness:.52,vertexColors:true}),masts));
+    this.farBuildingCount=made;
   }
 
   makeRiver(){
@@ -130,28 +162,39 @@ export class HorizonWorldExpansionV210{
   }
 
   makeBridge(){
-    const bridge=new THREE.Group();bridge.name='Ruined suspension bridge over river';
-    const cx=-198,cz=-607,deckY=GROUND+13.5;
-    bridge.position.set(cx,0,cz);bridge.rotation.y=2.25;this.group.add(bridge);
-    const concrete=new THREE.MeshStandardMaterial({color:'#6f7975',roughness:.91,metalness:.04});
-    const steel=new THREE.MeshStandardMaterial({color:'#768482',roughness:.72,metalness:.46});
-    const rust=new THREE.MeshStandardMaterial({color:'#75584b',roughness:.84,metalness:.35});
-    this.materials.push(concrete,steel,rust);
-    const deck=new THREE.Mesh(new THREE.BoxGeometry(15,1.4,208),concrete);deck.position.set(0,deckY,0);bridge.add(deck);this.meshes.push(deck);
-    const broken=new THREE.Mesh(new THREE.BoxGeometry(15.4,1.8,24),new THREE.MeshStandardMaterial({color:'#333a37',roughness:1}));
-    broken.position.set(0,deckY+.18,30);broken.rotation.set(.05,0,.045);bridge.add(broken);this.meshes.push(broken);
+    const bridge=new THREE.Group();bridge.name='Cinematic ruined suspension bridge';
+    const cx=-188,cz=-610,deckY=GROUND+14.2;bridge.position.set(cx,0,cz);bridge.rotation.y=2.25;this.group.add(bridge);
+    const concrete=new THREE.MeshStandardMaterial({color:'#777d78',roughness:.90,metalness:.025});
+    const asphalt=new THREE.MeshStandardMaterial({color:'#303634',roughness:.97});
+    const steel=new THREE.MeshStandardMaterial({color:'#687472',roughness:.68,metalness:.54});
+    const rust=new THREE.MeshStandardMaterial({color:'#76584b',roughness:.82,metalness:.40});
+    this.materials.push(concrete,asphalt,steel,rust);
+    const deck=new THREE.Mesh(new THREE.BoxGeometry(17.5,.75,214),concrete);deck.position.y=deckY;bridge.add(deck);this.meshes.push(deck);
+    const road=new THREE.Mesh(new THREE.BoxGeometry(14.8,.18,212),asphalt);road.position.y=deckY+.47;bridge.add(road);this.meshes.push(road);
+    const rails=[];for(const side of [-1,1])for(let z=-99;z<=99;z+=11)rails.push({p:[side*8.15,deckY+1.15,z],s:[.18,1.55,9.8],c:color('#5d6866')});
+    this.meshes.push(addInstances(bridge,'Bridge weathered guardrails',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.78,metalness:.5,vertexColors:true}),rails));
     const pylons=[];
-    for(const z of [-60,60])for(const x of [-8,8])pylons.push({p:[x,deckY+25,z],s:[2.8,50,2.8],c:color('#646c69')});
-    this.meshes.push(addInstances(bridge,'Suspension bridge towers',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.86,metalness:.24,vertexColors:true}),pylons));
-    const topBeams=[{p:[0,deckY+48,-60],s:[19,2.3,2.3]},{p:[0,deckY+48,60],s:[19,2.3,2.3]}];
-    this.meshes.push(addInstances(bridge,'Suspension bridge tower crossbeams',new THREE.BoxGeometry(1,1,1),steel,topBeams));
-    const cableMat=new THREE.LineBasicMaterial({color:'#84918f',transparent:true,opacity:.84});this.materials.push(cableMat);
-    for(const side of [-1,1]){
-      const x=side*7.2,points=[];
-      for(let i=0;i<=32;i++){const q=i/32,z=-101+202*q;const arch=deckY+14+34*Math.pow(Math.abs(q-.5)*2,1.75);points.push(new THREE.Vector3(x,arch,z));}
-      line(bridge,points,cableMat,`Bridge main suspension cable ${side}`);
-      for(let i=2;i<31;i+=3){const q=i/32,z=-101+202*q,arch=deckY+14+34*Math.pow(Math.abs(q-.5)*2,1.75);line(bridge,[new THREE.Vector3(x,deckY+1,z),new THREE.Vector3(x,arch,z)],cableMat,'Bridge vertical hanger');}
+    for(const z of [-62,62])for(const x of [-8.2,8.2])pylons.push({p:[x,deckY+22,z],s:[1,44,1],c:color('#69716e')});
+    this.meshes.push(addInstances(bridge,'Tapered suspension bridge pylons',new THREE.CylinderGeometry(2.2,4.2,1,10),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.86,vertexColors:true}),pylons));
+    for(const z of [-62,62]){
+      const archPts=[new THREE.Vector3(-8.2,deckY+41,z),new THREE.Vector3(0,deckY+48,z),new THREE.Vector3(8.2,deckY+41,z)];
+      const a=tube(bridge,archPts,.72,steel,'Bridge pylon crown',24);this.meshes.push(a);
     }
+    const cableMat=new THREE.MeshStandardMaterial({color:'#788482',roughness:.55,metalness:.62});
+    this.materials.push(cableMat);
+    for(const side of [-1,1]){
+      const x=side*8.0,pts=[];
+      for(let i=0;i<=36;i++){const q=i/36,z=-104+208*q;const arch=deckY+13+35*Math.pow(Math.abs(q-.5)*2,1.75);pts.push(new THREE.Vector3(x,arch,z));}
+      const main=tube(bridge,pts,.28,cableMat,`Bridge main cable ${side}`,72);this.meshes.push(main);
+      const hangers=[];
+      for(let i=2;i<35;i+=3){const q=i/36,z=-104+208*q,arch=deckY+13+35*Math.pow(Math.abs(q-.5)*2,1.75);hangers.push({p:[x,(deckY+1+arch)*.5,z],s:[.08,arch-deckY-1,.08],c:color('#6f7b79')});}
+      this.meshes.push(addInstances(bridge,`Bridge hangers ${side}`,new THREE.CylinderGeometry(.5,.5,1,6),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.65,metalness:.6,vertexColors:true}),hangers));
+    }
+    const piers=[];for(const z of [-92,-31,31,92])piers.push({p:[0,GROUND+9,z],s:[1,18,1],c:color('#626a66')});
+    this.meshes.push(addInstances(bridge,'Bridge river piers',new THREE.CylinderGeometry(2.5,4.6,1,12),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.92,vertexColors:true}),piers));
+    // Localized collapse: damaged edge and missing rail sections, not a blocky gap.
+    const rubble=[];for(let i=0;i<18;i++)rubble.push({p:[(hash(i)-.5)*12,deckY+.6+(hash(i+2)-.5)*.5,18+(hash(i+4)-.5)*20],r:[hash(i+5)*.4,hash(i+7)*TAU,hash(i+9)*.35],s:[.5+hash(i+1)*1.8,.18+hash(i+3)*.35,.6+hash(i+6)*2.4],c:color(i%3?'#5e625e':'#76594a')});
+    this.meshes.push(addInstances(bridge,'Bridge collapse debris',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.95,vertexColors:true}),rubble));
   }
 
   makeMountainMass(){
@@ -188,11 +231,12 @@ export class HorizonWorldExpansionV210{
     if(this.river){
       const u=this.river.material.uniforms;u.uTime.value=this.time;u.uStorm.value=weather?.storm||0;u.uWet.value=weather?.wet||0;u.uNight.value=night||0;
     }
+    if(this.farCityMaterials)for(const m of this.farCityMaterials){m.emissive.set('#6d4d36');m.emissiveIntensity=.02+(night||0)*.16;}
   }
 
   dispose(){
     this.group.parent?.remove(this.group);
     for(const m of this.meshes){m.geometry?.dispose?.();if(Array.isArray(m.material))m.material.forEach(x=>x.dispose?.());else m.material?.dispose?.();}
-    for(const m of this.materials)m?.dispose?.();
+    for(const m of this.materials)m?.dispose?.();for(const t of this.farCityTextures||[])t.dispose?.();
   }
 }
