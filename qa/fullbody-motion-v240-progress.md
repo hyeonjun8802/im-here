@@ -27,11 +27,11 @@ Audit the same requested daily-life motions beyond the arms:
 - [x] Rest fixed: `rest` now uses the same seated pelvis/thigh/knee/foot chain as sit/eat/guitar, with a regression test.
 
 ## Still to verify
-- [ ] Branch preview must build with all tests enabled. First gated run executed 214 tests: 213 PASS / 1 FAIL; failure was test-only signed `-0` vs `0` for neutral walking foot angle. Test changed to epsilon comparison; latest gated preview is pending.
+- [x] Branch preview built with all tests enabled: **215/215 PASS, fail 0**. Production Vite build also completed successfully.
 - [ ] Inspect preview build logs for test/build failures.
 - [ ] If preview is reachable, visually verify sleep-enter final frame faces sky.
-- [ ] Restore package.json build script after temporary QA gate.
-- [ ] Merge only after full-body test and preview build PASS.
+- [x] Restore package.json build script after temporary QA gate.
+- [ ] Merge only after normal (restored build command) preview is READY.
 
 ## Environment note
 Vercel Sandbox monthly Hobby quota is exhausted until 2026-12-01. QA therefore uses durable GitHub tests + Vercel preview build gate rather than ephemeral Sandbox.
@@ -41,3 +41,8 @@ Vercel Sandbox monthly Hobby quota is exhausted until 2026-12-01. QA therefore u
 - Vercel Sandbox cannot be used because Hobby monthly sandbox quota is exhausted until 2026-12-01.
 - Validation is therefore forced through preview `build = npm test && vite build` temporarily.
 - Resume by checking deployment for commit `f73bdd3be67f39c41ba2062396d3c9d16f35852e`; if tests pass, restore package build script to `vite build`, then do final preview/PR/merge.
+
+## Validated result
+- Gated Vercel preview: READY.
+- Test suite: 215 tests / 215 pass / 0 fail.
+- Product fixes validated by deterministic pose/orientation tests: supine sky-facing sleep, symmetric fully extended sleep legs, corrected eat/guitar/radio/stretch head direction, seated rest lower body, walking neutral-foot invariants.
