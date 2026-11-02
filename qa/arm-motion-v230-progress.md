@@ -31,7 +31,7 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Wave fixed 10-frame recapture: PASS — visible lateral hand travel, stable elbow length, no head/body penetration.
 - [x] Guitar baseline/fixed-v1 10-frame review: FAIL — guitar body still reads as an oversized circular shield over the chest; neck is not visually readable.
 - [x] Guitar v2 fix applied: scale .82, lowered to lap, shifted laterally, steeper neck angle, IK retargeted to neck/string zones.
-- [ ] Guitar v2 10-frame recapture/review and PASS decision.
+- [x] Guitar v2 10-frame recapture/review: PASS — lap placement readable, neck visible, left hand stays on neck zone, right hand stays at strings/body, runtime issues 0.
 - [x] Eat baseline 10/10: PASS — right hand completes bowl→mouth→bowl cycle; left hand supports bowl; no visible penetration.
 - [ ] Radio baseline 10/10.
 - [ ] Stretch baseline 10/10.
@@ -70,3 +70,5 @@ On any interruption, read this file first and continue at the first unchecked it
 
 ## Guitar v2 resume point
 - Next: rebuild branch at `9849f2e0`, recapture guitar frames 01..10, inspect front torso/lap crop, verify no runtime errors and hand-to-prop contact.
+
+- 2026-11-03: guitar v2 independently re-captured 10/10 in qa3; visual PASS and runtime issues 0. Next: eat.
