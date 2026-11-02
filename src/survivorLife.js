@@ -110,7 +110,9 @@ export class SurvivorLife{
    tank:{pos:[10.7,-12.0],yaw:1.0},
    radio:{pos:[-2.8,-.2],yaw:Math.PI,seated:false},
    shelter:{pos:[-9,-5.0],yaw:.35},
-   bed:{pos:[-8.85,-2.66],yaw:0,seated:true},
+   // Daytime rest uses the real pallet edge, approached from the aisle.
+   // The old target was COT.approach itself, which made the seated pose float in the walkway.
+   bed:{pos:COT.seat,approach:COT.approach,yaw:0,seated:true},
    // The actual inner-shelter GLB bed: -X pillow, +X foot, +Z aisle.
    sleepBed:{pos:COT.feet,approach:COT.approach,yaw:0},
    workbench:{pos:[-5.5,6.8],yaw:1.0},
