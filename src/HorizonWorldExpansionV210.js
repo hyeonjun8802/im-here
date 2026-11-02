@@ -47,9 +47,9 @@ function ridgeArcGeometry(radius,seed,height,span=1.72,segments=86){
 function riverGeometry(){
   const segments=44,pos=[],uv=[],idx=[];
   const center=t=>{
-    const x=-520+t*680;
-    const z=-180-t*650-Math.sin(t*Math.PI)*48+Math.sin(t*TAU*1.6)*18;
-    return new THREE.Vector3(x,GROUND+.24,z);
+    const x=-40-t*420;
+    const z=-390-t*520-Math.sin(t*Math.PI)*42+Math.sin(t*TAU*1.55)*15;
+    return new THREE.Vector3(x,GROUND+5.2,z);
   };
   for(let i=0;i<=segments;i++){
     const t=i/segments,p=center(t),p0=center(Math.max(0,t-.012)),p1=center(Math.min(1,t+.012));
@@ -85,8 +85,8 @@ export class HorizonWorldExpansionV210{
       const radius=vista?520+hash(i*29+4)*470:560+hash(i*31+7)*360;
       const x=Math.sin(a)*radius,z=Math.cos(a)*radius;
       // Keep a broad river corridor readable from the default cinematic view.
-      const t=THREE.MathUtils.clamp((x+520)/680,0,1);
-      const riverZ=-180-t*650-Math.sin(t*Math.PI)*48+Math.sin(t*TAU*1.6)*18;
+      const t=THREE.MathUtils.clamp((-x-40)/420,0,1);
+      const riverZ=-390-t*520-Math.sin(t*Math.PI)*42+Math.sin(t*TAU*1.55)*15;
       if(Math.abs(z-riverZ)<92)continue;
       const w=12+hash(i*17+5)*20,d=11+hash(i*23+2)*19;
       const high=hash(i*97+6)>.86;const h=18+Math.pow(hash(i*37+9),.72)*(high?(mobile?78:96):(mobile?44:58));
@@ -121,36 +121,36 @@ export class HorizonWorldExpansionV210{
     const bankMat=new THREE.MeshStandardMaterial({color:'#34443d',roughness:1});
     const banks=[];
     for(let i=0;i<36;i++){
-      const t=i/35,x=-520+t*680,z=-180-t*650-Math.sin(t*Math.PI)*48+Math.sin(t*TAU*1.6)*18;
+      const t=i/35,x=-40-t*420,z=-390-t*520-Math.sin(t*Math.PI)*42+Math.sin(t*TAU*1.55)*15;
       const w=57+Math.sin(t*Math.PI)*23;
-      banks.push({p:[x,GROUND+.52,z+w+9],r:[0,hash(i)*.25,0],s:[16,.75,9+hash(i+4)*13]});
-      banks.push({p:[x,GROUND+.52,z-w-9],r:[0,hash(i+9)*.25,0],s:[16,.75,9+hash(i+7)*13]});
+      banks.push({p:[x,GROUND+5.48,z+w+9],r:[0,hash(i)*.25,0],s:[16,.75,9+hash(i+4)*13]});
+      banks.push({p:[x,GROUND+5.48,z-w-9],r:[0,hash(i+9)*.25,0],s:[16,.75,9+hash(i+7)*13]});
     }
     this.meshes.push(addInstances(this.group,'Broken green river embankments',new THREE.BoxGeometry(1,1,1),bankMat,banks));
   }
 
   makeBridge(){
-    const bridge=new THREE.Group();bridge.name='Ruined suspension bridge over river';this.group.add(bridge);
-    const cx=-94,cz=-602,deckY=GROUND+10.8;
-    const concrete=new THREE.MeshStandardMaterial({color:'#68716e',roughness:.93,metalness:.04});
-    const steel=new THREE.MeshStandardMaterial({color:'#697674',roughness:.76,metalness:.46});
-    const rust=new THREE.MeshStandardMaterial({color:'#705648',roughness:.84,metalness:.35});
+    const bridge=new THREE.Group();bridge.name='Ruined suspension bridge over river';
+    const cx=-198,cz=-607,deckY=GROUND+13.5;
+    bridge.position.set(cx,0,cz);bridge.rotation.y=2.25;this.group.add(bridge);
+    const concrete=new THREE.MeshStandardMaterial({color:'#6f7975',roughness:.91,metalness:.04});
+    const steel=new THREE.MeshStandardMaterial({color:'#768482',roughness:.72,metalness:.46});
+    const rust=new THREE.MeshStandardMaterial({color:'#75584b',roughness:.84,metalness:.35});
     this.materials.push(concrete,steel,rust);
-    const deck=new THREE.Mesh(new THREE.BoxGeometry(15,1.35,212),concrete);deck.position.set(cx,deckY,cz);deck.rotation.y=.06;bridge.add(deck);this.meshes.push(deck);
-    const broken=new THREE.Mesh(new THREE.BoxGeometry(15.4,1.8,25),new THREE.MeshStandardMaterial({color:'#323936',roughness:1}));
-    broken.position.set(cx,deckY+.15,cz+32);broken.rotation.set(.05,.06,.045);bridge.add(broken);this.meshes.push(broken);
+    const deck=new THREE.Mesh(new THREE.BoxGeometry(15,1.4,208),concrete);deck.position.set(0,deckY,0);bridge.add(deck);this.meshes.push(deck);
+    const broken=new THREE.Mesh(new THREE.BoxGeometry(15.4,1.8,24),new THREE.MeshStandardMaterial({color:'#333a37',roughness:1}));
+    broken.position.set(0,deckY+.18,30);broken.rotation.set(.05,0,.045);bridge.add(broken);this.meshes.push(broken);
     const pylons=[];
-    for(const z of [cz-62,cz+62])for(const x of [cx-8,cx+8])pylons.push({p:[x,deckY+24,z],s:[2.7,48,2.7],c:color('#5a605d')});
-    this.meshes.push(addInstances(bridge,'Suspension bridge towers',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.88,metalness:.22,vertexColors:true}),pylons));
-    const topBeams=[];for(const z of [cz-62,cz+62])topBeams.push({p:[cx,deckY+46,z],s:[19,2.2,2.2]});
+    for(const z of [-60,60])for(const x of [-8,8])pylons.push({p:[x,deckY+25,z],s:[2.8,50,2.8],c:color('#646c69')});
+    this.meshes.push(addInstances(bridge,'Suspension bridge towers',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.86,metalness:.24,vertexColors:true}),pylons));
+    const topBeams=[{p:[0,deckY+48,-60],s:[19,2.3,2.3]},{p:[0,deckY+48,60],s:[19,2.3,2.3]}];
     this.meshes.push(addInstances(bridge,'Suspension bridge tower crossbeams',new THREE.BoxGeometry(1,1,1),steel,topBeams));
-    const cableMat=new THREE.LineBasicMaterial({color:'#707c7c',transparent:true,opacity:.72});
-    this.materials.push(cableMat);
+    const cableMat=new THREE.LineBasicMaterial({color:'#84918f',transparent:true,opacity:.84});this.materials.push(cableMat);
     for(const side of [-1,1]){
-      const x=cx+side*7.2;
-      const points=[];for(let i=0;i<=32;i++){const q=i/32,z=cz-104+208*q;const arch=deckY+14+32*Math.pow(Math.abs(q-.5)*2,1.75);points.push(new THREE.Vector3(x,arch,z));}
+      const x=side*7.2,points=[];
+      for(let i=0;i<=32;i++){const q=i/32,z=-101+202*q;const arch=deckY+14+34*Math.pow(Math.abs(q-.5)*2,1.75);points.push(new THREE.Vector3(x,arch,z));}
       line(bridge,points,cableMat,`Bridge main suspension cable ${side}`);
-      for(let i=2;i<31;i+=3){const q=i/32,z=cz-104+208*q,arch=deckY+14+32*Math.pow(Math.abs(q-.5)*2,1.75);line(bridge,[new THREE.Vector3(x,deckY+1,z),new THREE.Vector3(x,arch,z)],cableMat,'Bridge vertical hanger');}
+      for(let i=2;i<31;i+=3){const q=i/32,z=-101+202*q,arch=deckY+14+34*Math.pow(Math.abs(q-.5)*2,1.75);line(bridge,[new THREE.Vector3(x,deckY+1,z),new THREE.Vector3(x,arch,z)],cableMat,'Bridge vertical hanger');}
     }
   }
 
