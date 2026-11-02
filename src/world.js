@@ -476,8 +476,10 @@ export class AfterWorld {
   // old bright rain lines / constant-opacity snow points, never the gameplay.
   this.advancedWeather.legacyPrecipitationDisabled=true;
   this.weatherVfx=new CinematicWeatherVfx(this.scene,ROOF,this.isMobile);
-  // The dedicated, costly second sky sphere is redundant with the unified sky.
-  this.weatherVfx.clouds.visible=false;
+  // v2.04: keep the continuous spherical noise cloud field visible. The old
+  // billboard cloud cards are removed in AdvancedWeather, so this dome is now
+  // the seamless volumetric-looking weather layer over the base atmospheric sky.
+  this.weatherVfx.clouds.visible=true;
   this.rain.visible=false;
  }
  createAtmosphericBackdrops(){
