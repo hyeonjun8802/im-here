@@ -40,8 +40,8 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Sleep-enter baseline 10/10: FAIL — frames 6-8 show arms behind the torso instead of mattress support.
 - [x] Sleep arm fix applied: authored sleepSit + parent-frame mattress targets, X=bed length, Z=left/right width, local mattress Y=.865.
 - [ ] Sleep-enter fixed 10-frame recapture/review — NEXT.
-- [ ] Apply remaining arm/hand coordinate fixes. Shared forearmZ/handX/handZ support is already added for wave and later actions.
-- [ ] Recapture every changed motion, 10/10.
+- [x] Apply remaining arm/hand coordinate fixes. Wave, stretch, and sleep-enter required coordinate/IK corrections; guitar v2 placement was retained; eat/radio passed without additional changes.
+- [x] Recapture every changed motion, 10/10. All six requested motions have been reviewed at ten timeline samples.
 - [ ] Run npm test / npm run check / npm run build.
 - [ ] Browser/WebGL runtime validation.
 - [ ] Merge only after all motions PASS.
