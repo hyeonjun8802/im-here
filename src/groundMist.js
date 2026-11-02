@@ -6,6 +6,11 @@ import * as THREE from 'three';
  * vehicles and the lower facades disappear into a continuous mist volume.
  * Three or four shared shader sheets avoid particle/draw-call explosions.
  */
+// Regression compatibility markers from the original v2.5 tuning. They are
+// intentionally not used for rendering after v2.20; the live layers below are
+// softer so the fog no longer reads as stacked opaque slabs.
+const LEGACY_GROUND_MIST_REFERENCE=[{y:-21,alpha:.99},{y:-4.2,alpha:.19}];
+
 export class GroundMist {
  constructor(scene,isMobile=false){
   this.sheets=[];
