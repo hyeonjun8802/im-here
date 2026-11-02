@@ -51,7 +51,7 @@ export class CityAtmosphere {
   ];
   this.bankGeometry=plane;
   for(let tier=0;tier<tierSpecs.length;tier++){
-   const spec=tierSpecs[tier],records=[];
+   const spec=tierSpecs[tier],legacyLayer=INFILL_LAYERS[tier],records=[];
    const material=new THREE.MeshBasicMaterial({
     map:this.cloudTexture,color:'#bbcad2',transparent:true,opacity:0,
     depthWrite:false,depthTest:true,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1
@@ -66,10 +66,11 @@ export class CityAtmosphere {
     const sizeX=spec.size[0]+hash(i*13+tier)* (spec.size[1]-spec.size[0]);
     const sizeZ=sizeX*(.50+hash(i*19+tier*5)*.38);
     const baseX=Math.cos(theta)*r,baseZ=Math.sin(theta)*r;
+    const level=spec.y;const legacyBandY=level+hash(i+91)*8;
     const speed=.42+hash(i*23+tier*101)*.78;
     const driftAngle=theta+Math.PI*.5+(hash(i*43+tier)-.5)*1.15;
     records.push({
-      baseX,baseZ,baseY:spec.y+(hash(i*61+tier*11)-.5)*(tier===2?10:7),
+      baseX,baseZ,baseY:legacyBandY-4+(hash(i*61+tier*11)-.5)*(tier===2?5:3),
       sizeX,sizeZ,phase,speed,
       vx:Math.cos(driftAngle),vz:Math.sin(driftAngle),
       yaw:(hash(i*47+tier)-.5)*.7
@@ -123,10 +124,10 @@ export class CityAtmosphere {
     const z=r.baseZ+r.vz*travel+r.vx*curl;
     const y=r.baseY+Math.sin(this.time*.11+r.phase)*(.7+tier*.65);
     const breathe=1+Math.sin(this.time*.13+r.phase*2.3)*.09+weatherValues.wind*.035;
-    this.dummy.position.set(x,y,z);
-    this.dummy.rotation.set(-Math.PI/2,r.yaw+cross*.002,0);
-    this.dummy.scale.set(r.sizeX*breathe,r.sizeZ*(1+.07*Math.cos(this.time*.10+r.phase)),1);
-    this.dummy.updateMatrix();mesh.setMatrixAt(i,this.dummy.matrix);
+    const cloud=this.dummy;cloud.position.set(x,y,z);
+    cloud.rotation.set(-Math.PI/2,r.yaw+cross*.002,0);
+    cloud.scale.set(r.sizeX*breathe,r.sizeZ*(1+.07*Math.cos(this.time*.10+r.phase)),1);
+    cloud.updateMatrix();mesh.setMatrixAt(i,cloud.matrix);
    }
    mesh.instanceMatrix.needsUpdate=true;
   }
