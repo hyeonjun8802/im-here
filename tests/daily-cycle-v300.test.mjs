@@ -75,7 +75,8 @@ test('v300: morning stretch has changing articulated arm and torso poses, withou
  for(const x of samples){for(const v of Object.values(x))assert.ok(Number.isFinite(v));}
  assert.notEqual(samples[1].leftArm,samples[2].leftArm);
  assert.notEqual(samples[2].leftArm,samples[4].leftArm);
- assert.ok(samples.some(x=>x.torsoX>.05));
+ // Pixal3D faces local -Z, so a forward release is negative torso-X.
+ assert.ok(samples.some(x=>x.torsoX<-.05));
  assert.ok(samples.some(x=>Math.abs(x.torsoZ)>.05));
  const perform=pose({current:'stretch',stage:'perform',stageTime:6,performDuration:16},6);
  assert.ok(perform.L.armX>1);
