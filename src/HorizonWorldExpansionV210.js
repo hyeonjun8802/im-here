@@ -211,7 +211,7 @@ export class HorizonWorldExpansionV210{
     ];
     for(let i=0;i<layers.length;i++){
       const s=layers[i];
-      const material=new THREE.MeshStandardMaterial({color:s.color,roughness:1,side:THREE.DoubleSide,fog:true});
+      const material=new THREE.MeshBasicMaterial({color:s.color,side:THREE.DoubleSide,fog:true});
       const ridge=new THREE.Mesh(ridgeArcGeometry(s.radius,31+i*47,s.height,1.82-i*.08,this.world.isMobile?64:92),material);
       ridge.name=`Layered distant mountain ridge ${i+1}`;
       ridge.receiveShadow=false;this.group.add(ridge);this.meshes.push(ridge);this.materials.push(material);
