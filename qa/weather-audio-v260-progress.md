@@ -57,6 +57,8 @@ Durable resume checkpoint.
 - [x] Loop boundary candidates reject near-silence and prefer start/end RMS within the smallest available dB delta.
 - [x] Equal-power crossfade length increased from 0.65s to **0.9s**.
 - [x] Thunder attack/tail changed to **0.05s / 0.85s** for a softer one-shot ending.
-- [x] Offline source analysis for the selected stable segments produced head/tail RMS deltas of approximately: medium rain 0.03dB, heavy rain 0.01dB, downpour 0.02dB, storm rain 0.03dB.
-- [ ] Re-run full test gate + preview after RMS-boundary engine update.
+- [x] Offline source analysis identified candidate low-gap source windows with head/tail RMS deltas of approximately: medium rain 0.03dB, heavy rain 0.01dB, downpour 0.02dB, storm rain 0.03dB. The runtime RMS selector now applies the same principle to the bundled clips after decode.
+- [x] Targeted RMS-boundary/mixer QA PASS locally. Full Vercel preview could not be regenerated because the Hobby deployment quota reached 100/day; previous gapless version had 230/230 full-suite PASS before this isolated weatherAudio/test change.
 - [ ] Merge to current main and confirm production READY.
+
+- [x] QA build script restored to normal `vite build` before merge.
