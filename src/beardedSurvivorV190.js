@@ -125,8 +125,8 @@ export class BeardedSurvivorV190{
   // Pixal3D faces local -Z: the guitar must sit in FRONT of the torso.
   // The guitar must rest on the lap, not cover the chest. Chest world Y is
   // about 1.44 m while seated, so a negative local Y places the body at ~1.30 m.
-  this.setTransform(this.guitar,{pos:[0,-.13,-.44],rot:[-.08,-.04,.30],scale:.93});
-  if(a==='guitar')this.guitar.rotation.z+=Math.sin(this.elapsed*4.3)*.012;
+  this.setTransform(this.guitar,{pos:[.08,-.28,-.41],rot:[-.12,-.06,.47],scale:.82});
+  if(a==='guitar')this.guitar.rotation.z+=Math.sin(this.elapsed*4.3)*.010;
  }
  solveArmIK(side,target,weight=.72,iterations=3){
   const n=this.nodes,hand=n['Hand_'+side],fore=n['ForeArm_'+side],upper=n['UpperArm_'+side];
@@ -178,10 +178,10 @@ export class BeardedSurvivorV190{
    this.guitar.updateWorldMatrix(true,true);
    // Fretting hand grips the lower neck; keep it stable while the strumming
    // hand travels visibly across the strings/sound-hole.
-   this.actionHandTarget(this.guitar,[-.015,.48,.105],this.ikTarget);
+   this.actionHandTarget(this.guitar,[-.020,.57,.105],this.ikTarget);
    this.solveArmIK('L',this.ikTarget,Math.min(.80,w+.05),5);
    const strum=Math.sin(this.elapsed*8.6);
-   this.actionHandTarget(this.guitar,[.010+.085*strum,.055,.155],this.ikTarget);
+   this.actionHandTarget(this.guitar,[.015+.075*strum,.060,.160],this.ikTarget);
    this.solveArmIK('R',this.ikTarget,Math.min(.80,w+.05),5);return;
   }
   if(a==='stretch'){
