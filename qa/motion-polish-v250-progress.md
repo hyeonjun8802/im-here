@@ -20,7 +20,7 @@ Durable resume checkpoint. Continue from the first unchecked item.
 - [x] Gate preview build with full npm test suite: **222/222 PASS, fail 0**.
 - [x] Fix regression found by the gate: legacy stretch test expected backward torso-X; corrected to the model's local-front negative-X convention.
 - [x] Restore normal build command.
-- [ ] Normal preview READY.
+- [x] Normal preview READY — deployment `dpl_4ykz8o4WiA1XKjYPnVcwhnd1TmY6`.
 - [ ] Merge to main and confirm production READY.
 
 ## Environment
