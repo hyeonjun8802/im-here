@@ -53,10 +53,12 @@ test('original one-rooftop 3D city and game time remain unchanged',()=>{
  assert.deepEqual(planDistantCity(false,hash),planDistantCity(false,hash));
  assert.match(source('src/simulation.js'),/Asia\/Seoul/);
 });
-test('audio thunder has delayed broadband rumble, only after opt-in',()=>{
+test('weather audio remains user-opt-in and keeps procedural fallback for failed recordings',()=>{
  const s=source('src/weatherAudio.js');
  assert.match(s,/this\.enabled=false/);
- assert.match(s,/const delay=1\.0\+Math\.random\(\)\*2\.2/);
+ assert.match(s,/new Audio\(url\)/);
+ assert.match(s,/createMediaElementSource/);
  assert.match(s,/this\.parts\.noiseBuffer/);
+ assert.match(s,/syntheticThunder/);
  assert.match(s,/lowpass/);
 });
