@@ -244,8 +244,8 @@ export class BeardedSurvivorV190{
    lerp(n['Hand_'+s],'x',p[s].handX||0);lerp(n['Hand_'+s],'y',p[s].handY||0);lerp(n['Hand_'+s],'z',p[s].handZ||0);
    lerp(n['UpperLeg_'+s],'x',p[s].thighX);lerp(n['LowerLeg_'+s],'x',p[s].kneeX);lerp(n['Foot_'+s],'x',p[s].footX);
   }
-  this.applyActionArmIK(p,life,blend);
   this.alignProps(p,life);
+  this.applyActionArmIK(p,life,blend);
   this.guitar.visible=p.showGuitar;this.radio.visible=p.showRadio;this.bowl.visible=p.showBowl;this.ration.visible=p.showFood;this.canteen.visible=p.showCanteen;
   // The guitar is animated inside alignProps; avoid cumulative rotation drift.
  }
