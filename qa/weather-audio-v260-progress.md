@@ -24,10 +24,12 @@ Durable resume checkpoint.
 - [x] Run full npm test gate + Vite production build in Vercel preview: **228/228 PASS, fail 0**.
 - [x] Fix any regression: no product regression found; existing synthetic-thunder-only test was updated to preserve opt-in + fallback semantics.
 - [x] Restore normal build command after gate.
-- [ ] Confirm normal preview READY.
+- [x] Confirm normal preview READY — deployment `dpl_9xKEqTJ5GrPDoy3LnLi5Q1xLqJaH`.
 - [ ] Merge to main and confirm production READY.
 
 ## Validated gated preview
 - Deployment: `dpl_U3F6wZZtiYiMd58QBGSvRfmfznV8` — READY.
 - Tests: 228 passed / 0 failed.
 - Vite production build: PASS.
+
+- Static asset check: `downpour_no_thunder.mp3` returned HTTP 200, `audio/mpeg`, 30,572 bytes from the normal preview.
