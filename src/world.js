@@ -416,13 +416,18 @@ export class AfterWorld {
   // cylinders created the conspicuous pale horizon band and obscured the moon.
   // Soft clouds are sampled from a single seamless noise field in sky space.
   const g=new THREE.SphereGeometry(1490,48,32);
+  // Retain the authored seamless cloud texture as a compatibility/detail asset;
+  // rectangular weather cards are no longer used anywhere in the scene.
+  const cloudTexture=new THREE.TextureLoader().load('./assets/materials/botany/cloud_volume.png');
+  cloudTexture.wrapS=cloudTexture.wrapT=THREE.RepeatWrapping;cloudTexture.anisotropy=4;
+  this.skyCloudTexture=cloudTexture;
   const m=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,
    uniforms:{uTop:{value:color('#345b83')},uHorizon:{value:color('#9fb7bd')},uBottom:{value:color('#738491')},
-    uSun:{value:.7},uSunDir:{value:new THREE.Vector3(.1,.65,.5)},uCloudCover:{value:.2},uTime:{value:0},uNight:{value:0},uStorm:{value:0}},
+    uSun:{value:.7},uSunDir:{value:new THREE.Vector3(.1,.65,.5)},uCloudCover:{value:.2},uTime:{value:0},uNight:{value:0},uStorm:{value:0},uCloudMap:{value:cloudTexture}},
    vertexShader:`varying vec3 vDir;void main(){vDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
    fragmentShader:`precision highp float;
     varying vec3 vDir;uniform vec3 uTop,uHorizon,uBottom,uSunDir;
-    uniform float uSun,uCloudCover,uTime,uNight,uStorm;
+    uniform float uSun,uCloudCover,uTime,uNight,uStorm;uniform sampler2D uCloudMap;
     float h(vec3 p){p=fract(p*.1031);p+=dot(p,p.yxz+33.33);return fract((p.x+p.y)*p.z);}
     float noise3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
       return mix(mix(mix(h(i),h(i+vec3(1.,0.,0.)),f.x),mix(h(i+vec3(0.,1.,0.)),h(i+vec3(1.,1.,0.)),f.x),f.y),
