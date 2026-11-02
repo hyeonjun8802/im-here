@@ -16,36 +16,48 @@ const outRoot=process.argv[4]||'/tmp/afterday-arm-audit';
 if(!MOTIONS[motion])throw new Error('Unknown motion: '+motion);
 const {duration,view}=MOTIONS[motion];
 const out=path.join(outRoot,motion);fs.mkdirSync(out,{recursive:true});
-const browser=await chromium.launch({
-  executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome-stable',
-  headless:true,
-  args:['--no-sandbox','--enable-unsafe-swiftshader','--disable-dev-shm-usage']
-});
-const ctx=await browser.newContext({viewport:{width:420,height:620},deviceScaleFactor:1});
-const page=await ctx.newPage();
-let currentBad=[];
-page.on('pageerror',e=>currentBad.push('PAGE '+e.message));
-page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))currentBad.push('CONSOLE '+m.text())});
-page.on('response',r=>{if(r.status()>=400&&!/favicon/i.test(r.url()))currentBad.push('HTTP '+r.status()+' '+r.url())});
-const client=await ctx.newCDPSession(page);
-for(let i=0;i<10;i++){
-  const t=duration*i/9;currentBad=[];
-  const url=base+'/character.html?pose='+encodeURIComponent(motion)+'&view='+view+'&at='+t.toFixed(4);
-  await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.qaAfterdayCharacter?.modelLoaded===true,null,{timeout:30000});
-  await page.waitForTimeout(550);
-  await page.evaluate(()=>{
-    for(const s of ['#overlay','#status','#views','#timeline','#actions','#hint']){
-      const el=document.querySelector(s);if(el)el.style.display='none';
+async function captureFrame(i){
+  const t=duration*i/9;
+  let lastError=null;
+  for(let attempt=1;attempt<=3;attempt++){
+    let browser,ctx,page;
+    try{
+      browser=await chromium.launch({
+        executablePath:process.env.CHROME_PATH||'/usr/bin/google-chrome-stable',
+        headless:true,
+        args:['--no-sandbox','--enable-unsafe-swiftshader','--disable-dev-shm-usage']
+      });
+      ctx=await browser.newContext({viewport:{width:420,height:620},deviceScaleFactor:1});
+      page=await ctx.newPage();const bad=[];
+      page.on('pageerror',e=>bad.push('PAGE '+e.message));
+      page.on('console',m=>{if(m.type()==='error'&&!/favicon/i.test(m.text()))bad.push('CONSOLE '+m.text())});
+      page.on('response',r=>{if(r.status()>=400&&!/favicon/i.test(r.url()))bad.push('HTTP '+r.status()+' '+r.url())});
+      const url=base+'/character.html?pose='+encodeURIComponent(motion)+'&view='+view+'&at='+t.toFixed(4);
+      await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+      await page.waitForFunction(()=>window.qaAfterdayCharacter?.modelLoaded===true,null,{timeout:30000});
+      await page.waitForTimeout(550);
+      await page.evaluate(()=>{
+        for(const s of ['#overlay','#status','#views','#timeline','#actions','#hint']){
+          const el=document.querySelector(s);if(el)el.style.display='none';
+        }
+      });
+      await page.waitForTimeout(80);
+      const client=await ctx.newCDPSession(page);
+      const shot=await client.send('Page.captureScreenshot',{format:'jpeg',quality:78,captureBeyondViewport:false,fromSurface:true});
+      fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.jpg'),Buffer.from(shot.data,'base64'));
+      const qa=await page.evaluate(()=>window.qaAfterdayCharacter);
+      fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.json'),JSON.stringify({motion,frame:i+1,t,qa,bad,attempt},null,2));
+      if(bad.length)console.error(motion,i+1,bad);
+      await browser.close();
+      return;
+    }catch(error){
+      lastError=error;
+      try{await browser?.close()}catch{}
+      console.error('retry',motion,i+1,attempt,String(error?.message||error));
+      await new Promise(r=>setTimeout(r,350*attempt));
     }
-  });
-  await page.waitForTimeout(80);
-  const shot=await client.send('Page.captureScreenshot',{format:'jpeg',quality:78,captureBeyondViewport:false,fromSurface:true});
-  fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.jpg'),Buffer.from(shot.data,'base64'));
-  const qa=await page.evaluate(()=>window.qaAfterdayCharacter);
-  fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.json'),JSON.stringify({motion,frame:i+1,t,qa,bad:[...currentBad]},null,2));
-  if(currentBad.length)console.error(motion,i+1,currentBad);
+  }
+  throw lastError||new Error('capture failed');
 }
-await ctx.close();
-await browser.close();
+for(let i=0;i<10;i++)await captureFrame(i);
 console.log(JSON.stringify({motion,frames:10,duration,view,out}));
