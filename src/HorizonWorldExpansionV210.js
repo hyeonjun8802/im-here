@@ -205,9 +205,9 @@ export class HorizonWorldExpansionV210{
 
   makeMountainMass(){
     const layers=[
-      {radius:1010,height:92,color:'#4e5c58',opacity:1},
-      {radius:1160,height:122,color:'#45534f',opacity:1},
-      {radius:1320,height:156,color:'#3e4c49',opacity:1}
+      {radius:1010,height:58,color:'#40504b',opacity:1},
+      {radius:1160,height:76,color:'#384844',opacity:1},
+      {radius:1320,height:96,color:'#31413e',opacity:1}
     ];
     for(let i=0;i<layers.length;i++){
       const s=layers[i];
