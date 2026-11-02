@@ -186,12 +186,31 @@ export class BeardedSurvivorV190{
   }
   if(a==='stretch'){
    const q=Math.max(0,Math.min(1,(life.stageTime||0)/Math.max(.01,life.performDuration||16)));
-   let lo,ro;
-   if(q<.43){lo=[-.27,.62,-.06];ro=[.27,.62,-.06];}
-   else if(q<.73){lo=[-.54,.42,-.04];ro=[.25,.60,-.05];}
-   else {lo=[-.28,.26,-.30];ro=[.28,.26,-.30];}
-   this.actionHandTarget(n.Head,lo,this.ikTarget);this.solveArmIK('L',this.ikTarget,w,4);
-   this.actionHandTarget(n.Head,ro,this.ikTarget);this.solveArmIK('R',this.ikTarget,w,4);return;
+   const sm=v=>{const x=Math.max(0,Math.min(1,v));return x*x*(3-2*x);};
+   const mix=(a,b,t,out)=>out.copy(a).lerp(b,t);
+   const L0=this.actionHandTarget(n.Chest,[-.40,-.52,-.02],new THREE.Vector3());
+   const R0=this.actionHandTarget(n.Chest,[ .40,-.52,-.02],new THREE.Vector3());
+   const Lup=this.actionHandTarget(n.Head,[-.30,.68,-.08],new THREE.Vector3());
+   const Rup=this.actionHandTarget(n.Head,[ .30,.68,-.08],new THREE.Vector3());
+   const Lside=this.actionHandTarget(n.Head,[ .12,.66,-.06],new THREE.Vector3());
+   const Rside=this.actionHandTarget(n.Chest,[ .43,-.42,-.02],new THREE.Vector3());
+   const Lfront=this.actionHandTarget(n.Chest,[-.30,-.05,-.50],new THREE.Vector3());
+   const Rfront=this.actionHandTarget(n.Chest,[ .30,-.05,-.50],new THREE.Vector3());
+   let lt=new THREE.Vector3(),rt=new THREE.Vector3();
+   if(q<.18){
+    const t=sm(q/.18);mix(L0,Lup,t,lt);mix(R0,Rup,t,rt);
+   }else if(q<.42){
+    const pulse=.035*Math.sin((q-.18)/.24*Math.PI*2);
+    lt.copy(Lup);rt.copy(Rup);lt.y+=pulse;rt.y+=pulse;
+   }else if(q<.68){
+    const t=sm((q-.42)/.26);mix(Lup,Lside,t,lt);mix(Rup,Rside,t,rt);
+   }else if(q<.86){
+    const t=sm((q-.68)/.18);mix(Lside,Lfront,t,lt);mix(Rside,Rfront,t,rt);
+   }else{
+    const t=sm((q-.86)/.14);mix(Lfront,L0,t,lt);mix(Rfront,R0,t,rt);
+   }
+   this.solveArmIK('L',lt,Math.min(.82,w+.07),5);
+   this.solveArmIK('R',rt,Math.min(.82,w+.07),5);return;
   }
   if(a==='sleep'&&['enter','perform','exit'].includes(life.stage)){
    const lie=p.sleeping||0,sit=Math.max(0,Math.min(1,1-lie));
