@@ -34,7 +34,7 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [ ] Radio baseline 10/10.
 - [ ] Stretch baseline 10/10.
 - [ ] Sleep-enter baseline 10/10.
-- [ ] Apply arm/hand coordinate fixes.
+- [ ] Apply remaining arm/hand coordinate fixes. Shared forearmZ/handX/handZ support is already added for wave and later actions.
 - [ ] Recapture every changed motion, 10/10.
 - [ ] Run npm test / npm run check / npm run build.
 - [ ] Browser/WebGL runtime validation.
@@ -55,3 +55,9 @@ On any interruption, read this file first and continue at the first unchecked it
 ## Interruption log
 - 2026-11-03: first QA sandbox stopped by time limit; durable harness/checkpoint added.
 - 2026-11-03: second sandbox Playwright screenshot timed out during wave recapture; capture harness switched to CDP and overlays are hidden.
+
+
+## Latest checkpoint
+- Branch: `afterday-arm-motion-v230`
+- Last durable commit state: wave arm fix and resilient frame-isolated capture harness are committed.
+- Next action: recapture fixed `wave` frames 01..10, inspect all ten, then mark PASS or iterate before starting guitar.
