@@ -192,8 +192,11 @@ export class BeardedSurvivorV190{
    const R0=this.actionHandTarget(n.Chest,[ .40,-.52,-.02],new THREE.Vector3());
    const Lup=this.actionHandTarget(n.Head,[-.30,.68,-.08],new THREE.Vector3());
    const Rup=this.actionHandTarget(n.Head,[ .30,.68,-.08],new THREE.Vector3());
-   const Lside=this.actionHandTarget(n.Head,[ .12,.66,-.06],new THREE.Vector3());
-   const Rside=this.actionHandTarget(n.Chest,[ .43,-.42,-.02],new THREE.Vector3());
+   // Keep both hands overhead during the lateral stretch. The torso lean
+   // creates the side stretch; dropping one hand to the chest made one arm
+   // appear much longer than the other in frames 5–7.
+   const Lside=this.actionHandTarget(n.Head,[-.28,.62,-.08],new THREE.Vector3());
+   const Rside=this.actionHandTarget(n.Head,[ .28,.62,-.08],new THREE.Vector3());
    const Lfront=this.actionHandTarget(n.Chest,[-.30,-.05,-.50],new THREE.Vector3());
    const Rfront=this.actionHandTarget(n.Chest,[ .30,-.05,-.50],new THREE.Vector3());
    let lt=new THREE.Vector3(),rt=new THREE.Vector3();
