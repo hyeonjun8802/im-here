@@ -174,6 +174,47 @@ export class BeardedSurvivorV190{
    this.actionHandTarget(n.Chest,[-.20,-.34,-.30],this.ikTarget);
    this.solveArmIK('L',this.ikTarget,w,4);return;
   }
+  if(a==='drink'){
+   const sip=p.sip||0;
+   const start=this.actionHandTarget(n.Chest,[.25,-.34,-.28],new THREE.Vector3());
+   const end=this.actionHandTarget(n.Head,[.05,-.08,-.19],new THREE.Vector3());
+   this.ikTarget.copy(start).lerp(end,sip);
+   this.solveArmIK('R',this.ikTarget,Math.min(.82,w+.04),5);return;
+  }
+  if(a==='watch'){
+   // Shade the eyes rather than holding a generic arm pose while scanning.
+   this.actionHandTarget(n.Head,[.18,.10,-.20],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,Math.min(.78,w),4);return;
+  }
+  if(a==='medicine'){
+   // Self-treatment: left forearm is presented while the right hand works on it.
+   n.ForeArm_L.getWorldPosition(this.ikTarget);
+   this.ikTarget.y+=.02;this.ikTarget.z-=.035;
+   this.solveArmIK('R',this.ikTarget,Math.min(.80,w+.04),5);
+   this.actionHandTarget(n.Chest,[-.23,-.20,-.28],this.ikTarget);
+   this.solveArmIK('L',this.ikTarget,Math.min(.76,w),4);return;
+  }
+  if(a==='cook'){
+   const stir=Math.sin(this.elapsed*4.8),circle=Math.cos(this.elapsed*4.8);
+   this.actionHandTarget(n.Chest,[-.18,-.42,-.42],this.ikTarget);
+   this.solveArmIK('L',this.ikTarget,Math.min(.76,w),4);
+   this.actionHandTarget(n.Chest,[.16+.035*stir,-.44+.015*circle,-.44],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,Math.min(.78,w),4);return;
+  }
+  if(a==='repair'){
+   const work=Math.sin(this.elapsed*6.4);
+   this.actionHandTarget(n.Chest,[-.22,-.34,-.40+.025*work],this.ikTarget);
+   this.solveArmIK('L',this.ikTarget,Math.min(.78,w),4);
+   this.actionHandTarget(n.Chest,[.22,-.36,-.40-.025*work],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,Math.min(.78,w),4);return;
+  }
+  if(a==='shelter'){
+   // Protective crouch: hands cover the sides of the head without crossing.
+   this.actionHandTarget(n.Head,[-.24,.02,-.10],this.ikTarget);
+   this.solveArmIK('L',this.ikTarget,Math.min(.82,w+.05),5);
+   this.actionHandTarget(n.Head,[.24,.02,-.10],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,Math.min(.82,w+.05),5);return;
+  }
   if(a==='guitar'){
    this.guitar.updateWorldMatrix(true,true);
    // Fretting hand grips the lower neck; keep it stable while the strumming
