@@ -156,8 +156,8 @@ export class BeardedSurvivorV190{
    const wob=Math.sin(this.elapsed*7.0),counter=Math.cos(this.elapsed*7.0);
    // A real hand path around the temple: the target travels laterally instead
    // of pinning the hand to one point while the whole arm rotates.
-   this.actionHandTarget(n.Head,[.41+.085*wob,.115+.028*counter,-.10],this.ikTarget);
-   this.solveArmIK('R',this.ikTarget,Math.min(.76,w),4);return;
+   this.actionHandTarget(n.Head,[.46+.145*wob,.13+.045*counter,-.12],this.ikTarget);
+   this.solveArmIK('R',this.ikTarget,Math.min(.80,w),4);return;
   }
   if(a==='radio'){
    this.actionHandTarget(n.Head,[.19,-.015,-.135],this.ikTarget);
