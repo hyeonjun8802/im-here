@@ -92,8 +92,8 @@ export class CityAtmosphere{
   const atmosphere=depthAtmosphere(weatherValues.mist,night),u=this.fog.material.uniforms;
   u.uTime.value=this.time;u.uWind.value=weatherValues.wind;
   u.uColor.value.lerp(new THREE.Color(skyColor).lerp(new THREE.Color('#c1c6c0'),.42),1-Math.exp(-dt*.75));
-  const target=(.18+weatherValues.mist*.23+weatherValues.rain*.055)*Math.max(.68,atmosphere.cloudBankOpacity*1.75);
-  u.uOpacity.value=THREE.MathUtils.damp(u.uOpacity.value,Math.min(.48,target),.55,dt);
+  const target=(.27+weatherValues.mist*.25+weatherValues.rain*.065)*Math.max(.68,atmosphere.cloudBankOpacity*1.75);
+  u.uOpacity.value=THREE.MathUtils.damp(u.uOpacity.value,Math.min(.58,target),.55,dt);
  }
  dispose(){
   this.fog?.parent?.remove(this.fog);this.fog?.geometry.dispose();this.fog?.material.dispose();
