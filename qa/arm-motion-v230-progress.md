@@ -25,8 +25,10 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Audit harness identified: character.html uses the real BeardedSurvivorV190 GLB/motion adapter.
 - [x] Motion source identified: src/characterMotionPlanV190.js.
 - [x] Prop alignment source identified: src/beardedSurvivorV190.js.
-- [x] Baseline wave capture completed: 10/10 frames in the first ephemeral sandbox.
-- [ ] Wave 10-frame visual review and PASS/fix decision.
+- [x] Baseline wave capture completed: 10/10 frames; baseline FAIL confirmed visually.
+- [x] Wave baseline 10-frame visual review: FAIL — hand remains almost pinned beside head; rigid-arm look.
+- [x] Wave first fix applied: separate shoulder/elbow/wrist motion + lateral hand IK path.
+- [ ] Wave fixed 10-frame recapture + PASS/fix decision.
 - [ ] Guitar baseline capture: previous sandbox stopped after frame 1/10. Recapture from scratch.
 - [ ] Eat baseline 10/10.
 - [ ] Radio baseline 10/10.
@@ -48,3 +50,8 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 
 ## Resume rule
 On any interruption, read this file first and continue at the first unchecked item. Do not restart completed PASS motions unless their shared rig math was changed.
+
+
+## Interruption log
+- 2026-11-03: first QA sandbox stopped by time limit; durable harness/checkpoint added.
+- 2026-11-03: second sandbox Playwright screenshot timed out during wave recapture; capture harness switched to CDP and overlays are hidden.
