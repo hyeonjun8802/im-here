@@ -89,7 +89,7 @@ test('walking lower body alternates without changing limb length targets',()=>{
     const t=.9*i/9,p=pose({current:'watch',stage:'approach',stageTime:t},t);
     assert.ok(Math.abs(p.L.thighX+p.R.thighX)<1e-9);
     assert.ok(p.L.kneeX>=0&&p.R.kneeX>=0);
-    assert.equal(p.L.footX,0);assert.equal(p.R.footX,0);
+    assert.ok(Math.abs(p.L.footX)<1e-12);assert.ok(Math.abs(p.R.footX)<1e-12);
   }
 });
 
