@@ -57,5 +57,5 @@ for(let i=0;i<10;i++){
   fs.writeFileSync(path.join(out,String(i+1).padStart(2,'0')+'.json'),JSON.stringify({motion,frame:i+1,t,qa,bad:[...currentBad]},null,2));
   if(currentBad.length)console.error(motion,i+1,currentBad);
 }
-await ctx.close();await browser.close();
+try{await ctx.close();}catch{}try{await browser.close();}catch{}
 console.log(JSON.stringify({motion,frames:10,duration,view,out}));
