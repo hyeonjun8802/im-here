@@ -30,18 +30,32 @@ function mountainGeometry(seed=1){
   p.needsUpdate=true;g.computeVertexNormals();return g;
 }
 
+function ridgeArcGeometry(radius,seed,height,span=1.72,segments=86){
+  const pos=[],uv=[],idx=[],center=5*Math.PI/4;
+  for(let i=0;i<=segments;i++){
+    const t=i/segments,a=center-span*.5+t*span;
+    const n=hash(seed+i*17),n2=hash(seed*7+i*31);
+    const crest=GROUND+28+height*(.28+.72*(.52*n+.48*n2))+Math.sin(t*Math.PI*7+seed)*height*.08;
+    const r=radius+Math.sin(t*Math.PI*5+seed)*18+Math.sin(t*Math.PI*17)*7;
+    pos.push(Math.sin(a)*r,crest,Math.cos(a)*r,Math.sin(a)*(r+32),GROUND-48,Math.cos(a)*(r+32));
+    uv.push(t,1,t,0);
+    if(i<segments){const k=i*2;idx.push(k,k+1,k+2,k+2,k+1,k+3);}
+  }
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;
+}
+
 function riverGeometry(){
   const segments=44,pos=[],uv=[],idx=[];
   const center=t=>{
-    const x=-930+t*780;
-    const z=-565-Math.sin(t*Math.PI)*92+Math.sin(t*TAU*2.1)*28;
+    const x=-760+t*660;
+    const z=-420-Math.sin(t*Math.PI)*72+Math.sin(t*TAU*2.1)*20;
     return new THREE.Vector3(x,GROUND+.24,z);
   };
   for(let i=0;i<=segments;i++){
     const t=i/segments,p=center(t),p0=center(Math.max(0,t-.012)),p1=center(Math.min(1,t+.012));
     const tangent=p1.clone().sub(p0).normalize();
     const side=new THREE.Vector3(-tangent.z,0,tangent.x);
-    const width=58+Math.sin(t*Math.PI)*25+hash(i+12)*10;
+    const width=48+Math.sin(t*Math.PI)*22+hash(i+12)*9;
     const left=p.clone().addScaledVector(side,width),right=p.clone().addScaledVector(side,-width);
     pos.push(left.x,left.y,left.z,right.x,right.y,right.z);uv.push(0,t,1,t);
     if(i<segments){const k=i*2;idx.push(k,k+1,k+2,k+2,k+1,k+3);}
@@ -71,11 +85,11 @@ export class HorizonWorldExpansionV210{
       const radius=vista?520+hash(i*29+4)*470:560+hash(i*31+7)*360;
       const x=Math.sin(a)*radius,z=Math.cos(a)*radius;
       // Keep a broad river corridor readable from the default cinematic view.
-      const t=THREE.MathUtils.clamp((x+930)/780,0,1);
-      const riverZ=-565-Math.sin(t*Math.PI)*92+Math.sin(t*TAU*2.1)*28;
-      if(Math.abs(z-riverZ)<105)continue;
+      const t=THREE.MathUtils.clamp((x+760)/660,0,1);
+      const riverZ=-420-Math.sin(t*Math.PI)*72+Math.sin(t*TAU*2.1)*20;
+      if(Math.abs(z-riverZ)<92)continue;
       const w=12+hash(i*17+5)*20,d=11+hash(i*23+2)*19;
-      const h=24+Math.pow(hash(i*37+9),.58)*(mobile?78:105);
+      const high=hash(i*97+6)>.86;const h=18+Math.pow(hash(i*37+9),.72)*(high?(mobile?78:96):(mobile?44:58));
       const tier=i%3;
       records[tier].push({p:[x,GROUND+h*.5,z],r:[0,Math.round(hash(i+80)*3)*Math.PI/2,0],s:[w,h,d],c:color(palette[i%palette.length]).multiplyScalar(.78+.18*hash(i+12))});
       if(i%5===0)roofTanks.push({p:[x,GROUND+h+2.3,z],s:[2.2+hash(i)*1.8,4.6,2.2+hash(i+3)*1.8],c:color('#555c58')});
@@ -107,8 +121,8 @@ export class HorizonWorldExpansionV210{
     const bankMat=new THREE.MeshStandardMaterial({color:'#34443d',roughness:1});
     const banks=[];
     for(let i=0;i<36;i++){
-      const t=i/35,x=-930+t*780,z=-565-Math.sin(t*Math.PI)*92+Math.sin(t*TAU*2.1)*28;
-      const w=69+Math.sin(t*Math.PI)*26;
+      const t=i/35,x=-760+t*660,z=-420-Math.sin(t*Math.PI)*72+Math.sin(t*TAU*2.1)*20;
+      const w=57+Math.sin(t*Math.PI)*23;
       banks.push({p:[x,GROUND+.52,z+w+9],r:[0,hash(i)*.25,0],s:[16,.75,9+hash(i+4)*13]});
       banks.push({p:[x,GROUND+.52,z-w-9],r:[0,hash(i+9)*.25,0],s:[16,.75,9+hash(i+7)*13]});
     }
@@ -117,13 +131,13 @@ export class HorizonWorldExpansionV210{
 
   makeBridge(){
     const bridge=new THREE.Group();bridge.name='Ruined suspension bridge over river';this.group.add(bridge);
-    const cx=-548,cz=-648,deckY=GROUND+8.2;
+    const cx=-398,cz=-492,deckY=GROUND+9.4;
     const concrete=new THREE.MeshStandardMaterial({color:'#555d59',roughness:.93,metalness:.04});
     const steel=new THREE.MeshStandardMaterial({color:'#596362',roughness:.76,metalness:.46});
     const rust=new THREE.MeshStandardMaterial({color:'#705648',roughness:.84,metalness:.35});
     this.materials.push(concrete,steel,rust);
-    const deck=new THREE.Mesh(new THREE.BoxGeometry(13,1.3,226),concrete);deck.position.set(cx,deckY,cz);deck.rotation.y=.06;bridge.add(deck);this.meshes.push(deck);
-    const broken=new THREE.Mesh(new THREE.BoxGeometry(13.4,1.8,27),new THREE.MeshStandardMaterial({color:'#323936',roughness:1}));
+    const deck=new THREE.Mesh(new THREE.BoxGeometry(15,1.35,212),concrete);deck.position.set(cx,deckY,cz);deck.rotation.y=.06;bridge.add(deck);this.meshes.push(deck);
+    const broken=new THREE.Mesh(new THREE.BoxGeometry(15.4,1.8,25),new THREE.MeshStandardMaterial({color:'#323936',roughness:1}));
     broken.position.set(cx,deckY+.15,cz+32);broken.rotation.set(.05,.06,.045);bridge.add(broken);this.meshes.push(broken);
     const pylons=[];
     for(const z of [cz-62,cz+62])for(const x of [cx-8,cx+8])pylons.push({p:[x,deckY+24,z],s:[2.7,48,2.7],c:color('#5a605d')});
@@ -134,27 +148,24 @@ export class HorizonWorldExpansionV210{
     this.materials.push(cableMat);
     for(const side of [-1,1]){
       const x=cx+side*7.2;
-      const points=[];for(let i=0;i<=32;i++){const q=i/32,z=cz-111+222*q;const arch=deckY+14+32*Math.pow(Math.abs(q-.5)*2,1.75);points.push(new THREE.Vector3(x,arch,z));}
+      const points=[];for(let i=0;i<=32;i++){const q=i/32,z=cz-104+208*q;const arch=deckY+14+32*Math.pow(Math.abs(q-.5)*2,1.75);points.push(new THREE.Vector3(x,arch,z));}
       line(bridge,points,cableMat,`Bridge main suspension cable ${side}`);
-      for(let i=2;i<31;i+=3){const q=i/32,z=cz-111+222*q,arch=deckY+14+32*Math.pow(Math.abs(q-.5)*2,1.75);line(bridge,[new THREE.Vector3(x,deckY+1,z),new THREE.Vector3(x,arch,z)],cableMat,'Bridge vertical hanger');}
+      for(let i=2;i<31;i+=3){const q=i/32,z=cz-104+208*q,arch=deckY+14+32*Math.pow(Math.abs(q-.5)*2,1.75);line(bridge,[new THREE.Vector3(x,deckY+1,z),new THREE.Vector3(x,arch,z)],cableMat,'Bridge vertical hanger');}
     }
   }
 
   makeMountainMass(){
-    const mobile=this.world.isMobile,records=[[],[],[]];
-    const count=mobile?22:34;
-    // Deliberately bias the most dramatic peaks toward the default SW vista.
-    for(let i=0;i<count;i++){
-      const a=5*Math.PI/4+(i/(count-1)-.5)*1.48+(hash(i*17)-.5)*.08;
-      const radius=1040+hash(i*31+4)*250;
-      const h=120+Math.pow(hash(i*43+8),.65)*190;
-      const w=135+hash(i*13+3)*175;
-      const x=Math.sin(a)*radius,z=Math.cos(a)*radius;
-      records[i%3].push({p:[x,GROUND-8+h*.5,z],r:[0,hash(i+77)*TAU,0],s:[w,h,w*(.72+hash(i+5)*.31)],c:color(['#46534e','#3d4c49','#52605a'][i%3]).multiplyScalar(.72+.18*hash(i+21))});
-    }
-    for(let v=0;v<3;v++){
-      const mat=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:1,flatShading:false,vertexColors:true});
-      this.materials.push(mat);this.meshes.push(addInstances(this.group,`Layered distant mountain peaks ${v+1}`,mountainGeometry(v+11),mat,records[v]));
+    const layers=[
+      {radius:1010,height:92,color:'#4e5c58',opacity:1},
+      {radius:1160,height:122,color:'#45534f',opacity:1},
+      {radius:1320,height:156,color:'#3e4c49',opacity:1}
+    ];
+    for(let i=0;i<layers.length;i++){
+      const s=layers[i];
+      const material=new THREE.MeshStandardMaterial({color:s.color,roughness:1,side:THREE.DoubleSide,fog:true});
+      const ridge=new THREE.Mesh(ridgeArcGeometry(s.radius,31+i*47,s.height,1.82-i*.08,this.world.isMobile?64:92),material);
+      ridge.name=`Layered distant mountain ridge ${i+1}`;
+      ridge.receiveShadow=false;this.group.add(ridge);this.meshes.push(ridge);this.materials.push(material);
     }
   }
 
