@@ -217,18 +217,23 @@ export class BeardedSurvivorV190{
   }
   if(a==='sleep'&&['enter','perform','exit'].includes(life.stage)){
    const lie=Math.max(0,Math.min(1,p.sleeping||0));
-   const sm=lie*lie*(3-2*lie);
-   // While sitting/reclining the hands brace on the mattress. As the torso
-   // reaches supine, transition to relaxed positions beside the hips. Using
-   // Chest-local end targets prevents the rotated root from carrying both
-   // hands underneath the body.
-   const Lbrace=this.actionHandTarget(this.root,[-.38,.66,-.34],new THREE.Vector3());
-   const Rbrace=this.actionHandTarget(this.root,[ .38,.66,-.34],new THREE.Vector3());
-   const Lrest=this.actionHandTarget(n.Chest,[-.31,-.38,-.10],new THREE.Vector3());
-   const Rrest=this.actionHandTarget(n.Chest,[ .31,-.38,-.10],new THREE.Vector3());
-   const Lt=Lbrace.lerp(Lrest,sm),Rt=Rbrace.lerp(Rrest,sm);
-   this.solveArmIK('L',Lt,Math.min(.82,w+.08),5);
-   this.solveArmIK('R',Rt,Math.min(.82,w+.08),5);
+   const sit=Math.max(0,Math.min(1,p.sleepSit||0));
+   const engaged=Math.max(sit,lie);
+   if(engaged>.04){
+    // Mattress coordinates: the bed runs along X (feet -> pillow toward -X)
+    // and its left/right width is Z. Keep hand targets in the survivor-parent
+    // frame so they stay fixed to the mattress while CharacterRoot reclines.
+    const mattressY=.865;
+    const braceX=-.18-.18*sit;
+    const restX=-.72;
+    const x=THREE.MathUtils.lerp(braceX,restX,lie);
+    const side=THREE.MathUtils.lerp(.50,.43,lie);
+    const y=mattressY+.025+.035*lie;
+    this.actionHandTarget(this.world.survivor,[x,y,-side],this.ikTarget);
+    this.solveArmIK('L',this.ikTarget,Math.min(.84,w+.08),5);
+    this.actionHandTarget(this.world.survivor,[x,y, side],this.ikTarget);
+    this.solveArmIK('R',this.ikTarget,Math.min(.84,w+.08),5);
+   }
   }
  }
  update(dt,life=this.world.life){
