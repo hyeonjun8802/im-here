@@ -44,9 +44,9 @@ export class GroundMist {
        float alpha=min(.985,uOpacity*(.94+uWeather*.11)*density*rim);
        // Keep the new winding river readable through the ground haze. The mist
        // still crosses the water as a thin veil instead of becoming an opaque lid.
-       float rt=clamp((vWorldXZ.x+930.0)/780.0,0.0,1.0);
-       float riverZ=-565.0-sin(rt*3.14159265)*92.0+sin(rt*13.194689)*28.0;
-       float riverMask=1.0-smoothstep(58.0,138.0,abs(vWorldXZ.y-riverZ));
+       float rt=clamp((vWorldXZ.x+760.0)/660.0,0.0,1.0);
+       float riverZ=-420.0-sin(rt*3.14159265)*72.0+sin(rt*13.194689)*20.0;
+       float riverMask=1.0-smoothstep(52.0,122.0,abs(vWorldXZ.y-riverZ));
        alpha*=1.0-riverMask*.78;
        gl_FragColor=vec4(uColor,alpha);
       }`
