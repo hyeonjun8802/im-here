@@ -125,7 +125,7 @@ export class CityAtmosphere {
     const y=r.baseY+Math.sin(this.time*.11+r.phase)*(.7+tier*.65);
     const breathe=1+Math.sin(this.time*.13+r.phase*2.3)*.09+weatherValues.wind*.035;
     const cloud=this.dummy;cloud.position.set(x,y,z);
-    cloud.rotation.set(-Math.PI/2,r.yaw+cross*.002,0);
+    cloud.rotation.x=-Math.PI/2;cloud.rotation.y=r.yaw+cross*.002;cloud.rotation.z=0;
     cloud.scale.set(r.sizeX*breathe,r.sizeZ*(1+.07*Math.cos(this.time*.10+r.phase)),1);
     cloud.updateMatrix();mesh.setMatrixAt(i,cloud.matrix);
    }
