@@ -138,10 +138,18 @@ function frame(now){const dt=Math.min(.05,(now-previous)/1000||0);previous=now;e
   clipCount:actor.clips?.size||0,activeClip:actor.embeddedClip,seatAboveRoof:SEAT.seatAboveRoof,
   poseRootY:actor.model?.position.y??null,modelLoaded:actor.status==='ready',
   joints:actor.status==='ready'?{
+   root:qaWorldPos('RigRoot'),pelvis:qaWorldPos('Pelvis'),spine:qaWorldPos('Spine'),chest:qaWorldPos('Chest'),neck:qaWorldPos('Neck'),head:qaWorldPos('Head'),
    shoulderL:qaWorldPos('Shoulder_L'),upperL:qaWorldPos('UpperArm_L'),elbowL:qaWorldPos('ForeArm_L'),handL:qaWorldPos('Hand_L'),
    shoulderR:qaWorldPos('Shoulder_R'),upperR:qaWorldPos('UpperArm_R'),elbowR:qaWorldPos('ForeArm_R'),handR:qaWorldPos('Hand_R'),
-   head:qaWorldPos('Head'),chest:qaWorldPos('Chest')
+   hipL:qaWorldPos('UpperLeg_L'),kneeL:qaWorldPos('LowerLeg_L'),footL:qaWorldPos('Foot_L'),
+   hipR:qaWorldPos('UpperLeg_R'),kneeR:qaWorldPos('LowerLeg_R'),footR:qaWorldPos('Foot_R')
   }:null,
+  orientation:actor.status==='ready'?(()=>{
+   const q=new THREE.Quaternion();actor.root.getWorldQuaternion(q);
+   const face=new THREE.Vector3(0,0,-1).applyQuaternion(q).normalize();
+   const up=new THREE.Vector3(0,1,0).applyQuaternion(q).normalize();
+   return {rootQuaternion:q.toArray().map(n=>Number(n.toFixed(5))),face:face.toArray().map(n=>Number(n.toFixed(5))),up:up.toArray().map(n=>Number(n.toFixed(5)))};
+  })():null,
   props:actor.status==='ready'?{guitar:qaObjectPos(actor.guitar),radio:qaObjectPos(actor.radio),bowl:qaObjectPos(actor.bowl),ration:qaObjectPos(actor.ration)}:null
  };
  requestAnimationFrame(frame);
