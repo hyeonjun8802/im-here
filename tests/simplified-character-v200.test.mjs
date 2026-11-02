@@ -55,7 +55,7 @@ test('sitting seats hips on cushion and keeps limbs compact',()=>{
 });
 test('walking, eating, radio and guitar remain distinct usable actions',()=>{
  const walking=pose({current:'watch',stage:'approach'},.3),eat=pose({current:'eat',stage:'perform'},.3),radio=pose({current:'radio',stage:'perform'},.3),guitar=pose({current:'guitar',stage:'perform'},.3);
- assert.ok(walking.walking);assert.ok(eat.showBowl);assert.ok(radio.showRadio);assert.ok(guitar.showGuitar);assert.ok(eat.R.armX>1&&radio.R.armX>1.3);assert.equal(seatedWeight({current:'sit',stage:'perform'}),1);
+ assert.ok(walking.walking);assert.ok(eat.showBowl);assert.ok(radio.showRadio);assert.ok(guitar.showGuitar);assert.ok(eat.R.armX>.6&&eat.R.forearmX<-1&&radio.R.armX>1&&radio.R.forearmX<-1.3);assert.equal(seatedWeight({current:'sit',stage:'perform'}),1);
 });
 test('wave, point and stretch use visible forward/upward Pixal3D arm poses',()=>{
  const wave=pose({current:'wave',stage:'perform'},.6),point=pose({current:'point',stage:'perform'},.6),stretch=pose({current:'stretch',stage:'perform',stageTime:3,performDuration:16},.6);
