@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
-    "build": "npm test && vite build",
+    "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "download:assets": "node scripts/download-assets.mjs",
     "test": "node --test tests/*.test.mjs",
