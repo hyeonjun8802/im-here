@@ -448,14 +448,14 @@ export class AfterWorld {
      float billow=fbm(p*1.78+vec3(6.4,2.8,9.1));
      float detail=fbm(p*3.7+vec3(12.2,5.3,2.7));
      float field=broad*.67+billow*.26+detail*.07;
-     float cloudShape=smoothstep(mix(.70,.29,cover),mix(.82,.49,cover),field);
+     float cloudShape=smoothstep(mix(.62,.24,cover),mix(.76,.43,cover),field);
      float altitude=smoothstep(-.045,.16,y)*(1.-smoothstep(.88,1.,y)*.22);
-     float veil=smoothstep(.58,1.,cover)*smoothstep(-.05,.22,y)*(1.-smoothstep(.58,.94,y))*.18;
-     vec3 cloudLight=mix(vec3(.62,.68,.71),vec3(.88,.88,.84),clamp(.38+billow*.55+sunAngle*.22,0.,1.));
+     float veil=smoothstep(.50,1.,cover)*smoothstep(-.05,.24,y)*(1.-smoothstep(.62,.95,y))*.24;
+     vec3 cloudLight=mix(vec3(.60,.66,.70),vec3(.86,.87,.84),clamp(.34+billow*.58+sunAngle*.22,0.,1.));
      vec3 cloudDark=mix(vec3(.35,.40,.44),vec3(.12,.16,.21),uStorm*.82);
      vec3 cloudColor=mix(cloudDark,cloudLight,clamp(.50+detail*.22-uStorm*.33,0.,1.));
      cloudColor=mix(cloudColor,vec3(.10,.14,.20),uNight*.72);
-     float cloudAlpha=max(cloudShape*altitude*(.18+.68*cover),veil);
+     float cloudAlpha=max(cloudShape*altitude*(.30+.60*cover),veil);
      sky=mix(sky,cloudColor,clamp(cloudAlpha,0.,.88));
      gl_FragColor=vec4(max(sky,vec3(0.)),1.);
     }`});
