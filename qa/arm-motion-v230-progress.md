@@ -28,7 +28,7 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [x] Baseline wave capture completed: 10/10 frames; baseline FAIL confirmed visually.
 - [x] Wave baseline 10-frame visual review: FAIL — hand remains almost pinned beside head; rigid-arm look.
 - [x] Wave first fix applied: separate shoulder/elbow/wrist motion + lateral hand IK path.
-- [ ] Wave fixed 10-frame recapture + PASS/fix decision.
+- [x] Wave fixed 10-frame recapture: PASS — visible lateral hand travel, stable elbow length, no head/body penetration.
 - [ ] Guitar baseline capture: previous sandbox stopped after frame 1/10. Recapture from scratch.
 - [ ] Eat baseline 10/10.
 - [ ] Radio baseline 10/10.
