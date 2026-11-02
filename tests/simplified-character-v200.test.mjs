@@ -75,3 +75,13 @@ test('v3.9 four-direction and six animation deformation QA renders exist',()=>{
 test('project retains one roof and original life/weather systems',()=>{
  const w=source('src/world.js');assert.match(w,/new BeardedSurvivorV190\(this\)/);assert.match(w,/this\.createWeather\(\)/);assert.match(w,/this\.createRoof\(\)/);assert.ok(source('character.html').includes('characterPreviewV190.js'));
 });
+
+test('sleep supine orientation maps Pixal3D local face -Z toward world +Y',async()=>{
+ const adapter=source('src/beardedSurvivorV190.js');
+ assert.match(adapter,/sleepBack\.setFromAxisAngle\(this\.sleepAxisX,Math\.PI\*\.5\*p\.sleeping\)/);
+ assert.doesNotMatch(adapter,/sleepBack\.setFromAxisAngle\(this\.sleepAxisX,-Math\.PI\*\.5\*p\.sleeping\)/);
+ const THREE=await import('three');
+ const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),Math.PI*.5);
+ const face=new THREE.Vector3(0,0,-1).applyQuaternion(q);
+ assert.ok(face.y>.999&&Math.abs(face.z)<1e-6,`expected sky-facing +Y, got ${face.toArray()}`);
+});
