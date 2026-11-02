@@ -48,7 +48,8 @@ export function stretchKeyframes(seconds=0,duration=16){
     rightArm:arm,
     leftArmZ:-.20-.10*overhead-.035*lateral,
     rightArmZ:.20+.10*overhead+.035*lateral,
-    torsoX:.18*release,
+    // Negative X bends the chest toward the character's local -Z/front.
+    torsoX:-.14*release,
     torsoZ:Math.sin((q-.39)/.24*Math.PI)*.14*lateral,
     // A gentle overhead reach should lift the gaze slightly; the old negative
     // sign tucked the chin toward the chest while both arms were raised.

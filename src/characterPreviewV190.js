@@ -59,7 +59,7 @@ const actor=new BeardedSurvivorV190(fakeWorld);
 const params=new URLSearchParams(location.search);let selected=params.get('pose')||'idle';
 const VIEWS=['front','left','right','back'];let selectedView=VIEWS.includes(params.get('view'))?params.get('view'):'front';
 let qaPaused=params.has('at'),qaAt=Math.max(0,Number(params.get('at'))||0);
-if(!['idle','walk','run','wave','point','sit','eat','drink','guitar','radio','stretch','watch','sleep-enter','sleep-sit','sleep','sleep-exit'].includes(selected))selected='idle';
+if(!['idle','walk','run','wave','point','sit','eat','drink','guitar','radio','cook','repair','medicine','explore','shelter','rest','stretch','watch','sleep-enter','sleep-sit','sleep','sleep-exit'].includes(selected))selected='idle';
 const state=fakeWorld.life;
 function setView(view=selectedView,isSleep=selected.startsWith('sleep')){
  selectedView=VIEWS.includes(view)?view:'front';
