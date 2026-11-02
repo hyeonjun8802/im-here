@@ -1,9 +1,10 @@
 /**
  * User-activated weather ambience.
  *
- * The rain/storm layers are optimized loops made from the user-supplied field
- * recordings. Procedural WebAudio noise remains only as wind/fallback so a
- * missing MP3 never turns the weather completely silent.
+ * Supplied rain/storm recordings are used for the actual weather beds.
+ * Loop seams are rebuilt in PCM after decode: the tail and head are
+ * equal-power crossfaded, so MP3 encoder boundaries cannot create a click/gap.
+ * Procedural WebAudio noise remains only as wind/fallback.
  */
 export const WEATHER_AUDIO_ASSETS=Object.freeze({
  rainMedium:'./assets/audio/weather/rain_medium.mp3',
@@ -13,8 +14,42 @@ export const WEATHER_AUDIO_ASSETS=Object.freeze({
  thunder:'./assets/audio/weather/storm_thunder_strong.mp3'
 });
 
+export const WEATHER_LOOP_CROSSFADE_SECONDS=.65;
+
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,Number(v)||0));
 const smooth=v=>{const x=clamp(v);return x*x*(3-2*x);};
+
+export function loopCrossfadeFrames(length,sampleRate,seconds=WEATHER_LOOP_CROSSFADE_SECONDS){
+ const n=Math.max(0,Math.floor(Number(length)||0)),sr=Math.max(1,Math.floor(Number(sampleRate)||1));
+ // Never consume more than ~18% of the recording, even for a very short clip.
+ return Math.max(0,Math.min(Math.floor(sr*Math.max(0,seconds)),Math.floor(n*.18)));
+}
+
+/**
+ * Rebuild one loop period so:
+ *   core end -> original tail is continuous,
+ *   original tail -> original head is equal-power crossfaded,
+ *   crossfade end -> core start is continuous on the next loop.
+ *
+ * This is stronger than merely fading to silence: there is no rhythmic
+ * volume dip every time the weather bed repeats.
+ */
+export function makeSeamlessLoopBuffer(ctx,buffer,seconds=WEATHER_LOOP_CROSSFADE_SECONDS){
+ const fade=loopCrossfadeFrames(buffer?.length,buffer?.sampleRate,seconds);
+ if(!buffer||fade<32||buffer.length<=fade*2)return buffer;
+ const coreStart=fade,coreEnd=buffer.length-fade,coreLength=coreEnd-coreStart;
+ const out=ctx.createBuffer(buffer.numberOfChannels,buffer.length-fade,buffer.sampleRate);
+ for(let ch=0;ch<buffer.numberOfChannels;ch++){
+  const src=buffer.getChannelData(ch),dst=out.getChannelData(ch);
+  dst.set(src.subarray(coreStart,coreEnd),0);
+  for(let i=0;i<fade;i++){
+   const t=fade===1?1:i/(fade-1);
+   const tailGain=Math.cos(t*Math.PI*.5),headGain=Math.sin(t*Math.PI*.5);
+   dst[coreLength+i]=src[buffer.length-fade+i]*tailGain+src[i]*headGain;
+  }
+ }
+ return out;
+}
 
 /**
  * Pure weather-to-audio mixer, kept separate from browser APIs so the exact
@@ -57,15 +92,16 @@ export function weatherAudioMix(weather='clear',w={}){
 
 export class WeatherAudio{
  constructor(){
-  this.context=null;this.enabled=false;this.parts={};this.media={};
-  this.currentWeather='clear';this.lastThunder=-Infinity;this.pendingThunder=null;
+  this.context=null;this.enabled=false;this.parts={};this.clips={};this.loopSources={};
+  this.loadPromise=null;this.currentWeather='clear';this.lastThunder=-Infinity;this.pendingThunder=null;
  }
  async toggle(){
   if(this.enabled){
    this.enabled=false;
    if(this.pendingThunder){clearTimeout(this.pendingThunder);this.pendingThunder=null;}
-   this.parts.master?.gain.setTargetAtTime(0,this.context.currentTime,.12);
-   setTimeout(()=>{if(!this.enabled)this.pauseMedia();},220);
+   const ctx=this.context;
+   this.parts.master?.gain.setTargetAtTime(0,ctx.currentTime,.12);
+   setTimeout(()=>{if(!this.enabled&&ctx?.state==='running')ctx.suspend().catch(()=>{});},240);
    return false;
   }
   const Ctx=window.AudioContext||window.webkitAudioContext;
@@ -85,40 +121,45 @@ export class WeatherAudio{
   const addNoise=(type,frequency,q)=>{const source=ctx.createBufferSource();source.buffer=noise;source.loop=true;
    const filter=ctx.createBiquadFilter();filter.type=type;filter.frequency.value=frequency;filter.Q.value=q;
    const amp=ctx.createGain();amp.gain.value=0;source.connect(filter).connect(amp).connect(master);source.start();return amp;};
-  // Procedural layers are intentionally subtle: recordings carry the rain.
   this.parts.rainFallback=addNoise('highpass',1050,.32);
   this.parts.wind=addNoise('lowpass',480,.25);
   this.parts.hiss=addNoise('bandpass',2500,.5);
-  const addClip=(key,url,loop=true)=>{
-   const el=new Audio(url);el.preload='auto';el.loop=loop;
-   const source=ctx.createMediaElementSource(el),gain=ctx.createGain();gain.gain.value=0;
-   source.connect(gain).connect(master);
-   const entry={el,gain,failed:false};
-   el.addEventListener('error',()=>{entry.failed=true;});
-   this.media[key]=entry;
-  };
-  addClip('rainMedium',WEATHER_AUDIO_ASSETS.rainMedium);
-  addClip('rainHeavy',WEATHER_AUDIO_ASSETS.rainHeavy);
-  addClip('downpour',WEATHER_AUDIO_ASSETS.downpour);
-  addClip('stormRain',WEATHER_AUDIO_ASSETS.stormRain);
-  addClip('thunder',WEATHER_AUDIO_ASSETS.thunder,false);
+
+  for(const key of ['rainMedium','rainHeavy','downpour','stormRain']){
+   const gain=ctx.createGain();gain.gain.value=0;gain.connect(master);
+   this.clips[key]={gain,buffer:null,failed:false};
+  }
+  this.clips.thunder={buffer:null,failed:false};
+  this.loadPromise=this.loadRecordedAudio();
+ }
+ async loadRecordedAudio(){
+  const ctx=this.context;
+  await Promise.all(Object.entries(WEATHER_AUDIO_ASSETS).map(async([key,url])=>{
+   const entry=this.clips[key];if(!entry)return;
+   try{
+    const response=await fetch(url,{cache:'force-cache'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const decoded=await ctx.decodeAudioData(await response.arrayBuffer());
+    entry.buffer=key==='thunder'?decoded:makeSeamlessLoopBuffer(ctx,decoded);
+   }catch(error){
+    entry.failed=true;console.warn('[AFTERDAY] weather audio fallback',key,error);
+   }
+  }));
  }
  async startLoops(){
-  const tasks=[];
+  await this.loadPromise;
   for(const key of ['rainMedium','rainHeavy','downpour','stormRain']){
-   const entry=this.media[key];if(!entry||entry.failed)continue;
-   if(entry.el.readyState>=1&&entry.el.duration>1&&entry.el.currentTime===0){
-    entry.el.currentTime=Math.random()*Math.max(.1,entry.el.duration-.25);
-   }
-   tasks.push(entry.el.play().catch(()=>{entry.failed=true;}));
+   if(this.loopSources[key]||this.clips[key]?.failed||!this.clips[key]?.buffer)continue;
+   const source=this.context.createBufferSource(),buffer=this.clips[key].buffer;
+   source.buffer=buffer;source.loop=true;source.connect(this.clips[key].gain);
+   // Starting each ambience at a different place avoids all layers sharing the
+   // same loop seam, while the reconstructed buffer keeps every seam smooth.
+   source.start(0,Math.random()*Math.max(.01,buffer.duration-.02));
+   this.loopSources[key]=source;
   }
-  await Promise.all(tasks);
- }
- pauseMedia(){
-  for(const entry of Object.values(this.media)){entry.el.pause();if(entry.el.loop)entry.el.currentTime=0;}
  }
  setClipGain(key,value,now){
-  const entry=this.media[key];if(!entry)return;
+  const entry=this.clips[key];if(!entry?.gain)return;
   entry.gain.gain.setTargetAtTime(entry.failed?0:clamp(value),now,.42);
  }
  update(w,flash,weather='clear'){
@@ -126,16 +167,14 @@ export class WeatherAudio{
   this.currentWeather=weather;
   const now=this.context.currentTime,m=weatherAudioMix(weather,w);
   for(const key of ['rainMedium','rainHeavy','downpour','stormRain'])this.setClipGain(key,m[key],now);
-  // Quiet synthetic rain masks an MP3 dropout but does not compete with it.
-  const anyBroken=['rainMedium','rainHeavy','downpour','stormRain'].some(k=>this.media[k]?.failed);
+  const anyBroken=['rainMedium','rainHeavy','downpour','stormRain'].some(k=>this.clips[k]?.failed);
   this.parts.rainFallback.gain.setTargetAtTime(anyBroken?clamp(w.rain)*.14:clamp(w.rain)*.022,now,.35);
   this.parts.hiss.gain.setTargetAtTime(clamp(w.rain)*.018,now,.25);
   this.parts.wind.gain.setTargetAtTime(Math.min(.46,m.wind),now,.55);
   if(flash&&m.thunderArmed&&now-this.lastThunder>7.2&&!this.pendingThunder)this.queueThunder(m.thunderGain);
  }
  queueThunder(gain=.8){
-  // Sound follows the flash by a short distance delay; repeated visual strikes
-  // naturally retrigger the supplied thunder recording after its cooldown.
+  // Visual flash first, then the supplied strike after a natural distance delay.
   const delay=.35+Math.random()*.9;
   this.pendingThunder=setTimeout(()=>{
    this.pendingThunder=null;
@@ -144,14 +183,19 @@ export class WeatherAudio{
   },delay*1000);
  }
  playRecordedThunder(gain=.8){
-  const entry=this.media.thunder,now=this.context.currentTime;
+  const entry=this.clips.thunder,c=this.context,now=c.currentTime;
   this.lastThunder=now;
-  if(!entry||entry.failed){this.syntheticThunder();return;}
-  entry.gain.gain.cancelScheduledValues(now);
-  entry.gain.gain.setValueAtTime(clamp(gain),now);
-  try{entry.el.currentTime=0;}catch{}
-  const p=entry.el.play();
-  if(p?.catch)p.catch(()=>{entry.failed=true;this.syntheticThunder();});
+  if(!entry||entry.failed||!entry.buffer){this.syntheticThunder();return;}
+  const source=c.createBufferSource(),amp=c.createGain(),duration=entry.buffer.duration;
+  source.buffer=entry.buffer;
+  // Short attack + longer tail fade removes the start/end cut from the
+  // one-shot while preserving the supplied thunder dynamics.
+  amp.gain.setValueAtTime(.0001,now);
+  amp.gain.linearRampToValueAtTime(clamp(gain),now+.08);
+  const fadeStart=now+Math.max(.16,duration-.72);
+  amp.gain.setValueAtTime(clamp(gain),fadeStart);
+  amp.gain.linearRampToValueAtTime(.0001,now+duration);
+  source.connect(amp).connect(this.parts.master);source.start(now);source.stop(now+duration+.03);
  }
  syntheticThunder(){
   const c=this.context,t=c.currentTime,noise=c.createBufferSource();noise.buffer=this.parts.noiseBuffer;noise.loop=true;
