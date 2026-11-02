@@ -36,12 +36,18 @@ export class GroundMist {
       uniform vec3 uColor;
       uniform sampler2D uNoise;
       void main(){
-       vec2 p=vWorldXZ*0.010+vec2(uTime*.004,uSeed);
+       vec2 p=vWorldXZ*0.010+vec2(uTime*.010,uSeed-uTime*.0035);
        float billow=texture2D(uNoise,p).r*.57+texture2D(uNoise,p*2.14+uSeed).r*.43;
        float density=mix(.56,1.22,billow);
        // Beyond the city, Three.js exponential distance fog completes the fade.
        float rim=1.0-smoothstep(930.0,1140.0,length(vWorldXZ));
        float alpha=min(.985,uOpacity*(.94+uWeather*.11)*density*rim);
+       // Keep the new winding river readable through the ground haze. The mist
+       // still crosses the water as a thin veil instead of becoming an opaque lid.
+       float rt=clamp((-vWorldXZ.x-40.0)/420.0,0.0,1.0);
+       float riverZ=-390.0-rt*520.0-sin(rt*3.14159265)*42.0+sin(rt*9.738937)*15.0;
+       float riverMask=1.0-smoothstep(52.0,122.0,abs(vWorldXZ.y-riverZ));
+       alpha*=1.0-riverMask*.86;
        gl_FragColor=vec4(uColor,alpha);
       }`
    });

@@ -58,14 +58,11 @@ export class AdvancedWeather {
    else stream.position.set(-23.5,roofY-3.8,q);
    this.root.add(stream);this.streams.push(stream);
   }
-  this.clouds=[];const tex=new THREE.TextureLoader().load('./assets/materials/cinematic/cloudbank_alpha.png');tex.colorSpace=THREE.SRGBColorSpace;
-  for(let i=0;i<(isMobile?36:62);i++){
-   const a=i*2.3999,r=82+hash(i*67)*178;
-   const c=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:'#b1bbc8',transparent:true,opacity:.16,depthWrite:false,depthTest:true,fog:false}));
-   c.position.set(Math.cos(a)*r,65+hash(i+33)*38,Math.sin(a)*r);
-   c.scale.set(45+hash(i+1)*55,15+hash(i+3)*21,1);
-   this.root.add(c);this.clouds.push(c);
-  }
+  // v2.04: remove billboard cloud cards entirely. Their rectangular alpha
+  // bounds were visible in rain/storm scenes. Sky clouds are rendered only by
+  // CinematicWeatherVfx's continuous spherical noise field, so no card edge
+  // can enter the camera view at any orbit angle.
+  this.clouds=[];
   this.bolt=lineSegments(makeBolt(8),new THREE.LineBasicMaterial({color:'#e3f5ff',transparent:true,opacity:.96,depthWrite:false}));this.bolt.position.set(184,0,-195);this.bolt.visible=false;this.root.add(this.bolt);
   this.boltOuter=this.bolt.clone();this.boltOuter.material=new THREE.LineBasicMaterial({color:'#70a2ec',transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false});this.boltOuter.scale.set(1.025,1,1.025);this.root.add(this.boltOuter);this.boltOuter.visible=false;
   this.farFlash=new THREE.DirectionalLight('#b6d8ff',0);this.farFlash.position.set(180,130,-170);this.root.add(this.farFlash);

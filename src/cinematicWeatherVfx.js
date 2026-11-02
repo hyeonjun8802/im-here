@@ -153,20 +153,35 @@ function dynamicCloudSky(scene,isMobile){
     float fbm(vec3 p){float result=0.;float weight=.54;
       for(int i=0;i<4;i++){result+=noise3(p)*weight;p=p*2.03+vec3(4.1,7.7,3.1);weight*=.49;}return result;}
     void main(){vec3 dir=normalize(vDirection);
-      if(dir.y<-.05)discard;
-      vec3 flow=vec3(uTime*(.002+uWind*.013),0.,uTime*.0018);
-      vec3 p=dir*4.4+flow;
-      float n=fbm(p);float detail=fbm(p*2.7+8.4);
-      float density=n*.82+detail*.18;
-      float cover=smoothstep(mix(.70,.36,uCover),mix(.82,.53,uCover),density);
-      float altitude=smoothstep(-.035,.19,dir.y);
-      float bloom=pow(max(0.,dot(dir,normalize(uSunDirection))),9.);
-      vec3 white=mix(vec3(.73,.79,.82),vec3(1.,.74,.54),uSunset*.63);
-      vec3 dark=mix(vec3(.34,.40,.48),vec3(.075,.12,.18),uStorm*.82);
-      vec3 col=mix(dark,white,clamp(.57+.28*detail+.26*bloom-uStorm*.45,0.,1.));
-      col=mix(col,vec3(.21,.27,.38),uNight*.72);
-      float alpha=cover*altitude*(.25+uCover*.48);
-      gl_FragColor=vec4(col,clamp(alpha,0.,.9));
+      if(dir.y<-.055)discard;
+      // Broad world-space billows. Sampling the unit direction keeps the field
+      // continuous across the entire sky dome with no UV/card boundaries.
+      vec3 flow=vec3(uTime*(.0016+uWind*.010),uTime*.00018,uTime*.0011);
+      vec3 p=dir*3.15+flow;
+      float broad=fbm(p);
+      float billow=fbm(p*1.72+vec3(6.1,2.7,9.4));
+      float detail=fbm(p*3.65+vec3(11.3,4.2,3.6));
+      float density=broad*.66+billow*.27+detail*.07;
+      float coverAmt=clamp(uCover+uStorm*.18,0.,1.);
+      float low=mix(.68,.27,coverAmt),high=mix(.80,.48,coverAmt);
+      float cover=smoothstep(low,high,density);
+      // Feather clouds into atmospheric haze at the horizon and gently thin
+      // them toward zenith; there is never a visible rectangular termination.
+      float horizonFade=smoothstep(-.045,.135,dir.y);
+      float zenithFade=1.-smoothstep(.88,1.,dir.y)*.18;
+      float altitude=horizonFade*zenithFade;
+      float bloom=pow(max(0.,dot(dir,normalize(uSunDirection))),8.);
+      vec3 white=mix(vec3(.67,.73,.76),vec3(.98,.70,.48),uSunset*.58);
+      vec3 dark=mix(vec3(.28,.34,.40),vec3(.055,.085,.13),uStorm*.88);
+      float light=clamp(.46+.30*billow+.16*detail+.28*bloom-uStorm*.48,0.,1.);
+      vec3 col=mix(dark,white,light);
+      col=mix(col,vec3(.18,.23,.33),uNight*.74);
+      float alpha=cover*altitude*(.30+coverAmt*.58);
+      // A broad overcast veil is derived from the same spherical field, not
+      // another image plane. It gives rain/storm skies weight near the horizon.
+      float veil=smoothstep(.58,1.,coverAmt)*horizonFade*(1.-smoothstep(.50,.90,dir.y))*.16;
+      alpha=max(alpha,veil);
+      gl_FragColor=vec4(col,clamp(alpha,0.,.90));
     }`,
   side:THREE.BackSide,transparent:true,depthWrite:false,depthTest:true,blending:THREE.NormalBlending
  });

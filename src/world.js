@@ -31,6 +31,7 @@ import {createFracturedTowerGeometry} from './ruinedBuildingGeometry.js';
 import {CITY_COMPOSITION} from './cityComposition.js';
 import {BeardedSurvivorV190} from './beardedSurvivorV190.js';
 import {ApocalypseSetDressingV201} from './ApocalypseSetDressingV201.js';
+import {HorizonWorldExpansionV210} from './HorizonWorldExpansionV210.js';
 
 const ROOF=CITY_COMPOSITION.heroRoofY;
 const clamp=THREE.MathUtils.clamp;
@@ -86,7 +87,7 @@ export class AfterWorld {
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
-  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.cinematicPost=new CinematicPostV130(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.cinematicPost=new CinematicPostV130(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -416,17 +417,23 @@ export class AfterWorld {
   // cylinders created the conspicuous pale horizon band and obscured the moon.
   // Soft clouds are sampled from a single seamless noise field in sky space.
   const g=new THREE.SphereGeometry(1490,48,32);
+  // Retain the authored seamless cloud texture as a compatibility/detail asset;
+  // rectangular weather cards are no longer used anywhere in the scene.
   const cloudTexture=new THREE.TextureLoader().load('./assets/materials/botany/cloud_volume.png');
   cloudTexture.wrapS=cloudTexture.wrapT=THREE.RepeatWrapping;cloudTexture.anisotropy=4;
   this.skyCloudTexture=cloudTexture;
   const m=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,
    uniforms:{uTop:{value:color('#345b83')},uHorizon:{value:color('#9fb7bd')},uBottom:{value:color('#738491')},
-    uSun:{value:.7},uSunDir:{value:new THREE.Vector3(.1,.65,.5)},uCloudCover:{value:.2},uTime:{value:0},uNight:{value:0},uCloudMap:{value:cloudTexture}},
+    uSun:{value:.7},uSunDir:{value:new THREE.Vector3(.1,.65,.5)},uCloudCover:{value:.2},uTime:{value:0},uNight:{value:0},uStorm:{value:0},uCloudMap:{value:cloudTexture}},
    vertexShader:`varying vec3 vDir;void main(){vDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
    fragmentShader:`precision highp float;
     varying vec3 vDir;uniform vec3 uTop,uHorizon,uBottom,uSunDir;
-    uniform sampler2D uCloudMap;uniform float uSun,uCloudCover,uTime,uNight;
-    const float PI=3.14159265359;
+    uniform float uSun,uCloudCover,uTime,uNight,uStorm;uniform sampler2D uCloudMap;
+    float h(vec3 p){p=fract(p*.1031);p+=dot(p,p.yxz+33.33);return fract((p.x+p.y)*p.z);}
+    float noise3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+      return mix(mix(mix(h(i),h(i+vec3(1.,0.,0.)),f.x),mix(h(i+vec3(0.,1.,0.)),h(i+vec3(1.,1.,0.)),f.x),f.y),
+      mix(mix(h(i+vec3(0.,0.,1.)),h(i+vec3(1.,0.,1.)),f.x),mix(h(i+vec3(0.,1.,1.)),h(i+vec3(1.,1.,1.)),f.x),f.y),f.z);}
+    float fbm(vec3 p){float r=0.;float w=.54;for(int i=0;i<4;i++){r+=noise3(p)*w;p=p*2.03+vec3(4.1,7.7,3.1);w*=.49;}return r;}
     void main(){
      vec3 d=normalize(vDir);float y=d.y;
      float horizon=smoothstep(-.16,.38,y);
@@ -435,19 +442,22 @@ export class AfterWorld {
      float sunAngle=max(0.,dot(d,normalize(uSunDir)));
      float scatter=pow(sunAngle,13.);
      sky+=vec3(1.,.48,.17)*scatter*uSun*.24;
-     float az=atan(d.z,d.x)/(2.*PI)+.5;
-     vec2 uv=vec2(az+uTime*.000006,clamp(y*.48+.49,0.,1.));
-     float n=texture2D(uCloudMap,uv).r;
-     float n2=texture2D(uCloudMap,uv*vec2(1.83,1.14)+vec2(.13,.03)).r;
-     float field=mix(n,n2,.27);
-     float coverage=uCloudCover;
-     float clouds=smoothstep(.64-coverage*.28,.78-coverage*.13,field);
-     clouds*=smoothstep(-.03,.20,y)*(1.-smoothstep(.82,1.0,y)*.30);
-     vec3 cloudDay=mix(vec3(.54,.59,.62),vec3(.85,.83,.77),sunAngle*.66);
-     vec3 cloudNight=vec3(.095,.128,.17);
-     vec3 cloudColor=mix(cloudDay,cloudNight,uNight);
-     sky=mix(sky,cloudColor,clouds*(.15+.59*coverage));
-     // True dark horizon at night; no photograph cross-fade or luminous grey floor.
+     float cover=clamp(uCloudCover+uStorm*.15,0.,1.);
+     vec3 flow=vec3(uTime*(.0022+cover*.0031),uTime*.00015,-uTime*.0014);
+     vec3 p=d*3.15+flow;
+     float broad=fbm(p);
+     float billow=fbm(p*1.78+vec3(6.4,2.8,9.1));
+     float detail=fbm(p*3.7+vec3(12.2,5.3,2.7));
+     float field=broad*.67+billow*.26+detail*.07;
+     float cloudShape=smoothstep(mix(.62,.24,cover),mix(.76,.43,cover),field);
+     float altitude=smoothstep(-.045,.16,y)*(1.-smoothstep(.88,1.,y)*.22);
+     float veil=smoothstep(.50,1.,cover)*smoothstep(-.05,.24,y)*(1.-smoothstep(.62,.95,y))*.24;
+     vec3 cloudLight=mix(vec3(.60,.66,.70),vec3(.86,.87,.84),clamp(.34+billow*.58+sunAngle*.22,0.,1.));
+     vec3 cloudDark=mix(vec3(.35,.40,.44),vec3(.12,.16,.21),uStorm*.82);
+     vec3 cloudColor=mix(cloudDark,cloudLight,clamp(.50+detail*.22-uStorm*.33,0.,1.));
+     cloudColor=mix(cloudColor,vec3(.10,.14,.20),uNight*.72);
+     float cloudAlpha=max(cloudShape*altitude*(.30+.60*cover),veil);
+     sky=mix(sky,cloudColor,clamp(cloudAlpha,0.,.88));
      gl_FragColor=vec4(max(sky,vec3(0.)),1.);
     }`});
   this.sky=new THREE.Mesh(g,m);this.sky.renderOrder=-15;this.scene.add(this.sky);
@@ -476,7 +486,8 @@ export class AfterWorld {
   // old bright rain lines / constant-opacity snow points, never the gameplay.
   this.advancedWeather.legacyPrecipitationDisabled=true;
   this.weatherVfx=new CinematicWeatherVfx(this.scene,ROOF,this.isMobile);
-  // The dedicated, costly second sky sphere is redundant with the unified sky.
+  // Clouds are now integrated directly into the always-visible base sky shader.
+  // Keep the secondary cloud sphere disabled to avoid a second full-screen pass.
   this.weatherVfx.clouds.visible=false;
   this.rain.visible=false;
  }
@@ -517,7 +528,7 @@ export class AfterWorld {
   const top=dayTop.lerp(nightTop,night*.96).lerp(stormTop,haze*.85);
   if(heat){top.lerp(new THREE.Color('#b2ac88'),.38);horizon.lerp(new THREE.Color('#dfb77b'),.5)}if(cold){top.lerp(new THREE.Color('#9bb9cd'),.3)}
   this.sky.material.uniforms.uTop.value.copy(top);this.sky.material.uniforms.uHorizon.value.copy(horizon);this.sky.material.uniforms.uBottom.value.copy(horizon).multiplyScalar(THREE.MathUtils.lerp(.92,.48,night));
-  this.sky.material.uniforms.uSun.value=Math.max(0,sunAltitude)*(.28+twilight*.26)*(1-vw.cloud*.7);this.sky.material.uniforms.uCloudCover.value=vw.cloud;this.sky.material.uniforms.uNight.value=night;this.sky.material.uniforms.uTime.value+=dt;
+  this.sky.material.uniforms.uSun.value=Math.max(0,sunAltitude)*(.28+twilight*.26)*(1-vw.cloud*.7);this.sky.material.uniforms.uCloudCover.value=vw.cloud;this.sky.material.uniforms.uNight.value=night;this.sky.material.uniforms.uStorm.value=vw.storm;this.sky.material.uniforms.uTime.value+=dt;
   this.scene.fog.color.copy(horizon);this.scene.fog.density=THREE.MathUtils.damp(this.scene.fog.density,depthAtmosphere(haze,night).fogDensity,.42,dt);
   this.sun.position.set(Math.sin(solar.azimuth)*90,Math.max(-12,sunAltitude*98),-Math.cos(solar.azimuth)*90);this.sky.material.uniforms.uSunDir.value.copy(this.sun.position).normalize();this.sun.intensity=Math.max(.10,3.6*Math.max(0,sunAltitude)+twilight*.9)*(1-haze*.20)*weatherCloudShadow(vw.cloud)*(1-vw.storm*.18);this.sun.color.set(heat?'#ffefb3':twilight>.27?'#ffb46b':'#e9f1ff');this.ambient.intensity=Math.max(.24,1.4-night*.56-haze*.26-vw.storm*.22);this.fill.intensity=.50+night*.24;
   this.renderer.toneMappingExposure=THREE.MathUtils.lerp(this.renderer.toneMappingExposure,1.22+twilight*.11-night*.15,Math.min(1,dt*1.5));
@@ -562,6 +573,7 @@ export class AfterWorld {
   this.beardedSurvivor?.update(dt,this.life);
   this.premiumStage?.update(dt,vw,night);
   this.apocalypseSetDressing?.update(dt,vw,night);
+  this.horizonWorld?.update(dt,vw,night);
   const t=performance.now()*.001;
   if(this.tarpMesh){const arr=this.tarpMesh.geometry.attributes.position.array,original=this.tarpVerts;
    for(let i=0;i<arr.length;i+=3)arr[i+1]=original[i+1]+Math.sin(t*2+original[i]*.7+original[i+2])*(.055+vw.wind*.20);
@@ -593,5 +605,5 @@ export class AfterWorld {
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
- dispose(){this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.apocalypseSetDressing?.dispose();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
+ dispose(){this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
 }

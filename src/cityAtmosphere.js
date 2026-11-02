@@ -41,27 +41,45 @@ function rainCurtainTexture(){
 
 export class CityAtmosphere {
  constructor(scene,isMobile){
-  this.scene=scene;this.time=0;this.banks=[];this.rainCurtains=[];
-  const texture=cloudTexture();
-  const count=isMobile?38:78;
+  this.scene=scene;this.time=0;this.bankTiers=[];this.rainCurtains=[];
+  this.cloudTexture=cloudTexture();
   const plane=new THREE.PlaneGeometry(1,1);
-  for(let i=0;i<count;i++){
-   const tier=i%3;
-   const spec=INFILL_LAYERS[tier];
-   const theta=(i*.61803398%1)*Math.PI*2;
-   const r=spec.min+(spec.max-spec.min)*(.15+hash(i*7+5)*.70);
-   const cloud=new THREE.Mesh(plane,new THREE.MeshBasicMaterial({map:texture,color:'#bbcad2',transparent:true,opacity:0,depthWrite:false,depthTest:true,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1}));
-   // A horizontal mist sheet crosses real buildings at different altitudes.
-   cloud.rotation.x=-Math.PI/2;
-   // Bank tops stay between the street haze and the buildings' mid-facades.
-   // Never create elevated cloud shelves above the playable rooftop.
-   const level=tier===0?-16:tier===1?-13:-10;
-   cloud.position.set(Math.cos(theta)*r,level+hash(i+91)*8,Math.sin(theta)*r);
-   cloud.scale.set(46+hash(i*11)*70,30+hash(i*13)*65,1);
-   cloud.renderOrder=8;
-   cloud.userData={baseX:cloud.position.x,baseZ:cloud.position.z,phase:hash(i*19)*7,tier};
-   scene.add(cloud);this.banks.push(cloud);
+  const tierSpecs=[
+   {count:isMobile?18:30,min:90,max:300,y:-16,size:[55,115],opacity:.74},
+   {count:isMobile?19:34,min:230,max:560,y:-8,size:[72,150],opacity:.92},
+   {count:isMobile?17:32,min:430,max:880,y:1,size:[95,205],opacity:1.08}
+  ];
+  this.bankGeometry=plane;
+  for(let tier=0;tier<tierSpecs.length;tier++){
+   const spec=tierSpecs[tier],legacyLayer=INFILL_LAYERS[tier],records=[];
+   const material=new THREE.MeshBasicMaterial({
+    map:this.cloudTexture,color:'#bbcad2',transparent:true,opacity:0,
+    depthWrite:false,depthTest:true,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1
+   });
+   const mesh=new THREE.InstancedMesh(plane,material,spec.count);
+   mesh.name=`Drifting volumetric-looking city mist tier ${tier+1}`;
+   mesh.frustumCulled=false;mesh.renderOrder=8+tier;
+   for(let i=0;i<spec.count;i++){
+    const phase=hash((tier+1)*911+i*37)*Math.PI*2;
+    const theta=((i*.61803398+hash(i*17+tier*31)*.11)%1)*Math.PI*2;
+    const r=spec.min+(spec.max-spec.min)*(.08+hash(i*29+tier*71)*.84);
+    const sizeX=spec.size[0]+hash(i*13+tier)* (spec.size[1]-spec.size[0]);
+    const sizeZ=sizeX*(.50+hash(i*19+tier*5)*.38);
+    const baseX=Math.cos(theta)*r,baseZ=Math.sin(theta)*r;
+    const level=spec.y;const legacyBandY=level+hash(i+91)*8;
+    const speed=.42+hash(i*23+tier*101)*.78;
+    const driftAngle=theta+Math.PI*.5+(hash(i*43+tier)-.5)*1.15;
+    records.push({
+      baseX,baseZ,baseY:legacyBandY-4+(hash(i*61+tier*11)-.5)*(tier===2?5:3),
+      sizeX,sizeZ,phase,speed,
+      vx:Math.cos(driftAngle),vz:Math.sin(driftAngle),
+      yaw:(hash(i*47+tier)-.5)*.7
+    });
+   }
+   this.bankTiers.push({mesh,material,records,spec});
+   scene.add(mesh);
   }
+  this.dummy=new THREE.Object3D();
   const rainTexture=rainCurtainTexture();this.rainTexture=rainTexture;
   for(let i=0;i<(isMobile?10:22);i++){
     const a=i*2.39996;
@@ -86,13 +104,38 @@ export class CityAtmosphere {
   }
   const mist=weatherValues.mist;
   const atmosphere=depthAtmosphere(mist,night);
-  const materialTint=new THREE.Color(skyColor).lerp(new THREE.Color('#95aabd'),.23);
-  for(let i=0;i<this.banks.length;i++){
-   const m=this.banks[i],{baseX,baseZ,phase,tier}=m.userData;
-   m.material.opacity=THREE.MathUtils.damp(m.material.opacity,atmosphere.cloudBankOpacity*(tier===0?.30:tier===1?.46:.61),.5,dt);
-   m.material.color.copy(materialTint);
-   m.position.x=baseX+Math.sin(this.time*.025+phase)*(2+weatherValues.wind*7);
-   m.position.z=baseZ+Math.cos(this.time*.022+phase)*(2+weatherValues.wind*5);
+  const materialTint=new THREE.Color(skyColor).lerp(new THREE.Color('#a8b8bd'),.34);
+  const windBoost=.72+weatherValues.wind*2.15;
+  for(let tier=0;tier<this.bankTiers.length;tier++){
+   const entry=this.bankTiers[tier],{mesh,material,records,spec}=entry;
+   const tierWeight=[.78,1,1.12][tier];
+   const target=(.035+mist*.23+weatherValues.rain*.055)*tierWeight*Math.max(.42,atmosphere.cloudBankOpacity*2.5);
+   material.opacity=THREE.MathUtils.damp(material.opacity,Math.min(.34,target),.55,dt);
+   material.color.lerp(materialTint,1-Math.exp(-dt*.8));
+   for(let i=0;i<records.length;i++){
+    const r=records[i];
+    // Long linear drift makes the fog visibly travel through street canyons;
+    // a soft loop prevents banks from escaping the city.
+    const span=95+tier*65;
+    const travel=((this.time*r.speed*windBoost+r.phase*37)% (span*2))-span;
+    const curl=Math.sin(this.time*(.09+.025*tier)+r.phase)* (9+tier*7);
+    const cross=Math.cos(this.time*(.075+.018*tier)+r.phase*1.7)*(6+tier*5);
+    const x=r.baseX+r.vx*travel-r.vz*curl;
+    const z=r.baseZ+r.vz*travel+r.vx*curl;
+    const y=r.baseY+Math.sin(this.time*.11+r.phase)*(.7+tier*.65);
+    const breathe=1+Math.sin(this.time*.13+r.phase*2.3)*.09+weatherValues.wind*.035;
+    const cloud=this.dummy;cloud.position.set(x,y,z);
+    cloud.rotation.x=-Math.PI/2;cloud.rotation.y=r.yaw+cross*.002;cloud.rotation.z=0;
+    cloud.scale.set(r.sizeX*breathe,r.sizeZ*(1+.07*Math.cos(this.time*.10+r.phase)),1);
+    cloud.updateMatrix();mesh.setMatrixAt(i,cloud.matrix);
+   }
+   mesh.instanceMatrix.needsUpdate=true;
   }
+ }
+ dispose(){
+  for(const tier of this.bankTiers){tier.mesh.parent?.remove(tier.mesh);tier.material.dispose();}
+  this.bankGeometry?.dispose();this.cloudTexture?.dispose();
+  for(const curtain of this.rainCurtains){curtain.parent?.remove(curtain);curtain.geometry.dispose();curtain.material.dispose();}
+  this.rainTexture?.dispose();
  }
 }
