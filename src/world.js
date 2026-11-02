@@ -416,17 +416,18 @@ export class AfterWorld {
   // cylinders created the conspicuous pale horizon band and obscured the moon.
   // Soft clouds are sampled from a single seamless noise field in sky space.
   const g=new THREE.SphereGeometry(1490,48,32);
-  const cloudTexture=new THREE.TextureLoader().load('./assets/materials/botany/cloud_volume.png');
-  cloudTexture.wrapS=cloudTexture.wrapT=THREE.RepeatWrapping;cloudTexture.anisotropy=4;
-  this.skyCloudTexture=cloudTexture;
   const m=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,
    uniforms:{uTop:{value:color('#345b83')},uHorizon:{value:color('#9fb7bd')},uBottom:{value:color('#738491')},
-    uSun:{value:.7},uSunDir:{value:new THREE.Vector3(.1,.65,.5)},uCloudCover:{value:.2},uTime:{value:0},uNight:{value:0},uCloudMap:{value:cloudTexture}},
+    uSun:{value:.7},uSunDir:{value:new THREE.Vector3(.1,.65,.5)},uCloudCover:{value:.2},uTime:{value:0},uNight:{value:0},uStorm:{value:0}},
    vertexShader:`varying vec3 vDir;void main(){vDir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
    fragmentShader:`precision highp float;
     varying vec3 vDir;uniform vec3 uTop,uHorizon,uBottom,uSunDir;
-    uniform sampler2D uCloudMap;uniform float uSun,uCloudCover,uTime,uNight;
-    const float PI=3.14159265359;
+    uniform float uSun,uCloudCover,uTime,uNight,uStorm;
+    float h(vec3 p){p=fract(p*.1031);p+=dot(p,p.yxz+33.33);return fract((p.x+p.y)*p.z);}
+    float noise3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+      return mix(mix(mix(h(i),h(i+vec3(1.,0.,0.)),f.x),mix(h(i+vec3(0.,1.,0.)),h(i+vec3(1.,1.,0.)),f.x),f.y),
+      mix(mix(h(i+vec3(0.,0.,1.)),h(i+vec3(1.,0.,1.)),f.x),mix(h(i+vec3(0.,1.,1.)),h(i+vec3(1.,1.,1.)),f.x),f.y),f.z);}
+    float fbm(vec3 p){float r=0.;float w=.54;for(int i=0;i<4;i++){r+=noise3(p)*w;p=p*2.03+vec3(4.1,7.7,3.1);w*=.49;}return r;}
     void main(){
      vec3 d=normalize(vDir);float y=d.y;
      float horizon=smoothstep(-.16,.38,y);
@@ -435,19 +436,22 @@ export class AfterWorld {
      float sunAngle=max(0.,dot(d,normalize(uSunDir)));
      float scatter=pow(sunAngle,13.);
      sky+=vec3(1.,.48,.17)*scatter*uSun*.24;
-     float az=atan(d.z,d.x)/(2.*PI)+.5;
-     vec2 uv=vec2(az+uTime*.000006,clamp(y*.48+.49,0.,1.));
-     float n=texture2D(uCloudMap,uv).r;
-     float n2=texture2D(uCloudMap,uv*vec2(1.83,1.14)+vec2(.13,.03)).r;
-     float field=mix(n,n2,.27);
-     float coverage=uCloudCover;
-     float clouds=smoothstep(.64-coverage*.28,.78-coverage*.13,field);
-     clouds*=smoothstep(-.03,.20,y)*(1.-smoothstep(.82,1.0,y)*.30);
-     vec3 cloudDay=mix(vec3(.54,.59,.62),vec3(.85,.83,.77),sunAngle*.66);
-     vec3 cloudNight=vec3(.095,.128,.17);
-     vec3 cloudColor=mix(cloudDay,cloudNight,uNight);
-     sky=mix(sky,cloudColor,clouds*(.15+.59*coverage));
-     // True dark horizon at night; no photograph cross-fade or luminous grey floor.
+     float cover=clamp(uCloudCover+uStorm*.15,0.,1.);
+     vec3 flow=vec3(uTime*(.0022+cover*.0031),uTime*.00015,-uTime*.0014);
+     vec3 p=d*3.15+flow;
+     float broad=fbm(p);
+     float billow=fbm(p*1.78+vec3(6.4,2.8,9.1));
+     float detail=fbm(p*3.7+vec3(12.2,5.3,2.7));
+     float field=broad*.67+billow*.26+detail*.07;
+     float cloudShape=smoothstep(mix(.70,.29,cover),mix(.82,.49,cover),field);
+     float altitude=smoothstep(-.045,.16,y)*(1.-smoothstep(.88,1.,y)*.22);
+     float veil=smoothstep(.58,1.,cover)*smoothstep(-.05,.22,y)*(1.-smoothstep(.58,.94,y))*.18;
+     vec3 cloudLight=mix(vec3(.62,.68,.71),vec3(.88,.88,.84),clamp(.38+billow*.55+sunAngle*.22,0.,1.));
+     vec3 cloudDark=mix(vec3(.35,.40,.44),vec3(.12,.16,.21),uStorm*.82);
+     vec3 cloudColor=mix(cloudDark,cloudLight,clamp(.50+detail*.22-uStorm*.33,0.,1.));
+     cloudColor=mix(cloudColor,vec3(.10,.14,.20),uNight*.72);
+     float cloudAlpha=max(cloudShape*altitude*(.18+.68*cover),veil);
+     sky=mix(sky,cloudColor,clamp(cloudAlpha,0.,.88));
      gl_FragColor=vec4(max(sky,vec3(0.)),1.);
     }`});
   this.sky=new THREE.Mesh(g,m);this.sky.renderOrder=-15;this.scene.add(this.sky);
@@ -476,10 +480,9 @@ export class AfterWorld {
   // old bright rain lines / constant-opacity snow points, never the gameplay.
   this.advancedWeather.legacyPrecipitationDisabled=true;
   this.weatherVfx=new CinematicWeatherVfx(this.scene,ROOF,this.isMobile);
-  // v2.04: keep the continuous spherical noise cloud field visible. The old
-  // billboard cloud cards are removed in AdvancedWeather, so this dome is now
-  // the seamless volumetric-looking weather layer over the base atmospheric sky.
-  this.weatherVfx.clouds.visible=true;
+  // Clouds are now integrated directly into the always-visible base sky shader.
+  // Keep the secondary cloud sphere disabled to avoid a second full-screen pass.
+  this.weatherVfx.clouds.visible=false;
   this.rain.visible=false;
  }
  createAtmosphericBackdrops(){
@@ -519,7 +522,7 @@ export class AfterWorld {
   const top=dayTop.lerp(nightTop,night*.96).lerp(stormTop,haze*.85);
   if(heat){top.lerp(new THREE.Color('#b2ac88'),.38);horizon.lerp(new THREE.Color('#dfb77b'),.5)}if(cold){top.lerp(new THREE.Color('#9bb9cd'),.3)}
   this.sky.material.uniforms.uTop.value.copy(top);this.sky.material.uniforms.uHorizon.value.copy(horizon);this.sky.material.uniforms.uBottom.value.copy(horizon).multiplyScalar(THREE.MathUtils.lerp(.92,.48,night));
-  this.sky.material.uniforms.uSun.value=Math.max(0,sunAltitude)*(.28+twilight*.26)*(1-vw.cloud*.7);this.sky.material.uniforms.uCloudCover.value=vw.cloud;this.sky.material.uniforms.uNight.value=night;this.sky.material.uniforms.uTime.value+=dt;
+  this.sky.material.uniforms.uSun.value=Math.max(0,sunAltitude)*(.28+twilight*.26)*(1-vw.cloud*.7);this.sky.material.uniforms.uCloudCover.value=vw.cloud;this.sky.material.uniforms.uNight.value=night;this.sky.material.uniforms.uStorm.value=vw.storm;this.sky.material.uniforms.uTime.value+=dt;
   this.scene.fog.color.copy(horizon);this.scene.fog.density=THREE.MathUtils.damp(this.scene.fog.density,depthAtmosphere(haze,night).fogDensity,.42,dt);
   this.sun.position.set(Math.sin(solar.azimuth)*90,Math.max(-12,sunAltitude*98),-Math.cos(solar.azimuth)*90);this.sky.material.uniforms.uSunDir.value.copy(this.sun.position).normalize();this.sun.intensity=Math.max(.10,3.6*Math.max(0,sunAltitude)+twilight*.9)*(1-haze*.20)*weatherCloudShadow(vw.cloud)*(1-vw.storm*.18);this.sun.color.set(heat?'#ffefb3':twilight>.27?'#ffb46b':'#e9f1ff');this.ambient.intensity=Math.max(.24,1.4-night*.56-haze*.26-vw.storm*.22);this.fill.intensity=.50+night*.24;
   this.renderer.toneMappingExposure=THREE.MathUtils.lerp(this.renderer.toneMappingExposure,1.22+twilight*.11-night*.15,Math.min(1,dt*1.5));
