@@ -42,10 +42,10 @@ export function stretchKeyframes(seconds=0,duration=16){
   const lateral=smooth((q-.43)/.12)*(1-smooth((q-.73)/.11));
   const bend=smooth((q-.69)/.10)*(1-smooth((q-.90)/.08));
   return {
-    leftArm:-.12-2.35*reach-1.75*lateral-.55*bend,
-    rightArm:-.12-2.35*reach-.60*lateral-.55*bend,
-    leftArmZ:.18+ .28*lateral,
-    rightArmZ:-.18-.42*lateral,
+    leftArm:-.10-1.72*reach-1.30*lateral-.42*bend,
+    rightArm:-.10-1.72*reach-.88*lateral-.42*bend,
+    leftArmZ:-.20-.26*lateral,
+    rightArmZ:.20+.34*lateral,
     torsoX:.22*bend,
     torsoZ:Math.sin((q-.43)/.30*Math.PI)*.19*lateral*envelope,
     headX:-.14*reach+.13*bend
