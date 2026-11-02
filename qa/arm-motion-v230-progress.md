@@ -45,9 +45,9 @@ This file is the durable resume checkpoint for the full arm-animation audit.
 - [ ] Sleep-enter fixed-v2 10-frame recapture/review — NEXT.
 - [x] Apply remaining arm/hand coordinate fixes. Wave, stretch, and sleep-enter required coordinate/IK corrections; guitar v2 placement was retained; eat/radio passed without additional changes.
 - [x] Recapture every changed motion, 10/10. All six requested motions have been reviewed at ten timeline samples.
-- [ ] Run npm test / npm run check / npm run build. Previous full test found only the legacy wave visibility threshold; wave was micro-retuned and recaptured PASS.
-- [ ] Browser/WebGL runtime validation.
-- [ ] Merge only after all motions PASS.
+- [x] Run npm test / npm run check / npm run build: PASS — 208/208 tests, asset validation PASS, production build PASS.
+- [x] Browser/WebGL runtime validation: PASS for all six motions. Only observed 404 was `/favicon.ico`, confirmed unrelated to game/animation resources.
+- [ ] Merge only after all motions PASS — all motion/QA gates are now satisfied; merge/deploy is the next step.
 
 ## Known implementation observations before visual review
 - wave: right upper arm uses large X/Z offsets and forearm oscillation.
@@ -93,3 +93,11 @@ On any interruption, read this file first and continue at the first unchecked it
 - 2026-11-03: sleep arm solver corrected against real mattress axes. Previous root-local brace rotated behind the reclining body.
 
 - 2026-11-03: sleep fixed-v1 rejected quantitatively. Right hand target error peaked >1m; switched to shoulder-projected world-space mattress contacts.
+
+## Final audit result
+- wave: PASS after 10-frame baseline failure → IK/wrist fix → final 10-frame regression retune recheck.
+- guitar: PASS after v2 lap/neck/string alignment correction and 10-frame recheck.
+- eat: PASS 10/10; mouth approach and prop contact stable.
+- radio: PASS 10/10; radio-to-hand and hand-to-head contact stable.
+- stretch: PASS after asymmetric IK target defect was corrected; final 10 frames symmetric.
+- sleep-enter: PASS after brace-to-relaxed hand targets were corrected; 10-frame + supplemental front/back final checks.
