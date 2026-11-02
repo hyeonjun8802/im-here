@@ -162,7 +162,8 @@ function dynamicCloudSky(scene,isMobile){
       float billow=fbm(p*1.72+vec3(6.1,2.7,9.4));
       float detail=fbm(p*3.65+vec3(11.3,4.2,3.6));
       float density=broad*.66+billow*.27+detail*.07;
-      float low=mix(.715,.34,uCover),high=mix(.835,.535,uCover);
+      float coverAmt=clamp(uCover+uStorm*.18,0.,1.);
+      float low=mix(.68,.27,coverAmt),high=mix(.80,.48,coverAmt);
       float cover=smoothstep(low,high,density);
       // Feather clouds into atmospheric haze at the horizon and gently thin
       // them toward zenith; there is never a visible rectangular termination.
@@ -170,13 +171,17 @@ function dynamicCloudSky(scene,isMobile){
       float zenithFade=1.-smoothstep(.88,1.,dir.y)*.18;
       float altitude=horizonFade*zenithFade;
       float bloom=pow(max(0.,dot(dir,normalize(uSunDirection))),8.);
-      vec3 white=mix(vec3(.69,.76,.80),vec3(1.,.72,.50),uSunset*.60);
-      vec3 dark=mix(vec3(.31,.37,.45),vec3(.065,.10,.15),uStorm*.86);
-      float light=clamp(.50+.32*billow+.18*detail+.30*bloom-uStorm*.46,0.,1.);
+      vec3 white=mix(vec3(.67,.73,.76),vec3(.98,.70,.48),uSunset*.58);
+      vec3 dark=mix(vec3(.28,.34,.40),vec3(.055,.085,.13),uStorm*.88);
+      float light=clamp(.46+.30*billow+.16*detail+.28*bloom-uStorm*.48,0.,1.);
       vec3 col=mix(dark,white,light);
-      col=mix(col,vec3(.19,.25,.35),uNight*.74);
-      float alpha=cover*altitude*(.20+uCover*.56);
-      gl_FragColor=vec4(col,clamp(alpha,0.,.88));
+      col=mix(col,vec3(.18,.23,.33),uNight*.74);
+      float alpha=cover*altitude*(.30+coverAmt*.58);
+      // A broad overcast veil is derived from the same spherical field, not
+      // another image plane. It gives rain/storm skies weight near the horizon.
+      float veil=smoothstep(.58,1.,coverAmt)*horizonFade*(1.-smoothstep(.50,.90,dir.y))*.16;
+      alpha=max(alpha,veil);
+      gl_FragColor=vec4(col,clamp(alpha,0.,.90));
     }`,
   side:THREE.BackSide,transparent:true,depthWrite:false,depthTest:true,blending:THREE.NormalBlending
  });
