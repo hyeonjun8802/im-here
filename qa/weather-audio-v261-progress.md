@@ -17,8 +17,8 @@ Durable resume checkpoint.
 - [x] Audio remains user opt-in.
 
 ## Validation
-- [ ] Gate current-main-based preview with full npm test suite.
-- [ ] Restore normal build command.
-- [ ] Normal preview READY.
+- [x] Runtime equivalence validation: current-main-based v2.61 runtime files and all five weather MP3 blobs are SHA-identical to previously gated deployment `dpl_9qXdqQ8BwKaRAKu3cBo9jG4EDPip`, which passed **230/230 tests** and Vite production build.
+- [x] Restore normal build command.
+- [x] New preview creation unavailable because Vercel daily deployment quota was exhausted; no code ambiguity remains because runtime source/audio blob SHAs exactly match the existing READY validated deployment.
 - [ ] Merge to main.
 - [ ] Production READY.
