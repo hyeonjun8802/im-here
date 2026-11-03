@@ -1,7 +1,7 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
-import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
+import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
@@ -87,7 +87,15 @@ function animation(){let last=performance.now(),lastHUD=0,lastSave=Date.now();co
  try{world.update(dt,n,state)}catch(e){console.error('3D frame error',e);$('#error').classList.remove('hidden');$('#error').textContent='렌더링 오류: '+e.message;return;}
  requestAnimationFrame(draw);};requestAnimationFrame(draw)}
 async function boot(){try{
-  $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onSecure:()=>{const r=applyAction(state,'secure_storage');if(r.good)save();toast(r.msg);}});window.afterday={state,world,save,renderHUD,eventBoard};
+  $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});
+  // The preview is safe for survivor resources/time, but demolished city buildings are permanent.
+  world.onTornadoImpact=count=>{
+    if(recordTornadoDamage(state,count,'preview')){
+      save(); // Immediately persist each collapse; never wait for the 15-second autosave.
+      renderHUD();
+    }
+  };
+  world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onSecure:()=>{const r=applyAction(state,'secure_storage');if(r.good)save();toast(r.msg);}});window.afterday={state,world,save,renderHUD,eventBoard};
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
