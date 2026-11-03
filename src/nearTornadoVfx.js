@@ -196,6 +196,7 @@ export class NearTornadoVfx {
     this.slots=selectStormBuildings(world.distantCityPlan);
     this.track=this.slots.map(s=>new THREE.Vector3(...stormTrackPoint(s)));
     this.clock=0;this.exposure=0;this.strength=0;
+    this.lastEncounterId=0;this.roofPassReported=false;
     this.anchor=this.track[0]?.clone()||new THREE.Vector3(-110,-23.4,-116);
     this.impacts=[];this.damageSites=new Map();this.reportedIds=new Set();
     this.root=new THREE.Group();this.root.name='AFTERDAY cinematic close 3D tornado';
@@ -351,9 +352,13 @@ export class NearTornadoVfx {
       smoke.instanceMatrix.needsUpdate=true;
     }
   }
-  update(dt,weather,{persistedCount=0,permanentIds=null,trackIds=null,preview=false,night=0,reduceMotion=false,onImpact=()=>{}}={}){
+  update(dt,weather,{persistedCount=0,permanentIds=null,trackIds=null,approach='distant',encounterId=0,preview=false,night=0,reduceMotion=false,onImpact=()=>{},onRooftopPass=()=>{}}={}){
     dt=Math.min(Math.max(dt,0),.05);
     if(trackIds?.length)this.setStormSites(trackIds);
+    if(this.lastEncounterId!==encounterId){
+      this.lastEncounterId=encounterId;this.roofPassReported=false;
+      this.exposure=0;
+    }
     const target=Math.max(0,Math.min(1,Number(weather)||0));
     this.clock+=dt;this.strength=THREE.MathUtils.damp(this.strength,target,1.5,dt);
     this.exposure=target>.5?this.exposure+dt:0;
@@ -361,15 +366,29 @@ export class NearTornadoVfx {
     this.updateDestruction(dt,target>.5,Math.max(0,Math.min(3,Math.floor(persistedCount))),preview,onImpact,permanentIds);
     if(!this.root.visible){this.flashLight.intensity=0;return 0;}
     const t=this.clock,s=this.strength;
-    // Move left-to-right through real building coordinates, then sweep back slowly.
-    // The storm's ground contact stays off the playable rooftop at all times.
+    // A minority of actual storms cross the neighboring block or sweep over
+    // the SAME playable rooftop. Only background towers are destructible.
+    const close=approach==='near'||approach==='direct';
+    const guide=this.track[1]||this.anchor;
+    const direction=new THREE.Vector3(guide.x,0,guide.z).normalize();
+    if(direction.lengthSq()<.001)direction.set(1,0,0);
+    const passRadius=approach==='direct'?18:56;
+    const rooftopPoint=new THREE.Vector3(direction.x*passRadius,-23.4,direction.z*passRadius);
+    const route=close&&this.track.length>=2?
+      [this.track[0],this.track[1],rooftopPoint,this.track[this.track.length-1]]:this.track;
     const pathT=this.exposure<=21?
       smooth(0,1,(this.exposure-3)/17):(.5+.5*Math.cos((this.exposure-21)*.20));
-    const step=pathT*Math.max(0,this.track.length-1);
-    const segment=Math.min(Math.floor(step),Math.max(0,this.track.length-2));
+    const step=pathT*Math.max(0,route.length-1);
+    const segment=Math.min(Math.floor(step),Math.max(0,route.length-2));
     const alpha=smooth(0,1,step-segment);
-    const a=this.track[segment]||this.anchor,b=this.track[segment+1]||a;
+    const a=route[segment]||this.anchor,b=route[segment+1]||a;
     this.root.position.lerpVectors(a,b,alpha);
+    // Exactly one close-pass callback per storm, including when rendering runs
+    // at a different FPS or the user has switched to 2x/4x speed.
+    if(close&&!preview&&target>.5&&this.exposure>=13&&!this.roofPassReported){
+      this.roofPassReported=true;
+      onRooftopPass(approach);
+    }
     this.root.position.x+=Math.sin(t*.43)*2.1*s;
     this.root.position.z+=Math.cos(t*.36)*1.7*s;
     for(const sh of this.shells){sh.material.uniforms.uTime.value=t;sh.material.uniforms.uStrength.value=s;}

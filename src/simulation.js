@@ -1,3 +1,4 @@
+import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
@@ -5,9 +6,9 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, gameClockOffsetMs:0, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
+  version:4, gameClockOffsetMs:0, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
-  supply:{food:8,water:12,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
+  supply:{food:6,water:8,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
   events:['폐허 옥상에 작은 캠프를 마련했다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
 });
 export function sanitize(raw, now=Date.now()) {
@@ -36,6 +37,22 @@ export function sanitize(raw, now=Date.now()) {
   s.tornadoEncounter=Math.max(0,Math.floor(Number(s.tornadoEncounter)||0));
   s.tornadoEpisodeDamageCount=Math.max(0,Math.min(3,Math.floor(Number(s.tornadoEpisodeDamageCount)||0)));
   s.tornadoEncounterActive=Boolean(s.tornadoEncounterActive);
+  s.tornadoApproach=['distant','near','direct'].includes(s.tornadoApproach)?s.tornadoApproach:'distant';
+  s.tornadoStartedAt=Math.max(0,Number(s.tornadoStartedAt)||0);
+  s.tornadoRoofImpactEncounter=Math.max(0,Math.floor(Number(s.tornadoRoofImpactEncounter)||0));
+  s.tornadoCoverActive=Boolean(s.tornadoCoverActive);
+  s.tornadoSuppliesSecured=Boolean(s.tornadoSuppliesSecured);
+  s.tornadoPreview=Boolean(s.tornadoPreview);
+  s.weatherEpisode=Math.max(0,Math.floor(Number(s.weatherEpisode)||0));
+  s.weatherSinceAt=Math.max(0,Number(s.weatherSinceAt)||s.startedAt);
+  s.nextTornadoAllowedAt=Math.max(0,Number(s.nextTornadoAllowedAt)||0);
+  s.noticeSeenIds=Array.isArray(s.noticeSeenIds)?[...new Set(s.noticeSeenIds.filter(v=>typeof v==='string'&&v.length<160))].slice(-80):[];
+  s.eventSerial=Math.max(0,Math.floor(Number(s.eventSerial)||0));
+  s.survivalStatus=s.survivalStatus==='dead'?'dead':'alive';
+  s.diedAt=Math.max(0,Number(s.diedAt)||0);
+  s.deathCause=typeof s.deathCause==='string'?s.deathCause.slice(0,160):'';
+  s.survivalMilestones=Array.isArray(s.survivalMilestones)?[...new Set(s.survivalMilestones.filter(Number.isInteger))].slice(-25):[];
+  for(const key of ['restCooldownAt','exploreCooldownAt','collectWaterCooldownAt'])s[key]=Math.max(0,Number(s[key])||0);
   s.raiderAlert=Boolean(s.raiderAlert);
   s.raiderUntilAt=Number.isFinite(Number(s.raiderUntilAt))?Math.max(0,Number(s.raiderUntilAt)):0;
   s.raiderCooldownAt=Number.isFinite(Number(s.raiderCooldownAt))?Math.max(0,Number(s.raiderCooldownAt)):0;
@@ -46,7 +63,7 @@ export function getDay(startedAt,now=Date.now()) { const kst=9*3600000; const a=
 export function wallClock(now=Date.now()) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(now));}
 export function localHour(now=Date.now()) {const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));const get=k=>Number(parts.find(p=>p.type===k)?.value||0);return get('hour')+get('minute')/60+get('second')/3600;}
 function nextRandom(s){s.weatherSeed=(Math.imul(s.weatherSeed,1664525)+1013904223)>>>0;return s.weatherSeed/4294967296;}
-export function addEvent(s,msg){if(s.events[s.events.length-1]!==msg)s.events.push(msg);if(s.events.length>16)s.events.shift();}
+export function addEvent(s,msg){if(s.events[s.events.length-1]!==msg){s.events.push(msg);s.eventSerial=(Number(s.eventSerial)||0)+1;}if(s.events.length>16)s.events.shift();}
 /** Monotonic tornado damage: preview and real weather have the same permanent city consequences.
  * Safe to replay after autosave or reload; a ruined tower can never be repaired by weather changes. */
 export function recordTornadoDamage(s,targetCount,source='weather'){
@@ -69,7 +86,60 @@ export function recordTornadoDamage(s,targetCount,source='weather'){
  addEvent(s,`토네이도가 폐허 건물 ${next}채를 무너뜨렸다. 파괴된 건물은 복구되지 않는다.`);
  return true;
 }
-function pickWeather(s){const r=nextRandom(s);const choices=s.temperature<25?['clear','cloud','rain','cold','storm']:['clear','cloud','heat','rain','storm','tornado'];return choices[Math.min(choices.length-1,Math.floor(r*choices.length))];}
+/** A single, persisted encounter decides distance, warning and rooftop consequences. */
+export function beginTornadoEncounter(s,now=Date.now(),{preview=false}={}){
+ const encounter=(Number(s.tornadoEncounter)||0)+1;
+ s.tornadoEncounter=encounter;
+ s.tornadoEncounterActive=true;
+ s.tornadoStartedAt=now;
+ s.tornadoPreview=Boolean(preview);
+ s.tornadoEpisodeDamageCount=0;
+ s.tornadoRoofImpactEncounter=0;
+ s.tornadoCoverActive=false;
+ s.tornadoSuppliesSecured=false;
+ s.tornadoApproach=chooseTornadoApproach((Number(s.weatherSeed)||1)+encounter*7919,getDay(s.startedAt,now));
+ if(!preview)addEvent(s,`토네이도 경보: ${tornadoWarningText(s.tornadoApproach)}`);
+ return s.tornadoApproach;
+}
+export function resolveTornadoRoofImpact(s,now=Date.now()){
+ const episode=Math.max(0,Number(s.tornadoEncounter)||0);
+ if(s.survivalStatus==='dead'||!episode||!s.tornadoEncounterActive||s.tornadoPreview||
+    s.tornadoRoofImpactEncounter===episode||!['near','direct'].includes(s.tornadoApproach))return {applied:false};
+ const base=SURVIVAL_BALANCE.tornado[s.tornadoApproach];
+ const protectedHealth=s.tornadoCoverActive?SURVIVAL_BALANCE.tornado.coverHealthFactor:1;
+ const lowShelter=s.facilities.shelter<45?1.23:1;
+ const healthLoss=Math.max(1,Math.ceil(base.health*protectedHealth*lowShelter));
+ const foodLoss=Math.min(s.supply.food,Math.ceil(base.food*(s.tornadoSuppliesSecured?SURVIVAL_BALANCE.tornado.secureFoodFactor:1)));
+ const waterLoss=Math.min(s.supply.water,Math.floor(base.water*(s.tornadoSuppliesSecured?SURVIVAL_BALANCE.tornado.secureWaterFactor:1)));
+ s.tornadoRoofImpactEncounter=episode; // idempotency BEFORE saving or re-entering the callback
+ s.health=CAP(s.health-healthLoss);
+ s.supply.food-=foodLoss;
+ s.supply.water-=waterLoss;
+ s.facilities.shelter=CAP(s.facilities.shelter-Math.ceil(base.shelter*(s.tornadoCoverActive?SURVIVAL_BALANCE.tornado.coverShelterFactor:1)));
+ s.facilities.storage=CAP(s.facilities.storage-base.storage);
+ const label=s.tornadoApproach==='direct'?'옥상 직격':'옥상 바로 옆 통과';
+ addEvent(s,`${label}: 건강 -${healthLoss}, 식량 -${foodLoss}, 식수 -${waterLoss}. ${s.tornadoCoverActive?'대피로 부상을 줄였다.':'대피하지 못해 파편에 노출됐다.'}`);
+ evaluateSurvival(s,now);
+ return {applied:true,healthLoss,foodLoss,waterLoss,approach:s.tornadoApproach};
+}
+export function evaluateSurvival(s,now=Date.now()){
+ if(s.survivalStatus==='dead')return false;
+ if(s.health>0)return false;
+ s.health=0;s.survivalStatus='dead';s.diedAt=now;
+ s.deathCause=s.water<12?'탈수와 누적 부상':s.food<12?'기아와 누적 부상':'재난과 누적 부상';
+ addEvent(s,`생존 종료. ${s.deathCause}. 마지막 날까지 버텼지만 더 이상 움직일 수 없다.`);
+ return true;
+}
+function pickWeather(s,now=Date.now()){
+ const r=nextRandom(s);
+ if(getDay(s.startedAt,now)>=3&&now>=s.nextTornadoAllowedAt&&r<.028)return 'tornado';
+ if(r<.065)return 'storm';
+ if(r<.35)return 'rain';
+ if(r<.62)return 'cloud';
+ if(r<.86)return 'clear';
+ if(r<.93)return 'heat';
+ return 'cold';
+}
 export function advance(s,now=Date.now(),offline=false){
   if(now<s.lastTickAt) return s; // Never process a backward system clock.
   const step=Math.min(now-s.lastTickAt,MAX_OFFLINE_MS);
@@ -80,17 +150,29 @@ export function advance(s,now=Date.now(),offline=false){
   const finalTickTime=now-s.simRemainderMs;
   for(let i=0;i<ticks;i++){
     const tickTime=finalTickTime-(ticks-1-i)*60000;
+    if(s.survivalStatus==='dead')break;
     if(tickTime>=s.nextWeatherAt){
-      s.weather=s.pendingWeather||pickWeather(s);
-      s.pendingWeather=pickWeather(s);
+      const was=s.weather;
+      s.weather=s.pendingWeather||pickWeather(s,tickTime);
+      if(s.weather==='tornado')s.nextTornadoAllowedAt=tickTime+60*3600000;
+      s.pendingWeather=pickWeather(s,tickTime);
       s.nextWeatherAt=tickTime+(15+Math.round(nextRandom(s)*17))*60000;
-      addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
+      if(s.weather!==was){
+        s.weatherEpisode++;
+        s.weatherSinceAt=tickTime;
+        addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
+        // A brief, one-time physical aftermath, NOT a damage roll every frame.
+        if(s.weather==='storm'){
+          s.facilities.shelter=CAP(s.facilities.shelter-2);
+          s.facilities.storage=CAP(s.facilities.storage-2);
+        }
+      }
     }
     const e=s.weather;
     // In actual weather, each minute ruins another background tower, at most three.
     // The same monotonic state update is used by previewed tornado impacts.
     if(e==='tornado'){
-      if(s.tornadoCurrentSites?.length){
+      if(s.tornadoEncounterActive&&!s.tornadoPreview&&s.tornadoCurrentSites?.length){
         const next=Math.min(3,(s.tornadoEpisodeDamageCount||0)+1);
         if(next>s.tornadoEpisodeDamageCount){
           s.tornadoEpisodeDamageCount=next;
@@ -101,14 +183,19 @@ export function advance(s,now=Date.now(),offline=false){
         recordTornadoDamage(s,(s.tornadoDamageCount||0)+1,'weather');
       }
     }
-    s.food=CAP(s.food-(e==='cold'?.041:.032));
-    s.water=CAP(s.water-(e==='heat'?.075:.043));
-    s.health=CAP(s.health-(s.water<12||s.food<10?.067:.002));
+    s.food=CAP(s.food-SURVIVAL_BALANCE.satietyDrainMinute*(e==='cold'?SURVIVAL_BALANCE.coldSatietyMultiplier:1));
+    s.water=CAP(s.water-SURVIVAL_BALANCE.hydrationDrainMinute*(e==='heat'?SURVIVAL_BALANCE.heatHydrationMultiplier:1));
+    if(s.water<SURVIVAL_BALANCE.lowVitalThreshold||s.food<SURVIVAL_BALANCE.lowVitalThreshold)
+      s.health=CAP(s.health-SURVIVAL_BALANCE.lowVitalHealthLossMinute);
+    if(s.water<SURVIVAL_BALANCE.lowVitalThreshold&&s.food<SURVIVAL_BALANCE.lowVitalThreshold)
+      s.health=CAP(s.health-SURVIVAL_BALANCE.bothLowHealthLossMinute);
+    if(s.water>44&&s.food>44&&s.facilities.shelter>65&&['clear','cloud'].includes(e))
+      s.health=CAP(s.health+SURVIVAL_BALANCE.healthyRestRecoveryMinute);
     const targetTemp=e==='heat'?79:e==='cold'?23:e==='rain'||e==='storm'?43:51;
     s.temperature=CAP(s.temperature+(targetTemp-s.temperature)/90);
     const damage=(e==='storm'?.045:e==='tornado'?.14:e==='rain'?.019:0);
     if(damage){s.facilities.shelter=CAP(s.facilities.shelter-damage);s.facilities.storage=CAP(s.facilities.storage-damage*.4)}
-    if(s.facilities.shelter<25)s.health=CAP(s.health-.024);
+    if(s.facilities.shelter<25)s.health=CAP(s.health-SURVIVAL_BALANCE.weakShelterHealthLossMinute);
     if(e==='heat'&&s.water<28)s.health=CAP(s.health-.036);
     if(e==='cold'&&s.facilities.shelter<55)s.health=CAP(s.health-.025);
     if(e==='rain'&&s.facilities.shelter<36)s.sickness=CAP(s.sickness+.018);
@@ -139,12 +226,48 @@ export function advance(s,now=Date.now(),offline=false){
     }
     if(s.water<35&&s.supply.water>0){s.supply.water--;s.water=CAP(s.water+36);addEvent(s,'생존자가 물탱크에서 물을 마셨다.')}
     if(s.food<32&&s.supply.food>0){s.supply.food--;s.food=CAP(s.food+39);addEvent(s,'생존자가 저장해 둔 식량으로 식사했다.')}
+    if(!offline&&e==='tornado'&&s.tornadoEncounterActive&&!s.tornadoPreview&&
+       tickTime>=s.tornadoStartedAt+60000)resolveTornadoRoofImpact(s,tickTime);
+    const day=getDay(s.startedAt,tickTime);
+    for(const beat of SURVIVAL_CHAPTERS){
+      if(day>=beat.day&&!s.survivalMilestones.includes(beat.day)){
+        s.survivalMilestones.push(beat.day);
+        addEvent(s,`생존 일지 DAY ${beat.day}: ${beat.title} — ${beat.line}`);
+      }
+    }
+    if(evaluateSurvival(s,tickTime))break;
   }
   s.lastTickAt=now;
   return s;
 }
 export function applyAction(s,action,now=Date.now()){
  const out=(good,msg)=>({good,msg});
+ if(s.survivalStatus==='dead')return out(false,'생존이 종료됐다. 새 생존을 시작해야 한다.');
+ if(action==='take_cover'){
+   if(s.weather!=='tornado'||!s.tornadoEncounterActive||s.tornadoRoofImpactEncounter===s.tornadoEncounter)
+     return out(false,'현재 대피할 토네이도가 없다.');
+   if(s.tornadoCoverActive)return out(false,'이미 대피소에 몸을 숨겼다.');
+   s.tornadoCoverActive=true;s.action='rest';s.actionUntil=now+16000;
+   addEvent(s,'생존자가 대피소에 몸을 낮췄다. 이번 강풍의 부상 위험이 줄어든다.');
+   return out(true,'대피 완료 · 이번 토네이도 부상 피해 감소');
+ }
+ if(action==='secure_supplies'){
+   if(s.weather!=='tornado'||!s.tornadoEncounterActive||s.tornadoRoofImpactEncounter===s.tornadoEncounter)
+     return out(false,'현재 고정할 긴급 물자가 없다.');
+   if(s.tornadoSuppliesSecured)return out(false,'이번 강풍에 대비한 물자 고정은 완료됐다.');
+   if(s.supply.parts<1)return out(false,'물자 고정용 부품 1개가 필요하다.');
+   s.supply.parts--;s.tornadoSuppliesSecured=true;
+   addEvent(s,'보관함에 고정끈을 묶었다. 이번 토네이도 식량 손실이 줄어든다.');
+   return out(true,'물자 고정 완료 · 식량·식수 피해 감소');
+ }
+ if(action==='collect_water'){
+   if(!['rain','storm'].includes(s.weather))return out(false,'실제 비가 내릴 때만 빗물을 정수해 모을 수 있다.');
+   if(s.facilities.tank<35)return out(false,'물탱크가 너무 파손돼 빗물을 모을 수 없다.');
+   if(now<s.collectWaterCooldownAt)return out(false,'정수 필터를 다시 사용할 때까지 시간이 필요하다.');
+   s.supply.water+=2;s.collectWaterCooldownAt=now+SURVIVAL_BALANCE.collectWaterCooldownMs;
+   addEvent(s,'빗물 수집과 정수를 마쳐 식수 2개를 확보했다.');
+   return out(true,'빗물 수집 완료 · 식수 +2');
+ }
  if(action==='secure_storage'){
    if(!s.raiderAlert)return out(false,'현재 침입 경보가 없다.');
    if(s.supply.parts<1)return out(false,'보관함 잠금에 필요한 수리 부품이 부족하다.');
@@ -160,9 +283,24 @@ export function applyAction(s,action,now=Date.now()){
  if(action==='eat'){if(s.supply.food<1)return out(false,'식량이 부족하다.');s.supply.food--;s.food=CAP(s.food+34);s.action='eat';s.actionUntil=now+6900;return out(true,'오래된 비상식량으로 식사했다.');}
  if(action==='medicine'){if(s.supply.medicine<1)return out(false,'의약품이 부족하다.');if(s.health>=97&&s.sickness<1)return out(false,'치료가 필요한 상태가 아니다.');s.supply.medicine--;s.sickness=CAP(s.sickness-65);s.health=CAP(s.health+22);s.action='medicine';s.actionUntil=now+8000;return out(true,'응급 약품으로 치료했다.');}
  if(action==='repair'){if(s.supply.parts<2)return out(false,'수리 재료가 부족하다.');s.supply.parts-=2;const weakest=Object.keys(s.facilities).sort((a,b)=>s.facilities[a]-s.facilities[b])[0];s.facilities[weakest]=CAP(s.facilities[weakest]+27);s.action='repair';s.actionUntil=now+10000;return out(true,'손상된 시설을 보수했다.');}
- if(action==='rest'){s.health=CAP(s.health+Math.max(0,3-(s.water<12?2:0)));s.action='rest';s.actionUntil=now+9000;return out(true,'대피소에서 휴식을 취한다.');}
+ if(action==='rest'){
+   if(now<s.restCooldownAt)return out(false,'아직 충분히 휴식하지 못했다. 4시간 간격으로 회복할 수 있다.');
+   s.restCooldownAt=now+SURVIVAL_BALANCE.restCooldownMs;
+   const healed=s.water<12?2:7;
+   s.health=CAP(s.health+healed);s.action='rest';s.actionUntil=now+9000;
+   return out(true,`대피소에서 휴식해 건강을 ${healed}만큼 회복했다.`);
+ }
  if(action==='explore'){const need=s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38;
- if(!need) return out(false,'탐험은 식량·식수 부족 또는 위기일 때만 가능하다.');
- const r=nextRandom(s);s.health=CAP(s.health-(r<.18?12:3));s.supply.food+=r<.35?2:5;s.supply.water+=r<.4?1:4;if(r>.5)s.supply.parts+=3;if(r>.7)s.supply.medicine++;s.action='explore';s.actionUntil=now+18000;return out(true,r<.18?'긴급 탐색 중 다쳤지만 식량을 확보했다.':'폐허에서 긴급 보급품을 확보했다.');}
+ if(!need)return out(false,'탐험은 식량·식수 부족 또는 위기일 때만 가능하다.');
+ if(['storm','tornado'].includes(s.weather))return out(false,'강풍 중에는 건물 밖 탐색이 위험하다. 잠잠해질 때까지 기다려야 한다.');
+ if(now<s.exploreCooldownAt)return out(false,'탐색한 계단실이 아직 위험하다. 다음 긴급 탐색까지 20시간을 기다려야 한다.');
+ const r=nextRandom(s),injury=r<.22?12:4;
+ s.health=CAP(s.health-injury);s.supply.food+=r<.23?3:5;s.supply.water+=r<.30?2:4;
+ if(r>.34)s.supply.parts+=2;if(r>.65)s.supply.medicine++;
+ s.exploreCooldownAt=now+SURVIVAL_BALANCE.exploreCooldownMs;
+ s.action='explore';s.actionUntil=now+18000;
+ addEvent(s,r<.22?'긴급 탐색 중 부상을 입었지만 생존 물자를 가져왔다.':'폐허 창고에서 식량과 식수를 확보했다.');
+ evaluateSurvival(s,now);
+ return out(true,r<.22?'부상을 입고 식량과 식수를 확보했다.':'긴급 보급품을 확보했다.');}
  return out(false,'알 수 없는 행동');
 }

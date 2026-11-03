@@ -1,8 +1,9 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
 import {GameClock} from './gameClock.js';
+import {survivalChapter} from './survivalBalance.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
-import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
+import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
@@ -22,12 +23,26 @@ let eventBoard=null;
 let autoLifeCamera=true;
 const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280']];
 function renderHUD(){
- const t=gameClock.virtualNow;$('#days').textContent='DAY '+String(getDay(state.startedAt,t)).padStart(3,'0');$('#clock').textContent=wallClock(t);
+ const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
+ $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
+ const chapter=survivalChapter(day);
+ $('#survival-chapter').textContent=chapter.title+' · '+chapter.line;
+ $('#game-over').classList.toggle('hidden',!dead);
+ if(dead){
+   $('#game-over-days').textContent='DAY '+String(getDay(state.startedAt,state.diedAt||t)).padStart(3,'0');
+   $('#game-over-cause').textContent=state.deathCause||'생존자가 더 이상 움직일 수 없습니다.';
+ }
+ document.querySelectorAll('[data-action]').forEach(button=>button.disabled=dead);
+ const approaching=state.weather==='tornado'&&state.tornadoEncounterActive&&
+   state.tornadoRoofImpactEncounter!==state.tornadoEncounter;
+ $('#take-cover').hidden=!approaching||state.tornadoCoverActive||dead;
+ $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
+ $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C'}[state.weather]);
  const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold'].includes(state.pendingWeather);
  const danger=['storm','tornado'].includes(state.weather)||state.health<35||state.water<18||warningAhead;
- $('#mood').textContent=state.health<32?'위험':danger?'주의':'생존 중';
- $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?'⚠ 토네이도 위험 · 대피소를 보강하세요':state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
+ $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':danger?'주의':'생존 중';
+ $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
  $('#survivor-bars').innerHTML=statusBars.map(([key,label,color])=>`<div class="stat"><div class="stat-line"><span>${label}</span><strong>${Math.round(state[key])}</strong></div><div class="bar"><i style="width:${state[key]}%;background:${color}"></i></div></div>`).join('');
  const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span>💧 ${r.water}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
@@ -36,6 +51,18 @@ function renderHUD(){
  eventBoard?.sync(state,{warningAhead});
 }
 function toast(msg,kind=''){addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
+function runSurvivalAction(action){
+ const result=applyAction(state,action,gameClock.virtualNow);
+ if(result.good){
+   if(action==='take_cover')world?.setAction('shelter');
+   else if(action==='secure_supplies')world?.setAction('repair');
+   else world?.setAction(action);
+   if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
+   save();
+ }
+ toast(result.msg);
+ return result;
+}
 function bindEvents(){
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
@@ -70,8 +97,12 @@ function bindEvents(){
   const status=$('#survivor-status-panel');
   if(status&&!status.classList.contains('is-collapsed'))$('#survivor-status-toggle')?.click();
  });
- document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
- const action=btn.dataset.action;const result=applyAction(state,action,gameClock.virtualNow);if(result.good){world?.setAction(action);if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');save()}toast(result.msg);}))
+ document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runSurvivalAction(btn.dataset.action)));
+ $('#restart-game').addEventListener('click',()=>{
+  if(window.confirm('현재 생존 기록을 초기화하고 DAY 001부터 다시 시작하시겠습니까?')){
+    localStorage.removeItem(SAVE_KEY);window.location.reload();
+  }
+ });
  $('#life-panel-toggle').addEventListener('click',()=>{$('#life-panel').classList.toggle('hidden');$('#weather-panel').classList.add('hidden')});
  $('#close-life').addEventListener('click',()=>$('#life-panel').classList.add('hidden'));
  document.querySelectorAll('[data-life-action]').forEach(button=>button.addEventListener('click',async()=>{
@@ -163,7 +194,18 @@ async function boot(){try{
       renderHUD();
     }
   };
-  world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onSecure:()=>{const r=applyAction(state,'secure_storage',gameClock.virtualNow);if(r.good)save();toast(r.msg);}});window.afterday={state,world,save,renderHUD,eventBoard,gameClock};
+  world.onTornadoClosePass=()=>{
+    // Visual flyby and resource loss are ONE persisted event. Weather preview is visual-only.
+    if(world.previewWeather||state.weather!=='tornado')return;
+    const outcome=resolveTornadoRoofImpact(state,gameClock.virtualNow);
+    if(outcome.applied){save();renderHUD();}
+  };
+  world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};
+  eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),
+    onSecure:()=>runSurvivalAction('secure_storage'),
+    onCover:()=>runSurvivalAction('take_cover'),
+    onPrepare:()=>runSurvivalAction('secure_supplies')});
+  window.afterday={state,world,save,renderHUD,eventBoard,gameClock};
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();

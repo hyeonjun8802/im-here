@@ -12,6 +12,7 @@ import {upgradeCampFacilities} from './premiumProps.js';
 import {AdvancedWeather} from './advancedWeather.js';
 import {CinematicWeatherVfx} from './cinematicWeatherVfx.js';
 import {integrateWeather, visualTargets} from './weatherDirector.js';
+import {beginTornadoEncounter} from './simulation.js';
 import {weatherCloudShadow} from './weatherVisualMath.js';
 import {WeatherAudio} from './weatherAudio.js';
 import {CinematicStage} from './cinematicStage.js';
@@ -571,7 +572,8 @@ export class AfterWorld {
     game.tornadoDamagedIds=selectStormBuildings(this.distantCityPlan).slice(0,Math.min(3,game.tornadoDamageCount)).map(s=>s.id);
     this.onTornadoEncounterChange?.();
   }
-  if(this._tornadoWasActive!==tornadoNow||(tornadoNow&&this._rerollTornado)){
+  if(this._tornadoWasActive!==tornadoNow||(tornadoNow&&this._rerollTornado)||
+     (tornadoNow&&game.tornadoEncounterActive&&game.tornadoPreview!==Boolean(this.previewWeather==='tornado'))){
     if(tornadoNow){
       if(this._rerollTornado||!(game.tornadoEncounterActive&&game.tornadoCurrentSites?.length)){
         const next=(Number(game.tornadoEncounter)||0)+1;
@@ -582,9 +584,7 @@ export class AfterWorld {
         });
         game.tornadoCurrentSites=track.map(s=>s.id);
         game.tornadoPreviousCenterId=track[Math.floor(track.length/2)]?.id||null;
-        game.tornadoEncounter=next;
-        game.tornadoEpisodeDamageCount=0;
-        game.tornadoEncounterActive=true;
+        beginTornadoEncounter(game,now,{preview:!!this.previewWeather});
         this.onTornadoEncounterChange?.();
       }
     }else if(game.tornadoEncounterActive){
@@ -600,9 +600,12 @@ export class AfterWorld {
    persistedCount:game.tornadoEpisodeDamageCount||0,
    permanentIds:game.tornadoDamagedIds,
    trackIds:game.tornadoCurrentSites,
+   approach:game.tornadoApproach,
+   encounterId:game.tornadoEncounter,
    preview:this.previewWeather==='tornado',
    night,reduceMotion:this.reducedMotion,
-   onImpact:(id,index)=>this.onTornadoImpact?.(id,index)
+   onImpact:(id,index)=>this.onTornadoImpact?.(id,index),
+   onRooftopPass:mode=>{if(!this.previewWeather)this.onTornadoClosePass?.(mode);}
   });
   // A fast multi-stroke lightning pulse brightens the actual roof/city lights,
   // not only the bolt sprite. The next frame resets from solar/weather values.
