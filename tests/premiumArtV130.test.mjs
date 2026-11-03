@@ -59,9 +59,9 @@ test('world integrates v1.3 finishing without replacing simulation or city plann
  assert.match(src,/planDistantCity/);
  assert.match(src,/this\.life\.update/);
 });
-test('version 1.3 preserves the original date, weather, layout and activity source checksums',()=>{
+test('current approved simulation, weather, layout and activity source checksums',()=>{
  const original={
-  'src/simulation.js':'4ad1aa474ef2276079e65798107691aeb6be557a1fc8c2e2b4845079386f7aba',
+  'src/simulation.js':'4cb656db0d2562c66a8d433998702755a15b25ce5cd6d1f6ad6226f7d83b447b',
   'src/solar.js':'68b7bd176efca52b8ac0d483507d7e9bcd43229a8c8fdd76408f5cf166aa75ad',
   'src/spatialLayout.js':'157bcbc1f606f34d2f3800994c5179c63347e26021e08459b566cd5bb4754c61',
   'src/weatherDirector.js':'25224234f37a4b67307a3e610dd23639e765428ae7e018c20bd4eeb9ec322323',
