@@ -41,8 +41,13 @@ export function survivalChapter(day){
 }
 export function chooseTornadoApproach(seed,day){
   if(day<=SURVIVAL_BALANCE.firstDaySafeUntilDay)return 'distant';
-  const x=(Math.imul((Number(seed)||1)>>>0,1664525)+1013904223)>>>0;
-  const roll=x/4294967296;
+  // Avalanche mixing is important: nearby seeds must not visit the same
+  // threat category for hundreds of consecutive encounters.
+  let x=(Number(seed)||1)>>>0;
+  x^=x>>>16;x=Math.imul(x,0x7feb352d);
+  x^=x>>>15;x=Math.imul(x,0x846ca68b);
+  x^=x>>>16;
+  const roll=(x>>>0)/4294967296;
   const distant=day<8?.44:.32;
   const near=day<8?.82:.72;
   return roll<distant?'distant':roll<near?'near':'direct';
