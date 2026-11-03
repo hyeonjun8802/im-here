@@ -19,6 +19,33 @@ export function selectStormBuilding(slots=[]){
   },null)?.slot||null;
 }
 
+/** Choose 3 real buildings along a short left-to-right sweep in the ruined city.
+ * Never damage the inhabited rooftop; candidates must be outside 72 world units.
+ * The previous centerpiece is retained so existing saves can be mapped to it. */
+export function selectStormBuildings(slots=[],count=3){
+  const center=selectStormBuilding(slots);
+  if(!center)return [];
+  const qualified=slots.filter(s=>(s.tier==='mid'||s.tier==='near')&&
+    s.id!==center.id&&Math.hypot(s.x,s.z)>=72&&
+    Math.hypot(s.x-center.x,s.z-center.z)<105&&
+    Math.abs(s.z-center.z)<66);
+  const byNear=(a,b)=>Math.hypot(a.x-center.x,a.z-center.z)-Math.hypot(b.x-center.x,b.z-center.z);
+  const left=qualified.filter(s=>s.x<center.x-7).sort(byNear)[0];
+  const right=qualified.filter(s=>s.x>center.x+7).sort(byNear)[0];
+  const chosen=[center,...[left,right].filter(Boolean)];
+  for(const item of qualified.sort(byNear)){
+    if(chosen.length>=Math.max(1,count))break;
+    if(!chosen.includes(item)&&chosen.every(c=>Math.hypot(c.x-item.x,c.z-item.z)>13))chosen.push(item);
+  }
+  return chosen.sort((a,b)=>a.x-b.x).slice(0,Math.max(1,count));
+}
+/** Close but never crossing the one playable roof. */
+export function stormTrackPoint(slot){
+  const x=slot.x+Math.sign(slot.x||-1)*6,z=slot.z+Math.sign(slot.z||-1)*6;
+  const distance=Math.hypot(x,z),factor=Math.max(1,100/Math.max(1,distance));
+  return [x*factor,-23.4,z*factor];
+}
+
 function addBox(group,size,position,material){
   const mesh=new THREE.Mesh(new THREE.BoxGeometry(...size),material);
   mesh.position.set(...position);mesh.castShadow=false;mesh.receiveShadow=true;
@@ -105,14 +132,11 @@ function funnelMaterial(shell){
 export class NearTornadoVfx {
   constructor(world){
     this.world=world;this.scene=world.scene;this.mobile=world.isMobile;
-    this.slot=selectStormBuilding(world.distantCityPlan);
-    this.host=this.slot?world.cityBuildings?.get(this.slot.id):null;
-    this.clock=0;this.exposure=0;this.previewImpact=0;
-    this.damageProgress=0;this.persistedDamage=false;this.strength=0;
-    const x=this.slot?this.slot.x-22:-110,z=this.slot?this.slot.z-24:-116;
-    // Never enter the only playable roof: keep the 3D vortex center outside 118 units.
-    const radius=Math.hypot(x,z),factor=Math.max(1,128/Math.max(1,radius));
-    this.anchor=new THREE.Vector3(x*factor,-23.4,z*factor);
+    this.slots=selectStormBuildings(world.distantCityPlan);
+    this.track=this.slots.map(s=>new THREE.Vector3(...stormTrackPoint(s)));
+    this.clock=0;this.exposure=0;this.strength=0;
+    this.anchor=this.track[0]?.clone()||new THREE.Vector3(-110,-23.4,-116);
+    this.impacts=[];
     this.root=new THREE.Group();this.root.name='AFTERDAY cinematic close 3D tornado';
     this.root.position.copy(this.anchor);this.root.visible=false;this.scene.add(this.root);
     const cone=new THREE.CylinderGeometry(1,1,1,this.mobile?42:76,this.mobile?30:55,true);
@@ -146,94 +170,109 @@ export class NearTornadoVfx {
     this.flashLight=new THREE.PointLight('#b0d8ff',0,270,1.1);
     this.flashLight.position.set(0,107,0);this.root.add(this.flashLight);
     this.boltAge=100;this.nextBolt=1.65;this.boltIndex=0;
-    this.setupDestruction();
+    this.impacts=this.slots.map((slot,index)=>this.setupDestruction(slot,world.cityBuildings?.get(slot.id),index)).filter(Boolean);
   }
-  setupDestruction(){
-    this.destroyed=new THREE.Group();
-    this.destroyed.name='AFTERDAY one 3D mid-distance building fractured to half height';
-    this.destroyed.visible=false;this.scene.add(this.destroyed);
-    this.fragments=[];this.impactSmoke=null;
-    if(!this.slot||!this.host)return;
-    const s=this.slot,w=s.width,d=s.width*.82,h=s.height;
-    this.destroyed.position.copy(this.host.position);
-    this.destroyed.rotation.copy(this.host.rotation);
+  setupDestruction(slot,host,index){
+    if(!slot||!host)return null;
+    const ruined=new THREE.Group();
+    ruined.name='AFTERDAY storm damage '+(index+1)+' of 3: '+slot.id;
+    ruined.visible=false;this.scene.add(ruined);
+    const impact={slot,host,ruined,fragments:[],impactSmoke:null,progress:0};
+    const w=slot.width,d=slot.width*.82,h=slot.height;
+    ruined.position.copy(host.position);ruined.rotation.copy(host.rotation);
     const facade=new THREE.MeshStandardMaterial({color:'#757f7e',roughness:.95,metalness:.05});
     const concrete=new THREE.MeshStandardMaterial({color:'#454b4b',roughness:1});
     const rust=new THREE.MeshStandardMaterial({color:'#756259',metalness:.5,roughness:.82});
     const lower=h*.55;
-    addBox(this.destroyed,[w,lower,d],[0,lower*.5,0],facade);
-    // Irregular remaining half-height rim, exposed floors and bent steel.
+    addBox(ruined,[w,lower,d],[0,lower*.5,0],facade);
+    // Half-height remnant, exposed slabs, torn concrete, twisted rebar.
     for(let i=0;i<13;i++){
-      const theta=i*TAU/13,rx=Math.cos(theta)*(w*.47),rz=Math.sin(theta)*(d*.47);
-      const top=(.05+.18*hash(i*13+2))*h;
-      const piece=addBox(this.destroyed,[w*.09,top,d*.075],[rx,lower+top*.5,rz],i%4?facade:concrete);
+      const theta=i*TAU/13,rx=Math.cos(theta)*w*.47,rz=Math.sin(theta)*d*.47;
+      const top=(.05+.18*hash(i*13+index*7+2))*h;
+      const piece=addBox(ruined,[w*.09,top,d*.075],[rx,lower+top*.5,rz],i%4?facade:concrete);
       piece.rotation.y=theta;
     }
-    for(let i=0;i<4;i++){
-      const y=lower+(i+.4)*h*.045;
-      addBox(this.destroyed,[w*.68,h*.013,d*.8],[0,y,0],concrete);
-    }
+    for(let i=0;i<4;i++)addBox(ruined,[w*.68,h*.013,d*.8],
+      [0,lower+(i+.4)*h*.045,0],concrete);
     for(let i=0;i<9;i++){
-      const x=(hash(i*3)-.5)*w*.75,z=(hash(i*5+7)-.5)*d*.72;
+      const x=(hash(i*3+index*19)-.5)*w*.75,z=(hash(i*5+7+index*5)-.5)*d*.72;
       const rod=new THREE.Mesh(new THREE.CylinderGeometry(.045,.052,h*.11,5),rust);
-      rod.position.set(x,lower+h*.052,z);rod.rotation.z=(hash(i+22)-.5)*.52;this.destroyed.add(rod);
+      rod.position.set(x,lower+h*.052,z);
+      rod.rotation.z=(hash(i+22+index*17)-.5)*.52;ruined.add(rod);
     }
-    // The missing upper 45% breaks into sections that physically rotate/fall.
-    for(let i=0;i<22;i++){
+    // Each of the three upper stories breaks into individual falling 3D chunks.
+    for(let i=0;i<(this.mobile?15:22);i++){
       const col=i%5,row=Math.floor(i/5);
       const bw=w/5*.92,bh=h*.45/5*.94,bd=d*.64;
-      const ox=(col-2)*w/5,oy=lower+(row+.5)*h*.45/5,oz=(hash(i*31)-.5)*d*.25;
-      const chunk=addBox(this.destroyed,[bw,bh,bd],[ox,oy,oz],i%3?facade:concrete);
-      const outward=new THREE.Vector3(ox+hash(i*5)*4,0,oz+(hash(i*7)-.5)*7).normalize();
-      this.fragments.push({mesh:chunk,start:new THREE.Vector3(ox,oy,oz),outward,seed:hash(i*17+9)});
+      const ox=(col-2)*w/5,oy=lower+(row+.5)*h*.45/5;
+      const oz=(hash(i*31+index*11)-.5)*d*.25;
+      const chunk=addBox(ruined,[bw,bh,bd],[ox,oy,oz],i%3?facade:concrete);
+      const outward=new THREE.Vector3(ox+hash(i*5+index*7)*4,0,oz+(hash(i*7+index*3)-.5)*7).normalize();
+      impact.fragments.push({mesh:chunk,start:new THREE.Vector3(ox,oy,oz),
+        outward,seed:hash(i*17+9+index*41)});
     }
-    const geo=new THREE.IcosahedronGeometry(1,1);
-    const mat=new THREE.MeshBasicMaterial({color:'#8b8580',transparent:true,opacity:0,depthWrite:false});
-    this.impactSmoke=new THREE.InstancedMesh(geo,mat,this.mobile?24:48);
-    this.impactSmoke.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    this.impactSmoke.frustumCulled=false;this.destroyed.add(this.impactSmoke);
+    const smoke=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1,1),
+      new THREE.MeshBasicMaterial({color:'#8b8580',transparent:true,opacity:0,depthWrite:false}),
+      this.mobile?16:32);
+    smoke.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    smoke.frustumCulled=false;ruined.add(smoke);impact.impactSmoke=smoke;
+    return impact;
   }
-  updateDestruction(dt,active,persisted,previewMode){
-    if(!this.host)return;
-    this.persistedDamage=Boolean(persisted);
-    // Visual demonstrations are reversible and never write to simulation saves.
-    const shouldBreak=this.persistedDamage||(active&&previewMode&&this.exposure>8);
-    if(this.persistedDamage&&!active)this.damageProgress=1; // Restore existing scar immediately on reload.
-    else if(shouldBreak)this.damageProgress=Math.min(1,this.damageProgress+dt*.28);
-    else if(!this.persistedDamage)this.damageProgress=Math.max(0,this.damageProgress-dt*.34);
-    const p=this.damageProgress;
-    this.host.visible=p<=.002;
-    this.destroyed.visible=p>.002;
-    if(!this.destroyed.visible)return;
-    for(const frag of this.fragments){
-      const q=smooth(0,1,p);
-      frag.mesh.position.copy(frag.start).addScaledVector(frag.outward,q*(11+frag.seed*14));
-      frag.mesh.position.y=frag.start.y-(q*q)*(20+frag.seed*18);
-      frag.mesh.rotation.set(q*frag.seed*2.1,q*1.5,q*(frag.seed-.5)*3.2);
-      frag.mesh.visible=p<.96;
-    }
-    if(this.impactSmoke){
-      this.impactSmoke.material.opacity=(1-p)*.36;
-      for(let i=0;i<this.impactSmoke.count;i++){
-        const angle=hash(i*7)*TAU,r=(3+hash(i*21)*12)*p;
-        this.dummy.position.set(Math.cos(angle)*r,this.slot.height*.52+(hash(i*13)*16)*p,Math.sin(angle)*r);
-        const size=(.3+p*7)*(1+hash(i*47));this.dummy.scale.set(size,size*.55,size);this.dummy.rotation.set(0,0,0);
-        this.dummy.updateMatrix();this.impactSmoke.setMatrixAt(i,this.dummy.matrix);
+  updateDestruction(dt,active,persistedCount,previewMode){
+    // Staggered impacts: left -> center -> right, as the vortex travels past.
+    const previewCount=previewMode&&active?
+      [5,11,17].filter(seconds=>this.exposure>=seconds).length:0;
+    const count=Math.min(this.impacts.length,Math.max(persistedCount,previewCount));
+    this.impacts.forEach((impact,index)=>{
+      const persisted=index<persistedCount;
+      const shouldBreak=index<count;
+      if(persisted&&!active)impact.progress=1;
+      else if(shouldBreak)impact.progress=Math.min(1,impact.progress+dt*.29);
+      else if(!persisted)impact.progress=Math.max(0,impact.progress-dt*.46);
+      const p=impact.progress;
+      impact.host.visible=p<=.002;
+      impact.ruined.visible=p>.002;
+      if(p<=.002)return;
+      for(const frag of impact.fragments){
+        const q=smooth(0,1,p);
+        frag.mesh.position.copy(frag.start).addScaledVector(frag.outward,q*(11+frag.seed*14));
+        frag.mesh.position.y=frag.start.y-q*q*(20+frag.seed*18);
+        frag.mesh.rotation.set(q*frag.seed*2.1,q*1.5,q*(frag.seed-.5)*3.2);
+        frag.mesh.visible=p<.96;
       }
-      this.impactSmoke.instanceMatrix.needsUpdate=true;
-    }
+      const smoke=impact.impactSmoke;
+      smoke.material.opacity=(1-p)*.36;
+      for(let i=0;i<smoke.count;i++){
+        const a=hash(i*7+index*17)*TAU,r=(3+hash(i*21)*12)*p;
+        this.dummy.position.set(Math.cos(a)*r,impact.slot.height*.52+(hash(i*13)*16)*p,
+          Math.sin(a)*r);
+        const sz=(.3+p*7)*(1+hash(i*47));
+        this.dummy.scale.set(sz,sz*.55,sz);this.dummy.rotation.set(0,0,0);
+        this.dummy.updateMatrix();smoke.setMatrixAt(i,this.dummy.matrix);
+      }
+      smoke.instanceMatrix.needsUpdate=true;
+    });
   }
-  update(dt,weather,{persisted=false,preview=false,night=0,reduceMotion=false}={}){
+  update(dt,weather,{persistedCount=0,preview=false,night=0,reduceMotion=false}={}){
     dt=Math.min(Math.max(dt,0),.05);
     const target=Math.max(0,Math.min(1,Number(weather)||0));
     this.clock+=dt;this.strength=THREE.MathUtils.damp(this.strength,target,1.5,dt);
     this.exposure=target>.5?this.exposure+dt:0;
     this.root.visible=this.strength>.015;
-    this.updateDestruction(dt,target>.5,persisted,preview);
+    this.updateDestruction(dt,target>.5,Math.max(0,Math.min(3,Math.floor(persistedCount))),preview);
     if(!this.root.visible){this.flashLight.intensity=0;return 0;}
     const t=this.clock,s=this.strength;
-    this.root.position.x=this.anchor.x+Math.sin(t*.17)*2.6*s;
-    this.root.position.z=this.anchor.z+Math.cos(t*.13)*2.4*s;
+    // Move left-to-right through real building coordinates, then sweep back slowly.
+    // The storm's ground contact stays off the playable rooftop at all times.
+    const pathT=this.exposure<=21?
+      smooth(0,1,(this.exposure-3)/17):(.5+.5*Math.cos((this.exposure-21)*.20));
+    const step=pathT*Math.max(0,this.track.length-1);
+    const segment=Math.min(Math.floor(step),Math.max(0,this.track.length-2));
+    const alpha=smooth(0,1,step-segment);
+    const a=this.track[segment]||this.anchor,b=this.track[segment+1]||a;
+    this.root.position.lerpVectors(a,b,alpha);
+    this.root.position.x+=Math.sin(t*.43)*2.1*s;
+    this.root.position.z+=Math.cos(t*.36)*1.7*s;
     for(const sh of this.shells){sh.material.uniforms.uTime.value=t;sh.material.uniforms.uStrength.value=s;}
     this.smokeMat.opacity=.41*s;this.dustMat.opacity=.62*s;this.shardMat.opacity=.88*s;
     const spinRate=reduceMotion?.29:.66;
@@ -279,8 +318,8 @@ export class NearTornadoVfx {
     return flash;
   }
   dispose(){
-    if(this.host)this.host.visible=true;
-    for(const root of [this.root,this.destroyed]){
+    for(const impact of this.impacts)impact.host.visible=true;
+    for(const root of [this.root,...this.impacts.map(i=>i.ruined)]){
       root.traverse(obj=>{
         if(obj.geometry)obj.geometry.dispose();
         if(obj.material){
