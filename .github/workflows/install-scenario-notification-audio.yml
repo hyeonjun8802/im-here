@@ -1,0 +1,54 @@
+name: Retrieve exact scenario audio asset
+on:
+  push:
+    branches: [feature/scenario-notification-audio-20261104]
+permissions:
+  contents: write
+jobs:
+  retrieve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch SHA-verified original notification MP3 from Pixabay
+        run: |
+          python3 - <<'PY'
+          import urllib.request, urllib.parse, re, json, html, hashlib, pathlib
+          PAGE='https://pixabay.com/sound-effects/film-special-effects-notification-sound-372474/'
+          SHA='cc97ab4b0780292fe72fb776130dd300e93a34fddc6342f156f8a497444dd9d2'
+          headers={'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/125 Safari/537.36'}
+          def fetch(url):
+              with urllib.request.urlopen(urllib.request.Request(url,headers=headers),timeout=30) as f:return f.read()
+          document=fetch(PAGE).decode('utf-8','replace').replace('\\/','/')
+          urls=[]
+          def inspect(obj):
+              if isinstance(obj,dict):
+                  for k,v in obj.items():
+                      if k in ('contentUrl','downloadUrl') and isinstance(v,str):urls.append(v)
+                      inspect(v)
+              elif isinstance(obj,list):
+                  for v in obj:inspect(v)
+          for chunk in re.findall(r'<script[^>]*type=["\']application/ld\\+json["\'][^>]*>(.*?)</script>',document,re.S|re.I):
+              try:inspect(json.loads(html.unescape(chunk)))
+              except (ValueError,TypeError):pass
+          urls+=re.findall(r'https://cdn\\.pixabay\\.com[^"\'<\\s]+',document,re.I)
+          for url in dict.fromkeys(urls):
+              url=html.unescape(url).replace('\\u0026','&')
+              if urllib.parse.urlparse(url).hostname!='cdn.pixabay.com':continue
+              try:
+                  audio=fetch(url)
+                  if hashlib.sha256(audio).hexdigest()==SHA:
+                      out=pathlib.Path('public/assets/audio/dragon-studio-notification-sound-372474.mp3')
+                      out.parent.mkdir(parents=True,exist_ok=True)
+                      out.write_bytes(audio)
+                      print('Verified exact MP3:',len(audio),'bytes')
+                      break
+              except Exception as e:print('Trying next candidate',type(e).__name__)
+          else:raise RuntimeError('Could not find byte-identical uploaded MP3 at source')
+          PY
+      - name: Commit verified audio
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/assets/audio/dragon-studio-notification-sound-372474.mp3
+          git commit -m 'assets: add verified original scenario notification sound'
+          git push origin HEAD:feature/scenario-notification-audio-20261104
