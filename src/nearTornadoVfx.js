@@ -300,7 +300,7 @@ export class NearTornadoVfx {
       impact.host.visible=p<=.002;
       this.world.cityArchitecture?.setBuildingDamaged(impact.slot.id,p>.002);
       impact.ruined.visible=p>.002;
-      if(p<=.002)return;
+      if(p<=.002)continue;
       for(const frag of impact.fragments){
         const q=smooth(0,1,p);
         frag.mesh.position.copy(frag.start).addScaledVector(frag.outward,q*(11+frag.seed*14));
