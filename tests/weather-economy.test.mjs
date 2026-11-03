@@ -9,7 +9,7 @@ const start=Date.UTC(2026,10,4,0,0);
 const tick=(s,weather,minutes,day=1)=>{s.weather=weather;for(let i=0;i<minutes;i++)applyWeatherEconomyMinute(s,weather,day)};
 
 test('rain automatically fills the filtered drinking water tank without clicking',()=>{
- const s=defaults(start);s.kit.purifier=true;s.supply.water=3;
+ const s=defaults(start);s.kit.purifier=true;s.facilities.tank=90;s.supply.water=3;
  tick(s,'rain',24);
  assert.equal(s.supply.water,4);
  assert.ok(s.weatherEconomy.waterHarvestProgress>0);
@@ -17,7 +17,7 @@ test('rain automatically fills the filtered drinking water tank without clicking
 });
 
 test('rain and thunderstorms have a bounded daily yield and a tank capacity',()=>{
- const s=defaults(start);s.kit.purifier=true;s.supply.water=0;
+ const s=defaults(start);s.kit.purifier=true;s.facilities.tank=90;s.supply.water=0;
  tick(s,'storm',300);
  assert.equal(s.supply.water,WEATHER_RAIN_DAILY_LIMIT);
  tick(s,'rain',600);
@@ -32,7 +32,7 @@ test('rain and thunderstorms have a bounded daily yield and a tank capacity',()=
 test('broken tank cannot harvest rain until repaired; moderately damaged tank harvests slower',()=>{
  const broken=defaults(start),damaged=defaults(start),healthy=defaults(start);
  for(const s of [broken,damaged,healthy]){s.kit.purifier=true;s.supply.water=0;}
- broken.facilities.tank=18;damaged.facilities.tank=50;
+ broken.facilities.tank=18;damaged.facilities.tank=50;healthy.facilities.tank=90;
  tick(broken,'rain',90);tick(damaged,'rain',40);tick(healthy,'rain',40);
  assert.equal(broken.supply.water,0);
  assert.ok(damaged.supply.water<healthy.supply.water);
@@ -48,7 +48,7 @@ test('broken tank cannot harvest rain until repaired; moderately damaged tank ha
 test('heat evaporates stored clean water, more rapidly when tank is damaged',()=>{
  const intact=defaults(start),damaged=defaults(start),cloudy=defaults(start);
  for(const s of [intact,damaged,cloudy])s.supply.water=12;
- damaged.facilities.tank=45;
+ intact.facilities.tank=90;damaged.facilities.tank=45;
  tick(intact,'heat',50);tick(damaged,'heat',50);tick(cloudy,'cloud',50);
  assert.ok(intact.supply.water<12,'even an intact old tank loses stored water');
  assert.ok(damaged.supply.water<intact.supply.water,'cracked tank loses water faster in extreme heat');
@@ -118,7 +118,7 @@ test('preview weather is separate from actual resource-changing weather, and HUD
  const world=readFileSync(new URL('../src/world.js',import.meta.url),'utf8');
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- assert.match(sim,/applyWeatherEconomyMinute\(s,e,getDay\(s\.startedAt,tickTime\)\)/);
+ assert.match(sim,/applyWeatherEconomyMinute\(s,e,gameDay\)/);
  assert.match(world,/this\.previewWeather\|\|game\.weather/);
  assert.match(main,/describeWeatherEconomy\(state\)/);
  assert.match(html,/id="weather-effect"/);

@@ -113,7 +113,7 @@ test('without the purifier rain produces NO potable water automatically',()=>{
 });
 
 test('acquired purifier produces a capped number of bottles per game day, even in clouds',()=>{
- const s=defaults(now);s.kit.purifier=true;s.supply.water=0;
+ const s=defaults(now);s.kit.purifier=true;s.facilities.tank=90;s.supply.water=0;
  for(let i=0;i<1500;i++)applyAcquiredItemMinute(s,1,'cloud');
  assert.equal(s.supply.water,2);
  for(let i=0;i<480;i++)applyAcquiredItemMinute(s,2,'cloud');
