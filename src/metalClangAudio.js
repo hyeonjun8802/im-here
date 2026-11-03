@@ -1,5 +1,6 @@
 /* AFTERDAY original 'swish — CHAAANG' alert, v3. Sound is synthesized locally;
- * no background voices, media samples or third-party recordings are embedded. */
+ * no background voices, media samples or third-party recordings are embedded.
+ * Single metal impact only; harmonics form one continuous decay. */
 let audioURL;
 export function makeHeavyClangWav(sampleRate=24000,duration=3.35){
   const count=Math.round(sampleRate*duration);
@@ -31,7 +32,6 @@ export function makeHeavyClangWav(sampleRate=24000,duration=3.35){
     if(dt>=0){
       const attack=Math.exp(-17*dt);
       x+=(1.02*airy+.45*broad+.21*low)*attack;
-      if(dt>=.068)x+=.18*airy*Math.exp(-(dt-.068)*60);
       x+=.27*airy*Math.exp(-7*dt);
       x+=.48*Math.sin(2*Math.PI*(125*dt-36*dt*dt))*Math.exp(-22*dt);
       for(let k=0;k<sines.length;k++){
@@ -45,7 +45,7 @@ export function makeHeavyClangWav(sampleRate=24000,duration=3.35){
     }
     raw[i]=Math.tanh(x*1.16);
   }
-  const echoes=[[.042,.2],[.092,.13],[.151,.09],[.258,.065],[.44,.038]];
+  const echoes=[[.145,.036],[.29,.022],[.49,.014]]; // Soft room tail, no second metal strike.
   const result=new Float32Array(count);
   let peak=1e-9;
   for(let i=0;i<count;i++){
