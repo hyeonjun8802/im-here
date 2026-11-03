@@ -46,30 +46,59 @@ export function selectStormBuildings(slots=[],count=3){
  * from the last tornado center when the city layout permits.
  */
 export function selectVariedStormBuildings(slots=[],{seed=1,previousCenterId=null,damagedIds=[]}={}){
-  const ruined=new Set(damagedIds),prior=slots.find(s=>s.id===previousCenterId);
-  const pool=slots.filter(s=>(s.tier==='near'||s.tier==='mid')&&Math.hypot(s.x,s.z)>=SPATIAL_LAYOUT.clearZoneRadius+10);
-  const potential=[];
+  const ruined=new Set(damagedIds);
+  const previous=slots.find(s=>s.id===previousCenterId);
+  // The actual city is CONTRACTED to 47-235 units. The old near/mid + radius>=150
+  // filter produced zero candidates and always returned the fixed legacy path.
+  // Use real, visible lots in every city direction, outside the rooftop buffer.
+  const minRadius=SPATIAL_LAYOUT.clearZoneRadius+16;
+  const pool=slots.filter(s=>['near','mid','far'].includes(s.tier)&&
+    Number.isFinite(s.x)&&Number.isFinite(s.z)&&Math.hypot(s.x,s.z)>=minRadius);
+  if(!pool.length)return [];
+  const bearing=s=>Math.atan2(s.z,s.x);
+  const angularDifference=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
+  const candidates=[];
   for(const center of pool){
-    const neighbors=pool.filter(s=>s.id!==center.id&&Math.abs(s.z-center.z)<72&&
-      Math.hypot(s.x-center.x,s.z-center.z)<108&&Math.abs(s.x-center.x)>13);
-    const left=neighbors.filter(s=>s.x<center.x-7).sort((a,b)=>Math.hypot(a.x-center.x,a.z-center.z)-Math.hypot(b.x-center.x,b.z-center.z))[0];
-    const right=neighbors.filter(s=>s.x>center.x+7).sort((a,b)=>Math.hypot(a.x-center.x,a.z-center.z)-Math.hypot(b.x-center.x,b.z-center.z))[0];
-    if(!left||!right)continue;
-    const track=[left,center,right];
-    potential.push({center,track,ruined:track.filter(s=>ruined.has(s.id)).length,
-      separation:prior?Math.hypot(prior.x-center.x,prior.z-center.z):Infinity});
+    const angle=bearing(center),radius=Math.hypot(center.x,center.z);
+    const neighbors=pool.filter(s=>{
+      if(s.id===center.id)return false;
+      const distance=Math.hypot(s.x-center.x,s.z-center.z);
+      return distance>16&&distance<142&&
+        Math.abs(Math.hypot(s.x,s.z)-radius)<90;
+    }).map(s=>({slot:s,turn:angularDifference(bearing(s),angle),
+      distance:Math.hypot(s.x-center.x,s.z-center.z)}));
+    // Neighbors on either side of the city ring form a real three-tower arc.
+    const byNear=(a,b)=>a.distance-b.distance;
+    const before=neighbors.filter(p=>p.turn<-.025).sort(byNear)[0]?.slot;
+    const after=neighbors.filter(p=>p.turn>.025).sort(byNear)[0]?.slot;
+    if(!before||!after)continue;
+    const track=[before,center,after];
+    candidates.push({center,track,
+      broken:track.filter(s=>ruined.has(s.id)).length,
+      separation:previous?Math.hypot(center.x-previous.x,center.z-previous.z):Infinity});
   }
-  if(!potential.length)return selectStormBuildings(slots);
-  // Exhaust undamaged sites in other neighborhoods before revisiting ruins.
-  const fewest=Math.min(...potential.map(p=>p.ruined));
-  let choices=potential.filter(p=>p.ruined===fewest);
-  if(prior&&choices.some(p=>p.separation>=125))choices=choices.filter(p=>p.separation>=125);
-  else if(prior&&choices.some(p=>p.center.id!==prior.id))choices=choices.filter(p=>p.center.id!==prior.id);
-  // Stable per-encounter pseudo-random variety; not a new random position every frame.
-  const n=Math.abs(Math.floor(Number(seed)||0));
+  // Even in a sparse modded city, do not silently revert to a fixed coordinate.
+  if(!candidates.length){
+    const ordered=[...pool].sort((a,b)=>a.id.localeCompare(b.id));
+    const first=ordered[Math.floor(hash((Number(seed)||1)*1.991+17)*ordered.length)];
+    const nearest=ordered.filter(s=>s.id!==first.id).sort((a,b)=>
+      Math.hypot(a.x-first.x,a.z-first.z)-Math.hypot(b.x-first.x,b.z-first.z));
+    return [first,...nearest.slice(0,2)];
+  }
+  // Intact districts first; avoid both the previous center AND nearby districts.
+  const fewest=Math.min(...candidates.map(c=>c.broken));
+  let choices=candidates.filter(c=>c.broken===fewest);
+  if(previous){
+    const distant=choices.filter(c=>c.separation>=170);
+    if(distant.length)choices=distant;
+    else{
+      const different=choices.filter(c=>c.center.id!==previous.id);
+      if(different.length)choices=different;
+    }
+  }
   choices.sort((a,b)=>a.center.id.localeCompare(b.center.id));
-  const index=Math.floor(hash(n*1.991+17)*choices.length)%choices.length;
-  return choices[index].track;
+  const n=Math.abs(Math.floor(Number(seed)||1));
+  return choices[Math.floor(hash(n*1.991+17)*choices.length)].track;
 }
 /** Close but never crossing the one playable roof. */
 export function stormTrackPoint(slot){
