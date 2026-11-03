@@ -1,19 +1,25 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
-import {GameClock} from './gameClock.js';
+import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
-import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
+import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
-const gameClock=new GameClock(now,saved?.gameClockOffsetMs);
-const state=sanitize(saved,gameClock.virtualNow);advance(state,gameClock.virtualNow,true);
+// Six in-game hours pass per real hour, including offline time.
+const gameClock=new GameClock(now,saved?.gameClockOffsetMs,
+  saved?.clockSchema===2?saved?.gameClockSavedRealAtMs:null);
+const state=sanitize(saved,gameClock.virtualNow);
+migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
+advance(state,gameClock.virtualNow,true);
 const save=()=>{
  try{
   const real=Date.now();
   gameClock.tick(real,document.visibilityState==='visible');
   state.gameClockOffsetMs=gameClock.offset(real);
+  state.gameClockSavedRealAtMs=real;
+  state.clockSchema=2;
   localStorage.setItem(SAVE_KEY,JSON.stringify(state));
   return true;
  }catch{return false}
@@ -25,6 +31,8 @@ const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],[
 function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
  $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
+ $('#days').title='현실 4시간마다 게임 하루가 지나갑니다 (기본 1×)';
+ $('#clock').title='게임 내 서울 시간 · 현실 4시간 = 게임 1일';
  const chapter=survivalChapter(day);
  $('#survival-chapter').textContent=chapter.title+' · '+chapter.line;
  $('#game-over').classList.toggle('hidden',!dead);
@@ -67,9 +75,9 @@ function bindEvents(){
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
   speedButton.textContent=gameClock.speed===1?'▶ 1×':`⏩ ${gameClock.speed}×`;
-  speedButton.setAttribute('aria-label',`게임 진행 속도 ${gameClock.speed}배. 클릭하면 배속 변경`);
+  speedButton.setAttribute('aria-label',`게임 속도 ${gameClock.speed}배 · 게임 하루당 현실 ${GAME_DAY_REAL_MS/3600000/gameClock.speed}시간. 클릭하면 배속 변경`);
   speedButton.setAttribute('aria-pressed',String(gameClock.speed!==1));
-  speedButton.title='게임 진행 속도: 1× → 2× → 4× → 1×';
+  speedButton.title='하루 진행 속도: 1× 현실 4시간 · 2× 2시간 · 4× 1시간';
  };
  speedButton.addEventListener('click',()=>{
   gameClock.cycleSpeed();

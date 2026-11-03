@@ -8,7 +8,7 @@ test('explore gated',()=>{const s=defaults(123);assert.equal(applyAction(s,'expl
 test('sanitize clamps',()=>{const n=12345678,s=defaults(n);s.health=500;s.supply.water=-3;const z=sanitize(s,n);assert.equal(z.health,100);assert.equal(z.supply.water,0)});
 test('KST hour valid',()=>{const n=Date.UTC(2026,9,31,0,0,0);assert.equal(localHour(n),9)});
 
-test('DAY increments at Seoul midnight exactly',()=>{const start=Date.UTC(2026,9,31,14,58),before=Date.UTC(2026,9,31,14,59),after=Date.UTC(2026,9,31,15,0);assert.equal(getDay(start,before),1);assert.equal(getDay(start,after),2)});
+test('DAY increments after 24 in-game hours, not at a partial KST midnight',()=>{const start=Date.UTC(2026,9,31,14,58),atSeoulMidnight=Date.UTC(2026,9,31,15,0);assert.equal(getDay(start,atSeoulMidnight),1);assert.equal(getDay(start,start+DAY_MS-1),1);assert.equal(getDay(start,start+DAY_MS),2)});
 
 test('minute chunks and one large advance have equivalent outcomes',()=>{const n=Date.UTC(2026,9,31),a=defaults(n),b=defaults(n);advance(a,n+3600000,true);for(let t=60000;t<=3600000;t+=60000)advance(b,n+t);for(const k of ['food','water','health','temperature','weather','pendingWeather','weatherSeed'])assert.equal(a[k],b[k]);assert.deepEqual(a.supply,b.supply);assert.deepEqual(a.facilities,b.facilities)});
 test('weather change schedule does not depend on render FPS',()=>{const n=Date.UTC(2026,9,31),a=defaults(n),b=defaults(n);advance(a,n+3*3600000);for(let t=10000;t<=3*3600000;t+=10000)advance(b,n+t);assert.equal(a.weather,b.weather);assert.equal(a.weatherSeed,b.weatherSeed)});

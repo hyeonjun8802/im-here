@@ -1,15 +1,23 @@
-/** AFTERDAY accelerated in-game clock.
- * Real elapsed time always counts once, including while a page was inactive.
- * The extra acceleration applies only to active foreground frames, so a tab
- * returning from sleep cannot suddenly consume days of food or cause hazards.
+/** AFTERDAY game-day clock: 24 in-game hours elapse in 4 real hours.
+ * The multiplier applies while the page is visible and while it is closed.
+ * Foreground 2x/4x controls are additional temporary multipliers.
  */
+export const GAME_DAY_REAL_MS=4*60*60*1000;
+export const GAME_CLOCK_RATE=24*60*60*1000/GAME_DAY_REAL_MS; // 6x
+export const GAME_CLOCK_SCHEMA=2;
 export const GAME_SPEEDS=Object.freeze([1,2,4]);
 export const clampGameSpeed=value=>GAME_SPEEDS.includes(Number(value))?Number(value):1;
 export class GameClock{
-  constructor(realNow,offsetMs=0){
+  constructor(realNow,offsetMs=0,lastSavedRealAtMs=null){
     const n=Number(realNow)||0;
     const saved=Number(offsetMs);
-    this.virtualNow=n+(Number.isFinite(saved)?Math.max(0,saved):0);
+    const anchor=Number(lastSavedRealAtMs);
+    // Older saves have no real-time anchor. Never retroactively fast-forward
+    // their full history at 6x; only accelerate from the first migrated load.
+    const away=lastSavedRealAtMs!==null&&Number.isFinite(anchor)&&anchor>0?
+      Math.max(0,n-anchor):0;
+    this.virtualNow=n+(Number.isFinite(saved)?Math.max(0,saved):0)+
+      away*(GAME_CLOCK_RATE-1);
     this.lastRealNow=n;
     this.speed=1;
   }
@@ -18,10 +26,10 @@ export class GameClock{
   tick(realNow,foreground=true){
     const now=Number(realNow)||this.lastRealNow;
     const elapsed=Math.max(0,now-this.lastRealNow);
-    // The first 250ms of a visible frame can be sped up. Large browser gaps
-    // (background/sleep) are only charged at 1x.
-    const extra=foreground?Math.min(elapsed,250)*(this.speed-1):0;
-    this.virtualNow+=elapsed+extra;
+    // Base sixfold game calendar continues offline. The player's 2x/4x
+    // button only adds acceleration during actual active foreground frames.
+    const extra=foreground?Math.min(elapsed,250)*GAME_CLOCK_RATE*(this.speed-1):0;
+    this.virtualNow+=elapsed*GAME_CLOCK_RATE+extra;
     this.lastRealNow=Math.max(this.lastRealNow,now);
     return this.virtualNow;
   }

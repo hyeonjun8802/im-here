@@ -6,7 +6,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, gameClockOffsetMs:0, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
+  version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   supply:{food:6,water:8,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
   events:['폐허 옥상에 작은 캠프를 마련했다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
@@ -21,6 +21,11 @@ export function sanitize(raw, now=Date.now()) {
   for (const k of Object.keys(s.facilities)) s.facilities[k]=CAP(Number(s.facilities[k])||0);
   const offset=Number(s.gameClockOffsetMs);
   s.gameClockOffsetMs=Number.isFinite(offset)?Math.max(0,offset):0;
+  // Only clockSchema 2 saves already use the accelerated four-real-hour day.
+  // Older saved records must be migrated once without changing their DAY.
+  s.clockSchema=Number(raw.clockSchema)===2?2:1;
+  const savedRealAt=Number(raw.gameClockSavedRealAtMs);
+  s.gameClockSavedRealAtMs=Number.isFinite(savedRealAt)&&savedRealAt>0?savedRealAt:0;
   s.events=Array.isArray(s.events)?s.events.filter(v=>typeof v==='string').slice(-16):b.events;
   s.animalAlert=Boolean(s.animalAlert);s.sickness=CAP(Number(s.sickness)||0);
   // Compatible with the previous one-building damage save flag.
@@ -59,7 +64,25 @@ export function sanitize(raw, now=Date.now()) {
   if (!WEATHER.includes(s.weather)) s.weather='clear';
   return s;
 }
-export function getDay(startedAt,now=Date.now()) { const kst=9*3600000; const a=Math.floor((startedAt+kst)/DAY_MS), b=Math.floor((Math.max(now,startedAt)+kst)/DAY_MS); return Math.max(1,b-a+1); }
+/** DAY 2 begins exactly 24 in-game hours after creation (4 real hours at 1×).
+ * Unlike the old KST-midnight counter, a player never gets a partial first day.
+ */
+export function getDay(startedAt,now=Date.now()){
+  return 1+Math.floor(Math.max(0,now-startedAt)/DAY_MS);
+}
+/** Preserve the displayed DAY and time-to-next-DAY from a 1:1 KST save.
+ * Never reset food, damaged buildings, warnings, milestones or user actions.
+ */
+export function migrateLegacyGameDay(s,virtualNow){
+  if(s.clockSchema===2)return false;
+  const now=Number(virtualNow);
+  const kst=9*3600000;
+  const legacyDay=Math.max(1,Math.floor((now+kst)/DAY_MS)-Math.floor((s.startedAt+kst)/DAY_MS)+1);
+  const phase=((now+kst)%DAY_MS+DAY_MS)%DAY_MS;
+  s.startedAt=now-(legacyDay-1)*DAY_MS-phase;
+  s.clockSchema=2;
+  return true;
+}
 export function wallClock(now=Date.now()) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(now));}
 export function localHour(now=Date.now()) {const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));const get=k=>Number(parts.find(p=>p.type===k)?.value||0);return get('hour')+get('minute')/60+get('second')/3600;}
 function nextRandom(s){s.weatherSeed=(Math.imul(s.weatherSeed,1664525)+1013904223)>>>0;return s.weatherSeed/4294967296;}
