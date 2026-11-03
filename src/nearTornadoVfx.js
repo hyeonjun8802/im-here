@@ -231,6 +231,7 @@ export class NearTornadoVfx {
       else if(!persisted)impact.progress=Math.max(0,impact.progress-dt*.46);
       const p=impact.progress;
       impact.host.visible=p<=.002;
+      this.world.cityArchitecture?.setBuildingDamaged(impact.slot.id,p>.002);
       impact.ruined.visible=p>.002;
       if(p<=.002)return;
       for(const frag of impact.fragments){
@@ -318,7 +319,7 @@ export class NearTornadoVfx {
     return flash;
   }
   dispose(){
-    for(const impact of this.impacts)impact.host.visible=true;
+    for(const impact of this.impacts){impact.host.visible=true;this.world.cityArchitecture?.setBuildingDamaged(impact.slot.id,false);}
     for(const root of [this.root,...this.impacts.map(i=>i.ruined)]){
       root.traverse(obj=>{
         if(obj.geometry)obj.geometry.dispose();
