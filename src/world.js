@@ -492,7 +492,7 @@ export class AfterWorld {
   // Keep the legacy handle for compatibility; no 2D photo cylinder is mounted.
   this.skyWeatherLayers={};
  }
- setWeather(key){this.previewWeather=key==='auto'?null:key;}
+ setWeather(key){if(key==='tornado'&&this.previewWeather==='tornado')this._rerollTornado=true;this.previewWeather=key==='auto'?null:key;}
  async toggleWeatherSound(){return this.weatherAudio.toggle();}
  setHour(value){this.previewHour=value===null?null:Number(value)}
  setLunarPreviewOffset(days=0){this.previewLunarOffset=Number.isFinite(days)?days:0;}
@@ -561,9 +561,9 @@ export class AfterWorld {
     game.tornadoDamagedIds=selectStormBuildings(this.distantCityPlan).slice(0,Math.min(3,game.tornadoDamageCount)).map(s=>s.id);
     this.onTornadoEncounterChange?.();
   }
-  if(this._tornadoWasActive!==tornadoNow){
+  if(this._tornadoWasActive!==tornadoNow||(tornadoNow&&this._rerollTornado)){
     if(tornadoNow){
-      if(!(game.tornadoEncounterActive&&game.tornadoCurrentSites?.length)){
+      if(this._rerollTornado||!(game.tornadoEncounterActive&&game.tornadoCurrentSites?.length)){
         const next=(Number(game.tornadoEncounter)||0)+1;
         const track=selectVariedStormBuildings(this.distantCityPlan,{
           seed:(Number(game.weatherSeed)||1)+next*7919,
@@ -581,7 +581,7 @@ export class AfterWorld {
       game.tornadoEncounterActive=false;
       this.onTornadoEncounterChange?.();
     }
-    this._tornadoWasActive=tornadoNow;
+    this._tornadoWasActive=tornadoNow;this._rerollTornado=false;
   }
   // 3D storm permanently damages the city, including when triggered by weather preview.
   this.tornadoFade=vw.tornado;
