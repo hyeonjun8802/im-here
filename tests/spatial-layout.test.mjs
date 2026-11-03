@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {SPATIAL_LAYOUT,planDistantCity,outsideHeroClearZone} from '../src/spatialLayout.js';
+import {stormTrackPoint,selectVariedStormBuildings} from '../src/nearTornadoVfx.js';
 const seeded=n=>{const x=Math.sin(n*127.1+46.4)*43758.5453;return x-Math.floor(x)};
 const src=fs.readFileSync('src/world.js','utf8');
 test('one and only one inhabited rooftop is the game center',()=>{
