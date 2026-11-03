@@ -511,7 +511,8 @@ export class AfterWorld {
  }
  setQuality(value){const low=value==='low'||(value==='auto'&&innerWidth<700);this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1.15:1.8));this.sun.shadow.mapSize.set(low?1024:2048,low?1024:2048);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.cinematicPost?.setQuality(low);this.resize()}
  update(dt,now,game){
-  dt=Math.min(dt,.05);this.simulatedWeather=game.weather;const preset=this.previewWeather||game.weather;
+  // Accelerated 2×/4× also advances physical weather and survivor animation.
+  dt=Math.min(dt,.12);this.simulatedWeather=game.weather;const preset=this.previewWeather||game.weather;
   const rain=['rain','storm','tornado'].includes(preset),storm=['storm','tornado'].includes(preset),heat=preset==='heat',cold=preset==='cold';
   this.visualWeather=integrateWeather(this.visualWeather,preset,dt,4.7);
   const vw=this.visualWeather;this.weatherMix=vw.rain;
