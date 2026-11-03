@@ -59,3 +59,7 @@
 /* The accelerated survival calendar is visible without opening settings. */
 #day-pace{margin-top:0;color:#b9c4bf;font-size:9px;font-weight:500;letter-spacing:.25px}
 @media(max-width:720px){#day-pace{font-size:8px;letter-spacing:0}}
+
+/* Weather's upside and downside are visible even when status bars are collapsed. */
+#weather-effect{max-width:min(365px,44vw);margin-top:4px;margin-left:auto;color:#d9d3b9;font-size:10px;font-weight:600;line-height:1.45;text-align:right;text-shadow:0 1px 8px #000a}
+@media(max-width:720px){#weather-effect{max-width:176px;font-size:9px;line-height:1.3}}

@@ -1,7 +1,7 @@
 name: Validate scenario audio and roaming tornado
 on:
   push:
-    branches: [main, feature/four-hour-day-20261104]
+    branches: [main, feature/weather-resource-economy-20261104]
   workflow_dispatch:
 jobs:
   test:

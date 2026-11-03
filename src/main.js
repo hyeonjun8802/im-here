@@ -2,6 +2,7 @@ import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
+import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
@@ -47,12 +48,13 @@ function renderHUD(){
  $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
  $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C'}[state.weather]);
+ $('#weather-effect').textContent=describeWeatherEconomy(state);
  const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold'].includes(state.pendingWeather);
  const danger=['storm','tornado'].includes(state.weather)||state.health<35||state.water<18||warningAhead;
  $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':danger?'주의':'생존 중';
  $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
  $('#survivor-bars').innerHTML=statusBars.map(([key,label,color])=>`<div class="stat"><div class="stat-line"><span>${label}</span><strong>${Math.round(state[key])}</strong></div><div class="bar"><i style="width:${state[key]}%;background:${color}"></i></div></div>`).join('');
- const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span>💧 ${r.water}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span>`;
+ const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
  $('#medicine').classList.toggle('needs-attention',state.health<65&&state.supply.medicine>0);
  $('#explore').classList.toggle('needs-attention',r.food<3||r.water<4||state.health<38||state.facilities.shelter<38);
