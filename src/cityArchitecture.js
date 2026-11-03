@@ -14,6 +14,7 @@ export class CityArchitecture {
     ...infill.map((b,i)=>({...b,uid:i+1000}))];
   const matrices={bands:[],balconies:[],rails:[],uprights:[],drains:[],vents:[],fans:[],parapets:[],pilasters:[],roofBoxes:[]};
   const colors=Object.fromEntries(Object.keys(matrices).map(k=>[k,[]]));
+  const upperDetailsByBuilding=new Map(); // Façade pieces above the 55% collapse line.
   const dummy=new THREE.Object3D();
   const color=(hex)=>new THREE.Color(hex);
   const concrete=[color('#6f7771'),color('#80857c'),color('#606d69'),color('#858378')];
@@ -22,7 +23,13 @@ export class CityArchitecture {
    const c=Math.cos(b.rotation),s=Math.sin(b.rotation);
    dummy.position.set(b.x+lx*c+lz*s,groundY+y,b.z-lx*s+lz*c);
    dummy.rotation.set(0,b.rotation+turn,0);dummy.scale.set(wx,hy,dz);dummy.updateMatrix();
+   const index=matrices[type].length;
    matrices[type].push(dummy.matrix.clone());colors[type].push(tint);
+   if(b.id&&y+hy*.5>b.height*.57){
+    let detail=upperDetailsByBuilding.get(b.id);
+    if(!detail){detail={};upperDetailsByBuilding.set(b.id,detail);}
+    (detail[type]??=[]).push(index);
+   }
   }
   for(const b of records){
    const close=b.layer==='inner'||b.tier==='near';
@@ -117,7 +124,9 @@ export class CityArchitecture {
    fans:['#ffffff',.87,.19],parapets:['#ffffff',.96,.02],
    pilasters:['#ffffff',.96,.03],roofBoxes:['#ffffff',.94,.09]
   };
-  this.meshes=[];this.stats={buildings:records.length,instances:{},drawCalls:0};
+  this.meshes=[];this.meshByType={};this.originalMatrices=matrices;
+  this.upperDetailsByBuilding=upperDetailsByBuilding;this.hiddenBuildingIds=new Set();
+  this.stats={buildings:records.length,instances:{},drawCalls:0};
   const cube=new THREE.BoxGeometry(1,1,1);
   const fanGeo=new THREE.CylinderGeometry(.5,.5,1,10);fanGeo.rotateX(Math.PI/2);
   for(const [name,mats] of Object.entries(matrices)){
@@ -129,8 +138,24 @@ export class CityArchitecture {
    for(let i=0;i<mats.length;i++){mesh.setMatrixAt(i,mats[i]);mesh.setColorAt(i,colors[name][i]);}
    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
    mesh.castShadow=false;mesh.receiveShadow=false;mesh.computeBoundingSphere();scene.add(mesh);
-   this.meshes.push(mesh);this.stats.instances[name]=mats.length;
+   this.meshes.push(mesh);this.meshByType[name]=mesh;this.stats.instances[name]=mats.length;
   }
   this.stats.drawCalls=this.meshes.length;
+ }
+ /** Remove only upper-story fixtures so collapsed towers have no floating railings.
+  * All instanced matrices can be restored after exiting the weather preview. */
+ setBuildingDamaged(id,damaged=false){
+  if(!id||!this.upperDetailsByBuilding.has(id))return;
+  const hide=Boolean(damaged);
+  if(this.hiddenBuildingIds.has(id)===hide)return;
+  if(hide)this.hiddenBuildingIds.add(id);
+  else this.hiddenBuildingIds.delete(id);
+  const zero=new THREE.Matrix4().makeScale(0,0,0);
+  for(const [type,indices] of Object.entries(this.upperDetailsByBuilding.get(id))){
+   const mesh=this.meshByType[type],orig=this.originalMatrices[type];
+   if(!mesh)continue;
+   for(const index of indices)mesh.setMatrixAt(index,hide?zero:orig[index]);
+   mesh.instanceMatrix.needsUpdate=true;
+  }
  }
 }
