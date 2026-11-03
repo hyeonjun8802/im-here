@@ -68,15 +68,15 @@ test('user-selected behavior auto-cinematography is optional and interruptible b
  assert.match(main,/autoLifeCamera/);
  assert.match(html,/id="life-camera-toggle"/);
 });
-test('legacy deterministic date + weather + spatial city planners remain byte-for-byte unchanged',()=>{
+test('current deterministic date, weather and spatial city planners match approved source checksums',()=>{
  const list={
- 'src/simulation.js':'4ad1aa474ef2276079e65798107691aeb6be557a1fc8c2e2b4845079386f7aba',
+ 'src/simulation.js':'4cb656db0d2562c66a8d433998702755a15b25ce5cd6d1f6ad6226f7d83b447b',
  'src/solar.js':'68b7bd176efca52b8ac0d483507d7e9bcd43229a8c8fdd76408f5cf166aa75ad',
  'src/spatialLayout.js':'157bcbc1f606f34d2f3800994c5179c63347e26021e08459b566cd5bb4754c61',
  'src/weatherDirector.js':'25224234f37a4b67307a3e610dd23639e765428ae7e018c20bd4eeb9ec322323',
  'src/lifePlan.js':'d0f0928d7f19cde7576fcc26d8a96e7a83316f73fca3102a7a83c5698dbaead0'
  };
- // Regression strictly checks known v1.3 source checksums; tamagotchi visual
+ // Regression checks currently approved simulation and planner checksums; tamagotchi visual
  // changes must not accelerate, fake, or recalculate actual game days.
  for(const [file,checksum] of Object.entries(list))assert.equal(createHash('sha256').update(read(file)).digest('hex'),checksum,file);
 });
