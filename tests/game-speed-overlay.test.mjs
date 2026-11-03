@@ -67,6 +67,8 @@ test('speed control, canvas tap and single new scenario audio remain wired',()=>
  assert.match(main,/eventBoard\?\.dismiss\(\)/);
  assert.match(main,/\$\('#life-panel'\)\.classList\.add\('hidden'\)/);
  assert.match(main,/\$\('#weather-panel'\)\.classList\.add\('hidden'\)/);
- assert.doesNotMatch(event,/new Audio\(|playSound\(|toggleMute\(|afterday-board-sound/);
+ assert.equal((event.match(/new Audio\(/g)||[]).length,1);
+ assert.match(event,/dragon-studio-notification-sound-372474\.mp3/);
+ assert.doesNotMatch(event,/metal_board_clang|playSound\(|toggleMute\(|afterday-board-sound/);
  assert.equal(existsSync(new URL('../src/metalClangAudio.js',import.meta.url)),false);
 });
