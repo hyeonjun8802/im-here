@@ -56,7 +56,7 @@ test('v2.60 tornado layers strongest supplied rain with stronger wind',()=>{
 
 test('v2.60 world passes the exact weather title to audio so visual and sound modes match',()=>{
  const world=fs.readFileSync('src/world.js','utf8');
- assert.match(world,/weatherAudio\.update\(vw,this\.advancedWeather\.flashTime>0 && this\.advancedWeather\.flashTime>=\.105,preset\)/);
+ assert.match(world,/weatherAudio\.update\(vw,\(this\.advancedWeather\.flashTime>0 && this\.advancedWeather\.flashTime>=\.105\)\|\|nearFlash>\.60,preset\)/);
 });
 
 
