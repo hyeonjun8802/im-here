@@ -14,7 +14,7 @@ export const WEATHER_AUDIO_ASSETS=Object.freeze({
  thunder:'./assets/audio/weather/storm_thunder_strong.mp3'
 });
 
-export const WEATHER_LOOP_CROSSFADE_SECONDS=.65;
+export const WEATHER_LOOP_CROSSFADE_SECONDS=.9;
 
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,Number(v)||0));
 const smooth=v=>{const x=clamp(v);return x*x*(3-2*x);};
@@ -23,6 +23,44 @@ export function loopCrossfadeFrames(length,sampleRate,seconds=WEATHER_LOOP_CROSS
  const n=Math.max(0,Math.floor(Number(length)||0)),sr=Math.max(1,Math.floor(Number(sampleRate)||1));
  // Never consume more than ~18% of the recording, even for a very short clip.
  return Math.max(0,Math.min(Math.floor(sr*Math.max(0,seconds)),Math.floor(n*.18)));
+}
+
+function windowRms(data,start,end){
+ const a=Math.max(0,Math.floor(start)),b=Math.min(data.length,Math.max(a+1,Math.floor(end)));
+ let sum=0,n=0;
+ const stride=Math.max(1,Math.floor((b-a)/2048));
+ for(let i=a;i<b;i+=stride){const v=data[i]||0;sum+=v*v;n++;}
+ return Math.sqrt(sum/Math.max(1,n));
+}
+
+export function findStableLoopBounds(buffer){
+ const length=Math.max(0,Math.floor(buffer?.length||0)),sr=Math.max(1,Math.floor(buffer?.sampleRate||1));
+ if(!buffer||length<sr*2)return {start:0,end:length,deltaDb:0};
+ const channels=Math.max(1,buffer.numberOfChannels||1),edge=Math.floor(sr*.34),step=Math.max(32,Math.floor(sr*.035));
+ const trim=Math.min(Math.floor(length*.16),Math.floor(sr*1.25));
+ const minLength=Math.floor(length*.68);
+ const channelData=Array.from({length:channels},(_,i)=>buffer.getChannelData(i));
+ const rmsAt=(frame)=>{
+  let total=0;
+  for(const data of channelData)total+=windowRms(data,frame-edge*.5,frame+edge*.5);
+  return total/channels;
+ };
+ let global=0,count=0;
+ for(let p=edge;p<length-edge;p+=Math.max(step*8,edge)){global+=rmsAt(p);count++;}
+ global/=Math.max(1,count);
+ const floor=Math.max(1e-7,global*.34),db=v=>20*Math.log10(Math.max(1e-9,v));
+ let best={start:0,end:length,deltaDb:Math.abs(db(rmsAt(edge))-db(rmsAt(length-edge))),score:Infinity};
+ for(let s=0;s<=trim;s+=step){
+  const rs=rmsAt(s+edge);if(rs<floor)continue;
+  for(let e=length-trim;e<=length;e+=step){
+   if(e-s<minLength)continue;
+   const re=rmsAt(e-edge);if(re<floor)continue;
+   const delta=Math.abs(db(rs)-db(re));
+   const score=delta+((s+(length-e))/Math.max(1,length))*.55;
+   if(score<best.score)best={start:s,end:e,deltaDb:delta,score};
+  }
+ }
+ return best;
 }
 
 /**
@@ -35,17 +73,19 @@ export function loopCrossfadeFrames(length,sampleRate,seconds=WEATHER_LOOP_CROSS
  * volume dip every time the weather bed repeats.
  */
 export function makeSeamlessLoopBuffer(ctx,buffer,seconds=WEATHER_LOOP_CROSSFADE_SECONDS){
- const fade=loopCrossfadeFrames(buffer?.length,buffer?.sampleRate,seconds);
- if(!buffer||fade<32||buffer.length<=fade*2)return buffer;
- const coreStart=fade,coreEnd=buffer.length-fade,coreLength=coreEnd-coreStart;
- const out=ctx.createBuffer(buffer.numberOfChannels,buffer.length-fade,buffer.sampleRate);
+ if(!buffer)return buffer;
+ const bounds=findStableLoopBounds(buffer),usable=Math.max(0,bounds.end-bounds.start);
+ const fade=loopCrossfadeFrames(usable,buffer.sampleRate,seconds);
+ if(fade<32||usable<=fade*2)return buffer;
+ const coreStart=bounds.start+fade,coreEnd=bounds.end-fade,coreLength=coreEnd-coreStart;
+ const out=ctx.createBuffer(buffer.numberOfChannels,usable-fade,buffer.sampleRate);
  for(let ch=0;ch<buffer.numberOfChannels;ch++){
   const src=buffer.getChannelData(ch),dst=out.getChannelData(ch);
   dst.set(src.subarray(coreStart,coreEnd),0);
   for(let i=0;i<fade;i++){
    const t=fade===1?1:i/(fade-1);
    const tailGain=Math.cos(t*Math.PI*.5),headGain=Math.sin(t*Math.PI*.5);
-   dst[coreLength+i]=src[buffer.length-fade+i]*tailGain+src[i]*headGain;
+   dst[coreLength+i]=src[bounds.end-fade+i]*tailGain+src[bounds.start+i]*headGain;
   }
  }
  return out;
@@ -191,8 +231,8 @@ export class WeatherAudio{
   // Short attack + longer tail fade removes the start/end cut from the
   // one-shot while preserving the supplied thunder dynamics.
   amp.gain.setValueAtTime(.0001,now);
-  amp.gain.linearRampToValueAtTime(clamp(gain),now+.08);
-  const fadeStart=now+Math.max(.16,duration-.72);
+  amp.gain.linearRampToValueAtTime(clamp(gain),now+.05);
+  const fadeStart=now+Math.max(.16,duration-.85);
   amp.gain.setValueAtTime(clamp(gain),fadeStart);
   amp.gain.linearRampToValueAtTime(.0001,now+duration);
   source.connect(amp).connect(this.parts.master);source.start(now);source.stop(now+duration+.03);
