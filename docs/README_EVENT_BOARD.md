@@ -5,15 +5,15 @@
 ## 적용
 
 1. **기존 AFTERDAY 프로젝트를 백업**합니다.
-2. 이 패키지 ZIP을 프로젝트 최상단에 해제하여 `src/eventBoard.js`, `src/eventBoard.css`, `public/assets/events/*`, `public/assets/audio/metal_board_clang.mp3`, `scripts/install_afterday_events.py`를 추가합니다.
+2. 이 패키지 ZIP을 프로젝트 최상단에 해제하여 `src/eventBoard.js`, `src/eventBoard.css`, `public/assets/events/*`, `scripts/install_afterday_events.py`를 추가합니다.
 3. 프로젝트 최상단에서 `python3 scripts/install_afterday_events.py`를 실행합니다. 이미 적용된 파일에는 중복 패치되지 않습니다.
 4. `npm test`, `node --test tests/event-board.test.mjs`, `npm run dev`로 실행합니다.
-5. **날씨 시연** 메뉴 맨 아래 `상황 경고판 시연`에서 8가지 팝업과 MP3를 테스트합니다. 이 시연은 생존자 데이터를 변경하지 않습니다.
+5. **날씨 시연** 메뉴 맨 아래 `상황 경고판 시연`에서 8가지 팝업과 V3 단일 효과음을 테스트합니다. 이 시연은 생존자 데이터를 변경하지 않습니다.
 
 ## 실제 동작
 
 - 화면 12시 방향, 시계 아래 중앙에 판이 아래로 걸리며 회전·진동하는 모션이 실행됩니다.
-- 최초 경고 노출 시 직접 합성한 약 1초짜리 철판 체결음 MP3가 한 번 재생됩니다.
+- 최초 경고 노출 시 V3 단일 소리(짧은 상승음 → 한 번의 금속 충돌 → 잔향)를 재생합니다. `src/metalClangAudio.js`가 생성한 WAV 신호 하나만 사용하고, 예전 `metal_board_clang.mp3` 파일은 제거했습니다.
 - 일반 경보는 6~8초 후 사라지며, 게임의 상태·자원을 덮지 않습니다.
 - 모바일 브라우저는 자동재생을 막을 수 있습니다. 사용자가 게임 화면을 한번 터치하면 오디오가 허용되는 환경에서 정상 재생됩니다.
 - 경보음 켜기/끄기를 기억합니다. `prefers-reduced-motion` 설정을 지원합니다.
