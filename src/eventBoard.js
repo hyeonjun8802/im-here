@@ -2,6 +2,7 @@
  * Original illustrations: cropped from approved situation-board concept sheet.
  */
 const BASE = new URL('./assets/events/', document.baseURI);
+const NOTICE_SOUND = new URL('./assets/audio/dragon-studio-notification-sound-372474.mp3', document.baseURI);
 
 export const EVENT_STYLES = Object.freeze({
   raiders:      { category:'위험', title:'강도들이 식량 보관함에 접근하고 있습니다!', description:'계단실에서 낯선 발소리가 들립니다. 보관함을 지키세요.', image:'raiders.webp', severity:'danger',duration:8500 },
@@ -42,6 +43,15 @@ export class AfterdayEventBoard {
     this.lastRaider=Boolean(initialState?.raiderAlert);
     this.lastLowFood=(initialState?.supply?.food||0)<3;
     this.activeKey=null;this.timer=null;
+    // One notification audio instance for all situation/scenario notices.
+    this.noticeAudio=new Audio(NOTICE_SOUND.href);
+    this.noticeAudio.preload='auto';this.noticeAudio.volume=.75;
+    this.pendingNoticeSound=false;
+    this.onNoticeGesture=()=>{
+      if(this.pendingNoticeSound&&this.activeKey&&!this.element.hidden)this.playNoticeSound();
+    };
+    window.addEventListener('pointerdown',this.onNoticeGesture,{passive:true});
+    window.addEventListener('keydown',this.onNoticeGesture);
     this.seen=[];
     this.element=document.createElement('section');
     this.element.className='afterday-board';this.element.setAttribute('role','status');
@@ -52,6 +62,20 @@ export class AfterdayEventBoard {
     this.element.querySelector('.afterday-board-close').addEventListener('click',()=>this.dismiss());
     this.element.querySelector('.afterday-board-secure').addEventListener('click',()=>this.onSecure());
     this.injectPreviewControls();
+  }
+  playNoticeSound(){
+    this.pendingNoticeSound=false;
+    const audio=this.noticeAudio;
+    audio.pause();
+    try{audio.currentTime=0;}catch{}
+    try{
+      const playing=audio.play();
+      if(playing&&typeof playing.catch==='function')playing.catch(error=>{
+        if(error?.name==='NotAllowedError'&&this.activeKey&&!this.element.hidden)this.pendingNoticeSound=true;
+      });
+    }catch(error){
+      if(error?.name==='NotAllowedError'&&this.activeKey&&!this.element.hidden)this.pendingNoticeSound=true;
+    }
   }
   show(key,options={}) {
     const data=EVENT_STYLES[key];if(!data)return false;
@@ -65,10 +89,11 @@ export class AfterdayEventBoard {
     // Restart physical hanging animation for each newly arriving notice.
     void el.offsetHeight;el.classList.add('is-open');
     this.seen.push({key,at:Date.now()});if(this.seen.length>30)this.seen.shift();
+    this.playNoticeSound();
     this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
     return true;
   }
-  dismiss(){clearTimeout(this.timer);this.element.classList.remove('is-open');this.element.hidden=true;this.activeKey=null;}
+  dismiss(){clearTimeout(this.timer);this.element.classList.remove('is-open');this.element.hidden=true;this.activeKey=null;this.pendingNoticeSound=false;this.noticeAudio.pause();}
   sync(state,{warningAhead=false}={}) {
     const current=state?.events?.at(-1)||'';
     let shown=null;
@@ -103,5 +128,5 @@ export class AfterdayEventBoard {
     }
     box.append(grid);panel.append(box);
   }
-  destroy(){this.dismiss();this.element.remove();}
+  destroy(){this.dismiss();this.element.remove();window.removeEventListener('pointerdown',this.onNoticeGesture);window.removeEventListener('keydown',this.onNoticeGesture);}
 }
