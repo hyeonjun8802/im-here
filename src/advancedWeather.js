@@ -97,8 +97,9 @@ export class AdvancedWeather {
    cloud.material.opacity=(.09+w.cloud*.40)*(1-night*.16);
    cloud.material.color.set(w.storm>.2?'#6e7882':night>.6?'#6e7890':'#d5d6cd');
   }
-  this.debris.material.opacity=Math.min(.77,w.tornado*.67);
-  this.debris.visible=w.tornado>.008;
+  // The new near-field tornado owns all storm debris; hide this obsolete far emitter.
+  this.debris.material.opacity=this.legacyTornadoDisabled?0:Math.min(.77,w.tornado*.67);
+  this.debris.visible=!this.legacyTornadoDisabled&&w.tornado>.008;
   if(this.debris.visible){const p=this.debrisPositions;for(let i=0;i<this.debrisSeeds.length;i++){
    const o=this.debrisSeeds[i],j=i*3,spin=now*(.7+o.t*.7)+o.a;
    const rr=o.rr*(.88+Math.sin(now*1.6+o.offset)*.12);p[j]=Math.cos(spin)*rr;p[j+1]=(o.t*58+now*2.8)%60+3;p[j+2]=Math.sin(spin)*rr;
