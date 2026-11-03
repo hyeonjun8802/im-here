@@ -39,6 +39,11 @@ test('nearby rooftop buildings never created by a second scene function',()=>{
 });
 test('weather disasters do not bring tornado into the empty buffer',()=>{
   assert.ok(SPATIAL_LAYOUT.tornadoMinDistance>SPATIAL_LAYOUT.clearZoneRadius);
-  const p=[-240,-255];assert.ok(Math.hypot(...p)>SPATIAL_LAYOUT.tornadoMinDistance);
-  assert.match(src,/this\.tornado\.position\.set\(-240,-19,-255\)/);
+  const slots=[-36,0,36].map((dx,i)=>({id:'safe-'+i,tier:'mid',x:200+dx,z:-220,height:31}));
+  const track=selectVariedStormBuildings(slots,{seed:123});
+  assert.equal(track.length,3);
+  for(const slot of track){
+    const [x,,z]=stormTrackPoint(slot);
+    assert.ok(Math.hypot(x,z)>SPATIAL_LAYOUT.clearZoneRadius,'tornado must remain outside rooftop buffer');
+  }
 });
