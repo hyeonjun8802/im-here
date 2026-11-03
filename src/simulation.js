@@ -5,7 +5,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, gameClockOffsetMs:0, tornadoCityDamaged:false, tornadoDamageCount:0, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
+  version:4, gameClockOffsetMs:0, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   supply:{food:8,water:12,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
   events:['폐허 옥상에 작은 캠프를 마련했다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
@@ -23,9 +23,19 @@ export function sanitize(raw, now=Date.now()) {
   s.events=Array.isArray(s.events)?s.events.filter(v=>typeof v==='string').slice(-16):b.events;
   s.animalAlert=Boolean(s.animalAlert);s.sickness=CAP(Number(s.sickness)||0);
   // Compatible with the previous one-building damage save flag.
-  s.tornadoDamageCount=Math.max(0,Math.min(3,Math.floor(Number(s.tornadoDamageCount)||0)));
+  // Old saves counted at most three ruins; new saves preserve distinct city building IDs.
+  s.tornadoDamagedIds=Array.isArray(s.tornadoDamagedIds)?
+    [...new Set(s.tornadoDamagedIds.filter(v=>typeof v==='string'&&v.length>0&&v.length<120))].slice(0,512):[];
+  const legacyCount=Math.max(0,Math.min(3,Math.floor(Number(s.tornadoDamageCount)||0)));
+  s.tornadoDamageCount=Math.max(legacyCount,s.tornadoDamagedIds.length);
   if(s.tornadoCityDamaged&&s.tornadoDamageCount===0)s.tornadoDamageCount=1;
   s.tornadoCityDamaged=s.tornadoDamageCount>0;
+  s.tornadoCurrentSites=Array.isArray(s.tornadoCurrentSites)?
+    [...new Set(s.tornadoCurrentSites.filter(v=>typeof v==='string'&&v.length<120))].slice(0,3):[];
+  s.tornadoPreviousCenterId=typeof s.tornadoPreviousCenterId==='string'?s.tornadoPreviousCenterId:null;
+  s.tornadoEncounter=Math.max(0,Math.floor(Number(s.tornadoEncounter)||0));
+  s.tornadoEpisodeDamageCount=Math.max(0,Math.min(3,Math.floor(Number(s.tornadoEpisodeDamageCount)||0)));
+  s.tornadoEncounterActive=Boolean(s.tornadoEncounterActive);
   s.raiderAlert=Boolean(s.raiderAlert);
   s.raiderUntilAt=Number.isFinite(Number(s.raiderUntilAt))?Math.max(0,Number(s.raiderUntilAt)):0;
   s.raiderCooldownAt=Number.isFinite(Number(s.raiderCooldownAt))?Math.max(0,Number(s.raiderCooldownAt)):0;
@@ -40,6 +50,17 @@ export function addEvent(s,msg){if(s.events[s.events.length-1]!==msg)s.events.pu
 /** Monotonic tornado damage: preview and real weather have the same permanent city consequences.
  * Safe to replay after autosave or reload; a ruined tower can never be repaired by weather changes. */
 export function recordTornadoDamage(s,targetCount,source='weather'){
+ if(Array.isArray(targetCount)){
+   const current=Array.isArray(s.tornadoDamagedIds)?s.tornadoDamagedIds:[];
+   const incoming=targetCount.filter(id=>typeof id==='string'&&id.length>0&&id.length<120);
+   const added=incoming.filter(id=>!current.includes(id));
+   if(!added.length)return false;
+   s.tornadoDamagedIds=[...new Set([...current,...added])].slice(0,512);
+   s.tornadoDamageCount=Math.max(Number(s.tornadoDamageCount)||0,s.tornadoDamagedIds.length);
+   s.tornadoCityDamaged=true;
+   addEvent(s,`토네이도가 폐허 건물 ${s.tornadoDamageCount}채를 무너뜨렸다. 파괴된 건물은 복구되지 않는다.`);
+   return true;
+ }
  const prior=Math.max(0,Math.min(3,Math.floor(Number(s.tornadoDamageCount)||0)),s.tornadoCityDamaged?1:0);
  const next=Math.max(prior,Math.min(3,Math.max(0,Math.floor(Number(targetCount)||0))));
  if(next<=prior)return false;
@@ -68,7 +89,18 @@ export function advance(s,now=Date.now(),offline=false){
     const e=s.weather;
     // In actual weather, each minute ruins another background tower, at most three.
     // The same monotonic state update is used by previewed tornado impacts.
-    if(e==='tornado')recordTornadoDamage(s,(s.tornadoDamageCount||0)+1,'weather');
+    if(e==='tornado'){
+      if(s.tornadoCurrentSites?.length){
+        const next=Math.min(3,(s.tornadoEpisodeDamageCount||0)+1);
+        if(next>s.tornadoEpisodeDamageCount){
+          s.tornadoEpisodeDamageCount=next;
+          recordTornadoDamage(s,s.tornadoCurrentSites.slice(0,next),'weather');
+        }
+      }else if(!s.tornadoDamagedIds?.length){
+        // Compatibility with saved games created before per-building IDs existed.
+        recordTornadoDamage(s,(s.tornadoDamageCount||0)+1,'weather');
+      }
+    }
     s.food=CAP(s.food-(e==='cold'?.041:.032));
     s.water=CAP(s.water-(e==='heat'?.075:.043));
     s.health=CAP(s.health-(s.water<12||s.food<10?.067:.002));
