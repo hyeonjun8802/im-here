@@ -111,7 +111,7 @@ test('real contracted desktop and mobile city produce multiple RANDOM tornado or
 test('new release rejects stale fixed-spawn locations while keeping permanent ruin IDs',()=>{
   const world=readFileSync(new URL('../src/world.js',import.meta.url),'utf8');
   assert.match(world,/tornadoSpawnVersion!==2/);
-  assert.match(world,/game\\.tornadoCurrentSites=\\[\\]/);
-  assert.match(world,/Math\\.floor\\(Math\\.random\\(\\)\\*0x7fffffff\\)/);
-  assert.match(world,/game\\.tornadoDamagedIds/);
+  assert.match(world,/game\.tornadoCurrentSites=\[\]/);
+  assert.match(world,/Math\.floor\(Math\.random\(\)\*0x7fffffff\)/);
+  assert.match(world,/game\.tornadoDamagedIds/);
 });
