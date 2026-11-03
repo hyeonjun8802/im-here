@@ -5,7 +5,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
+  version:4, tornadoCityDamaged:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   supply:{food:8,water:12,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
   events:['폐허 옥상에 작은 캠프를 마련했다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
@@ -20,6 +20,7 @@ export function sanitize(raw, now=Date.now()) {
   for (const k of Object.keys(s.facilities)) s.facilities[k]=CAP(Number(s.facilities[k])||0);
   s.events=Array.isArray(s.events)?s.events.filter(v=>typeof v==='string').slice(-16):b.events;
   s.animalAlert=Boolean(s.animalAlert);s.sickness=CAP(Number(s.sickness)||0);
+  s.tornadoCityDamaged=Boolean(s.tornadoCityDamaged);
   s.raiderAlert=Boolean(s.raiderAlert);
   s.raiderUntilAt=Number.isFinite(Number(s.raiderUntilAt))?Math.max(0,Number(s.raiderUntilAt)):0;
   s.raiderCooldownAt=Number.isFinite(Number(s.raiderCooldownAt))?Math.max(0,Number(s.raiderCooldownAt)):0;
@@ -49,6 +50,12 @@ export function advance(s,now=Date.now(),offline=false){
       addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
     }
     const e=s.weather;
+    // Real tornado impact: deterministic, saved landmark loss once per world.
+    // Weather previews never call this branch, so demonstrations cannot destroy saved cities.
+    if(e==='tornado'&&!s.tornadoCityDamaged){
+      s.tornadoCityDamaged=true;
+      addEvent(s,'토네이도가 원경의 폐허 건물 한 채 상부를 무너뜨렸다. 건물은 절반가량 남았다.');
+    }
     s.food=CAP(s.food-(e==='cold'?.041:.032));
     s.water=CAP(s.water-(e==='heat'?.075:.043));
     s.health=CAP(s.health-(s.water<12||s.food<10?.067:.002));
