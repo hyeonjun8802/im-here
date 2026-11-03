@@ -84,9 +84,13 @@ export class AfterdayEventBoard {
       this.lastSoundAt=now;
       this.pendingSound=false;
       await this.audio.play();
-    }catch{
-      this.lastSoundAt=-Infinity;
-      this.pendingSound=true;
+    }catch(error){
+      // A deliberate pause/restart throws AbortError; do not queue a second sound.
+      // Retry only when the browser rejected the first play for autoplay policy.
+      if(error?.name==='NotAllowedError'){
+        this.lastSoundAt=-Infinity;
+        this.pendingSound=true;
+      }
     }
   }
   show(key,options={}) {
