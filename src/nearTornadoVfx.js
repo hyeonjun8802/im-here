@@ -39,6 +39,37 @@ export function selectStormBuildings(slots=[],count=3){
   }
   return chosen.sort((a,b)=>a.x-b.x).slice(0,Math.max(1,count));
 }
+/**
+ * Select a different real-city neighborhood for each encounter.
+ * Prefer intact towers, require a three-building sweep, and keep well away
+ * from the last tornado center when the city layout permits.
+ */
+export function selectVariedStormBuildings(slots=[],{seed=1,previousCenterId=null,damagedIds=[]}={}){
+  const ruined=new Set(damagedIds),prior=slots.find(s=>s.id===previousCenterId);
+  const pool=slots.filter(s=>(s.tier==='near'||s.tier==='mid')&&Math.hypot(s.x,s.z)>=100);
+  const potential=[];
+  for(const center of pool){
+    const neighbors=pool.filter(s=>s.id!==center.id&&Math.abs(s.z-center.z)<72&&
+      Math.hypot(s.x-center.x,s.z-center.z)<108&&Math.abs(s.x-center.x)>13);
+    const left=neighbors.filter(s=>s.x<center.x-7).sort((a,b)=>Math.hypot(a.x-center.x,a.z-center.z)-Math.hypot(b.x-center.x,b.z-center.z))[0];
+    const right=neighbors.filter(s=>s.x>center.x+7).sort((a,b)=>Math.hypot(a.x-center.x,a.z-center.z)-Math.hypot(b.x-center.x,b.z-center.z))[0];
+    if(!left||!right)continue;
+    const track=[left,center,right];
+    potential.push({center,track,ruined:track.filter(s=>ruined.has(s.id)).length,
+      separation:prior?Math.hypot(prior.x-center.x,prior.z-center.z):Infinity});
+  }
+  if(!potential.length)return selectStormBuildings(slots);
+  // Exhaust undamaged sites in other neighborhoods before revisiting ruins.
+  const fewest=Math.min(...potential.map(p=>p.ruined));
+  let choices=potential.filter(p=>p.ruined===fewest);
+  if(prior&&choices.some(p=>p.separation>=125))choices=choices.filter(p=>p.separation>=125);
+  else if(prior&&choices.some(p=>p.center.id!==prior.id))choices=choices.filter(p=>p.center.id!==prior.id);
+  // Stable per-encounter pseudo-random variety; not a new random position every frame.
+  const n=Math.abs(Math.floor(Number(seed)||0));
+  choices.sort((a,b)=>a.center.id.localeCompare(b.center.id));
+  const index=Math.floor(hash(n*1.991+17)*choices.length)%choices.length;
+  return choices[index].track;
+}
 /** Close but never crossing the one playable roof. */
 export function stormTrackPoint(slot){
   const x=slot.x+Math.sign(slot.x||-1)*6,z=slot.z+Math.sign(slot.z||-1)*6;
@@ -136,7 +167,7 @@ export class NearTornadoVfx {
     this.track=this.slots.map(s=>new THREE.Vector3(...stormTrackPoint(s)));
     this.clock=0;this.exposure=0;this.strength=0;
     this.anchor=this.track[0]?.clone()||new THREE.Vector3(-110,-23.4,-116);
-    this.impacts=[];
+    this.impacts=[];this.damageSites=new Map();this.reportedIds=new Set();
     this.root=new THREE.Group();this.root.name='AFTERDAY cinematic close 3D tornado';
     this.root.position.copy(this.anchor);this.root.visible=false;this.scene.add(this.root);
     const cone=new THREE.CylinderGeometry(1,1,1,this.mobile?42:76,this.mobile?30:55,true);
@@ -170,7 +201,25 @@ export class NearTornadoVfx {
     this.flashLight=new THREE.PointLight('#b0d8ff',0,270,1.1);
     this.flashLight.position.set(0,107,0);this.root.add(this.flashLight);
     this.boltAge=100;this.nextBolt=1.65;this.boltIndex=0;
-    this.impacts=this.slots.map((slot,index)=>this.setupDestruction(slot,world.cityBuildings?.get(slot.id),index)).filter(Boolean);
+    this.impacts=this.slots.map((slot,index)=>this.getDamageSite(slot,index)).filter(Boolean);
+  }
+  getDamageSite(slot,index){
+    if(!slot)return null;
+    if(this.damageSites.has(slot.id))return this.damageSites.get(slot.id);
+    const site=this.setupDestruction(slot,this.world.cityBuildings?.get(slot.id),index);
+    if(site)this.damageSites.set(slot.id,site);
+    return site;
+  }
+  setStormSites(ids=[]){
+    const selected=ids.map(id=>this.world.distantCityPlan.find(s=>s.id===id)).filter(Boolean);
+    if(!selected.length)return;
+    const old=this.slots.map(s=>s.id).join(',');
+    if(old===selected.map(s=>s.id).join(','))return;
+    this.slots=selected;
+    this.track=selected.map(s=>new THREE.Vector3(...stormTrackPoint(s)));
+    this.anchor=this.track[0].clone();this.root.position.copy(this.anchor);
+    this.impacts=selected.map((slot,index)=>this.getDamageSite(slot,index)).filter(Boolean);
+    this.exposure=0;this.reportedIds.clear();
   }
   setupDestruction(slot,host,index){
     if(!slot||!host)return null;
@@ -218,17 +267,33 @@ export class NearTornadoVfx {
     smoke.frustumCulled=false;ruined.add(smoke);impact.impactSmoke=smoke;
     return impact;
   }
-  updateDestruction(dt,active,persistedCount,previewMode,onImpact=()=>{}){
+  updateDestruction(dt,active,persistedCount,previewMode,onImpact=()=>{},permanentIds=null){
     // Staggered impacts: left -> center -> right, as the vortex travels past.
     const previewCount=previewMode&&active?
       [5,11,17].filter(seconds=>this.exposure>=seconds).length:0;
     const count=Math.min(this.impacts.length,Math.max(persistedCount,previewCount));
     // Persist preview impacts at the instant they happen, not when the preview ends.
-    if(count>persistedCount)onImpact(count);
-    this.impacts.forEach((impact,index)=>{
-      const persisted=index<persistedCount;
-      const shouldBreak=index<count;
-      if(persisted&&!active)impact.progress=1;
+    if(permanentIds===null){
+      if(count>persistedCount)onImpact(count);
+    }else{
+      const committed=new Set(permanentIds);
+      this.impacts.forEach((site,index)=>{
+        if(index<count&&!committed.has(site.slot.id)&&!this.reportedIds.has(site.slot.id)){
+          this.reportedIds.add(site.slot.id);
+          onImpact(site.slot.id,index+1);
+        }
+      });
+      for(const id of committed){
+        const slot=this.world.distantCityPlan.find(s=>s.id===id);
+        if(slot)this.getDamageSite(slot,-1);
+      }
+    }
+    const committed=new Set(permanentIds||[]);
+    for(const impact of this.damageSites.values()){
+      const index=this.impacts.indexOf(impact);
+      const persisted=permanentIds===null?index>=0&&index<persistedCount:committed.has(impact.slot.id);
+      const shouldBreak=persisted||(index>=0&&index<count)||this.reportedIds.has(impact.slot.id);
+      if(persisted&&(!active||index<0))impact.progress=1;
       else if(shouldBreak)impact.progress=Math.min(1,impact.progress+dt*.29);
       // Destruction is one-way: no weather change, replay or preview exit repairs a tower.
       const p=impact.progress;
@@ -254,15 +319,16 @@ export class NearTornadoVfx {
         this.dummy.updateMatrix();smoke.setMatrixAt(i,this.dummy.matrix);
       }
       smoke.instanceMatrix.needsUpdate=true;
-    });
+    }
   }
-  update(dt,weather,{persistedCount=0,preview=false,night=0,reduceMotion=false,onImpact=()=>{}}={}){
+  update(dt,weather,{persistedCount=0,permanentIds=null,trackIds=null,preview=false,night=0,reduceMotion=false,onImpact=()=>{}}={}){
     dt=Math.min(Math.max(dt,0),.05);
+    if(trackIds?.length)this.setStormSites(trackIds);
     const target=Math.max(0,Math.min(1,Number(weather)||0));
     this.clock+=dt;this.strength=THREE.MathUtils.damp(this.strength,target,1.5,dt);
     this.exposure=target>.5?this.exposure+dt:0;
     this.root.visible=this.strength>.015;
-    this.updateDestruction(dt,target>.5,Math.max(0,Math.min(3,Math.floor(persistedCount))),preview,onImpact);
+    this.updateDestruction(dt,target>.5,Math.max(0,Math.min(3,Math.floor(persistedCount))),preview,onImpact,permanentIds);
     if(!this.root.visible){this.flashLight.intensity=0;return 0;}
     const t=this.clock,s=this.strength;
     // Move left-to-right through real building coordinates, then sweep back slowly.
@@ -322,7 +388,7 @@ export class NearTornadoVfx {
   }
   dispose(){
     // World disposal only releases GPU resources; never resurrect a destroyed tower.
-    for(const root of [this.root,...this.impacts.map(i=>i.ruined)]){
+    for(const root of [this.root,...[...this.damageSites.values()].map(i=>i.ruined)]){
       root.traverse(obj=>{
         if(obj.geometry)obj.geometry.dispose();
         if(obj.material){
