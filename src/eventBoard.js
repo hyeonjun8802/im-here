@@ -1,7 +1,6 @@
 /* AFTERDAY event notification board — UI only; gameplay changes live in simulation.js.
  * Original illustrations: cropped from approved situation-board concept sheet.
  */
-import { getHeavyClangAudioURL } from './metalClangAudio.js';
 const BASE = new URL('./assets/events/', document.baseURI);
 
 export const EVENT_STYLES = Object.freeze({
@@ -42,56 +41,17 @@ export class AfterdayEventBoard {
     this.lastWeather=initialState?.weather||'clear';
     this.lastRaider=Boolean(initialState?.raiderAlert);
     this.lastLowFood=(initialState?.supply?.food||0)<3;
-    try{this.muted=localStorage.getItem('afterday_event_sfx_muted')==='true';}catch{this.muted=false;}
-    // The event board has exactly one audio element: the V3 cue only.
-    this.audio = new Audio(getHeavyClangAudioURL());this.audio.preload='auto';this.audio.volume=.5;
-    this.lastSoundAt=-Infinity;
-    this.pendingSound=false;this.activeKey=null;this.timer=null;
+    this.activeKey=null;this.timer=null;
     this.seen=[];
     this.element=document.createElement('section');
     this.element.className='afterday-board';this.element.setAttribute('role','status');
     this.element.setAttribute('aria-live','polite');this.element.setAttribute('aria-atomic','true');
     this.element.hidden=true;
-    this.element.innerHTML=`<div class="afterday-board-art"><img alt="" /></div><div class="afterday-board-body"><small class="afterday-board-category"></small><strong class="afterday-board-title"></strong><span class="afterday-board-description"></span><button class="afterday-board-secure" hidden type="button">보관함 잠그기 · 부품 1개</button></div><button class="afterday-board-sound" type="button" aria-label="경고음 켜기 또는 끄기" title="경고음 켜기 또는 끄기"></button><button class="afterday-board-close" type="button" aria-label="알림 닫기">×</button>`;
+    this.element.innerHTML=`<div class="afterday-board-art"><img alt="" /></div><div class="afterday-board-body"><small class="afterday-board-category"></small><strong class="afterday-board-title"></strong><span class="afterday-board-description"></span><button class="afterday-board-secure" hidden type="button">보관함 잠그기 · 부품 1개</button></div><button class="afterday-board-close" type="button" aria-label="알림 닫기">×</button>`;
     host.append(this.element);
     this.element.querySelector('.afterday-board-close').addEventListener('click',()=>this.dismiss());
-    this.element.querySelector('.afterday-board-sound').addEventListener('click',()=>this.toggleMute());
     this.element.querySelector('.afterday-board-secure').addEventListener('click',()=>this.onSecure());
-    this.setMuteLabel();this.injectPreviewControls();
-    this.gesture=()=>{if(this.pendingSound){this.pendingSound=false;this.playSound();}};
-    window.addEventListener('pointerdown',this.gesture,{passive:true});
-    window.addEventListener('keydown',this.gesture);
-  }
-  setMuteLabel(){const b=this.element.querySelector('.afterday-board-sound');b.textContent=this.muted?'🔇':'🔊';b.setAttribute('aria-pressed',String(!this.muted));}
-  toggleMute(){
-    this.muted=!this.muted;
-    try{localStorage.setItem('afterday_event_sfx_muted',String(this.muted));}catch{}
-    this.pendingSound=false;
-    if(this.muted){this.audio.pause();this.audio.currentTime=0;}
-    this.setMuteLabel();
-  }
-  async playSound(){
-    if(this.muted)return;
-    const now=Date.now();
-    // If two event state updates land together, the board produces one sound, never two.
-    if(!this.pendingSound&&now-this.lastSoundAt<900)return;
-    const previous=window.__afterdayEventBoardAudio;
-    if(previous&&previous!==this.audio){previous.pause();previous.currentTime=0;}
-    window.__afterdayEventBoardAudio=this.audio;
-    this.audio.pause();
-    this.audio.currentTime=0;
-    try{
-      this.lastSoundAt=now;
-      this.pendingSound=false;
-      await this.audio.play();
-    }catch(error){
-      // A deliberate pause/restart throws AbortError; do not queue a second sound.
-      // Retry only when the browser rejected the first play for autoplay policy.
-      if(error?.name==='NotAllowedError'){
-        this.lastSoundAt=-Infinity;
-        this.pendingSound=true;
-      }
-    }
+    this.injectPreviewControls();
   }
   show(key,options={}) {
     const data=EVENT_STYLES[key];if(!data)return false;
@@ -105,11 +65,10 @@ export class AfterdayEventBoard {
     // Restart physical hanging animation for each newly arriving notice.
     void el.offsetHeight;el.classList.add('is-open');
     this.seen.push({key,at:Date.now()});if(this.seen.length>30)this.seen.shift();
-    if(!options.silent)this.playSound();
     this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
     return true;
   }
-  dismiss(){clearTimeout(this.timer);this.element.classList.remove('is-open');this.element.hidden=true;this.activeKey=null;this.pendingSound=false;this.audio.pause();this.audio.currentTime=0;}
+  dismiss(){clearTimeout(this.timer);this.element.classList.remove('is-open');this.element.hidden=true;this.activeKey=null;}
   sync(state,{warningAhead=false}={}) {
     const current=state?.events?.at(-1)||'';
     let shown=null;
@@ -144,5 +103,5 @@ export class AfterdayEventBoard {
     }
     box.append(grid);panel.append(box);
   }
-  destroy(){this.dismiss();if(window.__afterdayEventBoardAudio===this.audio)delete window.__afterdayEventBoardAudio;this.audio.removeAttribute('src');this.audio.load();this.element.remove();window.removeEventListener('pointerdown',this.gesture);window.removeEventListener('keydown',this.gesture);}
+  destroy(){this.dismiss();this.element.remove();}
 }
