@@ -35,6 +35,17 @@ export function wallClock(now=Date.now()) {return new Intl.DateTimeFormat('ko-KR
 export function localHour(now=Date.now()) {const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));const get=k=>Number(parts.find(p=>p.type===k)?.value||0);return get('hour')+get('minute')/60+get('second')/3600;}
 function nextRandom(s){s.weatherSeed=(Math.imul(s.weatherSeed,1664525)+1013904223)>>>0;return s.weatherSeed/4294967296;}
 export function addEvent(s,msg){if(s.events[s.events.length-1]!==msg)s.events.push(msg);if(s.events.length>16)s.events.shift();}
+/** Monotonic tornado damage: preview and real weather have the same permanent city consequences.
+ * Safe to replay after autosave or reload; a ruined tower can never be repaired by weather changes. */
+export function recordTornadoDamage(s,targetCount,source='weather'){
+ const prior=Math.max(0,Math.min(3,Math.floor(Number(s.tornadoDamageCount)||0)),s.tornadoCityDamaged?1:0);
+ const next=Math.max(prior,Math.min(3,Math.max(0,Math.floor(Number(targetCount)||0))));
+ if(next<=prior)return false;
+ s.tornadoDamageCount=next;
+ s.tornadoCityDamaged=true;
+ addEvent(s,`토네이도가 폐허 건물 ${next}채를 무너뜨렸다. 파괴된 건물은 복구되지 않는다.`);
+ return true;
+}
 function pickWeather(s){const r=nextRandom(s);const choices=s.temperature<25?['clear','cloud','rain','cold','storm']:['clear','cloud','heat','rain','storm','tornado'];return choices[Math.min(choices.length-1,Math.floor(r*choices.length))];}
 export function advance(s,now=Date.now(),offline=false){
   if(now<s.lastTickAt) return s; // Never process a backward system clock.
@@ -53,13 +64,9 @@ export function advance(s,now=Date.now(),offline=false){
       addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
     }
     const e=s.weather;
-    // Each minute of a real tornado can permanently damage ONE more background
-    // building, up to three. Weather previews never call simulation.advance.
-    if(e==='tornado'&&s.tornadoDamageCount<3){
-      s.tornadoDamageCount+=1;
-      s.tornadoCityDamaged=true; // preserve backward compatibility
-      addEvent(s,`토네이도가 시가지의 폐허 건물 ${s.tornadoDamageCount}채를 순차적으로 무너뜨렸다.`);
-    }
+    // In actual weather, each minute ruins another background tower, at most three.
+    // The same monotonic state update is used by previewed tornado impacts.
+    if(e==='tornado')recordTornadoDamage(s,(s.tornadoDamageCount||0)+1,'weather');
     s.food=CAP(s.food-(e==='cold'?.041:.032));
     s.water=CAP(s.water-(e==='heat'?.075:.043));
     s.health=CAP(s.health-(s.water<12||s.food<10?.067:.002));
