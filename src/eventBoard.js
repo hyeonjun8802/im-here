@@ -12,6 +12,9 @@ export const EVENT_STYLES = Object.freeze({
   tornado:      { category:'재난', title:'토네이도 접근 경보',description:'강풍에 대비하고 생존자를 안전한 곳으로 대피시키세요.',image:'storm.webp',severity:'disaster',duration:14000 },
   tornadoNear:  { category:'긴급 재난', title:'토네이도 · 옥상 바로 옆 접근!',description:'파편이 곧 들이닥칩니다. 먼저 대피하거나 물자를 고정하세요.',image:'storm.webp',severity:'danger',duration:16000 },
   tornadoDirect:{ category:'긴급 재난', title:'토네이도 · 옥상 직격 위험!',description:'건물 위를 덮치는 강풍입니다. 대피와 식량 보호를 결정하세요.',image:'storm.webp',severity:'danger',duration:16000 },
+  expedition:   { category:'오늘의 생존 선택',title:'계단실 아래에서 물자 흔적 발견',description:'내려갈지, 옥상에 남을지 결정하세요. 부상과 질병 위험이 있습니다.',image:'supply_cache.webp',severity:'opportunity',duration:300000 },
+  helicopter:   { category:'구조 신호',title:'구조 헬기 보급품 투하!',description:'무전기에 응답한 헬기가 생존 물자를 떨어뜨렸습니다.',image:'supply_cache.webp',severity:'opportunity',duration:9500 },
+  survivorCall: { category:'무전 교신',title:'다른 생존자의 신호가 잡혔습니다',description:'도시 어딘가에 살아 있는 사람이 있습니다. 옥상 캠프에는 생존자 한 명만 머뭅니다.',image:'stranger.webp',severity:'social',duration:8000 },
   milestone:    { category:'생존 일지', title:'또 하루를 버텼습니다',description:'다음 생존 계획을 확인하세요.',image:'supply_cache.webp',severity:'social',duration:8500 },
   rain:         { category:'재난', title:'강한 비가 시작됐습니다',description:'천막 누수와 배수로 상태를 확인하세요.',image:'storm.webp',severity:'disaster',duration:6000 },
   heat:         { category:'재난', title:'폭염 주의보',description:'식수와 그늘을 확보하고 활동을 줄이세요.',image:'food_shortage.webp',severity:'disaster',duration:6000 },
@@ -24,7 +27,7 @@ export const EVENT_STYLES = Object.freeze({
 
 export function eventFromMessage(message='') {
   const m = String(message);
-  if (/^(날씨 시연|황혼 시연|음향 시작 불가|현재 재난 상황)/.test(m))return null;
+  if (/^(날씨 시연|황혼 시연|음향 시작 불가|현재 재난 상황|탐색 결과|탐색 기회|무전 교신 결과|정수기 가동|옥상 텃밭 수확)/.test(m))return null;
   if (/도둑|강도|침입자|낯선 발소리|식량 보관함에 접근|도난/.test(m))return /도망|물리쳤|지켰|잠가|쫓아냈/.test(m)?null:/훔치|훔쳐|도난|가져갔|달아나/.test(m)?'theft':'raiders';
   if (/토네이도/.test(m))return /경보|다가오|접근|예보/.test(m)?'tornado':null;
   if (/^생존 일지 DAY/.test(m))return 'milestone';
@@ -39,10 +42,10 @@ export function eventFromMessage(message='') {
 }
 
 export class AfterdayEventBoard {
-  constructor({host,initialState,onSecure=()=>{},onCover=()=>{},onPrepare=()=>{},onNotice=()=>{},onLog=()=>{}}={}) {
+  constructor({host,initialState,onSecure=()=>{},onCover=()=>{},onPrepare=()=>{},onExpeditionChoice=()=>{},onNotice=()=>{},onLog=()=>{}}={}) {
     if (!host) throw new Error('AFTERDAY HUD container required');
     this.onSecure=onSecure;this.onCover=onCover;this.onPrepare=onPrepare;
-    this.onNotice=onNotice;this.onLog=onLog;
+    this.onNotice=onNotice;this.onLog=onLog;this.onExpeditionChoice=onExpeditionChoice;
     this.lastLog=initialState?.events?.at(-1)||'';
     this.lastLogSerial=initialState?.eventSerial||0;
     this.lastWeather=initialState?.weather||'clear';
@@ -65,12 +68,14 @@ export class AfterdayEventBoard {
     this.element.className='afterday-board';this.element.setAttribute('role','status');
     this.element.setAttribute('aria-live','polite');this.element.setAttribute('aria-atomic','true');
     this.element.hidden=true;
-    this.element.innerHTML=`<div class="afterday-board-art"><img alt="" /></div><div class="afterday-board-body"><small class="afterday-board-category"></small><strong class="afterday-board-title"></strong><span class="afterday-board-description"></span><button class="afterday-board-secure" hidden type="button">보관함 잠그기 · 부품 1개</button><button class="afterday-board-cover" hidden type="button">🛡 생존자 대피</button><button class="afterday-board-prepare" hidden type="button">📦 물자 고정 · 부품 1</button></div><button class="afterday-board-close" type="button" aria-label="알림 닫기">×</button>`;
+    this.element.innerHTML=`<div class="afterday-board-art"><img alt="" /></div><div class="afterday-board-body"><small class="afterday-board-category"></small><strong class="afterday-board-title"></strong><span class="afterday-board-description"></span><button class="afterday-board-secure" hidden type="button">보관함 잠그기 · 부품 1개</button><button class="afterday-board-cover" hidden type="button">🛡 생존자 대피</button><button class="afterday-board-prepare" hidden type="button">📦 물자 고정 · 부품 1</button><div class="afterday-board-expedition" hidden><button class="afterday-board-expedition-go" type="button">🧭 위험을 감수하고 탐색</button><button class="afterday-board-expedition-stay" type="button">🛡 오늘은 옥상에 남기</button></div></div><button class="afterday-board-close" type="button" aria-label="알림 닫기">×</button>`;
     host.append(this.element);
     this.element.querySelector('.afterday-board-close').addEventListener('click',()=>this.dismiss());
     this.element.querySelector('.afterday-board-secure').addEventListener('click',()=>this.onSecure());
     this.element.querySelector('.afterday-board-cover').addEventListener('click',()=>this.onCover());
     this.element.querySelector('.afterday-board-prepare').addEventListener('click',()=>this.onPrepare());
+    this.element.querySelector('.afterday-board-expedition-go').addEventListener('click',()=>this.onExpeditionChoice('go'));
+    this.element.querySelector('.afterday-board-expedition-stay').addEventListener('click',()=>this.onExpeditionChoice('stay'));
     this.injectPreviewControls();
   }
   playNoticeSound(){
@@ -99,10 +104,12 @@ export class AfterdayEventBoard {
     const risky=options.actionable&&['tornado','tornadoNear','tornadoDirect'].includes(key);
     el.querySelector('.afterday-board-cover').hidden=!risky;
     el.querySelector('.afterday-board-prepare').hidden=!risky;
+    el.querySelector('.afterday-board-expedition').hidden=key!=='expedition';
     // Restart physical hanging animation for each newly arriving notice.
     void el.offsetHeight;el.classList.add('is-open');
     this.seen.push({key,at:Date.now()});if(this.seen.length>30)this.seen.shift();
-    this.playNoticeSound();
+    if(options.silent)this.pendingNoticeSound=false;
+    else this.playNoticeSound();
     this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
     return true;
   }
@@ -120,6 +127,13 @@ export class AfterdayEventBoard {
     this.onNotice();
     return true;
   }
+  openPendingExpedition(state){
+    const pending=state?.scavenge?.pending;
+    if(!pending)return false;
+    // A reopening is user-initiated, silent and does not count as a second alert.
+    return this.show('expedition',{title:pending.title,description:pending.description,
+      silent:true,duration:300000});
+  }
   sync(state,{warningAhead=false}={}) {
     const current=state?.events?.at(-1)||'';
     const currentSerial=state.eventSerial||0;
@@ -129,6 +143,17 @@ export class AfterdayEventBoard {
     this.lastWeatherEpisode=state.weatherEpisode;
     this.lastTornadoEncounter=state.tornadoEncounter;
     let shown=false;
+    const expedition=state.scavenge?.pending;
+    if(expedition&&state.survivalStatus!=='dead'){
+      shown=this.showOnce(state,'expedition',expedition.id,
+        {title:expedition.title,description:expedition.description,duration:300000})||shown;
+    }
+    const radio=state.scavenge;
+    if(radio?.radioNewsId&&radio.radioNewsType!=='silence'){
+      const style=radio.radioNewsType==='drop'?'helicopter':'survivorCall';
+      if(!expedition)shown=this.showOnce(state,style,
+        `radio:${radio.radioNewsId}:${radio.radioNewsDay}`)||shown;
+    }
     if(!this.lastRaider&&state.raiderAlert){
       shown=this.showOnce(state,'raiders',`raid:${state.raiderUntilAt}`,{raiderActive:true});
     }
@@ -158,6 +183,7 @@ export class AfterdayEventBoard {
     if(lowFood&&!this.lastLowFood&&!shown&&!state.raiderAlert&&state.survivalStatus!=='dead')
       this.showOnce(state,'shortage',`shortage:${currentSerial}`);
     this.lastLowFood=lowFood;
+    if(this.activeKey==='expedition'&&!expedition)this.dismiss();
     if(this.activeKey==='raiders'&&!state.raiderAlert)this.element.querySelector('.afterday-board-secure').hidden=true;
     if(this.activeKey==='tornadoNear'||this.activeKey==='tornadoDirect'){
       const active=state.weather==='tornado'&&state.tornadoEncounterActive&&

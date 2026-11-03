@@ -32,7 +32,7 @@ export class RooftopBotany {
   const leafMat=new THREE.MeshStandardMaterial({color:'#ffffff',map:atlas,alphaTest:.25,side:THREE.DoubleSide,metalness:0,roughness:.88});
   const stemMat=new THREE.MeshStandardMaterial({color:'#52643b',roughness:.97,metalness:0});
   const berryMat=new THREE.MeshStandardMaterial({color:'#df7956',roughness:.43,metalness:0});
-  const leaves=[],stems=[],fruit=[];
+  const leaves=[],cropLeaves=[],stems=[],fruit=[];
   // Each physical crop remains INSIDE its registered, collision-enabled planter.
   for(let bed=0;bed<3;bed++)for(let plant=0;plant<9;plant++){
     const index=bed*9+plant;
@@ -50,7 +50,7 @@ export class RooftopBotany {
       const len=(isTomato?.66:isHerb?.46:.54)*(.83+rand(j*77+index)*.45);
       const radial=isTomato?.12+ring*.15:isHerb?.08+.17*rand(j+index):.05+.14*rand(j*3+index);
       const color=new THREE.Color().setHSL(.245+rand(j*5+index)*.047,.27+rand(j*17+index)*.20,.20+rand(j*23+index)*.18);
-      leaves.push({pos:[x+Math.sin(a)*radial,Y+1.01+baseY,z+Math.cos(a)*radial],rot:[Math.sin(a)*.18,a,.43+rand(index*53+j)*.85],scale:[.50+rand(j+index)*.25,len,.75],color});
+      cropLeaves.push({pos:[x+Math.sin(a)*radial,Y+1.01+baseY,z+Math.cos(a)*radial],rot:[Math.sin(a)*.18,a,.43+rand(index*53+j)*.85],scale:[.50+rand(j+index)*.25,len,.75],color});
     }
     if(isTomato){for(let t=0;t<3;t++){
       const a=(t*2.09+index)*1.3;
@@ -93,6 +93,8 @@ export class RooftopBotany {
   }
   this.barkMesh=pack(this.root,barkGeom,barkMat,bark,'Batched mature trunks and secondary branches',true);
   this.leafMesh=pack(this.root,leafGeometry(),leafMat,leaves,'Instanced organic botanical leaves · rounded silhouettes');
+  // Only cultivated crops depend on discovered seeds; wild overgrowth remains.
+  this.cropLeafMesh=pack(this.root,leafGeometry(),leafMat,cropLeaves,'Cultivated food crops · acquired seeds');
   this.stemMesh=pack(this.root,new THREE.CylinderGeometry(.045,.075,1,6),stemMat,stems,'Vegetable woody stems');
   this.fruitMesh=pack(this.root,new THREE.IcosahedronGeometry(1,1),berryMat,fruit,'Small ripening greenhouse fruit');
   this.atlas=atlas;

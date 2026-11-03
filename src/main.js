@@ -3,6 +3,7 @@ import { AfterdayEventBoard } from './eventBoard.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
+import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
@@ -28,7 +29,7 @@ const save=()=>{
 let world;
 let eventBoard=null;
 let autoLifeCamera=true;
-const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280']];
+const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280'],['sickness','질병 위험','#c78686']];
 function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
  $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
@@ -47,13 +48,24 @@ function renderHUD(){
  $('#take-cover').hidden=!approaching||state.tornadoCoverActive||dead;
  $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
  $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
+ const open=state.scavenge?.pending;
+ $('#expedition-toggle').hidden=!open||dead;
+ $('#radio-contact').hidden=!state.kit.radio||dead;
+ const owned=ITEM_IDS.filter(id=>state.kit?.[id]);
+ $('#inventory-items').textContent=owned.length?
+   owned.map(id=>ITEM_INFO[id].icon+' '+ITEM_INFO[id].label).join(' · '):
+   '아직 생존 장비가 없습니다 · 탐색으로 획득';
+ $('#life-panel-intro').textContent=state.kit?.tent?'매일 23시~07시에 야전 텐트 안에서 잠듭니다. 비와 한파를 피하며 회복할 수 있습니다.':'매일 23시~07시에 노출된 시멘트 바닥에서 잠듭니다. 비·한파에 병들 수 있습니다. 텐트를 찾아야 합니다.';
+ $('#sleep-arrangement').textContent=state.kit?.tent?
+   '⛺ 텐트에서 수면 · 회복력 강화':'🧱 콘크리트에서 수면 · 감염·체력 위험';
+ $('#radio-contact').title=state.kit?.radio?'오늘 무전으로 구조 신호를 요청합니다':'무전기를 찾아야 합니다';
  $('#repair-tank').hidden=state.facilities.tank>=80||dead;
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C'}[state.weather]);
  $('#weather-effect').textContent=describeWeatherEconomy(state);
  const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold'].includes(state.pendingWeather);
- const danger=['storm','tornado'].includes(state.weather)||state.health<35||state.water<18||warningAhead;
- $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':danger?'주의':'생존 중';
- $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
+ const danger=['storm','tornado'].includes(state.weather)||state.health<35||state.water<18||state.sickness>=35||warningAhead;
+ $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':state.sickness>=50?'질병 악화':danger?'주의':'생존 중';
+ $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':state.sickness>=35?'⚠ 감염 의심 · 치료제가 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
  $('#survivor-bars').innerHTML=statusBars.map(([key,label,color])=>`<div class="stat"><div class="stat-line"><span>${label}</span><strong>${Math.round(state[key])}</strong></div><div class="bar"><i style="width:${state[key]}%;background:${color}"></i></div></div>`).join('');
  const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
@@ -61,17 +73,20 @@ function renderHUD(){
  $('#explore').classList.toggle('needs-attention',r.food<3||r.water<4||state.health<38||state.facilities.shelter<38);
  eventBoard?.sync(state,{warningAhead});
 }
-function toast(msg,kind=''){addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
+function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function runSurvivalAction(action){
  const result=applyAction(state,action,gameClock.virtualNow);
+ if(action.startsWith('scavenge_'))eventBoard?.dismiss();
  if(result.good){
-   if(action==='take_cover')world?.setAction('shelter');
+   if(action.startsWith('scavenge_'))world?.syncSurvivalInventory(state);
+   if(action==='radio_contact')world?.setAction('radio');
+   else if(action==='take_cover')world?.setAction('shelter');
    else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
-   else world?.setAction(action);
+   else if(!action.startsWith('scavenge_')&&action!=='radio_contact')world?.setAction(action);
    if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
    save();
  }
- toast(result.msg);
+ toast(result.msg,action.startsWith('scavenge_')||action==='radio_contact'?'quiet':'');
  return result;
 }
 function bindEvents(){
@@ -108,7 +123,14 @@ function bindEvents(){
   const status=$('#survivor-status-panel');
   if(status&&!status.classList.contains('is-collapsed'))$('#survivor-status-toggle')?.click();
  });
- document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runSurvivalAction(btn.dataset.action)));
+ document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(btn.dataset.action==='explore'&&state.scavenge?.pending){
+      eventBoard?.openPendingExpedition(state);return;
+    }
+    runSurvivalAction(btn.dataset.action);
+  }));
+ $('#expedition-toggle').addEventListener('click',()=>eventBoard?.openPendingExpedition(state));
+ $('#radio-contact').addEventListener('click',()=>runSurvivalAction('radio_contact'));
  $('#restart-game').addEventListener('click',()=>{
   if(window.confirm('현재 생존 기록을 초기화하고 DAY 001부터 다시 시작하시겠습니까?')){
     localStorage.removeItem(SAVE_KEY);window.location.reload();
@@ -118,6 +140,9 @@ function bindEvents(){
  $('#close-life').addEventListener('click',()=>$('#life-panel').classList.add('hidden'));
  document.querySelectorAll('[data-life-action]').forEach(button=>button.addEventListener('click',async()=>{
   const activity=button.dataset.lifeAction;
+  if(activity==='radio'){
+    runSurvivalAction('radio_contact');return;
+  }
   const accepted=world?.setAction(activity);
   if(accepted&&autoLifeCamera)world?.setCameraView(['guitar','radio','sit','rest','cook'].includes(activity)?'portrait':'survivor');
   if(!accepted){toast('현재 재난 상황에서는 해당 활동을 진행할 수 없습니다.');return;}
@@ -196,6 +221,10 @@ function animation(){
 }
 async function boot(){try{
   $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});
+  // A new world begins without gear. Day 1 always offers a real player decision;
+  // old saves retain their original camp assets and supply.
+  offerDailyScavenge(state,getDay(state.startedAt,gameClock.virtualNow));
+  world.syncSurvivalInventory(state);
   // The preview is safe for survivor resources/time, but demolished city buildings are permanent.
   world.onTornadoEncounterChange=()=>save(); // Persist each new tornado track immediately.
   world.onTornadoImpact=(id,index)=>{
@@ -213,6 +242,7 @@ async function boot(){try{
   };
   world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};
   eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),
+    onExpeditionChoice:choice=>runSurvivalAction(choice==='go'?'scavenge_go':'scavenge_stay'),
     onSecure:()=>runSurvivalAction('secure_storage'),
     onCover:()=>runSurvivalAction('take_cover'),
     onPrepare:()=>runSurvivalAction('secure_supplies')});

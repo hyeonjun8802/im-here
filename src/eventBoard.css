@@ -53,3 +53,10 @@
 .afterday-board-cover{background:#495c51d9;border-color:#9dc5ab88}
 .afterday-board-prepare{background:#625139d9}
 @media(max-width:720px){.afterday-board-cover,.afterday-board-prepare{font-size:9px;min-height:25px}}
+
+/* Two genuinely different player choices. A dismissed choice stays in the gear HUD. */
+.afterday-board-expedition{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.afterday-board-expedition[hidden]{display:none!important}
+.afterday-board-expedition button{border:1px solid #cfb78d99;border-radius:6px;background:#7b6039c9;color:#faf0db;padding:7px 12px;min-height:31px;font:700 11px system-ui,sans-serif;cursor:pointer}
+.afterday-board-expedition-stay{background:#44594db9!important;border-color:#9cbaaa88!important}
+@media(max-width:720px){.afterday-board-expedition button{font-size:10px;padding:5px 8px}}

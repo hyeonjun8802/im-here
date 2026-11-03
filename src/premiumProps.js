@@ -67,6 +67,7 @@ export function upgradeCampFacilities(world){
  tube(tank,[-3.38,3,-1.65],[-3.38,8,-1.65],.06,metal);
  tube(tank,[-2.86,3,-1.65],[-2.86,8,-1.65],.06,metal);
  const filter=cube(tank,[.7,1.4,.7],[3.92,2.1,1.1],dirtyWhite);
+ world.waterFilter=filter; // This physical device is discovered, not present from DAY 1.
  disk(tank,.45,.14,[3.92,2.86,1.1],metal);
  edgeGeometry(tank,[[2.85,7.5,1],[4.5,7.5,1],[4.5,3.0,1.1],[3.92,3,1.1]],rust);
  edgeGeometry(tank,[[3.92,1.3,1.1],[4.8,1.3,1.1],[4.8,.5,1.3]],metal);

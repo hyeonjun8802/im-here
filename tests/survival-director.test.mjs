@@ -77,8 +77,11 @@ test('neglecting food and water ends survival within approximately five active d
  assert.equal(applyAction(s,'drink').good,false,'a dead survivor cannot be revived by a UI click');
 });
 
-test('planned daily resupply, collecting rain and recovery can support long-term survival',()=>{
+test('existing fully equipped survivors can still sustain a 30-day strategy',()=>{
  const s=defaults(start);
+ s.kit={tent:true,purifier:true,seeds:true,radio:true};
+ s.supply={food:6,water:8,medicine:2,parts:8};
+ s.facilities={shelter:91,tank:90,storage:88};
  for(let hour=1;hour<=30*24&&s.survivalStatus==='alive';hour++){
    const now=start+hour*3600000;
    advance(s,now,false);

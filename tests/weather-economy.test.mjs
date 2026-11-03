@@ -9,7 +9,7 @@ const start=Date.UTC(2026,10,4,0,0);
 const tick=(s,weather,minutes,day=1)=>{s.weather=weather;for(let i=0;i<minutes;i++)applyWeatherEconomyMinute(s,weather,day)};
 
 test('rain automatically fills the filtered drinking water tank without clicking',()=>{
- const s=defaults(start);s.supply.water=3;
+ const s=defaults(start);s.kit.purifier=true;s.supply.water=3;
  tick(s,'rain',24);
  assert.equal(s.supply.water,4);
  assert.ok(s.weatherEconomy.waterHarvestProgress>0);
@@ -17,21 +17,21 @@ test('rain automatically fills the filtered drinking water tank without clicking
 });
 
 test('rain and thunderstorms have a bounded daily yield and a tank capacity',()=>{
- const s=defaults(start);s.supply.water=0;
+ const s=defaults(start);s.kit.purifier=true;s.supply.water=0;
  tick(s,'storm',300);
  assert.equal(s.supply.water,WEATHER_RAIN_DAILY_LIMIT);
  tick(s,'rain',600);
  assert.equal(s.supply.water,WEATHER_RAIN_DAILY_LIMIT,'daily cap prevents infinite water');
  tick(s,'rain',1000,2);
  assert.equal(s.supply.water,WEATHER_RAIN_DAILY_LIMIT*2,'new game day resets yield cap');
- const full=defaults(start);full.supply.water=WEATHER_WATER_CAPACITY;
+ const full=defaults(start);full.kit.purifier=true;full.supply.water=WEATHER_WATER_CAPACITY;
  tick(full,'storm',1000);
  assert.equal(full.supply.water,WEATHER_WATER_CAPACITY,'overfilled tank never gains water');
 });
 
 test('broken tank cannot harvest rain until repaired; moderately damaged tank harvests slower',()=>{
  const broken=defaults(start),damaged=defaults(start),healthy=defaults(start);
- for(const s of [broken,damaged,healthy])s.supply.water=0;
+ for(const s of [broken,damaged,healthy]){s.kit.purifier=true;s.supply.water=0;}
  broken.facilities.tank=18;damaged.facilities.tank=50;
  tick(broken,'rain',90);tick(damaged,'rain',40);tick(healthy,'rain',40);
  assert.equal(broken.supply.water,0);
@@ -80,7 +80,7 @@ test('one cold spell can freeze water in a cracked tank, never repeat on each fr
 test('auto rain collection is deterministic with minute tick batching and persists across reloads',()=>{
  const a=defaults(start),b=defaults(start);
  for(const s of [a,b]){
-   s.weather='rain';s.nextWeatherAt=start+4*DAY_MS;s.pendingWeather='rain';s.supply.water=0;
+   s.weather='rain';s.kit.purifier=true;s.nextWeatherAt=start+4*DAY_MS;s.pendingWeather='rain';s.supply.water=0;
  }
  advance(a,start+110*60000);
  for(let t=60000;t<=110*60000;t+=60000)advance(b,start+t);
@@ -108,7 +108,7 @@ test('automatic gains and losses never go negative or exceed capacity',()=>{
  assert.equal(s.supply.water,0);
  assert.equal(s.supply.food,0);
  assert.ok(s.weatherEconomy.waterEvaporationProgress<1);
- const high=defaults(start);high.supply.water=15;
+ const high=defaults(start);high.kit.purifier=true;high.supply.water=15;
  tick(high,'storm',800);
  assert.ok(high.supply.water<=WEATHER_WATER_CAPACITY);
 });

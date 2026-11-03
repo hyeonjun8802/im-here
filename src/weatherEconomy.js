@@ -49,7 +49,7 @@ export function applyWeatherEconomyMinute(s,weather,day){
   const tank=s.facilities.tank;
   const storage=s.facilities.storage;
   const full=s.supply.water>=WEATHER_WATER_CAPACITY;
-  const canHarvest=tank>=40&&!full&&w.rainCollectedToday<WEATHER_RAIN_DAILY_LIMIT;
+  const canHarvest=tank>=40&&(!s.kit||s.kit.purifier)&&!full&&w.rainCollectedToday<WEATHER_RAIN_DAILY_LIMIT;
   if(mode.harvestPerMinute>0&&canHarvest){
     // A damaged but functional filter harvests less efficiently.
     const efficiency=tank>=70?1:.55;
@@ -109,6 +109,7 @@ export function describeWeatherEconomy(s){
   const w=s.weatherEconomy||defaultWeatherEconomy();
   const water=s.supply?.water??0;
   if(s.weather==='rain'||s.weather==='storm'){
+    if(s.kit&&!s.kit.purifier)return '🚰 정수기 없음 · 폐허 탐색에서 장비를 확보해야 한다';
     const heavy=s.weather==='storm';
     if(t<40)return '🚰 물탱크 고장 · 자동 빗물 정수 불가 · 수리 필요';
     if(water>=WEATHER_WATER_CAPACITY)return '💧 물탱크 가득 참 · 비축 유지 / 누수 주의';

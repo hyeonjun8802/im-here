@@ -134,7 +134,7 @@ export class SurvivorLife{
   this.guitarRest.rotation.set(.12,.18,-.32);this.guitarRest.scale.setScalar(.85);
   this.guitarRest.userData.lifeAction='guitar';this.group.add(this.guitarRest);
   const eatingTable=table(this.group,7.6,world.ROOF_Y+.15,7.2);eatingTable.userData.lifeAction='eat';
-  const comms=radioTable(this.group,-2.7,world.ROOF_Y+.15,-1.8);comms.userData.lifeAction='radio';
+  const comms=radioTable(this.group,-2.7,world.ROOF_Y+.15,-1.8);comms.userData.lifeAction='radio';this.comms=comms;
   // Small lantern on dining table creates depth during nighttime interaction.
   const light=new THREE.PointLight('#ffb46d',.65,7,2);light.position.set(7.6,world.ROOF_Y+2.5,7.2);this.group.add(light);
   this.current='idle';this.stage='idle';this.manual=false;this.clock=0;this.stageTime=0;this.performDuration=0;this.nextAt=8;this.manualAt=0;this.sequence=0;this.route=[];this.morningWaking=false;this.pendingAfterWake=null;this.nextSleepRetry=0;this.previewRoutineHour=null;this.previewRoutineRecord={stretchDay:-1};
@@ -151,6 +151,7 @@ export class SurvivorLife{
   this.nextSleepRetry=0;this.nextAt=this.clock;
  }
  request(action,manual=true){
+  if(action==='radio'&&this.world.activeKit&&!this.world.activeKit.radio)return false;
   if(action==='sleep'&&this.current==='sleep'&&['approach','enter','perform'].includes(this.stage))return true;
   const spec=action==='sleep'?SLEEP_ACTIVITY:LIFE_ACTIVITIES[action];if(!spec)return false;
   const w=this.world.previewWeather||this.world.simulatedWeather;
@@ -197,7 +198,7 @@ export class SurvivorLife{
   const working=phase==='perform',moving=phase==='approach';
   const transition=1-Math.exp(-dt*(moving?7:5.0));const lerp=(from,to)=>THREE.MathUtils.lerp(from,to,transition);
   const bob=Math.sin(t*2.5)*.022;
-  body.position.y=lerp(body.position.y,(sitting?-.28:sleeping?1.18:0)+(moving?Math.abs(Math.sin(t*7.4))*.055:bob));
+  body.position.y=lerp(body.position.y,(sitting?-.28:sleeping?(w.activeKit?.tent?1.18:.14):0)+(moving?Math.abs(Math.sin(t*7.4))*.055:bob));
   body.rotation.z=lerp(body.rotation.z,-Math.PI*.5*sleeping);
   body.rotation.x=lerp(body.rotation.x,working&&['repair','radio'].includes(a)?.12:0);
   body.rotation.z=lerp(body.rotation.z,moving?Math.sin(t*7.4)*.035:0);
