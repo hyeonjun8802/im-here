@@ -218,17 +218,19 @@ export class NearTornadoVfx {
     smoke.frustumCulled=false;ruined.add(smoke);impact.impactSmoke=smoke;
     return impact;
   }
-  updateDestruction(dt,active,persistedCount,previewMode){
+  updateDestruction(dt,active,persistedCount,previewMode,onImpact=()=>{}){
     // Staggered impacts: left -> center -> right, as the vortex travels past.
     const previewCount=previewMode&&active?
       [5,11,17].filter(seconds=>this.exposure>=seconds).length:0;
     const count=Math.min(this.impacts.length,Math.max(persistedCount,previewCount));
+    // Persist preview impacts at the instant they happen, not when the preview ends.
+    if(count>persistedCount)onImpact(count);
     this.impacts.forEach((impact,index)=>{
       const persisted=index<persistedCount;
       const shouldBreak=index<count;
       if(persisted&&!active)impact.progress=1;
       else if(shouldBreak)impact.progress=Math.min(1,impact.progress+dt*.29);
-      else if(!persisted)impact.progress=Math.max(0,impact.progress-dt*.46);
+      // Destruction is one-way: no weather change, replay or preview exit repairs a tower.
       const p=impact.progress;
       impact.host.visible=p<=.002;
       this.world.cityArchitecture?.setBuildingDamaged(impact.slot.id,p>.002);
@@ -254,13 +256,13 @@ export class NearTornadoVfx {
       smoke.instanceMatrix.needsUpdate=true;
     });
   }
-  update(dt,weather,{persistedCount=0,preview=false,night=0,reduceMotion=false}={}){
+  update(dt,weather,{persistedCount=0,preview=false,night=0,reduceMotion=false,onImpact=()=>{}}={}){
     dt=Math.min(Math.max(dt,0),.05);
     const target=Math.max(0,Math.min(1,Number(weather)||0));
     this.clock+=dt;this.strength=THREE.MathUtils.damp(this.strength,target,1.5,dt);
     this.exposure=target>.5?this.exposure+dt:0;
     this.root.visible=this.strength>.015;
-    this.updateDestruction(dt,target>.5,Math.max(0,Math.min(3,Math.floor(persistedCount))),preview);
+    this.updateDestruction(dt,target>.5,Math.max(0,Math.min(3,Math.floor(persistedCount))),preview,onImpact);
     if(!this.root.visible){this.flashLight.intensity=0;return 0;}
     const t=this.clock,s=this.strength;
     // Move left-to-right through real building coordinates, then sweep back slowly.
@@ -319,7 +321,7 @@ export class NearTornadoVfx {
     return flash;
   }
   dispose(){
-    for(const impact of this.impacts){impact.host.visible=true;this.world.cityArchitecture?.setBuildingDamaged(impact.slot.id,false);}
+    // World disposal only releases GPU resources; never resurrect a destroyed tower.
     for(const root of [this.root,...this.impacts.map(i=>i.ruined)]){
       root.traverse(obj=>{
         if(obj.geometry)obj.geometry.dispose();
