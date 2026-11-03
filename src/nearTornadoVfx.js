@@ -117,7 +117,7 @@ export class NearTornadoVfx {
     this.root.position.copy(this.anchor);this.root.visible=false;this.scene.add(this.root);
     const cone=new THREE.CylinderGeometry(1,1,1,this.mobile?42:76,this.mobile?30:55,true);
     this.shells=[];
-    for(let i=0;i<3;i++){
+    for(let i=0;i<(this.mobile?2:3);i++){
       const mesh=new THREE.Mesh(cone.clone(),funnelMaterial(i));
       mesh.renderOrder=i+1;mesh.frustumCulled=false;
       this.root.add(mesh);this.shells.push(mesh);
@@ -198,7 +198,8 @@ export class NearTornadoVfx {
     this.persistedDamage=Boolean(persisted);
     // Visual demonstrations are reversible and never write to simulation saves.
     const shouldBreak=this.persistedDamage||(active&&previewMode&&this.exposure>8);
-    if(shouldBreak)this.damageProgress=Math.min(1,this.damageProgress+dt*.28);
+    if(this.persistedDamage&&!active)this.damageProgress=1; // Restore existing scar immediately on reload.
+    else if(shouldBreak)this.damageProgress=Math.min(1,this.damageProgress+dt*.28);
     else if(!this.persistedDamage)this.damageProgress=Math.max(0,this.damageProgress-dt*.34);
     const p=this.damageProgress;
     this.host.visible=p<=.002;
@@ -229,7 +230,7 @@ export class NearTornadoVfx {
     this.exposure=target>.5?this.exposure+dt:0;
     this.root.visible=this.strength>.015;
     this.updateDestruction(dt,target>.5,persisted,preview);
-    if(!this.root.visible){this.flashLight.intensity=0;return;}
+    if(!this.root.visible){this.flashLight.intensity=0;return 0;}
     const t=this.clock,s=this.strength;
     this.root.position.x=this.anchor.x+Math.sin(t*.17)*2.6*s;
     this.root.position.z=this.anchor.z+Math.cos(t*.13)*2.4*s;
