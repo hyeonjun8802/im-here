@@ -40,3 +40,18 @@
 .routine-preview-controls button{background:#253943;border:1px solid rgba(201,218,214,.17);border-radius:7px;color:#e5ede9;padding:9px 4px;font-size:10px;cursor:pointer;}
 .routine-preview-controls button.active{background:#4e695a;border-color:#b4ddc4;}
 .routine-preview small{color:#9fb2b2;font-size:9px;line-height:1.5;}
+
+/* AFTERDAY 1× / 2× / 4×: compact game speed control under the clock. */
+#speed-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:58px;height:28px;padding:4px 11px;margin-top:5px;
+  border:1px solid rgba(227,210,167,.52);border-radius:9px;
+  color:#f2e7c9;background:rgba(23,37,43,.82);
+  font-size:12px;font-weight:800;letter-spacing:.07em;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);pointer-events:auto;
+}
+#speed-toggle[aria-pressed="true"]{border-color:#d5b780;background:rgba(115,91,58,.72)}
+#speed-toggle:hover{background:rgba(104,95,74,.75)}
+@media(max-width:720px){
+ #speed-toggle{height:25px;min-width:51px;margin-top:4px;padding:3px 8px;font-size:11px;border-radius:7px}
+}
