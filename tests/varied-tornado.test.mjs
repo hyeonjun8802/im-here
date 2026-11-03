@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {selectVariedStormBuildings, NearTornadoVfx} from '../src/nearTornadoVfx.js';
 import {defaults, sanitize, recordTornadoDamage} from '../src/simulation.js';
+import {planDistantCity,SPATIAL_LAYOUT} from '../src/spatialLayout.js';
+import {contractCitySlot,settleContractedCity} from '../src/cityContraction.js';
+import {readFileSync} from 'node:fs';
 
 const city=[...[
   [-210,-160], [210,-150], [-160,220], [220,220]
@@ -29,7 +32,9 @@ test('different tornado encounters visit different real neighborhoods and never 
     assert.equal(sites.length,3);
     assert.equal(new Set(sites.map(s=>s.id)).size,3);
     assert.ok(sites.every(s=>Math.hypot(s.x,s.z)>=100));
-    assert.ok(sites[0].x<sites[1].x&&sites[1].x<sites[2].x);
+    const mid=sites[1];
+    assert.ok(Math.hypot(sites[0].x-mid.x,sites[0].z-mid.z)<142);
+    assert.ok(Math.hypot(sites[2].x-mid.x,sites[2].z-mid.z)<142);
     assert.notEqual(sites[1].id,previous,'previous center must not be chosen twice in succession');
     encountered.add(sites[1].id);
     previous=sites[1].id;
@@ -70,4 +75,43 @@ test('all damaged buildings remain collapsed even if an undamaged one sorts firs
     assert.equal(fx.damageSites.get(id).ruined.visible,true);
   }
   fx.dispose();
+});
+
+
+test('real contracted desktop and mobile city produce multiple RANDOM tornado origins (no fixed fallback)',()=>{
+  const seeded=n=>{const v=Math.sin(n*127.1+46.4)*43758.5453;return v-Math.floor(v);};
+  for(const mobile of [false,true]){
+    const lots=settleContractedCity(planDistantCity(mobile,seeded).map(contractCitySlot));
+    // This was the regression: near/mid lots shrink inside radius 150, so the
+    // previous near/mid-only filter always returned the SAME fixed path.
+    assert.equal(lots.filter(s=>['near','mid'].includes(s.tier)&&
+      Math.hypot(s.x,s.z)>=SPATIAL_LAYOUT.clearZoneRadius+10).length,0);
+    const starts=new Set(),centers=new Set(),quadrants=new Set();
+    let previous=null;
+    for(let n=1;n<=24;n++){
+      const track=selectVariedStormBuildings(lots,{seed:n*7129+mobile*41,previousCenterId:previous});
+      assert.equal(track.length,3,'must select a three-building track in the real city');
+      assert.equal(new Set(track.map(s=>s.id)).size,3);
+      for(const s of track){
+        assert.ok(lots.some(l=>l.id===s.id),'every storm target is a real building');
+        assert.ok(Math.hypot(s.x,s.z)>=SPATIAL_LAYOUT.clearZoneRadius+16,'ground path stays out of the survivor camp');
+      }
+      assert.notEqual(track[1].id,previous,'neighboring storms cannot reuse the same center');
+      starts.add(track[0].id);
+      centers.add(track[1].id);
+      quadrants.add(`${Math.sign(track[1].x)}:${Math.sign(track[1].z)}`);
+      previous=track[1].id;
+    }
+    assert.ok(starts.size>=6,`different initial positions on ${mobile?'mobile':'desktop'}: ${starts.size}`);
+    assert.ok(centers.size>=6,'multiple distinct neighborhoods must be visited');
+    assert.ok(quadrants.size>=3,'tornadoes must come from different compass directions');
+  }
+});
+
+test('new release rejects stale fixed-spawn locations while keeping permanent ruin IDs',()=>{
+  const world=readFileSync(new URL('../src/world.js',import.meta.url),'utf8');
+  assert.match(world,/tornadoSpawnVersion!==2/);
+  assert.match(world,/game\\.tornadoCurrentSites=\\[\\]/);
+  assert.match(world,/Math\\.floor\\(Math\\.random\\(\\)\\*0x7fffffff\\)/);
+  assert.match(world,/game\\.tornadoDamagedIds/);
 });
