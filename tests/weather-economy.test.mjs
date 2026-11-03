@@ -123,3 +123,22 @@ test('preview weather is separate from actual resource-changing weather, and HUD
  assert.match(main,/describeWeatherEconomy\(state\)/);
  assert.match(html,/id="weather-effect"/);
 });
+
+test('player can prioritize the water filter repair instead of repairing the weakest other facility',()=>{
+ const s=defaults(start);
+ s.facilities.tank=70;s.facilities.storage=22;s.supply.parts=4;
+ const response=applyAction(s,'repair_tank',start);
+ assert.equal(response.good,true);
+ assert.equal(s.facilities.tank,100,'water tank receives the full targeted repair');
+ assert.equal(s.facilities.storage,22,'storage is untouched');
+ assert.equal(s.supply.parts,2);
+ assert.equal(applyAction(s,'repair_tank',start+1).good,false,'repair is not free at full integrity');
+});
+test('critical tank failure grants an emergency exploration reason for new repair parts',()=>{
+ const s=defaults(start);
+ s.supply.food=9;s.supply.water=10;s.health=80;
+ s.facilities.shelter=90;s.facilities.tank=30;s.supply.parts=0;
+ assert.equal(applyAction(s,'explore',start).good,true);
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(html,/id="repair-tank"/);
+});

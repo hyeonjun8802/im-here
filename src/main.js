@@ -47,6 +47,7 @@ function renderHUD(){
  $('#take-cover').hidden=!approaching||state.tornadoCoverActive||dead;
  $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
  $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
+ $('#repair-tank').hidden=state.facilities.tank>=80||dead;
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C'}[state.weather]);
  $('#weather-effect').textContent=describeWeatherEconomy(state);
  const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold'].includes(state.pendingWeather);
@@ -65,7 +66,7 @@ function runSurvivalAction(action){
  const result=applyAction(state,action,gameClock.virtualNow);
  if(result.good){
    if(action==='take_cover')world?.setAction('shelter');
-   else if(action==='secure_supplies')world?.setAction('repair');
+   else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
    else world?.setAction(action);
    if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
    save();

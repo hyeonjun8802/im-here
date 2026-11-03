@@ -84,13 +84,16 @@ test('planned daily resupply, collecting rain and recovery can support long-term
    advance(s,now,false);
    if(s.survivalStatus==='dead')break;
    if(s.weather==='rain'||s.weather==='storm')applyAction(s,'collect_water',now);
-   if(s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38)
+   // Prepared survivors deliberately repair the water filter before rainfall,
+   // rather than relying only on the generic "repair weakest facility" action.
+   if(s.facilities.tank<70&&s.supply.parts>=2)applyAction(s,'repair_tank',now);
+   if(s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38||s.facilities.tank<40)
      applyAction(s,'explore',now);
    if(s.health<95)applyAction(s,'rest',now);
    if(s.health<55&&s.supply.medicine>0)applyAction(s,'medicine',now);
    if(s.facilities.shelter<65&&s.supply.parts>=2)applyAction(s,'repair',now);
  }
- assert.equal(s.survivalStatus,'alive','30 day run should be possible with consistent risk management');
+ assert.equal(s.survivalStatus,'alive',`30 day survival: died DAY ${getDay(s.startedAt,s.diedAt||s.lastTickAt)}, health=${s.health}, inventory=${JSON.stringify(s.supply)}, facilities=${JSON.stringify(s.facilities)}, weather=${s.weather}`);
  assert.ok(getDay(s.startedAt,s.lastTickAt)>=30);
 });
 

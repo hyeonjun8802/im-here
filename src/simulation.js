@@ -326,6 +326,15 @@ export function applyAction(s,action,now=Date.now()){
  if(action==='drink'){if(s.supply.water<1)return out(false,'저장된 물이 없다.');s.supply.water--;s.water=CAP(s.water+31);s.action='drink';s.actionUntil=now+6500;return out(true,'물탱크에서 물을 마셨다.');}
  if(action==='eat'){if(s.supply.food<1)return out(false,'식량이 부족하다.');s.supply.food--;s.food=CAP(s.food+34);s.action='eat';s.actionUntil=now+6900;return out(true,'오래된 비상식량으로 식사했다.');}
  if(action==='medicine'){if(s.supply.medicine<1)return out(false,'의약품이 부족하다.');if(s.health>=97&&s.sickness<1)return out(false,'치료가 필요한 상태가 아니다.');s.supply.medicine--;s.sickness=CAP(s.sickness-65);s.health=CAP(s.health+22);s.action='medicine';s.actionUntil=now+8000;return out(true,'응급 약품으로 치료했다.');}
+ if(action==='repair_tank'){
+   if(s.facilities.tank>=96)return out(false,'정수 탱크가 이미 충분히 견고하다.');
+   if(s.supply.parts<2)return out(false,'정수 탱크 수리에 필요한 부품 2개가 부족하다.');
+   s.supply.parts-=2;
+   s.facilities.tank=CAP(s.facilities.tank+38);
+   s.action='repair';s.actionUntil=now+10000;
+   addEvent(s,'정수 탱크를 수리했다. 빗물 자동 집수 효율이 회복된다.');
+   return out(true,`정수 탱크 수리 완료 · 내구도 ${Math.round(s.facilities.tank)}%`);
+ }
  if(action==='repair'){if(s.supply.parts<2)return out(false,'수리 재료가 부족하다.');s.supply.parts-=2;const weakest=Object.keys(s.facilities).sort((a,b)=>s.facilities[a]-s.facilities[b])[0];s.facilities[weakest]=CAP(s.facilities[weakest]+27);s.action='repair';s.actionUntil=now+10000;return out(true,'손상된 시설을 보수했다.');}
  if(action==='rest'){
    if(now<s.restCooldownAt)return out(false,'아직 충분히 휴식하지 못했다. 4시간 간격으로 회복할 수 있다.');
@@ -334,7 +343,7 @@ export function applyAction(s,action,now=Date.now()){
    s.health=CAP(s.health+healed);s.action='rest';s.actionUntil=now+9000;
    return out(true,`대피소에서 휴식해 건강을 ${healed}만큼 회복했다.`);
  }
- if(action==='explore'){const need=s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38;
+ if(action==='explore'){const need=s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38||s.facilities.tank<40;
  if(!need)return out(false,'탐험은 식량·식수 부족 또는 위기일 때만 가능하다.');
  if(['storm','tornado'].includes(s.weather))return out(false,'강풍 중에는 건물 밖 탐색이 위험하다. 잠잠해질 때까지 기다려야 한다.');
  if(now<s.exploreCooldownAt)return out(false,'탐색한 계단실이 아직 위험하다. 다음 긴급 탐색까지 20시간을 기다려야 한다.');
