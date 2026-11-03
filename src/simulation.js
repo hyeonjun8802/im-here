@@ -5,7 +5,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, tornadoCityDamaged:false, tornadoDamageCount:0, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
+  version:4, gameClockOffsetMs:0, tornadoCityDamaged:false, tornadoDamageCount:0, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   supply:{food:8,water:12,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
   events:['폐허 옥상에 작은 캠프를 마련했다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
@@ -18,6 +18,8 @@ export function sanitize(raw, now=Date.now()) {
   for (const k of ['health','food','water','temperature']) s[k]=CAP(Number(s[k])||0);
   for (const k of Object.keys(s.supply)) s.supply[k]=Math.max(0,Math.min(999,Math.floor(Number(s.supply[k])||0)));
   for (const k of Object.keys(s.facilities)) s.facilities[k]=CAP(Number(s.facilities[k])||0);
+  const offset=Number(s.gameClockOffsetMs);
+  s.gameClockOffsetMs=Number.isFinite(offset)?Math.max(0,offset):0;
   s.events=Array.isArray(s.events)?s.events.filter(v=>typeof v==='string').slice(-16):b.events;
   s.animalAlert=Boolean(s.animalAlert);s.sickness=CAP(Number(s.sickness)||0);
   // Compatible with the previous one-building damage save flag.
