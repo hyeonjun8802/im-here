@@ -553,12 +553,13 @@ export class AfterWorld {
   this.dust.material.opacity=THREE.MathUtils.lerp(this.dust.material.opacity,Math.min(.32,vw.wind*.22+vw.heat*.08),Math.min(1,dt*.8));
   for(let i=0;i<this.dustPos.length;i+=3){this.dustPos[i]+=dt*(storm?18:heat?2:.5);if(this.dustPos[i]>120)this.dustPos[i]=-120}
   this.dust.geometry.attributes.position.needsUpdate=true;
-  // Animated 3D storm and optional city impact. Preview never mutates saved game data.
+  // 3D storm permanently damages the city, including when triggered by weather preview.
   this.tornadoFade=vw.tornado;
   this.advancedWeather.update(dt,vw,night,storm);
   const nearFlash=this.cinematicTornado.update(dt,vw.tornado,{
    persistedCount:game.tornadoDamageCount||(game.tornadoCityDamaged?1:0),preview:this.previewWeather==='tornado',
-   night,reduceMotion:this.reducedMotion
+   night,reduceMotion:this.reducedMotion,
+   onImpact:count=>this.onTornadoImpact?.(count)
   });
   // A fast multi-stroke lightning pulse brightens the actual roof/city lights,
   // not only the bolt sprite. The next frame resets from solar/weather values.
