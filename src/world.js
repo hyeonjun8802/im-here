@@ -32,7 +32,7 @@ import {CITY_COMPOSITION} from './cityComposition.js';
 import {BeardedSurvivorV190} from './beardedSurvivorV190.js';
 import {ApocalypseSetDressingV201} from './ApocalypseSetDressingV201.js';
 import {HorizonWorldExpansionV210} from './HorizonWorldExpansionV210.js';
-import {NearTornadoVfx} from './nearTornadoVfx.js';
+import {NearTornadoVfx,selectStormBuildings,selectVariedStormBuildings} from './nearTornadoVfx.js';
 
 const ROOF=CITY_COMPOSITION.heroRoofY;
 const clamp=THREE.MathUtils.clamp;
@@ -554,13 +554,45 @@ export class AfterWorld {
   this.dust.material.opacity=THREE.MathUtils.lerp(this.dust.material.opacity,Math.min(.32,vw.wind*.22+vw.heat*.08),Math.min(1,dt*.8));
   for(let i=0;i<this.dustPos.length;i+=3){this.dustPos[i]+=dt*(storm?18:heat?2:.5);if(this.dustPos[i]>120)this.dustPos[i]=-120}
   this.dust.geometry.attributes.position.needsUpdate=true;
+  // Each tornado onset selects a new intact neighborhood; tracks and ruins survive reloads.
+  const tornadoNow=preset==='tornado';
+  if(!Array.isArray(game.tornadoDamagedIds))game.tornadoDamagedIds=[];
+  if(!game.tornadoDamagedIds.length&&game.tornadoDamageCount>0){
+    game.tornadoDamagedIds=selectStormBuildings(this.distantCityPlan).slice(0,Math.min(3,game.tornadoDamageCount)).map(s=>s.id);
+    this.onTornadoEncounterChange?.();
+  }
+  if(this._tornadoWasActive!==tornadoNow){
+    if(tornadoNow){
+      if(!(game.tornadoEncounterActive&&game.tornadoCurrentSites?.length)){
+        const next=(Number(game.tornadoEncounter)||0)+1;
+        const track=selectVariedStormBuildings(this.distantCityPlan,{
+          seed:(Number(game.weatherSeed)||1)+next*7919,
+          previousCenterId:game.tornadoPreviousCenterId,
+          damagedIds:game.tornadoDamagedIds
+        });
+        game.tornadoCurrentSites=track.map(s=>s.id);
+        game.tornadoPreviousCenterId=track[Math.floor(track.length/2)]?.id||null;
+        game.tornadoEncounter=next;
+        game.tornadoEpisodeDamageCount=0;
+        game.tornadoEncounterActive=true;
+        this.onTornadoEncounterChange?.();
+      }
+    }else if(game.tornadoEncounterActive){
+      game.tornadoEncounterActive=false;
+      this.onTornadoEncounterChange?.();
+    }
+    this._tornadoWasActive=tornadoNow;
+  }
   // 3D storm permanently damages the city, including when triggered by weather preview.
   this.tornadoFade=vw.tornado;
   this.advancedWeather.update(dt,vw,night,storm);
   const nearFlash=this.cinematicTornado.update(dt,vw.tornado,{
-   persistedCount:game.tornadoDamageCount||(game.tornadoCityDamaged?1:0),preview:this.previewWeather==='tornado',
+   persistedCount:game.tornadoEpisodeDamageCount||0,
+   permanentIds:game.tornadoDamagedIds,
+   trackIds:game.tornadoCurrentSites,
+   preview:this.previewWeather==='tornado',
    night,reduceMotion:this.reducedMotion,
-   onImpact:count=>this.onTornadoImpact?.(count)
+   onImpact:(id,index)=>this.onTornadoImpact?.(id,index)
   });
   // A fast multi-stroke lightning pulse brightens the actual roof/city lights,
   // not only the bolt sprite. The next frame resets from solar/weather values.
