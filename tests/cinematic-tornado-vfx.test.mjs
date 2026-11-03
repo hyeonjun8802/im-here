@@ -4,8 +4,8 @@ import {contractCitySlot,settleContractedCity} from '../src/cityContraction.js';
 import {CityArchitecture} from '../src/cityArchitecture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {defaults,sanitize,advance} from '../src/simulation.js';
-import {selectStormBuilding,selectStormBuildings,stormTrackPoint} from '../src/nearTornadoVfx.js';
+import {defaults,sanitize,advance,recordTornadoDamage} from '../src/simulation.js';
+import {selectStormBuilding,selectStormBuildings,stormTrackPoint,NearTornadoVfx} from '../src/nearTornadoVfx.js';
 import {visualTargets,integrateWeather} from '../src/weatherDirector.js';
 
 const sceneSlots=[
@@ -43,7 +43,7 @@ test('real tornado damages up to three buildings, one per elapsed minute',()=>{
   assert.equal(restored.tornadoCityDamaged,true);
 });
 
-test('weather preview changes visuals but never alters the saved damage count',()=>{
+test('preview visual weather does not affect gameplay until a tower actually collapses',()=>{
   const n=Date.UTC(2026,10,3,10,0,0);
   const state=defaults(n);
   const preview=integrateWeather(visualTargets('clear'),'tornado',1,4.7);
@@ -99,4 +99,64 @@ test('upper-story balconies vanish only while a building is damaged',()=>{
   mesh.getMatrixAt(idx,restored);
   assert.deepEqual(restored.elements,before.elements,'preview restoration must be exact');
   for(const item of facade.meshes){item.geometry.dispose();item.material.dispose();}
+});
+
+test('a preview tornado impact is permanently recorded, never restored by clear weather',()=>{
+  const n=Date.UTC(2026,10,3,10,0,0);
+  const state=defaults(n);
+  const damaged=[];
+  const makeWorld=()=>{
+    const scene=new THREE.Scene();
+    const cityBuildings=new Map();
+    for(const slot of sceneSlots){
+      const group=new THREE.Group();
+      group.position.set(slot.x,-23.5,slot.z);
+      scene.add(group);
+      cityBuildings.set(slot.id,group);
+    }
+    return {scene,isMobile:false,distantCityPlan:sceneSlots,cityBuildings,
+      cityArchitecture:{setBuildingDamaged(id,flag){damaged.push({id,flag});}}};
+  };
+  const original=new NearTornadoVfx(makeWorld());
+  let callbacks=0;
+  const commit=count=>{callbacks+=1;recordTornadoDamage(state,count,'preview');};
+  original.exposure=11.4;
+  original.updateDestruction(.05,true,0,true,commit);
+  assert.equal(state.tornadoDamageCount,2);
+  assert.equal(callbacks,1);
+  const sites=original.impacts;
+  assert.ok(sites[0].progress>0 && sites[1].progress>0);
+  // Returning to clear weather must finish the collapse, not reverse it.
+  original.exposure=0;
+  original.updateDestruction(.05,false,state.tornadoDamageCount,false,commit);
+  assert.equal(callbacks,1);
+  for(const site of sites.slice(0,2)){
+    assert.equal(site.progress,1);
+    assert.equal(site.host.visible,false);
+    assert.equal(site.ruined.visible,true);
+  }
+  original.dispose();
+  const reloaded=sanitize(JSON.parse(JSON.stringify(state)),n+1000);
+  assert.equal(reloaded.tornadoDamageCount,2);
+  const reopened=new NearTornadoVfx(makeWorld());
+  reopened.updateDestruction(.05,false,reloaded.tornadoDamageCount,false);
+  for(const site of reopened.impacts.slice(0,2)){
+    assert.equal(site.progress,1);
+    assert.equal(site.host.visible,false);
+    assert.equal(site.ruined.visible,true);
+  }
+  assert.ok(damaged.some(e=>e.flag));
+  reopened.dispose();
+});
+
+test('saved tornado impacts are monotonic and duplicate callbacks do not duplicate damage logs',()=>{
+  const state=defaults(Date.UTC(2026,10,3));
+  assert.equal(recordTornadoDamage(state,1,'preview'),true);
+  assert.equal(recordTornadoDamage(state,1,'preview'),false);
+  assert.equal(recordTornadoDamage(state,0,'preview'),false);
+  assert.equal(recordTornadoDamage(state,3,'preview'),true);
+  assert.equal(recordTornadoDamage(state,2,'preview'),false);
+  assert.equal(state.tornadoDamageCount,3);
+  assert.equal(state.tornadoCityDamaged,true);
+  assert.equal(state.events.filter(e=>e.includes('복구되지 않는다')).length,2);
 });
