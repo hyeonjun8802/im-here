@@ -557,7 +557,7 @@ export class AfterWorld {
   this.tornadoFade=vw.tornado;
   this.advancedWeather.update(dt,vw,night,storm);
   const nearFlash=this.cinematicTornado.update(dt,vw.tornado,{
-   persisted:!!game.tornadoCityDamaged,preview:this.previewWeather==='tornado',
+   persistedCount:game.tornadoDamageCount||(game.tornadoCityDamaged?1:0),preview:this.previewWeather==='tornado',
    night,reduceMotion:this.reducedMotion
   });
   // A fast multi-stroke lightning pulse brightens the actual roof/city lights,
