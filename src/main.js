@@ -155,9 +155,11 @@ function animation(){
 async function boot(){try{
   $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});
   // The preview is safe for survivor resources/time, but demolished city buildings are permanent.
-  world.onTornadoImpact=count=>{
-    if(recordTornadoDamage(state,count,'preview')){
-      save(); // Immediately persist each collapse; never wait for the 15-second autosave.
+  world.onTornadoEncounterChange=()=>save(); // Persist each new tornado track immediately.
+  world.onTornadoImpact=(id,index)=>{
+    state.tornadoEpisodeDamageCount=Math.max(state.tornadoEpisodeDamageCount||0,index);
+    if(recordTornadoDamage(state,[id],'preview')){
+      save(); // Permanent per-building destruction, including weather preview.
       renderHUD();
     }
   };
