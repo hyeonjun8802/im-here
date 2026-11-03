@@ -3,7 +3,6 @@
  */
 import { getHeavyClangAudioURL } from './metalClangAudio.js';
 const BASE = new URL('./assets/events/', document.baseURI);
-const SOUND = new URL('./assets/audio/metal_board_clang.mp3', document.baseURI);
 
 export const EVENT_STYLES = Object.freeze({
   raiders:      { category:'위험', title:'강도들이 식량 보관함에 접근하고 있습니다!', description:'계단실에서 낯선 발소리가 들립니다. 보관함을 지키세요.', image:'raiders.webp', severity:'danger',duration:8500 },
@@ -44,7 +43,9 @@ export class AfterdayEventBoard {
     this.lastRaider=Boolean(initialState?.raiderAlert);
     this.lastLowFood=(initialState?.supply?.food||0)<3;
     try{this.muted=localStorage.getItem('afterday_event_sfx_muted')==='true';}catch{this.muted=false;}
+    // The event board has exactly one audio element: the V3 cue only.
     this.audio = new Audio(getHeavyClangAudioURL());this.audio.preload='auto';this.audio.volume=.5;
+    this.lastSoundAt=-Infinity;
     this.pendingSound=false;this.activeKey=null;this.timer=null;
     this.seen=[];
     this.element=document.createElement('section');
@@ -62,8 +63,32 @@ export class AfterdayEventBoard {
     window.addEventListener('keydown',this.gesture);
   }
   setMuteLabel(){const b=this.element.querySelector('.afterday-board-sound');b.textContent=this.muted?'🔇':'🔊';b.setAttribute('aria-pressed',String(!this.muted));}
-  toggleMute(){this.muted=!this.muted;try{localStorage.setItem('afterday_event_sfx_muted',String(this.muted));}catch{}this.pendingSound=false;this.setMuteLabel();}
-  async playSound(){if(this.muted)return;try{this.audio.pause();this.audio.currentTime=0;await this.audio.play();}catch{this.pendingSound=true;}}
+  toggleMute(){
+    this.muted=!this.muted;
+    try{localStorage.setItem('afterday_event_sfx_muted',String(this.muted));}catch{}
+    this.pendingSound=false;
+    if(this.muted){this.audio.pause();this.audio.currentTime=0;}
+    this.setMuteLabel();
+  }
+  async playSound(){
+    if(this.muted)return;
+    const now=Date.now();
+    // If two event state updates land together, the board produces one sound, never two.
+    if(!this.pendingSound&&now-this.lastSoundAt<900)return;
+    const previous=window.__afterdayEventBoardAudio;
+    if(previous&&previous!==this.audio){previous.pause();previous.currentTime=0;}
+    window.__afterdayEventBoardAudio=this.audio;
+    this.audio.pause();
+    this.audio.currentTime=0;
+    try{
+      this.lastSoundAt=now;
+      this.pendingSound=false;
+      await this.audio.play();
+    }catch{
+      this.lastSoundAt=-Infinity;
+      this.pendingSound=true;
+    }
+  }
   show(key,options={}) {
     const data=EVENT_STYLES[key];if(!data)return false;
     clearTimeout(this.timer);this.activeKey=key;
@@ -80,7 +105,7 @@ export class AfterdayEventBoard {
     this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
     return true;
   }
-  dismiss(){clearTimeout(this.timer);this.element.classList.remove('is-open');this.element.hidden=true;this.activeKey=null;this.pendingSound=false;}
+  dismiss(){clearTimeout(this.timer);this.element.classList.remove('is-open');this.element.hidden=true;this.activeKey=null;this.pendingSound=false;this.audio.pause();this.audio.currentTime=0;}
   sync(state,{warningAhead=false}={}) {
     const current=state?.events?.at(-1)||'';
     let shown=null;
@@ -115,5 +140,5 @@ export class AfterdayEventBoard {
     }
     box.append(grid);panel.append(box);
   }
-  destroy(){this.dismiss();this.element.remove();window.removeEventListener('pointerdown',this.gesture);window.removeEventListener('keydown',this.gesture);}
+  destroy(){this.dismiss();if(window.__afterdayEventBoardAudio===this.audio)delete window.__afterdayEventBoardAudio;this.audio.removeAttribute('src');this.audio.load();this.element.remove();window.removeEventListener('pointerdown',this.gesture);window.removeEventListener('keydown',this.gesture);}
 }
