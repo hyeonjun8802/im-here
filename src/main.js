@@ -1,18 +1,28 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
+import {GameClock} from './gameClock.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
-const state=sanitize(saved,now);advance(state,now,true);
-const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));return true}catch{return false}};
+const gameClock=new GameClock(now,saved?.gameClockOffsetMs);
+const state=sanitize(saved,gameClock.virtualNow);advance(state,gameClock.virtualNow,true);
+const save=()=>{
+ try{
+  const real=Date.now();
+  gameClock.tick(real,document.visibilityState==='visible');
+  state.gameClockOffsetMs=gameClock.offset(real);
+  localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+  return true;
+ }catch{return false}
+};
 let world;
 let eventBoard=null;
 let autoLifeCamera=true;
 const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280']];
 function renderHUD(){
- const t=Date.now();$('#days').textContent='DAY '+String(getDay(state.startedAt,t)).padStart(3,'0');$('#clock').textContent=wallClock(t);
+ const t=gameClock.virtualNow;$('#days').textContent='DAY '+String(getDay(state.startedAt,t)).padStart(3,'0');$('#clock').textContent=wallClock(t);
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C'}[state.weather]);
  const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold'].includes(state.pendingWeather);
  const danger=['storm','tornado'].includes(state.weather)||state.health<35||state.water<18||warningAhead;
@@ -27,8 +37,41 @@ function renderHUD(){
 }
 function toast(msg,kind=''){addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function bindEvents(){
+ const speedButton=$('#speed-toggle');
+ const updateSpeedLabel=()=>{
+  speedButton.textContent=gameClock.speed===1?'▶ 1×':`⏩ ${gameClock.speed}×`;
+  speedButton.setAttribute('aria-label',`게임 진행 속도 ${gameClock.speed}배. 클릭하면 배속 변경`);
+  speedButton.setAttribute('aria-pressed',String(gameClock.speed!==1));
+  speedButton.title='게임 진행 속도: 1× → 2× → 4× → 1×';
+ };
+ speedButton.addEventListener('click',()=>{
+  gameClock.cycleSpeed();
+  updateSpeedLabel();
+  save();
+ });
+ updateSpeedLabel();
+ // Tap the actual 3D canvas (not a dialog/button) to dismiss open overlays.
+ // Dragging to rotate the camera must not close panels.
+ const canvas=$('#world');
+ let start=null;
+ canvas.addEventListener('pointerdown',event=>{
+  if(event.button!==0)return;
+  start={id:event.pointerId,x:event.clientX,y:event.clientY};
+ });
+ canvas.addEventListener('pointercancel',()=>{start=null;});
+ canvas.addEventListener('pointerup',event=>{
+  if(!start||start.id!==event.pointerId)return;
+  const distance=Math.hypot(event.clientX-start.x,event.clientY-start.y);
+  start=null;
+  if(distance>10)return;
+  $('#life-panel').classList.add('hidden');
+  $('#weather-panel').classList.add('hidden');
+  eventBoard?.dismiss();
+  const status=$('#survivor-status-panel');
+  if(status&&!status.classList.contains('is-collapsed'))$('#survivor-status-toggle')?.click();
+ });
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
- const action=btn.dataset.action;const result=applyAction(state,action);if(result.good){world?.setAction(action);if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');save()}toast(result.msg);}))
+ const action=btn.dataset.action;const result=applyAction(state,action,gameClock.virtualNow);if(result.good){world?.setAction(action);if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');save()}toast(result.msg);}))
  $('#life-panel-toggle').addEventListener('click',()=>{$('#life-panel').classList.toggle('hidden');$('#weather-panel').classList.add('hidden')});
  $('#close-life').addEventListener('click',()=>$('#life-panel').classList.add('hidden'));
  document.querySelectorAll('[data-life-action]').forEach(button=>button.addEventListener('click',async()=>{
@@ -78,14 +121,37 @@ function bindEvents(){
  $('#quality').addEventListener('change',e=>world.setQuality(e.target.value));
  $('#weather-audio-toggle').addEventListener('click',async e=>{try{const on=await world.toggleWeatherSound();e.currentTarget.textContent=on?'🔊 환경음 끄기':'🔇 환경음 켜기 (수동)';e.currentTarget.setAttribute('aria-pressed',String(on))}catch(err){toast('오디오를 시작할 수 없습니다: '+err.message)}});
  window.addEventListener('pagehide',save);
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){advance(state,Date.now(),true);renderHUD();save();}});
+ document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+   // Resuming a sleeping browser tab never accelerates missed background time.
+   const t=gameClock.tick(Date.now(),false);
+   advance(state,t,true);renderHUD();save();
+  }else{
+   gameClock.tick(Date.now(),false);save();
+  }
+ });
 }
-function animation(){let last=performance.now(),lastHUD=0,lastSave=Date.now();const draw=t=>{let dt=Math.min((t-last)/1000,.05);last=t;const n=Date.now();
- if(n-state.lastTickAt>10000)advance(state,n,false);
- if(t-lastHUD>1500){renderHUD();lastHUD=t}
- if(n-lastSave>15000){save();lastSave=n}
- try{world.update(dt,n,state)}catch(e){console.error('3D frame error',e);$('#error').classList.remove('hidden');$('#error').textContent='렌더링 오류: '+e.message;return;}
- requestAnimationFrame(draw);};requestAnimationFrame(draw)}
+function animation(){
+ let last=performance.now(),lastHUD=0,lastSave=Date.now();
+ const draw=t=>{
+  const realDt=Math.min(Math.max((t-last)/1000,0),.05);last=t;
+  const real=Date.now(),foreground=document.visibilityState==='visible';
+  const gameNow=gameClock.tick(real,foreground);
+  if(gameNow-state.lastTickAt>10000)advance(state,gameNow,!foreground);
+  if(t-lastHUD>700){renderHUD();lastHUD=t}
+  if(real-lastSave>15000){save();lastSave=real}
+  try{
+   world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state);
+  }catch(e){
+   console.error('3D frame error',e);
+   $('#error').classList.remove('hidden');
+   $('#error').textContent='렌더링 오류: '+e.message;
+   return;
+  }
+  requestAnimationFrame(draw);
+ };
+ requestAnimationFrame(draw);
+}
 async function boot(){try{
   $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});
   // The preview is safe for survivor resources/time, but demolished city buildings are permanent.
@@ -95,7 +161,7 @@ async function boot(){try{
       renderHUD();
     }
   };
-  world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onSecure:()=>{const r=applyAction(state,'secure_storage');if(r.good)save();toast(r.msg);}});window.afterday={state,world,save,renderHUD,eventBoard};
+  world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onSecure:()=>{const r=applyAction(state,'secure_storage',gameClock.virtualNow);if(r.good)save();toast(r.msg);}});window.afterday={state,world,save,renderHUD,eventBoard,gameClock};
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
