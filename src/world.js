@@ -32,6 +32,7 @@ import {CITY_COMPOSITION} from './cityComposition.js';
 import {BeardedSurvivorV190} from './beardedSurvivorV190.js';
 import {ApocalypseSetDressingV201} from './ApocalypseSetDressingV201.js';
 import {HorizonWorldExpansionV210} from './HorizonWorldExpansionV210.js';
+import {NearTornadoVfx} from './nearTornadoVfx.js';
 
 const ROOF=CITY_COMPOSITION.heroRoofY;
 const clamp=THREE.MathUtils.clamp;
@@ -86,7 +87,7 @@ export class AfterWorld {
   this.fill=new THREE.DirectionalLight('#7b9bb4',.32);this.fill.position.set(-40,28,-38);this.scene.add(this.fill);
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
-  this.weatherAudio=new WeatherAudio();this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
+  this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
   this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.cinematicPost=new CinematicPostV130(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
@@ -134,6 +135,7 @@ export class AfterWorld {
   holder.name=`Afterday city ${slot.tier}: ${slot.id||model}`;
   holder.userData={tier:slot.tier,cityDistance:Math.hypot(pos[0],pos[2])};
   this.scene.add(holder);
+  if(slot.id)this.cityBuildings?.set(slot.id,holder);
   // Fixed 3D position. Switching weather changes ONLY fog/light/material response.
   const fallback=this.makeRuinFallback(height,RAND(pos[0]+pos[2]*6),slot.tier,slot.width);
   holder.add(fallback);
@@ -468,20 +470,14 @@ export class AfterWorld {
   // Former low-poly sphere clouds were removed; layered soft 3D sprites render in AdvancedWeather.
   const rainCount=this.isMobile?740:1700;const rPos=new Float32Array(rainCount*6);for(let i=0;i<rainCount;i++){let j=i*6;rPos[j]=(RAND(i+1)-.5)*65;rPos[j+1]=ROOF+RAND(i*7+2)*38;rPos[j+2]=(RAND(i*9+2)-.5)*65;rPos[j+3]=rPos[j]-.1;rPos[j+4]=rPos[j+1]-1.25;rPos[j+5]=rPos[j+2];}
   this.rainPos=rPos;const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.BufferAttribute(rPos,3).setUsage(THREE.DynamicDrawUsage));this.rain=new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:'#b9d3e5',transparent:true,opacity:.0,depthWrite:false}));this.rain.frustumCulled=false;this.scene.add(this.rain);
-  // Stereoscopic 3D vortex in city, out beyond the roof.
-  this.tornado=new THREE.Group();this.tornado.position.set(-240,-19,-255);this.scene.add(this.tornado);
-  const funnel=new THREE.Mesh(new THREE.CylinderGeometry(17,1.5,63,28,8,true),new THREE.MeshStandardMaterial({color:'#3b4447',transparent:true,opacity:.23,side:THREE.DoubleSide,depthWrite:false,roughness:1}));funnel.position.y=33;this.tornado.add(funnel);
-  this.funnel=funnel;this.tornadoRings=[];
-  for(let i=0;i<11;i++){let y=3+i*5.4,r=1.7+(i/10)**1.5*14;const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.35,4,40),new THREE.MeshBasicMaterial({color:i%2?'#65706b':'#555e5b',transparent:true,opacity:.37,depthWrite:false}));ring.rotation.x=Math.PI/2;ring.position.y=y;this.tornado.add(ring);this.tornadoRings.push(ring)}
-  this.tornado.visible=false;
-  // 3D lightning jagged channels, flashes several seconds apart
-  const lpts=[];let x=0,z=0;for(let i=0;i<16;i++){let nx=x+(RAND(i+4)-.5)*8,nz=z+(RAND(i+7)-.5)*3;lpts.push(x,85-i*4,z,nx,81-i*4,nz);x=nx;z=nz}
-  const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lpts,3));this.lightning=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:'#e8f8ff',transparent:true,opacity:.95}));this.lightning.position.set(205,-14,-205);this.lightning.visible=false;this.scene.add(this.lightning);
-  this.flash=new THREE.PointLight('#d5e9ff',0,140);this.flash.position.set(150,65,-180);this.scene.add(this.flash);
+  // Replaced distant cone + ring-stack and static lightning with the new
+  // full 3D close-range cinematic vortex and branching storm bolts.
   // 3D dust particles
   const dustPos=new Float32Array(320*3);for(let i=0;i<320;i++){dustPos[i*3]=(RAND(i+300)-.5)*180;dustPos[i*3+1]=ROOF+RAND(i+3004)*30;dustPos[i*3+2]=(RAND(i+3008)-.5)*180}const dg=new THREE.BufferGeometry();dg.setAttribute('position',new THREE.BufferAttribute(dustPos,3).setUsage(THREE.DynamicDrawUsage));this.dustPos=dustPos;this.dust=new THREE.Points(dg,new THREE.PointsMaterial({color:'#9e9980',size:.8,transparent:true,opacity:0,depthWrite:false}));this.scene.add(this.dust);
   this.weatherMix=0;this.hazeLevel=0;this.tornadoFade=0;this.thunderAt=5;this.flashTime=0;
   this.advancedWeather=new AdvancedWeather(this.scene,ROOF,this.isMobile);
+  this.advancedWeather.legacyTornadoDisabled=true;
+  this.cinematicTornado=new NearTornadoVfx(this);
   // Camera-aware GPU precipitation and continuous weather sky. Replaces the
   // old bright rain lines / constant-opacity snow points, never the gameplay.
   this.advancedWeather.legacyPrecipitationDisabled=true;
@@ -557,17 +553,20 @@ export class AfterWorld {
   this.dust.material.opacity=THREE.MathUtils.lerp(this.dust.material.opacity,Math.min(.32,vw.wind*.22+vw.heat*.08),Math.min(1,dt*.8));
   for(let i=0;i<this.dustPos.length;i+=3){this.dustPos[i]+=dt*(storm?18:heat?2:.5);if(this.dustPos[i]>120)this.dustPos[i]=-120}
   this.dust.geometry.attributes.position.needsUpdate=true;
-  this.tornadoFade=vw.tornado;this.tornado.visible=this.tornadoFade>.01;this.funnel.material.opacity=.16*this.tornadoFade;for(const ring of this.tornadoRings)ring.material.opacity=.09*this.tornadoFade;if(this.tornado.visible){this.tornado.rotation.y+=dt*.45;this.funnel.rotation.y+=dt*.9;for(let i=0;i<this.tornadoRings.length;i++){const r=this.tornadoRings[i];r.rotation.z+=dt*(1.2+i*.13);r.position.x=Math.sin(performance.now()*.0008+i)*1.1;} }
-  // Updated procedural branch lightning and spatial illumination are managed by AdvancedWeather.
-  this.lightning.visible=false;this.flash.intensity=0;
+  // Animated 3D storm and optional city impact. Preview never mutates saved game data.
+  this.tornadoFade=vw.tornado;
   this.advancedWeather.update(dt,vw,night,storm);
+  const nearFlash=this.cinematicTornado.update(dt,vw.tornado,{
+   persisted:!!game.tornadoCityDamaged,preview:this.previewWeather==='tornado',
+   night,reduceMotion:this.reducedMotion
+  });
   // A fast multi-stroke lightning pulse brightens the actual roof/city lights,
   // not only the bolt sprite. The next frame resets from solar/weather values.
-  const lightningStrength=Math.min(1,this.advancedWeather.farFlash.intensity/5.8);
+  const lightningStrength=Math.min(1,this.advancedWeather.farFlash.intensity/5.8+nearFlash*.76);
   this.ambient.intensity+=lightningStrength*1.65;
   this.fill.intensity+=lightningStrength*.95;
   this.weatherVfx.update(dt,vw,night,this.sun.position,twilight,lightningStrength);
-  this.cinematic?.update(dt,vw,night);this.premiumEnvironment?.update(dt,vw,night,performance.now()*.001);updateSurvivorArt(this,vw);animateSurvivorFinishingV130(this,performance.now()*.001,vw.wind||0);this.weatherAudio.update(vw,this.advancedWeather.flashTime>0 && this.advancedWeather.flashTime>=.105,preset);
+  this.cinematic?.update(dt,vw,night);this.premiumEnvironment?.update(dt,vw,night,performance.now()*.001);updateSurvivorArt(this,vw);animateSurvivorFinishingV130(this,performance.now()*.001,vw.wind||0);this.weatherAudio.update(vw,(this.advancedWeather.flashTime>0 && this.advancedWeather.flashTime>=.105)||nearFlash>.60,preset);
   // SurvivorLife controls physical movement, location-aware gestures and seating.
   this.life.update(dt,now,game,preset);
   this.beardedSurvivor?.update(dt,this.life);
@@ -605,5 +604,5 @@ export class AfterWorld {
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
- dispose(){this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
+ dispose(){this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
 }
