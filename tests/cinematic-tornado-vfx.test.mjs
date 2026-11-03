@@ -1,3 +1,7 @@
+import * as THREE from 'three';
+import {planDistantCity} from '../src/spatialLayout.js';
+import {contractCitySlot,settleContractedCity} from '../src/cityContraction.js';
+import {CityArchitecture} from '../src/cityArchitecture.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {defaults,sanitize,advance} from '../src/simulation.js';
@@ -64,4 +68,35 @@ test('corrupt damage values are clamped without changing save version',()=>{
   s.tornadoDamageCount=-50;s.tornadoCityDamaged=false;
   assert.equal(sanitize(s,n).tornadoDamageCount,0);
   assert.equal(sanitize(s,n).version,4);
+});
+
+test('actual 3D city plan supports a visible sweep through three distinct towers',()=>{
+  const rand=n=>{const q=Math.sin(n*127.1+46.4)*43758.5453;return q-Math.floor(q)};
+  for(const mobile of [false,true]){
+    const lots=settleContractedCity(planDistantCity(mobile,rand).map(contractCitySlot));
+    const selected=selectStormBuildings(lots);
+    assert.equal(selected.length,3,'three real lots should be available on both device layouts');
+    assert.equal(new Set(selected.map(x=>x.id)).size,3);
+    assert.ok(selected[2].x-selected[0].x>14,'storm moves laterally across real streets');
+    assert.ok(selected.every(x=>Math.hypot(...stormTrackPoint(x).filter((_,i)=>i!==1))>=100));
+  }
+});
+
+test('upper-story balconies vanish only while a building is damaged',()=>{
+  const scene=new THREE.Scene();
+  const lot={id:'mid-demo',tier:'mid',x:-91,z:-96,height:31,width:14,rotation:0};
+  const facade=new CityArchitecture(scene,[lot],[],false);
+  const byType=facade.upperDetailsByBuilding.get(lot.id);
+  assert.ok(byType && Object.keys(byType).length>0);
+  const [kind,indices]=Object.entries(byType)[0];
+  const mesh=facade.meshByType[kind],idx=indices[0];
+  const before=new THREE.Matrix4(),collapsed=new THREE.Matrix4(),restored=new THREE.Matrix4();
+  mesh.getMatrixAt(idx,before);
+  facade.setBuildingDamaged(lot.id,true);
+  mesh.getMatrixAt(idx,collapsed);
+  assert.ok(Math.abs(collapsed.determinant())<1e-7,'upper fixture should be hidden');
+  facade.setBuildingDamaged(lot.id,false);
+  mesh.getMatrixAt(idx,restored);
+  assert.deepEqual(restored.elements,before.elements,'preview restoration must be exact');
+  for(const item of facade.meshes){item.geometry.dispose();item.material.dispose();}
 });
