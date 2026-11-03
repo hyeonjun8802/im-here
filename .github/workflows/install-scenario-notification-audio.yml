@@ -27,10 +27,10 @@ jobs:
                       inspect(v)
               elif isinstance(obj,list):
                   for v in obj:inspect(v)
-          for chunk in re.findall(r'<script[^>]*type=["\']application/ld\\+json["\'][^>]*>(.*?)</script>',document,re.S|re.I):
+          for chunk in re.findall(r'<script[^>]*type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',document,re.S|re.I):
               try:inspect(json.loads(html.unescape(chunk)))
               except (ValueError,TypeError):pass
-          urls+=re.findall(r'https://cdn\\.pixabay\\.com[^"\'<\\s]+',document,re.I)
+          urls+=re.findall(r'https://cdn\.pixabay\.com[^"\'<\s]+',document,re.I)
           for url in dict.fromkeys(urls):
               url=html.unescape(url).replace('\\u0026','&')
               if urllib.parse.urlparse(url).hostname!='cdn.pixabay.com':continue
