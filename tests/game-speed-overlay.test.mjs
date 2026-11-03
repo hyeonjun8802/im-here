@@ -52,7 +52,7 @@ test('existing saves without offset start at normal 1× speed',()=>{
  assert.equal(restored.gameClockOffsetMs,0);
 });
 
-test('speed button and canvas-tap close are wired; alert audio is absent',()=>{
+test('speed control, canvas tap and single new scenario audio remain wired',()=>{
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  const event=readFileSync(new URL('../src/eventBoard.js',import.meta.url),'utf8');
