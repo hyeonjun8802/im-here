@@ -1,0 +1,21 @@
+name: Validate scenario audio and roaming tornado
+on:
+  push:
+    branches: [feature/scenario-notification-audio-20261104]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Test tornado and scenario audio
+        run: node --test tests/cinematic-tornado-vfx.test.mjs tests/varied-tornado.test.mjs tests/event-sound-single.test.mjs tests/simulation.test.mjs
+      - name: Full test suite
+        run: npm test
+      - name: Vite bundle
+        run: npm run build
