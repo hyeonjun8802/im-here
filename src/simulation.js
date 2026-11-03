@@ -350,7 +350,9 @@ export function applyAction(s,action,now=Date.now()){
  const r=nextRandom(s),injury=r<.22?12:4;
  s.health=CAP(s.health-injury);s.supply.food+=r<.23?3:5;
  s.supply.water=s.supply.water>=WEATHER_WATER_CAPACITY?s.supply.water:Math.min(WEATHER_WATER_CAPACITY,s.supply.water+(r<.30?2:4));
- if(r>.34)s.supply.parts+=2;if(r>.65)s.supply.medicine++;
+ // Emergency expeditions are dangerous and limited to once per 20 game hours,
+ // but return enough repair components to make long-term survival achievable.
+ s.supply.parts+=r<.30?2:r<.65?3:4;if(r>.65)s.supply.medicine++;
  s.exploreCooldownAt=now+SURVIVAL_BALANCE.exploreCooldownMs;
  s.action='explore';s.actionUntil=now+18000;
  addEvent(s,r<.22?'긴급 탐색 중 부상을 입었지만 생존 물자를 가져왔다.':'폐허 창고에서 식량과 식수를 확보했다.');

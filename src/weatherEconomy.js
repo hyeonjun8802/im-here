@@ -73,8 +73,8 @@ export function applyWeatherEconomyMinute(s,weather,day){
   let evap=mode.evaporationPerMinute;
   if(weather==='heat')evap*=tank>=70?.85:tank>=40?1.45:2.4;
   // A cracked tank leaks even under cloudy skies.
-  if(tank<30)evap+=.018;
-  else if(tank<45)evap+=.005;
+  if(tank<30)evap+=.004;
+  else if(tank<45)evap+=.001;
   if(evap>0&&s.supply.water>0){
     w.waterEvaporationProgress+=evap;
     const loss=Math.min(s.supply.water,Math.floor(w.waterEvaporationProgress));
@@ -84,7 +84,7 @@ export function applyWeatherEconomyMinute(s,weather,day){
 
   // Only unprotected food spoils: a healthy food cache keeps supplies safe.
   const foodRisk=storage<60?Math.max(0,(60-storage)/60):0;
-  const spoilageRate=weather==='heat'?.048:weather==='storm'?.027:weather==='rain'?.016:0;
+  const spoilageRate=weather==='heat'?.010:weather==='storm'?.006:weather==='rain'?.0025:0;
   if(foodRisk&&spoilageRate&&s.supply.food>0){
     w.foodSpoilageProgress+=spoilageRate*(.65+foodRisk);
     const spoiled=Math.min(s.supply.food,Math.floor(w.foodSpoilageProgress));
