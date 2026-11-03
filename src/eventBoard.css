@@ -1,0 +1,49 @@
+/* AFTERDAY: steel noticeboard, same dark cinematic direction as the approved images. */
+.afterday-board[hidden],.afterday-board-secure[hidden]{display:none!important}
+.afterday-board{
+  --event-edge:#b64e46;--event-pill:#8e3534;
+  position:absolute;z-index:42;pointer-events:auto;box-sizing:border-box;
+  top:calc(90px + env(safe-area-inset-top));left:50%;
+  width:min(640px,calc(100vw - 36px));min-height:114px;
+  display:flex;align-items:stretch;overflow:hidden;
+  border:2px solid color-mix(in srgb,var(--event-edge) 77%,#52463f);
+  border-radius:8px;background:linear-gradient(92deg,#0b1016 5%,#1b2023 60%,#13191d 100%);
+  box-shadow:0 0 0 1px #d7d2b542 inset,0 13px 36px #000b,0 0 24px color-mix(in srgb,var(--event-edge) 35%,transparent);
+  transform:translateX(-50%) translateY(-36px) rotate(-1.6deg);
+  opacity:0;color:#f4efe3;text-shadow:0 2px 3px #000b;
+}
+.afterday-board::before,.afterday-board::after{
+  content:'';position:absolute;top:6px;width:8px;height:8px;border-radius:50%;z-index:3;
+  background:radial-gradient(circle at 36% 30%,#d6cdc0,#5c6262 45%,#222b2d 65%,#090d11 80%);
+  box-shadow:0 0 1px 2px #0009;
+}
+.afterday-board::before{left:7px}.afterday-board::after{right:7px}
+.afterday-board.is-open{animation:afterday-plate-hook .68s cubic-bezier(.16,.7,.17,1) forwards}
+@keyframes afterday-plate-hook{
+  0%{opacity:0;transform:translateX(-50%) translateY(-42px) rotate(-3deg) scale(.97)}
+  35%{opacity:1;transform:translateX(-50%) translateY(8px) rotate(1.7deg) scale(1.018)}
+  54%{transform:translateX(-50%) translateY(-4px) rotate(-1.1deg) scale(.997)}
+  75%{transform:translateX(-50%) translateY(2px) rotate(.42deg)}
+  100%{opacity:1;transform:translateX(-50%) translateY(0) rotate(0)}
+}
+.afterday-board--disaster{--event-edge:#8e80aa;--event-pill:#59466e}
+.afterday-board--opportunity{--event-edge:#749c74;--event-pill:#3d694b}
+.afterday-board--social{--event-edge:#6391b4;--event-pill:#345c7c}
+.afterday-board-art{position:relative;flex:0 0 38%;min-height:110px;overflow:hidden}
+.afterday-board-art img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.afterday-board-art::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 35%,#11161be8)}
+.afterday-board-body{z-index:1;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0;flex:1;padding:11px 43px 11px 3px}
+.afterday-board-category{align-self:flex-start;font-size:10px;line-height:1.1;font-weight:800;color:#fff5e8;border-radius:15px;background:var(--event-pill);padding:4px 11px;letter-spacing:.03em}
+.afterday-board-title{font-size:clamp(13px,2.0vw,17px);line-height:1.38;font-weight:850;word-break:keep-all}
+.afterday-board-description{font-size:clamp(9px,1.3vw,11px);line-height:1.35;color:#cfd2d0;word-break:keep-all}
+.afterday-board-close,.afterday-board-sound{position:absolute;z-index:4;right:10px;color:#eee8d7;border:0;background:#0c1219ba;display:grid;place-items:center;cursor:pointer}
+.afterday-board-close{top:9px;width:27px;height:27px;font-size:21px;border-radius:50%}
+.afterday-board-sound{bottom:9px;width:28px;height:26px;font-size:14px;border-radius:5px}
+.afterday-board-secure{color:#fff0db;font:700 11px system-ui,sans-serif;align-self:flex-start;min-height:28px;border:1px solid #debf8480;border-radius:5px;background:#806040be;padding:4px 9px;margin-top:2px;cursor:pointer}
+.afterday-event-preview{border-top:1px solid #ffffff33;margin-top:18px;padding-top:14px}
+.afterday-event-preview strong{font-size:11px;color:#ead2ab}
+.afterday-event-preview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
+.afterday-event-preview-grid button{border:1px solid #c4a47d55;border-radius:6px;min-height:35px;background:#25303abb;color:#f0eee8;font-size:10px;padding:6px;cursor:pointer;line-height:1.4}
+#hud:has(.afterday-board.is-open)>#warning{opacity:0;pointer-events:none}
+@media(max-width:720px){.afterday-board{top:calc(69px + env(safe-area-inset-top));width:calc(100vw - 24px);min-height:92px}.afterday-board-art{flex-basis:34%;min-height:90px}.afterday-board-body{padding:8px 37px 8px 3px;gap:3px}.afterday-board-category{font-size:9px;padding:3px 8px}.afterday-board-title{font-size:12px}.afterday-board-description{font-size:9px}.afterday-board-secure{font-size:9px;min-height:25px}.afterday-board-close{width:23px;height:23px;right:6px;top:6px}.afterday-board-sound{right:6px;bottom:6px}}
+@media(prefers-reduced-motion:reduce){.afterday-board.is-open{animation:none;opacity:1;transform:translateX(-50%)}}

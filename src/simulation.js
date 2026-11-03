@@ -5,7 +5,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, animalAlert:false, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
+  version:4, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   supply:{food:8,water:12,medicine:2,parts:8}, facilities:{shelter:91,tank:90,storage:88},
   events:['폐허 옥상에 작은 캠프를 마련했다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
@@ -20,6 +20,9 @@ export function sanitize(raw, now=Date.now()) {
   for (const k of Object.keys(s.facilities)) s.facilities[k]=CAP(Number(s.facilities[k])||0);
   s.events=Array.isArray(s.events)?s.events.filter(v=>typeof v==='string').slice(-16):b.events;
   s.animalAlert=Boolean(s.animalAlert);s.sickness=CAP(Number(s.sickness)||0);
+  s.raiderAlert=Boolean(s.raiderAlert);
+  s.raiderUntilAt=Number.isFinite(Number(s.raiderUntilAt))?Math.max(0,Number(s.raiderUntilAt)):0;
+  s.raiderCooldownAt=Number.isFinite(Number(s.raiderCooldownAt))?Math.max(0,Number(s.raiderCooldownAt)):0;
   if (!WEATHER.includes(s.weather)) s.weather='clear';
   return s;
 }
@@ -61,6 +64,27 @@ export function advance(s,now=Date.now(),offline=false){
     // Night-time urban scavengers: gameplay hazard, not a weather state.
     if(tickTime%DAY_MS>13*3600000&&nextRandom(s)<.004){s.animalAlert=true;addEvent(s,'밤에 야생동물이 식량 상자 주변을 맴돌기 시작했다.');}
     if(s.animalAlert){if(nextRandom(s)<.03){s.supply.food=Math.max(0,s.supply.food-1);s.animalAlert=false;addEvent(s,'야생동물이 식량 일부를 훔치고 떠났다.');}}
+    // Human night raiders: non-combat threat. Offline players are protected.
+    const kstHour=Math.floor(((tickTime+9*3600000)%DAY_MS)/3600000);
+    const atNight=(kstHour>=22||kstHour<5);
+    if(!offline && atNight && getDay(s.startedAt,tickTime)>=3 && !s.raiderAlert &&
+       tickTime>=s.raiderCooldownAt && s.supply.food>1 &&
+       nextRandom(s)<(s.facilities.storage<60?.0015:.0005)){
+      s.raiderAlert=true;
+      s.raiderUntilAt=tickTime+4*60000;
+      addEvent(s,'낯선 발소리가 들린다. 강도들이 계단실에서 식량 보관함에 접근하고 있다.');
+    }
+    if(s.raiderAlert && tickTime>=s.raiderUntilAt){
+      s.raiderAlert=false;
+      s.raiderCooldownAt=tickTime+2*DAY_MS;
+      if(offline){addEvent(s,'계단실에 침입 흔적이 남아 있다. 물자는 지켜냈다.');}
+      else {
+        const stolen=Math.min(s.supply.food,s.facilities.storage<55?3:1);
+        s.supply.food-=stolen;
+        s.facilities.storage=CAP(s.facilities.storage-4);
+        addEvent(s,`강도들이 식량 ${stolen}개를 훔쳐 달아났다.`);
+      }
+    }
     if(s.water<35&&s.supply.water>0){s.supply.water--;s.water=CAP(s.water+36);addEvent(s,'생존자가 물탱크에서 물을 마셨다.')}
     if(s.food<32&&s.supply.food>0){s.supply.food--;s.food=CAP(s.food+39);addEvent(s,'생존자가 저장해 둔 식량으로 식사했다.')}
   }
@@ -69,6 +93,17 @@ export function advance(s,now=Date.now(),offline=false){
 }
 export function applyAction(s,action,now=Date.now()){
  const out=(good,msg)=>({good,msg});
+ if(action==='secure_storage'){
+   if(!s.raiderAlert)return out(false,'현재 침입 경보가 없다.');
+   if(s.supply.parts<1)return out(false,'보관함 잠금에 필요한 수리 부품이 부족하다.');
+   s.supply.parts--;
+   s.raiderAlert=false;
+   s.raiderUntilAt=0;
+   s.raiderCooldownAt=now+2*DAY_MS;
+   s.facilities.storage=CAP(s.facilities.storage+6);
+   addEvent(s,'보관함을 걸어 잠가 강도들을 쫓아냈다. 식량을 지켜냈다.');
+   return out(true,'보관함을 잠가 강도들을 쫓아냈다.');
+ }
  if(action==='drink'){if(s.supply.water<1)return out(false,'저장된 물이 없다.');s.supply.water--;s.water=CAP(s.water+31);s.action='drink';s.actionUntil=now+6500;return out(true,'물탱크에서 물을 마셨다.');}
  if(action==='eat'){if(s.supply.food<1)return out(false,'식량이 부족하다.');s.supply.food--;s.food=CAP(s.food+34);s.action='eat';s.actionUntil=now+6900;return out(true,'오래된 비상식량으로 식사했다.');}
  if(action==='medicine'){if(s.supply.medicine<1)return out(false,'의약품이 부족하다.');if(s.health>=97&&s.sickness<1)return out(false,'치료가 필요한 상태가 아니다.');s.supply.medicine--;s.sickness=CAP(s.sickness-65);s.health=CAP(s.health+22);s.action='medicine';s.actionUntil=now+8000;return out(true,'응급 약품으로 치료했다.');}

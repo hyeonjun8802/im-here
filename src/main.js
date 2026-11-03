@@ -1,4 +1,5 @@
 import { AfterWorld } from './world.js';
+import { AfterdayEventBoard } from './eventBoard.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,getDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 
@@ -7,6 +8,7 @@ let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catc
 const state=sanitize(saved,now);advance(state,now,true);
 const save=()=>{try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));return true}catch{return false}};
 let world;
+let eventBoard=null;
 let autoLifeCamera=true;
 const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280']];
 function renderHUD(){
@@ -21,6 +23,7 @@ function renderHUD(){
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
  $('#medicine').classList.toggle('needs-attention',state.health<65&&state.supply.medicine>0);
  $('#explore').classList.toggle('needs-attention',r.food<3||r.water<4||state.health<38||state.facilities.shelter<38);
+ eventBoard?.sync(state,{warningAhead});
 }
 function toast(msg,kind=''){addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function bindEvents(){
@@ -84,7 +87,7 @@ function animation(){let last=performance.now(),lastHUD=0,lastSave=Date.now();co
  try{world.update(dt,n,state)}catch(e){console.error('3D frame error',e);$('#error').classList.remove('hidden');$('#error').textContent='렌더링 오류: '+e.message;return;}
  requestAnimationFrame(draw);};requestAnimationFrame(draw)}
 async function boot(){try{
-  $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};window.afterday={state,world,save,renderHUD};
+  $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onSecure:()=>{const r=applyAction(state,'secure_storage');if(r.good)save();toast(r.msg);}});window.afterday={state,world,save,renderHUD,eventBoard};
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
