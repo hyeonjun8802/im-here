@@ -33,3 +33,14 @@ Durable resume checkpoint.
 - Vite production build: PASS.
 
 - Static asset check: `downpour_no_thunder.mp3` returned HTTP 200, `audio/mpeg`, 30,572 bytes from the normal preview.
+
+
+## v2.62 RMS boundary refinement
+- [x] Decode-time RMS scan trims only weak outer-edge energy / MP3 padding.
+- [x] Near-silent boundary candidates are rejected.
+- [x] Start/end boundary selection minimizes dB difference while preserving at least 68% of the clip.
+- [x] Equal-power tail/head crossfade increased to 0.9s.
+- [x] Thunder attack/tail adjusted to 0.05s / 0.85s.
+- [x] Offline source analysis candidate windows: medium rain ~0.03dB, heavy rain ~0.01dB, downpour ~0.02dB, storm rain ~0.03dB head/tail RMS delta.
+- [x] Targeted local RMS/mixer QA PASS.
+- [ ] Fresh Vercel preview unavailable today because the Hobby deployment quota hit 100/day.

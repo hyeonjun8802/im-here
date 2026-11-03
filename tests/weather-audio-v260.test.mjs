@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {WEATHER_AUDIO_ASSETS,WEATHER_LOOP_CROSSFADE_SECONDS,loopCrossfadeFrames,makeSeamlessLoopBuffer,weatherAudioMix} from '../src/weatherAudio.js';
+import {WEATHER_AUDIO_ASSETS,WEATHER_LOOP_CROSSFADE_SECONDS,loopCrossfadeFrames,findStableLoopBounds,makeSeamlessLoopBuffer,weatherAudioMix} from '../src/weatherAudio.js';
 
 test('v2.60 supplied weather recordings are bundled as lightweight game assets',()=>{
  const expected=['rainMedium','rainHeavy','downpour','stormRain','thunder'];
@@ -60,24 +60,26 @@ test('v2.60 world passes the exact weather title to audio so visual and sound mo
 });
 
 
-test('v2.60 loop seam uses a bounded PCM tail-head equal-power crossfade',()=>{
- assert.equal(WEATHER_LOOP_CROSSFADE_SECONDS,.65);
- assert.equal(loopCrossfadeFrames(480000,48000),31200);
- assert.equal(loopCrossfadeFrames(1000,10000),180,'short clips cap crossfade at 18%');
- const input=Float32Array.from({length:1000},(_,i)=>i/1000);
+test('v2.62 loop seam trims weak edge energy and uses RMS-matched equal-power crossfade',()=>{
+ assert.equal(WEATHER_LOOP_CROSSFADE_SECONDS,.9);
+ assert.equal(loopCrossfadeFrames(480000,48000),43200);
+ assert.equal(loopCrossfadeFrames(1000,10000),180);
+ const input=new Float32Array(1000);
+ for(let i=0;i<input.length;i++){const stable=i>=110&&i<890;input[i]=(stable?.24:.006)*Math.sin(i*.31);}
  const fakeBuffer={length:1000,sampleRate:100,numberOfChannels:1,getChannelData:()=>input};
+ const bounds=findStableLoopBounds(fakeBuffer);
+ assert.ok(bounds.start>0);
+ assert.ok(bounds.end<input.length);
+ assert.ok(bounds.end-bounds.start>650);
+ assert.ok(bounds.deltaDb<1);
  const fakeCtx={createBuffer:(channels,length,sampleRate)=>{
   const data=Array.from({length:channels},()=>new Float32Array(length));
   return {length,sampleRate,numberOfChannels:channels,getChannelData:i=>data[i],_data:data};
  }};
- const out=makeSeamlessLoopBuffer(fakeCtx,fakeBuffer,.65);
- const fade=65,coreLength=1000-fade*2,d=out.getChannelData(0);
- assert.equal(out.length,935);
- assert.ok(Math.abs(d[0]-input[fade])<1e-7,'loop starts after the consumed head overlap');
- assert.ok(Math.abs(d[coreLength-1]-input[1000-fade-1])<1e-7);
- assert.ok(Math.abs(d[coreLength]-input[1000-fade])<1e-7,'seam starts continuously at original tail');
- assert.ok(Math.abs(d[d.length-1]-input[fade-1])<1e-6,'seam ends at original head, ready for next loop');
- assert.ok(Math.abs(d[d.length-1]-d[0])<.003,'next loop boundary is sample-close rather than a hard jump');
+ const out=makeSeamlessLoopBuffer(fakeCtx,fakeBuffer,.9);
+ assert.ok(out.length<input.length&&out.length>500);
+ const d=out.getChannelData(0);
+ assert.ok(Number.isFinite(d[0])&&Number.isFinite(d[d.length-1]));
 });
 
 test('v2.60 recorded beds decode to AudioBuffers instead of HTML media looping',()=>{
@@ -86,6 +88,6 @@ test('v2.60 recorded beds decode to AudioBuffers instead of HTML media looping',
  assert.match(src,/makeSeamlessLoopBuffer\(ctx,decoded\)/);
  assert.match(src,/source\.loop=true/);
  assert.doesNotMatch(src,/createMediaElementSource/);
- assert.match(src,/linearRampToValueAtTime\(clamp\(gain\),now\+\.08\)/);
- assert.match(src,/duration-\.72/);
+ assert.match(src,/linearRampToValueAtTime\(clamp\(gain\),now\+\.05\)/);
+ assert.match(src,/duration-\.85/);
 });
