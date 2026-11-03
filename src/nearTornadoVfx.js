@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {SPATIAL_LAYOUT} from './spatialLayout.js';
 
 /**
  * AFTERDAY tornado set piece: physically placed, camera-orbit-safe 3D storm.
@@ -46,7 +47,7 @@ export function selectStormBuildings(slots=[],count=3){
  */
 export function selectVariedStormBuildings(slots=[],{seed=1,previousCenterId=null,damagedIds=[]}={}){
   const ruined=new Set(damagedIds),prior=slots.find(s=>s.id===previousCenterId);
-  const pool=slots.filter(s=>(s.tier==='near'||s.tier==='mid')&&Math.hypot(s.x,s.z)>=100);
+  const pool=slots.filter(s=>(s.tier==='near'||s.tier==='mid')&&Math.hypot(s.x,s.z)>=SPATIAL_LAYOUT.clearZoneRadius+10);
   const potential=[];
   for(const center of pool){
     const neighbors=pool.filter(s=>s.id!==center.id&&Math.abs(s.z-center.z)<72&&
@@ -73,7 +74,7 @@ export function selectVariedStormBuildings(slots=[],{seed=1,previousCenterId=nul
 /** Close but never crossing the one playable roof. */
 export function stormTrackPoint(slot){
   const x=slot.x+Math.sign(slot.x||-1)*6,z=slot.z+Math.sign(slot.z||-1)*6;
-  const distance=Math.hypot(x,z),factor=Math.max(1,100/Math.max(1,distance));
+  const distance=Math.hypot(x,z),factor=Math.max(1,(SPATIAL_LAYOUT.clearZoneRadius+16)/Math.max(1,distance));
   return [x*factor,-23.4,z*factor];
 }
 
