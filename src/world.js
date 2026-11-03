@@ -557,6 +557,16 @@ export class AfterWorld {
   // Each tornado onset selects a new intact neighborhood; tracks and ruins survive reloads.
   const tornadoNow=preset==='tornado';
   if(!Array.isArray(game.tornadoDamagedIds))game.tornadoDamagedIds=[];
+  // v2 migration: drop the old fixed spawn track, but NEVER clear ruined buildings.
+  // Previous saves can contain the legacy fixed IDs even after upgrading the code.
+  if(game.tornadoSpawnVersion!==2){
+    game.tornadoSpawnVersion=2;
+    game.tornadoCurrentSites=[];
+    game.tornadoPreviousCenterId=null;
+    game.tornadoEncounterActive=false;
+    game.tornadoEpisodeDamageCount=0;
+    this.onTornadoEncounterChange?.();
+  }
   if(!game.tornadoDamagedIds.length&&game.tornadoDamageCount>0){
     game.tornadoDamagedIds=selectStormBuildings(this.distantCityPlan).slice(0,Math.min(3,game.tornadoDamageCount)).map(s=>s.id);
     this.onTornadoEncounterChange?.();
@@ -566,7 +576,7 @@ export class AfterWorld {
       if(this._rerollTornado||!(game.tornadoEncounterActive&&game.tornadoCurrentSites?.length)){
         const next=(Number(game.tornadoEncounter)||0)+1;
         const track=selectVariedStormBuildings(this.distantCityPlan,{
-          seed:(Number(game.weatherSeed)||1)+next*7919,
+          seed:Math.floor(Math.random()*0x7fffffff)+next*7919,
           previousCenterId:game.tornadoPreviousCenterId,
           damagedIds:game.tornadoDamagedIds
         });
