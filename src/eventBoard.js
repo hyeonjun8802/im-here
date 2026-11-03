@@ -1,6 +1,7 @@
 /* AFTERDAY event notification board — UI only; gameplay changes live in simulation.js.
  * Original illustrations: cropped from approved situation-board concept sheet.
  */
+import { getHeavyClangAudioURL } from './metalClangAudio.js';
 const BASE = new URL('./assets/events/', document.baseURI);
 const SOUND = new URL('./assets/audio/metal_board_clang.mp3', document.baseURI);
 
@@ -43,7 +44,7 @@ export class AfterdayEventBoard {
     this.lastRaider=Boolean(initialState?.raiderAlert);
     this.lastLowFood=(initialState?.supply?.food||0)<3;
     try{this.muted=localStorage.getItem('afterday_event_sfx_muted')==='true';}catch{this.muted=false;}
-    this.audio = new Audio(SOUND.href);this.audio.preload='auto';this.audio.volume=.45;
+    this.audio = new Audio(getHeavyClangAudioURL());this.audio.preload='auto';this.audio.volume=.5;
     this.pendingSound=false;this.activeKey=null;this.timer=null;
     this.seen=[];
     this.element=document.createElement('section');
