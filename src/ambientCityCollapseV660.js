@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {CITY_COMPOSITION} from './cityComposition.js';
+import {clamp01} from './weatherVisualMath.js';
 
 /**
  * AFTERDAY v6.6 — autonomous background-building partial collapse.
