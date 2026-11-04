@@ -166,11 +166,19 @@ export class AfterWorld {
   if(this.cityMaterialCache.has(key))return this.cityMaterialCache.get(key);
   const near=tier==='near',far=tier==='far';
   const tint=near?'#aaa9a0':far?'#899ca6':'#9ca6a6';
-  const wall=new THREE.MeshStandardMaterial({color:tint,roughness:.94,metalness:.04});
+  const wall=new THREE.MeshPhysicalMaterial({
+   color:tint,roughness:near?.88:.94,metalness:near?.025:.035,
+   clearcoat:near?.035:0,clearcoatRoughness:.62,
+   envMapIntensity:near?1.02:far?.48:.72
+  });
   const base=`./assets/materials/city/facade_premium_${variant}`;
-  materialLoader.load(base+'.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,this.isMobile?4:8);wall.map=tex;wall.needsUpdate=true;},undefined,()=>{});
-  materialLoader.load(`./assets/materials/city/facade_${variant}_emissive.jpg`,tex=>{tex.colorSpace=THREE.SRGBColorSpace;wall.emissiveMap=tex;wall.emissive.set('#fff2d0');wall.emissiveIntensity=0;wall.needsUpdate=true;},undefined,()=>{});
-  const roof=mat(tier==='near'?'#4b4e49':'#555e61',.94,.02);
+  const facadeAniso=this.isMobile?4:near?16:far?4:8;
+  materialLoader.load(base+'.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,facadeAniso);wall.map=tex;wall.needsUpdate=true;},undefined,()=>{});
+  materialLoader.load(`./assets/materials/city/facade_${variant}_emissive.jpg`,tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,facadeAniso);wall.emissiveMap=tex;wall.emissive.set('#fff2d0');wall.emissiveIntensity=0;wall.needsUpdate=true;},undefined,()=>{});
+  const roof=new THREE.MeshPhysicalMaterial({
+   color:tier==='near'?'#4b4e49':'#555e61',roughness:.92,metalness:.025,
+   envMapIntensity:near?.72:.48,clearcoat:near?.02:0,clearcoatRoughness:.70
+  });
   const result=[wall,wall,roof,roof,wall,wall];this.cityMaterialCache.set(key,result);return result;
  }
  makeRuinFallback(h,seed,tier='near',width=12){
