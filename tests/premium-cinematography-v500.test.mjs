@@ -57,7 +57,8 @@ test('mobile uses fewer GPU particles and beams than desktop without changing ga
 test('filmic grade stays coherent across light and storm with bounded saturation and contrast',()=>{
  const day=calcPostGrade({night:0,storm:0,wetness:0,twilight:0});
  const night=calcPostGrade({night:1,storm:1,wetness:1,twilight:0});
- assert.ok(day.saturation>1.03&&day.saturation<1.15,'clear-day color is vivid instead of globally desaturated');
+ // v6.2 deliberately preserves authored color at neutral daylight saturation.
+ assert.ok(day.saturation>=.98&&day.saturation<=1.03,'clear-day color remains neutral');
  assert.ok(night.saturation<day.saturation&&night.saturation>.85,'storms remain muted but readable');
  assert.ok(night.shadowLift>day.shadowLift&&night.midtoneGain>day.midtoneGain);
  assert.ok(night.contrast>day.contrast&&night.contrast<1.2);

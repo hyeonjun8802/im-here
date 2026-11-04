@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {CITY_COMPOSITION} from './cityComposition.js';
+import {PuddleDetailV740} from './puddleDetailV740.js';
 
 /**
  * AFTERDAY v7.0 — physically motivated wet-surface response.
@@ -79,7 +80,7 @@ function splashMaterial(mobile){
       precision highp float;varying float vLife;uniform float uWet,uFlash;
       void main(){
         vec2 q=gl_PointCoord-.5;float r=length(q);
-        float ring=smoothstep(.48,.31,r)*(1.0-smoothstep(.16,.27,r));
+        float ring=(1.0-smoothstep(.31,.48,r))*(1.0-smoothstep(.16,.27,r));
         vec3 c=mix(vec3(.55,.66,.70),vec3(.92,.97,1.0),uFlash);
         gl_FragColor=vec4(c,ring*vLife*uWet*.42);
       }`
@@ -131,6 +132,7 @@ export class PremiumWeatherSurfacesV700{
     world.scene.add(this.group);
 
     this.wetMaterial=makeWetMat();this.streakMaterial=facadeStreakMaterial();
+    this.puddleDetail=new PuddleDetailV740(this.wetMaterial,this.mobile);
     this.runoffMaterial=runoffMaterial();
     this.materials=[this.wetMaterial,this.streakMaterial,this.runoffMaterial];
 
@@ -201,6 +203,8 @@ export class PremiumWeatherSurfacesV700{
     this.wetMaterial.opacity=wet*(.14+n*.08+f*.08);
     this.wetMaterial.roughness=.20-wet*.10;
     this.wetMaterial.envMapIntensity=1.05+wet*.48+f*.55;
+    this.puddleDetail.update(dt,rain,wet);
+    this.wetPatches.visible=wet>.001;
     this.streakMaterial.opacity=wet*(.055+rain*.10+storm*.035);
     this.streakMaterial.roughness=.18-wet*.08;
     const u=this.runoffMaterial.uniforms;
@@ -211,6 +215,7 @@ export class PremiumWeatherSurfacesV700{
   }
 
   dispose(){
+    this.puddleDetail.dispose();
     this.group.parent?.remove(this.group);
     this.wetPatches?.geometry?.dispose?.();
     for(const g of this.facadeMeshes){

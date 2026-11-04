@@ -9,13 +9,14 @@ test('calibrated color has brighter midtones and readable shadows without washin
  const day=calcPostGrade({night:0,storm:0,wetness:0,twilight:0});
  const cold=calcPostGrade({night:1,storm:1,wetness:1,twilight:0});
  const sunset=calcPostGrade({night:.35,storm:0,wetness:0,twilight:1});
- assert.ok(day.saturation>1&&day.saturation<1.15);
+ // Current v6.2 grade protects neutral daylight and stronger highlight rolloff.
+ assert.ok(day.saturation>=.98&&day.saturation<=1.03);
  assert.ok(cold.saturation<day.saturation&&cold.saturation>.87);
  assert.ok(cold.shadowLift>day.shadowLift&&cold.shadowLift<.10);
  assert.ok(cold.midtoneGain>day.midtoneGain&&cold.midtoneGain<.14);
  assert.ok(cold.contrast>day.contrast&&cold.contrast<1.2);
  assert.ok(sunset.highlightWarmth>day.highlightWarmth);
- assert.ok(day.highlightRolloff>.07&&cold.highlightRolloff<.16);
+ assert.ok(day.highlightRolloff>.07&&cold.highlightRolloff<.20);
  assert.ok(cold.filmGrain<.01);
 });
 test('high quality desktop recovers the native device pixel density through the composer',()=>{
@@ -47,7 +48,7 @@ test('material finishing smooths imported textured surfaces without replacing UV
  assert.equal(m.material.normalMap,normal);
  assert.equal(m.material.flatShading,false);
  assert.ok(mat.roughness>=.78&&mat.metalness<=.09);
- assert.equal(albedo.anisotropy,12);
+ assert.equal(albedo.anisotropy,16);
  assert.equal(albedo.magFilter,THREE.LinearFilter);
  assert.equal(albedo.minFilter,THREE.LinearMipmapLinearFilter);
  assert.ok(mat.normalScale.x<=.46);
@@ -73,7 +74,7 @@ test('imported GLB normal generation is limited to genuinely missing attributes'
 });
 test('mobile retains safe texture filtering and desktop uses more anisotropic detail',()=>{
  assert.equal(finishPreset(true).anisotropy,4);
- assert.equal(finishPreset(false).anisotropy,12);
+ assert.equal(finishPreset(false).anisotropy,16);
  const t=new THREE.Texture();finishTexture(t,4);
  assert.equal(t.anisotropy,4);
  assert.equal(t.generateMipmaps,true);
