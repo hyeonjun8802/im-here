@@ -15,6 +15,7 @@ import {CITY_COMPOSITION} from './cityComposition.js';
 const GROUND=CITY_COMPOSITION.groundY;
 const hash=n=>{const x=Math.sin(n*173.17+37.91)*43758.5453123;return x-Math.floor(x);};
 const TAU=Math.PI*2;
+const clamp01=v=>Math.max(0,Math.min(1,Number(v)||0));
 const MAX_AMBIENT_COLLAPSES=18;
 
 const makeMaterials=()=>({
@@ -253,7 +254,8 @@ export class AmbientCityCollapseV660{
     host.add(replacement);this.roots.push(replacement);
 
     if(immediate){
-      for(const child of previous)child.visible=false;
+      // Detach, but do not dispose: city meshes may share geometry/materials.
+      for(const child of previous)host.remove(child);
       replacement.userData.final=true;
       return;
     }
@@ -304,7 +306,9 @@ export class AmbientCityCollapseV660{
 
       // Three-stage failure: dust precursor -> structural break -> settling.
       if(!c.switched&&t>=.58){
-        for(const child of c.previous)child.visible=false;
+        // Detach replaced city geometry to avoid retaining hidden meshes.
+        // Shared buffers and materials remain owned by the original city systems.
+        for(const child of c.previous)c.host.remove(child);
         c.replacement.visible=true;c.falling.visible=true;c.switched=true;
       }
       if(c.switched){
@@ -339,6 +343,9 @@ export class AmbientCityCollapseV660{
         // This preserves the physical aftermath without leaving 7–13 draw calls
         // per collapse alive for the rest of a long-running session.
         mergeStaticRoot(c.falling,'v6.6 merged settled falling debris');
+        // Falling debris is now static, but its geometries remain owned by
+        // this system and must be disposed at teardown.
+        this.roots.push(c.falling);
         this.active.splice(i,1);
       }
     }
@@ -355,7 +362,10 @@ export class AmbientCityCollapseV660{
 
   dispose(){
     for(const c of this.active){
+      c.dust?.parent?.remove(c.dust);
       c.dust?.geometry?.dispose?.();c.dust?.material?.dispose?.();
+      c.falling?.traverse(o=>{if(o.isMesh)o.geometry?.dispose?.();});
+      c.falling?.parent?.remove(c.falling);
     }
     for(const root of this.roots){
       root.traverse(o=>{if(o.isMesh)o.geometry?.dispose?.();});
