@@ -2,7 +2,13 @@ name: Premium visual frame capture (real WebGL)
 
 on:
   push:
-    branches: [feature/premium-lighting-v600-20261104]
+    branches: [main, feature/premium-lighting-v600-20261104]
+    paths:
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'scripts/qa_visual_v600.mjs'
+      - '.github/workflows/visual-premium-v600.yml'
   workflow_dispatch:
 
 jobs:

@@ -103,6 +103,8 @@ test('real screenshot QA exposes separate weather and pixel-density metrics but 
    assert.ok(script.includes(marker),marker);
  }
  assert.match(script,/page\.screenshot\(/);
+ assert.match(script,/domElement\.toDataURL\('image\/png'\)/);
+ assert.match(script,/AFTERDAY_CI_SOFTWARE/);
  assert.match(script,/renderer\.getPixelRatio\(\)/);
  assert.match(script,/composerPixelRatio:/);
  assert.match(compare,/FileNotFoundError/);

@@ -20,20 +20,26 @@ const cases=[
  {name:'08_night_mobile',hour:22.7,weather:'clear',view:'cinematic',viewport:{width:390,height:844}}
 ];
 const issues=[],checks=[];
+const softwareCI=process.env.AFTERDAY_CI_SOFTWARE==='1';
 let browser;
 try{
  browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl','--enable-unsafe-swiftshader','--disable-dev-shm-usage','--no-sandbox']});
  for(const c of cases){
-  const page=await browser.newPage({viewport:c.viewport,deviceScaleFactor:c.viewport.width<700?2:1.5});
+  // SwiftShader on free CI CPUs cannot consistently composite 1440p pages.
+  // Keep the GPU/full-resolution suite as the default; CI uses a bounded
+  // 960px canvas with the SAME real 3D scene, lighting and shaders.
+  const viewport=softwareCI&&c.viewport.width>700?
+   {width:960,height:600}:c.viewport;
+  const page=await browser.newPage({viewport,deviceScaleFactor:softwareCI?1:c.viewport.width<700?2:1.5});
   page.on('pageerror',e=>issues.push(c.name+': '+e));
   page.on('console',m=>{
    if(m.type()==='error')issues.push(c.name+': console '+m.text());
   });
   try{
-   await page.goto((process.env.AFTERDAY_URL||'http://127.0.0.1:5173')+'/?showcase=1',
+   await page.goto((process.env.AFTERDAY_URL||'http://127.0.0.1:5173')+'/?showcase=1&visualqa=1',
     {waitUntil:'domcontentloaded',timeout:45000});
    try{
-    await page.waitForFunction(()=>!!window.afterday?.world?.renderer&&!!window.afterday?.world?.cinematicPost,{timeout:15000});
+    await page.waitForFunction(()=>!!window.afterday?.world?.renderer&&!!window.afterday?.world?.cinematicPost,null,{timeout:45000});
    }catch(e){
     const diagnostic=await page.evaluate(()=>({
      errorText:document.querySelector('#error')?.textContent||'',
@@ -65,10 +71,26 @@ try{
       oneRoof:true,
     };
    });
-   if(!data.webgl||data.drawCalls<1||data.frame[0]<c.viewport.width){
+   if(!data.webgl||data.drawCalls<1||data.frame[0]<viewport.width){
     throw Error('Real WebGL scene not captured: '+JSON.stringify(data));
    }
-   await page.screenshot({path:path.join(output,c.name+'.png')});
+   // CI does NOT invoke Chrome's headless Page.captureScreenshot compositor,
+   // which can hang for minutes when SwiftShader is rendering many 3D meshes.
+   // The WebGL canvas is captured in the very same JS task as a real render.
+   if(softwareCI){
+    const url=await page.evaluate(()=>{
+     const w=window.afterday.world;
+     if(w.cinematicPost?.active)w.cinematicPost.render();
+     else w.renderer.render(w.scene,w.camera);
+     return w.renderer.domElement.toDataURL('image/png');
+    });
+    if(!url.startsWith('data:image/png;base64,')||url.length<14000){
+     throw Error('WebGL framebuffer capture was blank or invalid: '+c.name);
+    }
+    fs.writeFileSync(path.join(output,c.name+'.png'),Buffer.from(url.split(',')[1],'base64'));
+   }else{
+    await page.screenshot({path:path.join(output,c.name+'.png'),timeout:60000});
+   }
    console.log('CAPTURED '+c.name+' '+JSON.stringify(data));
    checks.push({name:c.name,weather:c.weather,hour:c.hour,...data});
   }finally{await page.close();}

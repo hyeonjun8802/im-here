@@ -81,7 +81,7 @@ function seededNoiseTexture(){const c=document.createElement('canvas');c.width=c
 export class AfterWorld {
  constructor(canvas,report=()=>{}){
   this.report=report;this.canvas=canvas;this.scene=new THREE.Scene();this.scene.background=color('#283744');this.scene.fog=new THREE.FogExp2('#929b99',.00116);
-  this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
+  this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance',preserveDrawingBuffer:new URLSearchParams(location.search).has('visualqa')});
   // Neutral spherical radiance probe supplies real PBR specular response to GLB
   // metal and wet surfaces; it is NOT a 2D substitution for the 3D game world.
   materialLoader.load('./assets/materials/cinematic/sky_light_probe.jpg',tex=>{
