@@ -27,6 +27,7 @@ import {CinematicMomentV510} from './cinematicMomentV510.js';
 import {PremiumEventPhysicsV520} from './premiumEventPhysicsV520.js';
 import {finishImportedGLB,finishTexture} from './premiumMaterialFinishV600.js';
 import {PremiumAssetFinishV620} from './premiumAssetFinishV620.js';
+import {PremiumRuinedCityV630} from './premiumRuinedBuildingsV630.js';
 import {PremiumStageV140} from './premiumStageV140.js';
 import {CityInfillV150} from './cityInfillV150.js';
 import {CityReclamation} from './cityReclamation.js';
@@ -96,7 +97,7 @@ export class AfterWorld {
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
-  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.premiumAssetFinish=new PremiumAssetFinishV620(this);this.cinematicPost=new CinematicPostV130(this);this.cinematicMoment=new CinematicMomentV510(this);this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.premiumRuinedCity=new PremiumRuinedCityV630(this);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.premiumAssetFinish=new PremiumAssetFinishV620(this);this.cinematicPost=new CinematicPostV130(this);this.cinematicMoment=new CinematicMomentV510(this);this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -165,11 +166,19 @@ export class AfterWorld {
   if(this.cityMaterialCache.has(key))return this.cityMaterialCache.get(key);
   const near=tier==='near',far=tier==='far';
   const tint=near?'#aaa9a0':far?'#899ca6':'#9ca6a6';
-  const wall=new THREE.MeshStandardMaterial({color:tint,roughness:.94,metalness:.04});
+  const wall=new THREE.MeshPhysicalMaterial({
+   color:tint,roughness:near?.88:.94,metalness:near?.025:.035,
+   clearcoat:near?.035:0,clearcoatRoughness:.62,
+   envMapIntensity:near?1.02:far?.48:.72
+  });
   const base=`./assets/materials/city/facade_premium_${variant}`;
-  materialLoader.load(base+'.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,this.isMobile?4:8);wall.map=tex;wall.needsUpdate=true;},undefined,()=>{});
-  materialLoader.load(`./assets/materials/city/facade_${variant}_emissive.jpg`,tex=>{tex.colorSpace=THREE.SRGBColorSpace;wall.emissiveMap=tex;wall.emissive.set('#fff2d0');wall.emissiveIntensity=0;wall.needsUpdate=true;},undefined,()=>{});
-  const roof=mat(tier==='near'?'#4b4e49':'#555e61',.94,.02);
+  const facadeAniso=this.isMobile?4:near?16:far?4:8;
+  materialLoader.load(base+'.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,facadeAniso);wall.map=tex;wall.needsUpdate=true;},undefined,()=>{});
+  materialLoader.load(`./assets/materials/city/facade_${variant}_emissive.jpg`,tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,facadeAniso);wall.emissiveMap=tex;wall.emissive.set('#fff2d0');wall.emissiveIntensity=0;wall.needsUpdate=true;},undefined,()=>{});
+  const roof=new THREE.MeshPhysicalMaterial({
+   color:tier==='near'?'#4b4e49':'#555e61',roughness:.92,metalness:.025,
+   envMapIntensity:near?.72:.48,clearcoat:near?.02:0,clearcoatRoughness:.70
+  });
   const result=[wall,wall,roof,roof,wall,wall];this.cityMaterialCache.set(key,result);return result;
  }
  makeRuinFallback(h,seed,tier='near',width=12){
@@ -659,6 +668,7 @@ export class AfterWorld {
   this.premiumStage?.update(dt,vw,night);
   this.apocalypseSetDressing?.update(dt,vw,night);
   this.horizonWorld?.update(dt,vw,night);
+  this.premiumRuinedCity?.update(dt,vw,night);
   this.premiumAssetFinish?.update(dt,vw,night);
   const t=performance.now()*.001;
   if(this.tarpMesh){const arr=this.tarpMesh.geometry.attributes.position.array,original=this.tarpVerts;
@@ -700,5 +710,5 @@ export class AfterWorld {
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
- dispose(){this.eventPerformance?.dispose();this.premiumAssetFinish?.dispose();this.cinematicMoment?.dispose();this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
+ dispose(){this.eventPerformance?.dispose();this.premiumRuinedCity?.dispose();this.premiumAssetFinish?.dispose();this.cinematicMoment?.dispose();this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
 }

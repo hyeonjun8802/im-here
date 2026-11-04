@@ -260,25 +260,65 @@ export class NearTornadoVfx {
     const impact={slot,host,ruined,fragments:[],impactSmoke:null,progress:0};
     const w=slot.width,d=slot.width*.82,h=slot.height;
     ruined.position.copy(host.position);ruined.rotation.copy(host.rotation);
-    const facade=new THREE.MeshStandardMaterial({color:'#757f7e',roughness:.95,metalness:.05});
-    const concrete=new THREE.MeshStandardMaterial({color:'#454b4b',roughness:1});
-    const rust=new THREE.MeshStandardMaterial({color:'#756259',metalness:.5,roughness:.82});
+    const facade=new THREE.MeshPhysicalMaterial({
+      color:'#727b78',roughness:.91,metalness:.025,envMapIntensity:.62,
+      clearcoat:.02,clearcoatRoughness:.72
+    });
+    const concrete=new THREE.MeshPhysicalMaterial({
+      color:'#454b49',roughness:.98,metalness:.01,envMapIntensity:.38
+    });
+    const rust=new THREE.MeshPhysicalMaterial({
+      color:'#6b5046',metalness:.48,roughness:.74,envMapIntensity:.78
+    });
+    const interior=new THREE.MeshStandardMaterial({color:'#111718',roughness:1,metalness:.01});
+    const frame=new THREE.MeshPhysicalMaterial({
+      color:'#676e6c',metalness:.64,roughness:.53,envMapIntensity:1.05
+    });
     const lower=h*.55;
-    addBox(ruined,[w,lower,d],[0,lower*.5,0],facade);
-    // Half-height remnant, exposed slabs, torn concrete, twisted rebar.
-    for(let i=0;i<13;i++){
-      const theta=i*TAU/13,rx=Math.cos(theta)*w*.47,rz=Math.sin(theta)*d*.47;
-      const top=(.05+.18*hash(i*13+index*7+2))*h;
-      const piece=addBox(ruined,[w*.09,top,d*.075],[rx,lower+top*.5,rz],i%4?facade:concrete);
-      piece.rotation.y=theta;
+    const remnant=addBox(ruined,[w,lower,d],[0,lower*.5,0],facade);
+    remnant.castShadow=!this.mobile;remnant.receiveShadow=true;
+
+    // v6.3 permanent ruin: actual depth cues remain after the tornado has passed.
+    // Dark interior rooms sit behind thick broken slab lips and window frames.
+    const windowRows=Math.max(2,Math.min(4,Math.floor(lower/5)));
+    for(let row=0;row<windowRows;row++){
+      const y=3.0+row*4.4;
+      for(let col=0;col<3;col++){
+        const x=(col-1)*w*.255+(hash(row*17+col*31+index*13)-.5)*.22;
+        const bay=addBox(ruined,[w*.17,1.65,.10],[x,y,d*.505],interior);
+        bay.castShadow=false;
+        const sill=addBox(ruined,[w*.19,.14,.22],[x,y-.92,d*.515],concrete);sill.castShadow=false;
+        for(const sx of [-1,1]){
+          const jamb=addBox(ruined,[.11,1.98,.16],[x+sx*w*.095,y,d*.515],frame);jamb.castShadow=false;
+        }
+      }
     }
-    for(let i=0;i<4;i++)addBox(ruined,[w*.68,h*.013,d*.8],
-      [0,lower+(i+.4)*h*.045,0],concrete);
-    for(let i=0;i<9;i++){
+
+    // Half-height remnant, exposed slabs, torn concrete, twisted rebar.
+    for(let i=0;i<15;i++){
+      const theta=i*TAU/15,rx=Math.cos(theta)*w*.47,rz=Math.sin(theta)*d*.47;
+      const top=(.05+.18*hash(i*13+index*7+2))*h;
+      const piece=addBox(ruined,[w*(.065+.035*hash(i+91)),top,d*(.055+.025*hash(i+37))],
+        [rx,lower+top*.5,rz],i%4?facade:concrete);
+      piece.rotation.y=theta+(hash(i+index*7)-.5)*.20;piece.castShadow=!this.mobile;
+    }
+    for(let i=0;i<5;i++){
+      const slab=addBox(ruined,[w*(.62+.08*hash(i+index)),h*.014,d*(.70+.10*hash(i+7+index))],
+        [(hash(i+17)-.5)*w*.08,lower+(i+.35)*h*.040,(hash(i+29)-.5)*d*.08],concrete);
+      slab.rotation.z=(hash(i+44+index)-.5)*.055;slab.castShadow=!this.mobile;
+    }
+    for(let i=0;i<(this.mobile?9:15);i++){
       const x=(hash(i*3+index*19)-.5)*w*.75,z=(hash(i*5+7+index*5)-.5)*d*.72;
-      const rod=new THREE.Mesh(new THREE.CylinderGeometry(.045,.052,h*.11,5),rust);
-      rod.position.set(x,lower+h*.052,z);
-      rod.rotation.z=(hash(i+22+index*17)-.5)*.52;ruined.add(rod);
+      const rod=new THREE.Mesh(new THREE.CylinderGeometry(.045,.052,h*(.08+.06*hash(i+12)),6),rust);
+      rod.position.set(x,lower+h*(.035+.035*hash(i+8)),z);
+      rod.rotation.set((hash(i+31)-.5)*.32,hash(i+51)*TAU,(hash(i+22+index*17)-.5)*.70);
+      rod.castShadow=!this.mobile;ruined.add(rod);
+    }
+    for(let i=0;i<(this.mobile?3:6);i++){
+      const beam=addBox(ruined,[w*(.18+.14*hash(i+61)),.16,.18],
+        [(hash(i+71)-.5)*w*.58,lower+h*(.07+.04*hash(i+73)),(hash(i+79)-.5)*d*.60],frame);
+      beam.rotation.set((hash(i+82)-.5)*.25,hash(i+83)*TAU,(hash(i+84)-.5)*.55);
+      beam.castShadow=!this.mobile;
     }
     // Each of the three upper stories breaks into individual falling 3D chunks.
     for(let i=0;i<(this.mobile?15:22);i++){
