@@ -64,7 +64,7 @@ test('speed control, canvas tap and single new scenario audio remain wired',()=>
  assert.match(styles,/#speed-toggle/);
  assert.match(main,/gameClock\.cycleSpeed\(\)/);
  assert.match(main,/gameClock\.virtualNow/);
- assert.match(main,/world\.update\(Math\.min\(\.12,realDt\*gameClock\.speed\),gameNow,state\)/);
+ assert.match(main,/world\.update\(Math\.min\(\.12,realDt\*gameClock\.speed\),gameNow,state,realDt\)/); // Survival VFX uses game speed, event cinematics real time
  assert.match(main,/canvas\.addEventListener\('pointerup'/);
  assert.match(main,/if\(distance>10\)return;/);
  assert.match(main,/eventBoard\?\.dismiss\(\)/);
