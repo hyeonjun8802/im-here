@@ -48,11 +48,11 @@ test('v6.9 never resurrects persistently destroyed landmark hosts',()=>{
 
 
 test('v6.9 concreteDark geometry buckets are initialized before every push',()=>{
-  const declarations=[...landmark.matchAll(/const s=\\{([^}]+)\\};/g)].map(m=>m[1]);
+  const declarations=[...landmark.matchAll(/const s=\{([^}]+)\};/g)].map(m=>m[1]);
   assert.equal(declarations.length,3,'expected three landmark geometry bucket declarations');
   for(const declaration of declarations){
-    assert.match(declaration,/concreteDark:\\[\\]/,'every landmark archetype must initialize concreteDark');
+    assert.match(declaration,/concreteDark:\[\]/,'every landmark archetype must initialize concreteDark');
   }
-  assert.doesNotMatch(landmark,/merge\\(s\\.dark,mat\\.concreteDark/,'dark material geometry must not read from the interior bucket');
-  assert.match(landmark,/merge\\(s\\.concreteDark,mat\\.concreteDark,/);
+  assert.doesNotMatch(landmark,/merge\(s\.dark,mat\.concreteDark/,'dark material geometry must not read from the interior bucket');
+  assert.match(landmark,/merge\(s\.concreteDark,mat\.concreteDark,'/);
 });
