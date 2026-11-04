@@ -68,3 +68,11 @@ test('main persists every automatic collapse without adding audio side effects',
   assert.match(main,/붕괴 흔적은 그대로 남는다/);
   assert.doesNotMatch(main,/onAmbientCollapse[\s\S]{0,300}(Audio|playSound|weatherAudio)/);
 });
+
+test('v7.0.1 collapse lifecycle clamps weather and detaches hidden originals',()=>{
+  assert.match(ambient,/const clamp01=v=>/);
+  assert.match(ambient,/for\(const child of previous\)host\.remove\(child\)/);
+  assert.match(ambient,/for\(const child of c\.previous\)c\.host\.remove\(child\)/);
+  assert.match(ambient,/this\.roots\.push\(c\.falling\)/);
+  assert.match(ambient,/c\.dust\?\.parent\?\.remove\(c\.dust\)/);
+});
