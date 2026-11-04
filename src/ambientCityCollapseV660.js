@@ -175,7 +175,7 @@ function makeFallingFragments(slot,materials,mobile){
 export class AmbientCityCollapseV660{
   constructor(world){
     this.world=world;this.mobile=Boolean(world.isMobile);this.materials=makeMaterials();
-    this.active=[];this.applied=new Set();this.lastGame=null;
+    this.active=[];this.applied=new Set();this.roots=[];this.lastGame=null;
   }
 
   ensureState(game,now){
@@ -223,7 +223,7 @@ export class AmbientCityCollapseV660{
     for(const child of previous)child.visible=false;
 
     const replacement=buildCollapsedReplacement(slot,this.materials,this.mobile);
-    host.add(replacement);
+    host.add(replacement);this.roots.push(replacement);
 
     if(immediate){
       replacement.userData.final=true;
@@ -315,7 +315,11 @@ export class AmbientCityCollapseV660{
     for(const c of this.active){
       c.dust?.geometry?.dispose?.();c.dust?.material?.dispose?.();
     }
+    for(const root of this.roots){
+      root.traverse(o=>{if(o.isMesh)o.geometry?.dispose?.();});
+      root.parent?.remove(root);
+    }
     for(const m of Object.values(this.materials))m?.dispose?.();
-    this.active.length=0;this.applied.clear();
+    this.active.length=0;this.roots.length=0;this.applied.clear();
   }
 }
