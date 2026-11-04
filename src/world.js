@@ -628,7 +628,7 @@ export class AfterWorld {
         const track=selectVariedStormBuildings(this.distantCityPlan,{
           seed:Math.floor(Math.random()*0x7fffffff)+next*7919,
           previousCenterId:game.tornadoPreviousCenterId,
-          damagedIds:game.tornadoDamagedIds
+          damagedIds:[...(game.tornadoDamagedIds||[]),...(game.ambientCollapseIds||[])]
         });
         game.tornadoCurrentSites=track.map(s=>s.id);
         game.tornadoPreviousCenterId=track[Math.floor(track.length/2)]?.id||null;
