@@ -67,4 +67,4 @@
 
 ### 2026-11-04 CI 소프트웨어 WebGL 캡처 주의
 
-GitHub Actions의 CPU 전용 SwiftShader 환경에서 고해상도 `page.screenshot()` 전체 페이지 캡처가 프레임 전달 지연으로 멈출 수 있다. 이에 따라 `AFTERDAY_CI_SOFTWARE=1`일 때는 **960×600 데스크톱 캔버스**에서 기존 조명·셰이더를 유지한 채 실제 WebGL 버퍼를 `canvas.toDataURL('image/png')`로 즉시 기록한다. `visualqa=1` 쿼리일 때만 `preserveDrawingBuffer`가 켜지므로 일반 플레이 렌더링 비용은 늘어나지 않는다. 모바일 캡처는 390×844 기준이다. CI 이미지는 **월드 3D 장면 검증용이며 HUD 텍스트는 포함하지 않는다.** 고해상도/최종 미술 비교는 별도의 실제 GPU 장비 및 1440×900 캡처를 통해 진행해야 한다. 이 차이를 이미지 비교 보고서에도 반드시 표기한다.
+GitHub Actions의 CPU 전용 SwiftShader 환경에서 고해상도 `page.screenshot()` 전체 페이지 캡처가 프레임 전달 지연으로 멈출 수 있다. 이에 따라 `AFTERDAY_CI_SOFTWARE=1`일 때는 **800×500 데스크톱 캔버스**에서 기존 조명·셰이더를 유지한 채 실제 WebGL 버퍼를 `canvas.toDataURL('image/png')`로 즉시 기록한다. `visualqa=1` 쿼리일 때만 `preserveDrawingBuffer`가 켜지므로 일반 플레이 렌더링 비용은 늘어나지 않는다. 모바일 캡처는 390×844 기준이다. CI에서는 데스크톱/모바일 각각 1번만 월드를 생성해 날씨·시간 샷을 연속 촬영하며, CI에 한해 그림자 맵 512를 사용한다. CI 이미지는 **월드 3D 장면 검증용이며 HUD 텍스트는 포함하지 않는다.** 고해상도/최종 미술 비교는 별도의 실제 GPU 장비 및 1440×900 캡처를 통해 진행해야 한다. 이 차이를 이미지 비교 보고서에도 반드시 표기한다.

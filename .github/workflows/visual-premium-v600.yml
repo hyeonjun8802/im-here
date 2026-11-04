@@ -11,10 +11,14 @@ on:
       - '.github/workflows/visual-premium-v600.yml'
   workflow_dispatch:
 
+concurrency:
+  group: afterday-premium-visual-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   capture:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 18
     permissions:
       contents: read
     steps:
