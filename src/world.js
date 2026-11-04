@@ -26,6 +26,7 @@ import {PremiumAtmosphereV500} from './premiumAtmosphereV500.js';
 import {CinematicMomentV510} from './cinematicMomentV510.js';
 import {PremiumEventPhysicsV520} from './premiumEventPhysicsV520.js';
 import {finishImportedGLB,finishTexture} from './premiumMaterialFinishV600.js';
+import {beveledProp} from './premiumBeveledPropsV610.js';
 import {PremiumStageV140} from './premiumStageV140.js';
 import {CityInfillV150} from './cityInfillV150.js';
 import {CityReclamation} from './cityReclamation.js';
@@ -340,7 +341,7 @@ export class AfterWorld {
  createRoofProps(){
    // Salvaged shelter and robust rope-connected awning
    const sh=new THREE.Group();sh.position.set(-8,ROOF+.3,-6);this.scene.add(sh);this.shelter=sh;
-   box(sh,[11,.38,9],[0,.12,0],materials.wood);
+   beveledProp(sh,[11,.38,9],[0,.12,0],materials.wood,.11);
    const beams=[[-5,-4.3],[5,-4.3],[-5,4.3],[5,4.3]];
    for(const [x,z] of beams){cyl(sh,.12,.15,5,[x,2.7,z],materials.rust,8);cyl(sh,.25,.28,.25,[x,.2,z],materials.concrete,8);}
    const roofGeom=new THREE.BufferGeometry();const pts=[],ids=[];const W=18,H=12;
@@ -354,7 +355,7 @@ export class AfterWorld {
    const tarpmat=materials.tarp.clone();loadPBR(tarpmat,'tarp_canvas',1.4);this.tarpMaterial=tarpmat;tarpmat.side=THREE.DoubleSide;const roof=new THREE.Mesh(roofGeom,tarpmat);roof.castShadow=true;roof.receiveShadow=true;sh.add(roof);this.tarpMesh=roof;this.tarpVerts=roofGeom.attributes.position.array.slice();
    for(let s of [-1,1]){for(const z of [-4.7,4.7]){beam(sh,[s*5.8,4.98,z],[s*7.2,.15,z*1.18],.045,materials.rope)}}
    // Inner sleeping pallet is supplied by the GLB; no second white mattress.
-   for(let i=0;i<4;i++)box(sh,[2.3,.4,1.2],[3.5, .55+i*.37,-2.6],i%2?materials.wood:materials.tar);
+   for(let i=0;i<4;i++)beveledProp(sh,[2.3,.4,1.2],[3.5,.55+i*.37,-2.6],i%2?materials.wood:materials.tar,.085);
    // Rope lights & suspended lanterns.
    for(let i=0;i<8;i++){const x=-5.5+i*1.6;
     cyl(sh,.11,.11,.25,[x,4.94+.12*Math.sin(i),-4.5],materials.lamp,8);
@@ -363,32 +364,32 @@ export class AfterWorld {
    // water collector
    this.tank=new THREE.Group();this.tank.position.set(16,ROOF+.18,-13);this.scene.add(this.tank);
    for(let i=0;i<4;i++){const a=i*Math.PI/2;cyl(this.tank,.2,.25,2.3,[Math.sin(a)*2.3,1.2,Math.cos(a)*2.3],materials.rust,8)}
-   cyl(this.tank,2.8,2.85,5.8,[0,5.5,0],materials.metal,24);
+   cyl(this.tank,2.8,2.85,5.8,[0,5.5,0],materials.metal,48);
    for(let i=0;i<7;i++)cyl(this.tank,2.95,2.95,.1,[0,2.75+i*.85,0],materials.edge,24);
-   cyl(this.tank,2.75,2.75,.25,[0,8.5,0],materials.tar,24);
+   cyl(this.tank,2.75,2.75,.25,[0,8.5,0],materials.tar,48);
    cyl(this.tank,.28,.28,1.2,[2.9,3.4,.6],materials.rust,9,[0,0,Math.PI/2]);
    cyl(this.tank,.56,.56,.15,[3.5,3.4,.6],materials.rust,12,[0,0,Math.PI/2]);
    box(this.tank,[1.2,1.5,.24],[-2.5,5.8,0],materials.tar);
    // storage & greenhouse + benches
    const store=new THREE.Group();store.position.set(12,ROOF+.2,10);this.scene.add(store);this.storage=store;
    for(let i=0;i<5;i++){const x=(i%3)*1.45,z=Math.floor(i/3)*2;
-     box(store,[1.3,1.55,1.3],[x, .85,z],i%2?materials.wood:materials.rust);
-     box(store,[1.35,.13,1.35],[x,1.71,z],materials.tar);
+     beveledProp(store,[1.3,1.55,1.3],[x,.85,z],i%2?materials.wood:materials.rust,.105);
+     beveledProp(store,[1.35,.13,1.35],[x,1.71,z],materials.tar,.026);
      for(let k of [-1,1])box(store,[.06,1.1,.08],[x+k*.62,.85,z+.66],materials.metal);
    }
    const garden=new THREE.Group();garden.position.set(-13,ROOF+.25,11);this.scene.add(garden);
-   for(let j=0;j<3;j++){box(garden,[10,.8,2.2],[0,.45,j*3.2],materials.wood);box(garden,[9.7,.2,2],[0,.91,j*3.2],materials.soil);
+   for(let j=0;j<3;j++){beveledProp(garden,[10,.8,2.2],[0,.45,j*3.2],materials.wood,.13);beveledProp(garden,[9.7,.2,2],[0,.91,j*3.2],materials.soil,.036);
     // Real vegetable stems, veined leaves and fruit are instantiated in RooftopBotany.
    }
    // improvised metal stairwell on rooftop
    const stair=new THREE.Group();stair.position.set(12,ROOF+.1,-.6);this.scene.add(stair);
    box(stair,[6,5,6],[0,2.5,0],materials.concrete);
-   box(stair,[6.7,.7,6.7],[0,5.4,0],materials.tar);
-   box(stair,[2.6,3,.15],[-.6,1.65,3.05],materials.metal);
+   beveledProp(stair,[6.7,.7,6.7],[0,5.4,0],materials.tar,.16);
+   beveledProp(stair,[2.6,3,.15],[-.6,1.65,3.05],materials.metal,.025);
    beam(stair,[-2.75,5.6,-2.5],[-3,5.6,2.5],.11,materials.rust);
    // fireplace. Fire particles animated in main weather layer.
    const fireRing=new THREE.Group();fireRing.position.set(2,ROOF+.25,3);this.scene.add(fireRing);
-   cyl(fireRing,1.2,1.45,.5,[0,.1,0],materials.concrete,12);
+   cyl(fireRing,1.2,1.45,.5,[0,.1,0],materials.concrete,24);
    for(let i=0;i<7;i++){let a=i*Math.PI*2/7;beam(fireRing,[Math.cos(a)*.75,.5,Math.sin(a)*.75],[Math.cos(a+1.4)*.8,.45,Math.sin(a+1.4)*.8],.18,materials.wood)}
    this.flames=[];for(let i=0;i<5;i++){const fire=cyl(fireRing,.02,.24,1.2,[Math.sin(i*8)*.24,1.1,Math.cos(i*8)*.22],new THREE.MeshStandardMaterial({color:i%2?'#ffcf80':'#f28d36',emissive:'#ef742c',emissiveIntensity:2.2,transparent:true,opacity:.85}),5);this.flames.push(fire)}
    // place actual GitHub props, safe asynchronous fallbacks already exist in the environment.
