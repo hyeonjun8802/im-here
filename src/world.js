@@ -22,6 +22,7 @@ import {RooftopBotany} from './rooftopBotany.js';
 import {PremiumEnvironmentV130} from './premiumEnvironmentV130.js';
 import {upgradeSurvivorFinishingV130,animateSurvivorFinishingV130} from './survivorFinishingV130.js';
 import {CinematicPostV130} from './cinematicPostV130.js';
+import {PremiumAtmosphereV500} from './premiumAtmosphereV500.js';
 import {PremiumStageV140} from './premiumStageV140.js';
 import {CityInfillV150} from './cityInfillV150.js';
 import {CityReclamation} from './cityReclamation.js';
@@ -91,7 +92,7 @@ export class AfterWorld {
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
-  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.cinematicPost=new CinematicPostV130(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.cinematicPost=new CinematicPostV130(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -545,14 +546,14 @@ export class AfterWorld {
   const lunar=moonPositionForSeoul(now+(this.previewLunarOffset||0)*86400000,this.previewHour);
   const sunAltitude=Math.sin(solar.altitude);const night=clamp((.12-sunAltitude)*1.7,0,1),twilight=clamp(1-Math.abs(sunAltitude)*2.7,0,1);
   const hazeTarget=vw.mist;this.hazeLevel=THREE.MathUtils.damp(this.hazeLevel,hazeTarget,.32,dt);const haze=this.hazeLevel;
-  const dayTop=new THREE.Color('#345f85'),nightTop=new THREE.Color('#0a1428'),stormTop=new THREE.Color('#23303d');const horizon=new THREE.Color('#9aaebc').lerp(new THREE.Color('#e9a171'),twilight*.92).lerp(new THREE.Color('#263a51'),night*.92).lerp(new THREE.Color('#646d78'),haze*.7);
+  const dayTop=new THREE.Color('#405b6b'),nightTop=new THREE.Color('#0e1824'),stormTop=new THREE.Color('#232c35');const horizon=new THREE.Color('#9caeaf').lerp(new THREE.Color('#d99e72'),twilight*.83).lerp(new THREE.Color('#283a47'),night*.92).lerp(new THREE.Color('#626d72'),haze*.72);
   const top=dayTop.lerp(nightTop,night*.96).lerp(stormTop,haze*.85);
   if(heat){top.lerp(new THREE.Color('#b2ac88'),.38);horizon.lerp(new THREE.Color('#dfb77b'),.5)}if(cold){top.lerp(new THREE.Color('#9bb9cd'),.3)}
   this.sky.material.uniforms.uTop.value.copy(top);this.sky.material.uniforms.uHorizon.value.copy(horizon);this.sky.material.uniforms.uBottom.value.copy(horizon).multiplyScalar(THREE.MathUtils.lerp(.92,.48,night));
   this.sky.material.uniforms.uSun.value=Math.max(0,sunAltitude)*(.28+twilight*.26)*(1-vw.cloud*.7);this.sky.material.uniforms.uCloudCover.value=vw.cloud;this.sky.material.uniforms.uNight.value=night;this.sky.material.uniforms.uStorm.value=vw.storm;this.sky.material.uniforms.uTime.value+=dt;
   this.scene.fog.color.copy(horizon);this.scene.fog.density=THREE.MathUtils.damp(this.scene.fog.density,depthAtmosphere(haze,night).fogDensity,.42,dt);
-  this.sun.position.set(Math.sin(solar.azimuth)*90,Math.max(-12,sunAltitude*98),-Math.cos(solar.azimuth)*90);this.sky.material.uniforms.uSunDir.value.copy(this.sun.position).normalize();this.sun.intensity=Math.max(.10,3.6*Math.max(0,sunAltitude)+twilight*.9)*(1-haze*.20)*weatherCloudShadow(vw.cloud)*(1-vw.storm*.18);this.sun.color.set(heat?'#ffefb3':twilight>.27?'#ffb46b':'#e9f1ff');this.ambient.intensity=Math.max(.24,1.4-night*.56-haze*.26-vw.storm*.22);this.fill.intensity=.50+night*.24;
-  this.renderer.toneMappingExposure=THREE.MathUtils.lerp(this.renderer.toneMappingExposure,1.22+twilight*.11-night*.15,Math.min(1,dt*1.5));
+  this.sun.position.set(Math.sin(solar.azimuth)*90,Math.max(-12,sunAltitude*98),-Math.cos(solar.azimuth)*90);this.sky.material.uniforms.uSunDir.value.copy(this.sun.position).normalize();this.sun.intensity=Math.max(.10,3.6*Math.max(0,sunAltitude)+twilight*.9)*(1-haze*.20)*weatherCloudShadow(vw.cloud)*(1-vw.storm*.18);this.sun.color.set(heat?'#ffefb3':twilight>.27?'#ffb46b':'#e9f1ff');this.ambient.intensity=Math.max(.24,1.12-night*.46-haze*.24-vw.storm*.17);this.fill.intensity=.40+night*.19;
+  this.renderer.toneMappingExposure=THREE.MathUtils.lerp(this.renderer.toneMappingExposure,1.15+twilight*.08-night*.08-vw.storm*.07,Math.min(1,dt*1.35));
   this.scene.environmentIntensity=.50-night*.24-haze*.07;this.fireLight.intensity=(8.4+night*7.0)*(1-vw.rain*.23)*(1+Math.sin(performance.now()*.017)*.08);
   this.stars.material.opacity=THREE.MathUtils.lerp(this.stars.material.opacity,night*.78*(1-vw.cloud*.9)*(1-vw.storm*.8),Math.min(1,dt));
   // Clouds now fade naturally inside the unified atmospheric shader.
@@ -670,11 +671,19 @@ export class AfterWorld {
   else {this.target.x=THREE.MathUtils.damp(this.target.x,0,2.2,dt);this.target.y=THREE.MathUtils.damp(this.target.y,this.ROOF_Y+(this.cityLookHeight||3.3),2.2,dt);this.target.z=THREE.MathUtils.damp(this.target.z,0,2.2,dt);}
   const sy=Math.cos(this.pitch)*this.radius,rr=Math.sin(this.pitch)*this.radius;
   this.camera.position.set(this.target.x+Math.sin(this.yaw)*rr,this.target.y+sy,this.target.z+Math.cos(this.yaw)*rr);
+  // A subtle frame vibration communicates tornado scale without shifting
+  // collision, clock, or survival state. Respect OS reduced-motion.
+  if(!this.reducedMotion){
+   const tremor=Math.min(.17,vw.tornado*.038+nearFlash*.10)*(this.isMobile?.45:1);
+   this.camera.position.x+=Math.sin(t*15.3)*tremor;
+   this.camera.position.y+=Math.sin(t*12.7+1.8)*tremor*.48;
+  }
   this.camera.lookAt(this.target);
+  this.premiumAtmosphere?.update(dt,vw,night,lightningStrength);
   this.celestialSky.update(this.camera,solar,lunar,vw.cloud,vw.storm);
   this.cinematicPost?.updateLook(vw,night,twilight);
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
- dispose(){this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
+ dispose(){this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
 }

@@ -80,3 +80,53 @@
 #companion-status{font-size:9px;line-height:1.45;color:#b8d0be;max-width:300px}
 #companion-toggle{background:#4d654ebd;border-color:#8dc19890;animation:scavengePulse 2.7s ease-in-out infinite}
 @media(max-width:720px){#companion-status{font-size:8px;max-width:180px}}
+
+/* v5: prestige survival-game hierarchy, weathered steel rather than shiny app UI.
+   Original CSS surfaces only; all 3D objects remain visible and interactive. */
+:root{--v5-iron:#11191d;--v5-steel:#273239;--v5-bone:#e6dfcf;--v5-ember:#d9a771}
+#hud::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+ background:linear-gradient(90deg,rgba(8,13,17,.20),transparent 18%,transparent 82%,rgba(8,13,17,.13)),
+  radial-gradient(ellipse at 52% 48%,transparent 38%,rgba(7,11,14,.14) 100%);
+ mix-blend-mode:multiply}
+.topbar{z-index:5;background:linear-gradient(180deg,rgba(5,11,15,.88),rgba(9,16,20,.40) 62%,transparent);
+ border-top:2px solid rgba(221,192,140,.27)}
+.brand strong{color:#e6e1d7;letter-spacing:.13em;font-weight:800;text-shadow:0 2px 13px #000d}
+.brand strong span{color:#dfb47a}
+.brand .eyebrow{color:#b2bec1;letter-spacing:.19em}
+.panel{border-radius:5px;
+ border:1px solid rgba(180,188,177,.22);
+ background:linear-gradient(165deg,rgba(14,23,27,.91),rgba(26,33,35,.80) 55%,rgba(9,17,20,.92));
+ box-shadow:0 22px 58px rgba(0,0,0,.44),inset 0 1px 0 rgba(237,224,193,.09),inset 2px 0 0 rgba(140,150,149,.07);
+ backdrop-filter:blur(11px);-webkit-backdrop-filter:blur(11px)}
+.left-status{border-left:2px solid rgba(212,167,104,.55);padding-top:16px;padding-bottom:16px}
+.section-label{color:var(--v5-bone);text-transform:none;letter-spacing:.06em;border-bottom:1px solid #ffffff14;padding-bottom:9px;margin-bottom:12px}
+.stat{margin:12px 0}
+.stat-line{letter-spacing:.013em}
+.bar{height:4px;border-radius:1px;background:#52606540}
+.bar i{border-radius:1px;box-shadow:0 0 10px #b8cab925}
+.resources{border-top:1px solid rgba(227,208,167,.2)}
+.actionbar{border:1px solid rgba(189,181,163,.26);border-radius:7px;
+ background:linear-gradient(180deg,rgba(26,33,35,.94),rgba(9,16,19,.93));
+ box-shadow:0 13px 48px #000c,inset 0 1px 0 rgba(246,222,178,.12)}
+.actionbar button{border-radius:4px;background:linear-gradient(180deg,rgba(203,206,190,.085),rgba(27,40,43,.18));
+ border:1px solid rgba(219,211,189,.18);color:#eae5d9;
+ transition:background .2s,border-color .2s,transform .2s}
+.actionbar button:hover{background:rgba(119,116,99,.26);border-color:rgba(230,186,125,.55)}
+.actionbar button:active{background:rgba(145,121,79,.30)}
+.actionbar button span{color:var(--v5-ember)}
+.survival-kit{border-left:2px solid rgba(183,140,88,.45)}
+.event-log{border-radius:5px;border-color:rgba(219,205,167,.23);background:rgba(10,17,21,.90)}
+.warning{border-radius:4px;border-left:3px solid #d19d60;background:rgba(48,32,25,.91);color:#ffe1b6}
+.activity-label{border-radius:4px;background:rgba(13,22,24,.86)}
+.weather-panel{border-left:2px solid rgba(178,195,192,.34)}
+#weather-effect{color:#dfd4ba}
+@media(max-width:720px){
+ .left-status{padding-top:10px;padding-bottom:10px}
+ .section-label{margin-bottom:6px;padding-bottom:5px}
+ .stat{margin:7px 0}
+ .topbar{border-top-width:1px}
+ .actionbar{border-radius:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ .actionbar button{transition:none}
+}

@@ -26,18 +26,26 @@ export class CinematicPostV130 {
   // Unlike a static image overlay, this shades the actual rendered 3D world
   // and respects the existing daylight, storm, reflections and highlights.
   this.grade=new ShaderPass({
-    uniforms:{tDiffuse:{value:null},uTime:{value:0},uWarm:{value:.035},
-      uCool:{value:.025},uGrain:{value:.004},uVignette:{value:.075}},
+    uniforms:{tDiffuse:{value:null},uTime:{value:0},uWarm:{value:.18},
+      uCool:{value:.20},uGrain:{value:.004},uVignette:{value:.075},
+      uContrast:{value:1.055},uSaturation:{value:.91}},
     vertexShader:`varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
     fragmentShader:`precision highp float;
-      uniform sampler2D tDiffuse;uniform float uTime,uWarm,uCool,uGrain,uVignette;varying vec2 vUv;
+      uniform sampler2D tDiffuse;
+      uniform float uTime,uWarm,uCool,uGrain,uVignette,uContrast,uSaturation;
+      varying vec2 vUv;
       float rnd(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453123);}
       void main(){
        vec4 raw=texture2D(tDiffuse,vUv);vec3 c=raw.rgb;
+       // Cinematic cold-steel shadows and motivated amber highlights.
+       // Retain midtone detail: screen grading cannot replace PBR materials.
        float lum=dot(c,vec3(.2126,.7152,.0722));
-       float dark=1.0-smoothstep(.12,.72,lum);float bright=smoothstep(.34,1.15,lum);
-       c+=vec3(-.013,.007,.029)*uCool*dark*5.0;
-       c+=vec3(.045,.014,-.016)*uWarm*bright*4.0;
+       c=mix(vec3(lum),c,uSaturation);
+       c=(c-vec3(.41))*uContrast+vec3(.41);
+       float dark=1.0-smoothstep(.09,.60,lum);
+       float bright=smoothstep(.30,1.05,lum);
+       c+=vec3(-.073,-.032,.050)*uCool*dark;
+       c+=vec3(.074,.030,-.021)*uWarm*bright;
        float r=length((vUv-.5)*vec2(1.12,1.0));
        c*=1.0-uVignette*smoothstep(.24,.75,r);
        float grain=rnd(gl_FragCoord.xy+vec2(uTime*31.3,uTime*19.1))-.5;
@@ -57,6 +65,8 @@ export class CinematicPostV130 {
   this.grade.uniforms.uCool.value=g.shadowBlue;
   this.grade.uniforms.uGrain.value=g.filmGrain;
   this.grade.uniforms.uVignette.value=g.vignette;
+  this.grade.uniforms.uContrast.value=g.contrast;
+  this.grade.uniforms.uSaturation.value=g.saturation;
  }
  setQuality(low){
   this.active=!!this.composer&&!low;

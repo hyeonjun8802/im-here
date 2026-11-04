@@ -45,8 +45,10 @@ export function calcPostGrade({night=0,storm=0,wetness=0,twilight=0}={}){
  return Object.freeze({
   bloomStrength:.17+n*.12+w*.08,
   filmGrain: .004+s*.002,
-  highlightWarmth:.025+t*.07,
-  shadowBlue:.016+n*.055+s*.019,
+  highlightWarmth:.18+t*.15,
+  shadowBlue:.20+n*.08+s*.07,
   vignette:.085+n*.035,
+  contrast:1.055+s*.055+n*.025,
+  saturation:.91-s*.085-n*.025,
  });
 }
