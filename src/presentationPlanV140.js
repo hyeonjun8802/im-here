@@ -43,12 +43,17 @@ export function premiumSceneBudget(isMobile=false){return Object.freeze({
 export function calcPostGrade({night=0,storm=0,wetness=0,twilight=0}={}){
  const n=clamp01(night),s=clamp01(storm),w=clamp01(wetness),t=clamp01(twilight);
  return Object.freeze({
-  bloomStrength:.17+n*.12+w*.08,
-  filmGrain: .004+s*.002,
+  bloomStrength:.18+n*.09+w*.06,
+  filmGrain:.0020+s*.0006,
+  // Bright, legible midtones and selective color rather than blanket grey.
+  // Weather reduces saturation without crushing the entire scene to black.
   highlightWarmth:.18+t*.15,
-  shadowBlue:.20+n*.08+s*.07,
-  vignette:.085+n*.035,
-  contrast:1.055+s*.055+n*.025,
-  saturation:.91-s*.085-n*.025,
+  shadowBlue:.15+n*.060+s*.055,
+  vignette:.064+n*.022,
+  contrast:1.095+s*.030+n*.015,
+  saturation:1.065-s*.105-n*.045,
+  shadowLift:.033+n*.022+s*.026,
+  midtoneGain:.064+n*.040+s*.023,
+  highlightRolloff:.10+n*.015+w*.018,
  });
 }

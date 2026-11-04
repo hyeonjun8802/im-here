@@ -25,6 +25,7 @@ import {CinematicPostV130} from './cinematicPostV130.js';
 import {PremiumAtmosphereV500} from './premiumAtmosphereV500.js';
 import {CinematicMomentV510} from './cinematicMomentV510.js';
 import {PremiumEventPhysicsV520} from './premiumEventPhysicsV520.js';
+import {finishImportedGLB,finishTexture} from './premiumMaterialFinishV600.js';
 import {PremiumStageV140} from './premiumStageV140.js';
 import {CityInfillV150} from './cityInfillV150.js';
 import {CityReclamation} from './cityReclamation.js';
@@ -54,21 +55,21 @@ const pbr=[['concrete','roof_concrete',3],['concreteLight','roof_concrete',3],['
 function configureTexture(texture,repeat,srgb=false){
  texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
  texture.repeat.set(repeat,repeat);
- texture.anisotropy=4;
+ finishTexture(texture,8);
  if(srgb) texture.colorSpace=THREE.SRGBColorSpace;
  return texture;
 }
 function loadPBR(target,name,repeat){
  const base='./assets/materials/advanced/'+name;
  materialLoader.load(base+'_albedo.jpg',t=>{target.map=configureTexture(t,repeat,true);target.color.set('#ffffff');target.needsUpdate=true;},undefined,()=>{});
- materialLoader.load(base+'_normal.jpg',t=>{target.normalMap=configureTexture(t,repeat);target.normalScale=new THREE.Vector2(.36,.36);target.needsUpdate=true;},undefined,()=>{});
+ materialLoader.load(base+'_normal.jpg',t=>{target.normalMap=configureTexture(t,repeat);target.normalScale=new THREE.Vector2(.30,.30);target.needsUpdate=true;},undefined,()=>{});
  materialLoader.load(base+'_roughness.png',t=>{target.roughnessMap=configureTexture(t,repeat);target.needsUpdate=true;},undefined,()=>{});
 }
 for(const [key,name,repeat] of pbr)loadPBR(materials[key],name,repeat);
 function loadCinematicRoof(target){
  const base='./assets/materials/cinematic/roof_cinematic';
  materialLoader.load(base+'_albedo.jpg',t=>{target.map=configureTexture(t,1,true);target.color.set('#ffffff');target.needsUpdate=true;},undefined,e=>console.warn('Roof albedo',e));
- materialLoader.load(base+'_normal.jpg',t=>{target.normalMap=configureTexture(t,1);target.normalScale.set(.52,.52);target.needsUpdate=true;},undefined,e=>console.warn('Roof normal',e));
+ materialLoader.load(base+'_normal.jpg',t=>{target.normalMap=configureTexture(t,1);target.normalScale.set(.38,.38);target.needsUpdate=true;},undefined,e=>console.warn('Roof normal',e));
  materialLoader.load(base+'_roughness.png',t=>{target.roughnessMap=configureTexture(t,1);target.needsUpdate=true;},undefined,e=>console.warn('Roof roughness',e));
 }
 materialLoader.load('./assets/materials/leaves.jpg',t=>{materials.plant.map=configureTexture(t,2,true);materials.plant.needsUpdate=true;});
@@ -79,7 +80,7 @@ function beam(parent,a,b,r,m){let A=new THREE.Vector3(...a),B=new THREE.Vector3(
 function seededNoiseTexture(){const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d');ctx.fillStyle='#81817a';ctx.fillRect(0,0,512,512);let seed=6839;const rnd=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};for(let i=0;i<23000;i++){let v=Math.floor(72+rnd()*56);ctx.fillStyle=`rgba(${v},${v+2},${v-2},${rnd()*.22})`;let x=rnd()*512,y=rnd()*512,r=rnd()*2+0.3;ctx.fillRect(x,y,r,r)}for(let i=0;i<30;i++){let x=rnd()*512,y=rnd()*512;ctx.strokeStyle='rgba(27,36,29,.16)';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(x,y);for(let j=0;j<6;j++){x+=(rnd()-.5)*18;y+=(rnd()-.5)*16;ctx.lineTo(x,y)}ctx.stroke();}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(5,5);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t}
 export class AfterWorld {
  constructor(canvas,report=()=>{}){
-  this.report=report;this.canvas=canvas;this.scene=new THREE.Scene();this.scene.background=color('#283744');this.scene.fog=new THREE.FogExp2('#88918d',.0013);
+  this.report=report;this.canvas=canvas;this.scene=new THREE.Scene();this.scene.background=color('#283744');this.scene.fog=new THREE.FogExp2('#929b99',.00116);
   this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
   // Neutral spherical radiance probe supplies real PBR specular response to GLB
   // metal and wet surfaces; it is NOT a 2D substitution for the 3D game world.
@@ -87,10 +88,10 @@ export class AfterWorld {
    tex.mapping=THREE.EquirectangularReflectionMapping;tex.colorSpace=THREE.SRGBColorSpace;
    this.scene.environment=tex;this.scene.environmentIntensity=.52;
   },undefined,()=>{});
-  const mobile=window.innerWidth<800;this.isMobile=mobile;this.ROOF_Y=ROOF;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.45:1.8));this.renderer.setSize(window.innerWidth,window.innerHeight,false);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.21;this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  this.scene.add(new THREE.HemisphereLight('#c3cfcb','#45433c',1.35));this.ambient=this.scene.children[this.scene.children.length-1];
-  this.sun=new THREE.DirectionalLight('#ffcc8b',3.5);this.sun.castShadow=true;this.sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);Object.assign(this.sun.shadow.camera,{near:1,far:190,left:-68,right:68,top:68,bottom:-68});this.sun.shadow.bias=-.00018;this.sun.shadow.normalBias=.025;this.sun.position.set(40,65,25);this.sun.target.position.set(0,ROOF,0);this.scene.add(this.sun,this.sun.target);
-  this.fill=new THREE.DirectionalLight('#7b9bb4',.32);this.fill.position.set(-40,28,-38);this.scene.add(this.fill);
+  const mobile=window.innerWidth<800;this.isMobile=mobile;this.ROOF_Y=ROOF;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.45:1.8));this.renderer.setSize(window.innerWidth,window.innerHeight,false);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.28;this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  this.scene.add(new THREE.HemisphereLight('#cfdad5','#55564f',1.48));this.ambient=this.scene.children[this.scene.children.length-1];
+  this.sun=new THREE.DirectionalLight('#ffcf99',3.5);this.sun.castShadow=true;this.sun.shadow.mapSize.set(mobile?1024:3072,mobile?1024:3072);Object.assign(this.sun.shadow.camera,{near:1,far:190,left:-68,right:68,top:68,bottom:-68});this.sun.shadow.bias=-.00018;this.sun.shadow.normalBias=.025;this.sun.position.set(40,65,25);this.sun.target.position.set(0,ROOF,0);this.scene.add(this.sun,this.sun.target);
+  this.fill=new THREE.DirectionalLight('#a3bbcc',.48);this.fill.position.set(-40,28,-38);this.scene.add(this.fill);
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
@@ -115,6 +116,8 @@ export class AfterWorld {
     const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
     if([size.x,size.y,size.z].some((n,i)=>!Number.isFinite(n)||n<.01||n>max[i]))throw new Error('invalid GLB dimensions: '+size.toArray());
     model.position.set(...pos);model.name='AFTERDAY custom asset: '+file;
+    const finish=finishImportedGLB(model,{mobile:this.isMobile});
+    model.userData.premiumFinish=finish;
     model.traverse(o=>{if(o.isMesh){
       o.castShadow=true;o.receiveShadow=true;
       if(file==='afterday_shelter_pbr.glb'&&o.name.includes('tensioned rainproof canopy')){
@@ -163,7 +166,7 @@ export class AfterWorld {
   const tint=near?'#aaa9a0':far?'#899ca6':'#9ca6a6';
   const wall=new THREE.MeshStandardMaterial({color:tint,roughness:.94,metalness:.04});
   const base=`./assets/materials/city/facade_premium_${variant}`;
-  materialLoader.load(base+'.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;wall.map=tex;wall.needsUpdate=true;},undefined,()=>{});
+  materialLoader.load(base+'.jpg',tex=>{tex.colorSpace=THREE.SRGBColorSpace;finishTexture(tex,this.isMobile?4:8);wall.map=tex;wall.needsUpdate=true;},undefined,()=>{});
   materialLoader.load(`./assets/materials/city/facade_${variant}_emissive.jpg`,tex=>{tex.colorSpace=THREE.SRGBColorSpace;wall.emissiveMap=tex;wall.emissive.set('#fff2d0');wall.emissiveIntensity=0;wall.needsUpdate=true;},undefined,()=>{});
   const roof=mat(tier==='near'?'#4b4e49':'#555e61',.94,.02);
   const result=[wall,wall,roof,roof,wall,wall];this.cityMaterialCache.set(key,result);return result;
@@ -541,7 +544,7 @@ export class AfterWorld {
   this.focusLookHeight=view==='portrait'?2.22:1.9;
   this.cityLookHeight=view==='overhead'?2.1:3.3;
  }
- setQuality(value){const low=value==='low'||(value==='auto'&&innerWidth<700);this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1.15:1.8));this.sun.shadow.mapSize.set(low?1024:2048,low?1024:2048);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.cinematicPost?.setQuality(low);this.resize()}
+ setQuality(value){const low=value==='low'||(value==='auto'&&innerWidth<700);this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1.15:1.8));this.sun.shadow.mapSize.set(low?1024:3072,low?1024:3072);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.cinematicPost?.setQuality(low);this.resize()}
  update(dt,now,game,cinematicDt=dt){
   this.syncSurvivalInventory(game);
   // Accelerated 2×/4× also advances physical weather and survivor animation.
@@ -560,9 +563,9 @@ export class AfterWorld {
   this.sky.material.uniforms.uTop.value.copy(top);this.sky.material.uniforms.uHorizon.value.copy(horizon);this.sky.material.uniforms.uBottom.value.copy(horizon).multiplyScalar(THREE.MathUtils.lerp(.92,.48,night));
   this.sky.material.uniforms.uSun.value=Math.max(0,sunAltitude)*(.28+twilight*.26)*(1-vw.cloud*.7);this.sky.material.uniforms.uCloudCover.value=vw.cloud;this.sky.material.uniforms.uNight.value=night;this.sky.material.uniforms.uStorm.value=vw.storm;this.sky.material.uniforms.uTime.value+=dt;
   this.scene.fog.color.copy(horizon);this.scene.fog.density=THREE.MathUtils.damp(this.scene.fog.density,depthAtmosphere(haze,night).fogDensity,.42,dt);
-  this.sun.position.set(Math.sin(solar.azimuth)*90,Math.max(-12,sunAltitude*98),-Math.cos(solar.azimuth)*90);this.sky.material.uniforms.uSunDir.value.copy(this.sun.position).normalize();this.sun.intensity=Math.max(.10,3.6*Math.max(0,sunAltitude)+twilight*.9)*(1-haze*.20)*weatherCloudShadow(vw.cloud)*(1-vw.storm*.18);this.sun.color.set(heat?'#ffefb3':twilight>.27?'#ffb46b':'#e9f1ff');this.ambient.intensity=Math.max(.24,1.12-night*.46-haze*.24-vw.storm*.17);this.fill.intensity=.40+night*.19;
-  this.renderer.toneMappingExposure=THREE.MathUtils.lerp(this.renderer.toneMappingExposure,1.15+twilight*.08-night*.08-vw.storm*.07,Math.min(1,dt*1.35));
-  this.scene.environmentIntensity=.50-night*.24-haze*.07;this.fireLight.intensity=(8.4+night*7.0)*(1-vw.rain*.23)*(1+Math.sin(performance.now()*.017)*.08);
+  this.sun.position.set(Math.sin(solar.azimuth)*90,Math.max(-12,sunAltitude*98),-Math.cos(solar.azimuth)*90);this.sky.material.uniforms.uSunDir.value.copy(this.sun.position).normalize();this.sun.intensity=Math.max(.10,3.6*Math.max(0,sunAltitude)+twilight*.9)*(1-haze*.20)*weatherCloudShadow(vw.cloud)*(1-vw.storm*.18);this.sun.color.set(heat?'#ffefb3':twilight>.27?'#ffb46b':'#e9f1ff');this.ambient.intensity=Math.max(.40,1.30-night*.37-haze*.20-vw.storm*.13);this.fill.intensity=.47+night*.16;
+  this.renderer.toneMappingExposure=THREE.MathUtils.lerp(this.renderer.toneMappingExposure,1.27+twilight*.06+night*.035-vw.storm*.035,Math.min(1,dt*1.35));
+  this.scene.environmentIntensity=.64-night*.16-haze*.07;this.fireLight.intensity=(8.4+night*7.0)*(1-vw.rain*.23)*(1+Math.sin(performance.now()*.017)*.08);
   this.stars.material.opacity=THREE.MathUtils.lerp(this.stars.material.opacity,night*.78*(1-vw.cloud*.9)*(1-vw.storm*.8),Math.min(1,dt));
   // Clouds now fade naturally inside the unified atmospheric shader.
   this.cityAtmosphere.update(dt,vw,night,horizon);this.groundMist.update(dt,vw,horizon);this.cityInfill?.update(night);

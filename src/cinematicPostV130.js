@@ -4,6 +4,7 @@ import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {calcPostGrade} from './presentationPlanV140.js';
 
 /**
@@ -18,6 +19,10 @@ export class CinematicPostV130 {
   const w=Math.max(1,world.canvas.clientWidth||window.innerWidth),
     h=Math.max(1,world.canvas.clientHeight||window.innerHeight);
   this.composer=new EffectComposer(world.renderer);
+  // Critical clarity fix: the composer previously rendered at 1 CSS pixel
+  // even when the native WebGL canvas was 1.8 device pixels. This made all
+  // desktop PBR textures and silhouettes look soft/low-resolution.
+  this.composer.setPixelRatio(world.renderer.getPixelRatio());
   this.composer.addPass(new RenderPass(world.scene,world.camera));
   this.bloom=new UnrealBloomPass(new THREE.Vector2(w,h),.23,.36,1.10);
   this.bloom.threshold=1.10;
@@ -28,11 +33,14 @@ export class CinematicPostV130 {
   this.grade=new ShaderPass({
     uniforms:{tDiffuse:{value:null},uTime:{value:0},uWarm:{value:.18},
       uCool:{value:.20},uGrain:{value:.004},uVignette:{value:.075},
-      uContrast:{value:1.055},uSaturation:{value:.91}},
+      uContrast:{value:1.095},uSaturation:{value:1.065},
+      uShadowLift:{value:.033},uMidtoneGain:{value:.064},
+      uRolloff:{value:.10}},
     vertexShader:`varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
     fragmentShader:`precision highp float;
       uniform sampler2D tDiffuse;
       uniform float uTime,uWarm,uCool,uGrain,uVignette,uContrast,uSaturation;
+      uniform float uShadowLift,uMidtoneGain,uRolloff;
       varying vec2 vUv;
       float rnd(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453123);}
       void main(){
@@ -40,12 +48,18 @@ export class CinematicPostV130 {
        // Cinematic cold-steel shadows and motivated amber highlights.
        // Retain midtone detail: screen grading cannot replace PBR materials.
        float lum=dot(c,vec3(.2126,.7152,.0722));
+       // Preserve light in slate-grey concrete and clothes: contrast around
+       // a linear-light neutral pivot, rather than crushing dark midtones.
        c=mix(vec3(lum),c,uSaturation);
-       c=(c-vec3(.41))*uContrast+vec3(.41);
-       float dark=1.0-smoothstep(.09,.60,lum);
-       float bright=smoothstep(.30,1.05,lum);
-       c+=vec3(-.073,-.032,.050)*uCool*dark;
-       c+=vec3(.074,.030,-.021)*uWarm*bright;
+       c=(c-vec3(.22))*uContrast+vec3(.22);
+       float dark=1.0-smoothstep(.035,.48,lum);
+       float mid=smoothstep(.025,.16,lum)*(1.0-smoothstep(.48,1.30,lum));
+       float bright=smoothstep(.30,1.15,lum);
+       c+=vec3(uShadowLift*dark+uMidtoneGain*mid);
+       c+=vec3(-.054,-.019,.049)*uCool*dark;
+       c+=vec3(.067,.031,-.018)*uWarm*bright;
+       // Keep night lamps bright but retain their filament shape and detail.
+       c=c/(vec3(1.0)+max(vec3(0.0),c-vec3(1.0))*uRolloff);
        float r=length((vUv-.5)*vec2(1.12,1.0));
        c*=1.0-uVignette*smoothstep(.24,.75,r);
        float grain=rnd(gl_FragCoord.xy+vec2(uTime*31.3,uTime*19.1))-.5;
@@ -53,8 +67,14 @@ export class CinematicPostV130 {
       }`
   });
   this.composer.addPass(this.grade);
+  // Postprocessing FBOs do not inherit canvas antialias:true. FXAA after
+  // graded color handles rig outlines, ladder silhouettes and diagonal edges.
+  this.fxaa=new ShaderPass(FXAAShader);
+  this.composer.addPass(this.fxaa);
   this.composer.addPass(new OutputPass());
-  this.composer.setSize(w,h);this.active=true;
+  this.composer.setSize(w,h);
+  this.updateResolution(w,h);
+  this.active=true;
  }
  updateLook(weather={},night=0,twilight=0){
   if(!this.grade)return;
@@ -67,13 +87,28 @@ export class CinematicPostV130 {
   this.grade.uniforms.uVignette.value=g.vignette;
   this.grade.uniforms.uContrast.value=g.contrast;
   this.grade.uniforms.uSaturation.value=g.saturation;
+  this.grade.uniforms.uShadowLift.value=g.shadowLift;
+  this.grade.uniforms.uMidtoneGain.value=g.midtoneGain;
+  this.grade.uniforms.uRolloff.value=g.highlightRolloff;
+ }
+ updateResolution(width,height){
+  if(!this.fxaa)return;
+  const ratio=this.world.renderer.getPixelRatio();
+  this.fxaa.material.uniforms.resolution.value.set(
+    1/Math.max(1,width*ratio),1/Math.max(1,height*ratio));
  }
  setQuality(low){
   this.active=!!this.composer&&!low;
   this.composer?.setPixelRatio(this.world.renderer.getPixelRatio());
+  this.updateResolution(
+    this.world.canvas.clientWidth||window.innerWidth,
+    this.world.canvas.clientHeight||window.innerHeight);
  }
  resize(width,height){
-  if(this.composer)this.composer.setSize(Math.max(1,width),Math.max(1,height));
+  if(this.composer){
+   this.composer.setSize(Math.max(1,width),Math.max(1,height));
+   this.updateResolution(width,height);
+  }
  }
  render(){
   if(this.active&&this.composer)this.composer.render();

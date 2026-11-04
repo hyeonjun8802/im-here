@@ -1,0 +1,45 @@
+name: Premium visual frame capture (real WebGL)
+
+on:
+  push:
+    branches: [feature/premium-lighting-v600-20261104]
+  workflow_dispatch:
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install QA-only browser (not a production dependency)
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run actual Vite scene locally without creating Vercel previews
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-v600-vite.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:5173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/afterday-v600-vite.log
+          exit 1
+      - name: Capture eight actual WebGL shots (no simulated screenshot)
+        run: node scripts/qa_visual_v600.mjs
+        env:
+          AFTERDAY_URL: http://127.0.0.1:5173
+      - name: Upload visual proof (requires manual comparison)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterday-v600-actual-frames
+          path: docs/qa/live-v600
+          if-no-files-found: warn
+          retention-days: 14

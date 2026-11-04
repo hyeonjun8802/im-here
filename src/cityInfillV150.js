@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {makeCityInfill, measureInfill} from './cityInfillPlanV150.js';
 import {createFracturedTowerGeometry,fracturedRoofHeightAt} from './ruinedBuildingGeometry.js';
 import {CITY_COMPOSITION} from './cityComposition.js';
+import {finishTexture} from './premiumMaterialFinishV600.js';
 /**
  * Physically located, fixed-coordinate 3D background. NOT a billboard.
  * All background tiers share broad, weathered 3D concrete-block silhouettes.
@@ -22,7 +23,8 @@ export class CityInfillV150 {
     const map=new THREE.TextureLoader().load(`./assets/materials/city/facade_premium_${v}.jpg`);
     const emissive=new THREE.TextureLoader().load(`./assets/materials/city/facade_${v}_emissive.jpg`);
     map.colorSpace=THREE.SRGBColorSpace;emissive.colorSpace=THREE.SRGBColorSpace;
-    map.anisotropy=world.isMobile?2:4;return {map,emissive};
+    finishTexture(map,world.isMobile?4:8);
+    finishTexture(emissive,world.isMobile?4:8);return {map,emissive};
   });
   for(const layer of ['inner','middle','outer']){
    const mats=[];

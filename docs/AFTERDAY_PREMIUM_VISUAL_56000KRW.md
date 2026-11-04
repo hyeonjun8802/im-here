@@ -72,3 +72,8 @@
 ## 후속 2026-11-04 · v5.2 3D 애니메이션 강화
 
 광원과 카메라만 개선하던 v5.0/5.1에서 **물체가 움직이는 사건 현장**으로 확장한다. 텐트 설치 7.4초, 헬기에서 보급 상자 분리·낙하산 착지(18초 전체), 토네이도 파편의 옥상 바닥 탄성 충돌·생존자 충격 반응을 실제 3D에 추가한다. 정확한 구현·한계·실기기 검증 항목은 [AFTERDAY_PREMIUM_MOTION_V520.md](AFTERDAY_PREMIUM_MOTION_V520.md)에 수록. 새 기술이 56,000원 출시 품질 달성을 입증하지는 않는다.
+
+
+## 2026-11-04 후속 v6.0 — 밝기·채도·재질 품질 우선
+
+기존 v5.0의 어두운 색 보정을 무조건 유지하지 않는다. 화면 전체를 탈색/어둡게 했던 부분과 데스크톱 composer 저해상도 렌더를 보완했다. 실제 DPR 기반 postprocessing/FXAA, 암부 lift·midtone gain·날씨별 채도, 원본 PBR 맵을 지키는 texture filtering/normal smoothing, 주광·환경광·그림자를 개정한다. **코드 수치와 실제 샷 비교는 다르므로** Frostpunk 레퍼런스 대비 실제 성능/시각 품질 검증 전에는 완성이라고 표기하지 않는다. 상세: [AFTERDAY_VISUAL_COMPARISON_V600.md](AFTERDAY_VISUAL_COMPARISON_V600.md).

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {pose,SEAT} from './characterMotionPlanV190.js';
 import {makePalmSocket} from './handAnchors.js';
+import {finishImportedGLB} from './premiumMaterialFinishV600.js';
 
 const MODEL='./assets/models/afterday/afterday_bearded_survivor_v190.glb';
 const JOINTS=['RigRoot','Pelvis','Spine','Chest','Neck','Head','Shoulder_L','UpperArm_L','ForeArm_L','Hand_L','Shoulder_R','UpperArm_R','ForeArm_R','Hand_R','UpperLeg_L','LowerLeg_L','Foot_L','UpperLeg_R','LowerLeg_R','Foot_R'];
@@ -78,7 +79,7 @@ export class BeardedSurvivorV190{
    this.nodes.Torso=this.nodes.Chest;this.nodes.Knee_L=this.nodes.LowerLeg_L;this.nodes.Knee_R=this.nodes.LowerLeg_R;
    const b=new THREE.Box3().setFromObject(scene),s=b.getSize(new THREE.Vector3());
    if(s.y<2.5||s.y>3.6||s.x<.9||s.x>2.3)throw Error('Invalid character model dimensions '+s.toArray());
-   scene.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+   finishImportedGLB(scene,{mobile:world.isMobile});
    // Props MUST follow articulated character joints. Attaching them to a
    // stationary world root was the cause of prior floating guitar/radio props.
    this.palms={L:makePalmSocket(this.nodes.Hand_L,'L'),R:makePalmSocket(this.nodes.Hand_R,'R')};
