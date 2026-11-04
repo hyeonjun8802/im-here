@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {CITY_COMPOSITION} from './cityComposition.js';
 
 /**
@@ -50,6 +51,32 @@ function rod(parent,a,b,r,material,name=''){
   mesh.position.copy(A).add(B).multiplyScalar(.5);
   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
   mesh.name=name;mesh.castShadow=false;mesh.receiveShadow=true;parent.add(mesh);return mesh;
+}
+function mergeStaticRoot(root,label='v6.6 merged static ruin'){
+  const buckets=new Map();
+  for(const child of [...root.children]){
+    if(!child.isMesh||!child.geometry||!child.material)continue;
+    child.updateMatrix();
+    const g=child.geometry.clone();
+    g.applyMatrix4(child.matrix);
+    const key=child.material.uuid;
+    if(!buckets.has(key))buckets.set(key,{material:child.material,geometries:[]});
+    buckets.get(key).geometries.push(g);
+    root.remove(child);
+    child.geometry.dispose();
+  }
+  let layer=0;
+  for(const {material,geometries} of buckets.values()){
+    if(!geometries.length)continue;
+    const merged=mergeGeometries(geometries,false);
+    for(const g of geometries)g.dispose();
+    if(!merged)continue;
+    merged.computeBoundingBox();merged.computeBoundingSphere();
+    const mesh=new THREE.Mesh(merged,material);
+    mesh.name=label+' '+(++layer);mesh.castShadow=false;mesh.receiveShadow=true;
+    root.add(mesh);
+  }
+  return root;
 }
 function makeDust(mobile,material,slot){
   const n=mobile?42:88;
@@ -147,6 +174,7 @@ function buildCollapsedReplacement(slot,materials,mobile){
     m.receiveShadow=true;
   }
 
+  mergeStaticRoot(root,'v6.6 merged permanent collapse layer');
   root.userData={persistent:true,slotId:slot.id,collapsedTop:Math.max(leftHigh,rightHigh),originalHeight:h};
   return root;
 }
@@ -296,7 +324,10 @@ export class AmbientCityCollapseV660{
 
       if(t>5.1){
         c.dust.parent?.remove(c.dust);c.dust.geometry.dispose();c.dust.material.dispose();
-        // Settled fragments remain as persistent rubble for this session.
+        // Settled dynamic fragments become two or fewer static material layers.
+        // This preserves the physical aftermath without leaving 7–13 draw calls
+        // per collapse alive for the rest of a long-running session.
+        mergeStaticRoot(c.falling,'v6.6 merged settled falling debris');
         this.active.splice(i,1);
       }
     }
