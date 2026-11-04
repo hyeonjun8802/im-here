@@ -7,6 +7,7 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
 import {calcPostGrade} from './presentationPlanV140.js';
+import {PALETTE_GLSL} from './cinematicPaletteV760.js';
 
 /**
  * Optional native THREE postprocessing. Desktop/high quality only: hardware cost
@@ -51,6 +52,7 @@ export class CinematicPostV130 {
       uniform float uTime,uWarm,uCool,uGrain,uVignette,uContrast,uSaturation;
       uniform float uShadowLift,uMidtoneGain,uRolloff,uClarity;uniform vec2 uTexel;
       varying vec2 vUv;
+      ${PALETTE_GLSL}
       float rnd(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453123);}
       void main(){
        vec4 raw=texture2D(tDiffuse,vUv);vec3 c=raw.rgb;
@@ -64,19 +66,9 @@ export class CinematicPostV130 {
        float localLum=dot(c,vec3(.2126,.7152,.0722));
        float clarityMask=smoothstep(.035,.18,localLum)*(1.-smoothstep(.82,1.35,localLum));
        c+=clamp(c-blur,vec3(-.09),vec3(.09))*uClarity*clarityMask;
-       // Cinematic cold-steel shadows and motivated amber highlights.
-       // Retain midtone detail: screen grading cannot replace PBR materials.
-       float lum=dot(c,vec3(.2126,.7152,.0722));
-       // Preserve light in slate-grey concrete and clothes: contrast around
-       // a linear-light neutral pivot, rather than crushing dark midtones.
-       c=mix(vec3(lum),c,uSaturation);
-       c=(c-vec3(.22))*uContrast+vec3(.22);
-       float dark=1.0-smoothstep(.035,.48,lum);
-       float mid=smoothstep(.025,.16,lum)*(1.0-smoothstep(.48,1.30,lum));
-       float bright=smoothstep(.30,1.15,lum);
-       c+=vec3(uShadowLift*dark+uMidtoneGain*mid);
-       c+=vec3(-.054,-.019,.049)*uCool*dark;
-       c+=vec3(.067,.031,-.018)*uWarm*bright;
+       // Luminance contrast keeps the black point; selective chroma separates
+       // cold concrete from the existing warm camp lights without warming snow.
+       c=paletteGrade(c,uSaturation,uContrast,uCool,uWarm,uShadowLift,uMidtoneGain);
        // Keep night lamps bright but retain their filament shape and detail.
        c=c/(vec3(1.0)+max(vec3(0.0),c-vec3(1.0))*uRolloff);
        float r=length((vUv-.5)*vec2(1.12,1.0));
