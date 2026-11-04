@@ -224,13 +224,11 @@ export class PremiumUrbanSilhouetteV680{
 
   update(dt,weather={},night=0,game=null){
     const blocked=new Set([...(game?.ambientCollapseIds||[]),...(game?.tornadoDamagedIds||[])]);
-    const wind=Math.max(0,Math.min(1,Number(weather.wind)||0));
-    const t=performance.now()*.001;
     for(let i=0;i<this.spans.length;i++){
       const span=this.spans[i];
+      // Endpoints remain structurally anchored. Weather does not rotate or slide
+      // the whole span away from its building attachment points.
       span.visible=!blocked.has(span.userData.a)&&!blocked.has(span.userData.b);
-      // Very small whole-span sway: cables feel exposed to wind without becoming rubber.
-      span.rotation.y=Math.sin(t*.42+i*1.7)*wind*.0018;
     }
   }
 
