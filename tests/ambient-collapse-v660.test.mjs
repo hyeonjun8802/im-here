@@ -47,6 +47,10 @@ test('autonomous collapse changes skyline geometry and leaves physical aftermath
   assert.match(ambient,/falling facade chunk/);
   assert.match(ambient,/permanent rubble/);
   assert.match(ambient,/autonomous collapse dust plume/);
+  assert.match(ambient,/Three-stage failure/);
+  assert.match(ambient,/t>=\.58/);
+  assert.match(ambient,/mergeStaticRoot/);
+  assert.match(ambient,/merged settled falling debris/);
   assert.match(ambient,/MAX_AMBIENT_COLLAPSES=18/);
 });
 
