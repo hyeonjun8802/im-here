@@ -683,7 +683,7 @@ export class AfterWorld {
   this.premiumUrbanSilhouette?.update(dt,vw,night,game);
   this.premiumLandmarkRuins?.update(dt,vw,night,game);
   this.premiumWeatherSurfaces?.update(dt,vw,night,lightningStrength);
-  this.premiumNightLighting?.update(dt,vw,night,twilight,lightningStrength,lunar);
+  this.premiumNightLighting?.update(dt,vw,night,twilight,lightningStrength,lunar,game);
   this.ambientCityCollapse?.update(dt,now,game,vw);
   this.premiumAssetFinish?.update(dt,vw,night);
   const t=performance.now()*.001;
