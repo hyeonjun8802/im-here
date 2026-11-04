@@ -95,7 +95,17 @@ export class PremiumNightLightingV710{
       const warm=i%3===2?'#d77849':'#ffad68';
       const light=new THREE.PointLight(warm,0,18+hash(seed)*8,2);
       light.name='v7.1 sparse real city emergency light';light.castShadow=false;
-      light.position.set(s.x+(hash(seed+2)-.5)*5,GROUND+2.0+hash(seed+4)*2.0,s.z+(hash(seed+6)-.5)*5);
+      // Put the source outside the ruin footprint, toward its street-facing side.
+      const outward=new THREE.Vector2(s.x,s.z);
+      if(outward.lengthSq()<.001)outward.set(1,0);else outward.normalize();
+      const tangent=new THREE.Vector2(-outward.y,outward.x);
+      const edge=(s.width||11)*.68+3.4;
+      const jitter=(hash(seed+2)-.5)*4.0;
+      light.position.set(
+        s.x+outward.x*edge+tangent.x*jitter,
+        GROUND+2.0+hash(seed+4)*2.0,
+        s.z+outward.y*edge+tangent.y*jitter
+      );
       this.group.add(light);
 
       const mat=poolMaterial(this.poolTexture);
