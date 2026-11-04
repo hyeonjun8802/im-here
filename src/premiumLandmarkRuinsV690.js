@@ -56,7 +56,7 @@ function merge(list,material,name,{receive=true}={}){
 function officeCarcass(slot,mat,mobile){
   const root=new THREE.Group();root.name='v6.9 landmark office carcass';
   const w=Math.max(10,slot.width||12),d=w*.82,h=Math.max(26,slot.height||34);
-  const s={concrete:[],dark:[],steel:[],rust:[],glass:[],soot:[]};
+  const s={concrete:[],concreteDark:[],dark:[],steel:[],rust:[],glass:[],soot:[]};
   const floorH=3.45,floors=Math.max(7,Math.min(mobile?10:14,Math.floor(h/floorH)));
   const coreW=w*.28,coreD=d*.34;
   // Solid elevator/service core gives mass while perimeter is skeletal.
@@ -96,7 +96,7 @@ function officeCarcass(slot,mat,mobile){
   }
   for(const m of [
     merge(s.concrete,mat.concrete,'v6.9 office exposed floor plates'),
-    merge(s.dark,mat.concreteDark,'v6.9 office dark elevator core'),
+    merge(s.concreteDark,mat.concreteDark,'v6.9 office dark elevator core'),
     merge(s.steel,mat.steel,'v6.9 office structural frame'),
     merge(s.rust,mat.rust,'v6.9 office torn steel and rebar'),
     merge(s.glass,mat.glass,'v6.9 office surviving curtain wall',{receive:false}),
@@ -108,7 +108,7 @@ function officeCarcass(slot,mat,mobile){
 function splitApartment(slot,mat,mobile){
   const root=new THREE.Group();root.name='v6.9 landmark split apartment ruin';
   const w=Math.max(10,slot.width||12),d=w*.82,h=Math.max(27,slot.height||36);
-  const s={concrete:[],dark:[],steel:[],rust:[],panel:[],glass:[]};
+  const s={concrete:[],concreteDark:[],dark:[],steel:[],rust:[],panel:[],glass:[]};
   const gap=w*.18,leftW=w*.42,rightW=w*.34;
   const leftH=h*.92,rightH=h*(.68+hash(slot.x*.17)*.14);
   s.concrete.push(boxGeo([leftW,leftH,d*.90],[-(gap+leftW)*.5,leftH*.5,0]));
@@ -154,7 +154,7 @@ function splitApartment(slot,mat,mobile){
 function civicShell(slot,mat,mobile){
   const root=new THREE.Group();root.name='v6.9 landmark civic industrial shell';
   const w=Math.max(11,slot.width||13),d=w*.86,h=Math.max(24,slot.height||32);
-  const s={concrete:[],dark:[],steel:[],rust:[],panel:[],glass:[]};
+  const s={concrete:[],concreteDark:[],dark:[],steel:[],rust:[],panel:[],glass:[]};
   // stepped massing rather than a single tower
   s.concrete.push(boxGeo([w,h*.50,d],[0,h*.25,0]));
   s.concreteDark.push(boxGeo([w*.72,h*.30,d*.74],[-w*.08,h*.65,-d*.04]));
