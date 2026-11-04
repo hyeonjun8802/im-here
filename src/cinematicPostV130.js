@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {SSAOPass} from 'three/addons/postprocessing/SSAOPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
@@ -24,6 +25,14 @@ export class CinematicPostV130 {
   // desktop PBR textures and silhouettes look soft/low-resolution.
   this.composer.setPixelRatio(world.renderer.getPixelRatio());
   this.composer.addPass(new RenderPass(world.scene,world.camera));
+  // v6.5: screen-space ambient occlusion restores the contact depth that a
+  // dense premium city needs. Keep radius conservative so the roof does not
+  // acquire gamey dark halos around every edge.
+  this.ssao=new SSAOPass(world.scene,world.camera,w,h);
+  this.ssao.kernelRadius=8;
+  this.ssao.minDistance=.0025;
+  this.ssao.maxDistance=.115;
+  this.composer.addPass(this.ssao);
   this.bloom=new UnrealBloomPass(new THREE.Vector2(w,h),.25,.42,1.05);
   this.bloom.threshold=1.05;
   this.composer.addPass(this.bloom);
@@ -110,6 +119,7 @@ export class CinematicPostV130 {
     1/Math.max(1,width*ratio),1/Math.max(1,height*ratio));
  }
  setQuality(low){
+  if(this.ssao)this.ssao.enabled=!low;
   this.active=!!this.composer&&!low;
   this.composer?.setPixelRatio(this.world.renderer.getPixelRatio());
   this.updateResolution(
