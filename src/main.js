@@ -96,6 +96,9 @@ function runSurvivalAction(action){
    if(action==='scavenge_go'){
      const type=result.item||(result.outcome==='injury'||result.outcome==='sickness'?result.outcome:null);
      if(type)world?.playCinematic(type);
+     // Tent construction is a visible actor performance. Loot/rewards remain
+     // committed exactly once in the existing simulation.
+     if(result.item==='tent')world?.setAction('install_tent');
    }else if(action==='radio_contact'&&result.kind==='drop'){
      world?.playCinematic('helicopter');
    }else if(action==='companion_invite'){

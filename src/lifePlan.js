@@ -12,6 +12,7 @@ export const LIFE_ACTIVITIES = Object.freeze({
   rest:   {label:'천막에서 쉬기', spot:'bed', duration:16, calm:true},
   medicine:{label:'응급 처치', spot:'shelter', duration:11, calm:true},
   repair: {label:'캠프 보수', spot:'workbench', duration:14, calm:true},
+  install_tent: {label:'야전 텐트 설치 · 기둥 고정과 천막 펼치기',spot:'shelter',duration:9,calm:false},
   explore:{label:'긴급 탐색', spot:'stairwell', duration:18, calm:false},
   watch:  {label:'도시 관찰', spot:'overlook', duration:15, calm:true},
   shelter:{label:'재난 대피', spot:'shelter', duration:16, calm:false}

@@ -200,7 +200,7 @@ export class SurvivorLife{
   const bob=Math.sin(t*2.5)*.022;
   body.position.y=lerp(body.position.y,(sitting?-.28:sleeping?(w.activeKit?.tent?1.18:.14):0)+(moving?Math.abs(Math.sin(t*7.4))*.055:bob));
   body.rotation.z=lerp(body.rotation.z,-Math.PI*.5*sleeping);
-  body.rotation.x=lerp(body.rotation.x,working&&['repair','radio'].includes(a)?.12:0);
+  body.rotation.x=lerp(body.rotation.x,working&&['repair','radio','install_tent'].includes(a)?.12:0);
   body.rotation.z=lerp(body.rotation.z,moving?Math.sin(t*7.4)*.035:0);
   for(let i=0;i<2;i++){
    const sign=i===0?1:-1;
@@ -209,14 +209,14 @@ export class SurvivorLife{
    const legPose=sitting?-1.19:step;
    const kneePose=sitting?1.37:moving?Math.max(0,-step)*.48:0;
    l.rotation.x=lerp(l.rotation.x,legPose);k.rotation.x=lerp(k.rotation.x,kneePose);
-   const armPose=moving?-step*.65:working?({eat:[-.67,-.91],drink:[-.1,-1.08],guitar:[-1.01,-.95],radio:[-.14,-1.14],repair:[-.92,-.78],cook:[-.91,-.75],stretch:[-2.30,-2.30],medicine:[-.84,-.94],rest:[-.18,-.20],sit:[-.20,-.18],shelter:[-.40,-.52],watch:[-.15,-.13]}[a]||[-.1,-.1])[i]:-.10;
+   const armPose=moving?-step*.65:working?({eat:[-.67,-.91],drink:[-.1,-1.08],guitar:[-1.01,-.95],radio:[-.14,-1.14],repair:[-.92,-.78],install_tent:[-1.25,-1.34],cook:[-.91,-.75],stretch:[-2.30,-2.30],medicine:[-.84,-.94],rest:[-.18,-.20],sit:[-.20,-.18],shelter:[-.40,-.52],watch:[-.15,-.13]}[a]||[-.1,-.1])[i]:-.10;
    arm.rotation.x=lerp(arm.rotation.x,armPose+(working&&a==='eat'&&i===0?Math.sin(t*4.6)*.16:0));
    arm.rotation.z=lerp(arm.rotation.z,working&&(a==='guitar'||a==='radio')?(i===0?-.32:.31):0);
-   const elbowPose=working?({eat:[-.87,-.84],drink:[-.06,-1.17],guitar:[-.81,-.50],radio:[-.06,-1.55],repair:[-.9,-.8],cook:[-.8,-.9],stretch:[-.15,-.15],medicine:[-.5,-.78],sit:[-.22,-.22]}[a]||[-.14,-.14])[i]:.02;
+   const elbowPose=working?({eat:[-.87,-.84],drink:[-.06,-1.17],guitar:[-.81,-.50],radio:[-.06,-1.55],repair:[-.9,-.8],install_tent:[-.44,-.61],cook:[-.8,-.9],stretch:[-.15,-.15],medicine:[-.5,-.78],sit:[-.22,-.22]}[a]||[-.14,-.14])[i]:.02;
    e.rotation.x=lerp(e.rotation.x,elbowPose+(working&&a==='guitar'&&i===1?Math.sin(t*8.9)*.32:0));
   }
   this.head.rotation.y=lerp(this.head.rotation.y,working&&a==='watch'?Math.sin(t*.50)*.55:working&&a==='radio'?.12:Math.sin(t*.39)*.07);
-  this.head.rotation.x=lerp(this.head.rotation.x,working&&['eat','guitar','repair','cook'].includes(a)?.12:0);
+  this.head.rotation.x=lerp(this.head.rotation.x,working&&['eat','guitar','repair','install_tent','cook'].includes(a)?.12:0);
   if(w.survivorTorso)w.survivorTorso.scale.y=lerp(w.survivorTorso.scale.y,1+Math.sin(t*1.9)*.008);
   if(w.survivorMouth)w.survivorMouth.scale.y=lerp(w.survivorMouth.scale.y,working&&a==='guitar'?.75+Math.abs(Math.sin(t*4.2))*.6:working&&a==='radio'?1.5:.55);
   if(w.survivorEyelids)for(const lid of w.survivorEyelids){lid.scale.y=sleeping>.5?2.0:(Math.sin(t*.32)> .994)?2.0:.30;}

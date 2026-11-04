@@ -202,11 +202,15 @@ export class BeardedSurvivorV190{
    this.actionHandTarget(n.Chest,[.16+.035*stir,-.44+.015*circle,-.44],this.ikTarget);
    this.solveArmIK('R',this.ikTarget,Math.min(.78,w),4);return;
   }
-  if(a==='repair'){
-   const work=Math.sin(this.elapsed*6.4);
-   this.actionHandTarget(n.Chest,[-.22,-.34,-.40+.025*work],this.ikTarget);
+  if(a==='repair'||a==='install_tent'){
+   const tying=a==='install_tent';
+   const work=Math.sin(this.elapsed*(tying?4.2:6.4));
+   // Existing 20-bone GLB rig ties tent ropes with both articulated hands.
+   this.actionHandTarget(n.Chest,[-.22,tying?.02:-.34,
+     (tying?-.50:-.40)+.025*work],this.ikTarget);
    this.solveArmIK('L',this.ikTarget,Math.min(.78,w),4);
-   this.actionHandTarget(n.Chest,[.22,-.36,-.40-.025*work],this.ikTarget);
+   this.actionHandTarget(n.Chest,[.22,tying?.04:-.36,
+     (tying?-.51:-.40)-.025*work],this.ikTarget);
    this.solveArmIK('R',this.ikTarget,Math.min(.78,w),4);return;
   }
   if(a==='shelter'){
