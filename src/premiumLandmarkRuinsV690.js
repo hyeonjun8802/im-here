@@ -154,7 +154,7 @@ function splitApartment(slot,mat,mobile){
 function civicShell(slot,mat,mobile){
   const root=new THREE.Group();root.name='v6.9 landmark civic industrial shell';
   const w=Math.max(11,slot.width||13),d=w*.86,h=Math.max(24,slot.height||32);
-  const s={concrete:[],dark:[],steel:[],rust:[],panel:[],glass:[]};
+  const s={concrete:[],concreteDark:[],dark:[],steel:[],rust:[],panel:[],glass:[]};
   // stepped massing rather than a single tower
   s.concrete.push(boxGeo([w,h*.50,d],[0,h*.25,0]));
   s.concreteDark.push(boxGeo([w*.72,h*.30,d*.74],[-w*.08,h*.65,-d*.04]));
