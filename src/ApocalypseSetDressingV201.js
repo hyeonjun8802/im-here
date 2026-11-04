@@ -128,6 +128,13 @@ export class ApocalypseSetDressingV201{
   this.stats.exposedFrames=towers;
  }
  makeStreetStory(){
+  // v6.4 owns the street-level visual layer. Do not draw the legacy low-detail
+  // box cars/roads underneath it; that doubled geometry, caused z-fighting and
+  // made the upgraded city read like a web prototype again.
+  if(this.world.premiumStreet){
+   this.stats.cars=0;this.stats.streetDebris=0;
+   return;
+  }
   const mobile=this.world.isMobile,roadMat=new THREE.MeshStandardMaterial({color:'#242a29',roughness:1});
   const roadRecords=[];for(const z of [-190,190])roadRecords.push({p:[0,GROUND+.04,z],s:[330,.08,14]});for(const x of [-190,190])roadRecords.push({p:[x,GROUND+.04,0],s:[14,.08,330]});
   this.meshes.push(addInstances(this.group,'Broken perimeter streets',new THREE.BoxGeometry(1,1,1),roadMat,roadRecords));
