@@ -21,7 +21,7 @@ test('calibrated color has brighter midtones and readable shadows without washin
 test('high quality desktop recovers the native device pixel density through the composer',()=>{
  const code=readFileSync(new URL('../src/cinematicPostV130.js',import.meta.url),'utf8');
  assert.match(code,/this\.composer\.setPixelRatio\(world\.renderer\.getPixelRatio\(\)\)/);
- assert.match(code,/this\.composer\.setPixelRatio\(this\.world\.renderer\.getPixelRatio\(\)\)/);
+ assert.match(code,/this\.composer\?\.setPixelRatio\(this\.world\.renderer\.getPixelRatio\(\)\)/);
  assert.match(code,/new ShaderPass\(FXAAShader\)/);
  assert.match(code,/uniforms\.resolution\.value\.set\(/);
  assert.match(code,/this\.composer\.addPass\(new OutputPass\(\)\)/);
