@@ -22,18 +22,28 @@ const cases=[
 const issues=[],checks=[];
 let browser;
 try{
- browser=await chromium.launch({headless:true,args:['--use-gl=angle','--enable-webgl','--enable-unsafe-swiftshader','--disable-dev-shm-usage','--no-sandbox']});
+ browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl','--enable-unsafe-swiftshader','--disable-dev-shm-usage','--no-sandbox']});
  for(const c of cases){
   const page=await browser.newPage({viewport:c.viewport,deviceScaleFactor:c.viewport.width<700?2:1.5});
   page.on('pageerror',e=>issues.push(c.name+': '+e));
   page.on('console',m=>{
-   if(m.type()==='error'&&/shader|webgl|invalid_operation|context lost/i.test(m.text()))
-    issues.push(c.name+': '+m.text());
+   if(m.type()==='error')issues.push(c.name+': console '+m.text());
   });
   try{
    await page.goto((process.env.AFTERDAY_URL||'http://127.0.0.1:5173')+'/?showcase=1',
     {waitUntil:'domcontentloaded',timeout:45000});
-   await page.waitForFunction(()=>!!window.afterday?.world?.renderer&&!!window.afterday?.world?.cinematicPost,{timeout:45000});
+   try{
+    await page.waitForFunction(()=>!!window.afterday?.world?.renderer&&!!window.afterday?.world?.cinematicPost,{timeout:15000});
+   }catch(e){
+    const diagnostic=await page.evaluate(()=>({
+     errorText:document.querySelector('#error')?.textContent||'',
+     loadText:document.querySelector('#load-progress')?.textContent||'',
+     worldExposed:Boolean(window.afterday?.world),
+     hasCanvas:Boolean(document.querySelector('canvas')),
+     readyState:document.readyState
+    })).catch(err=>({evaluationError:String(err)}));
+    throw Error('Live WebGL boot failed: '+JSON.stringify({diagnostic,issues,error:String(e)}));
+   }
    await page.evaluate(async({hour,weather,view})=>{
     const w=window.afterday.world;
     await Promise.allSettled([w.heroAssetPromise,w.beardedSurvivor?.ready]);
@@ -59,6 +69,7 @@ try{
     throw Error('Real WebGL scene not captured: '+JSON.stringify(data));
    }
    await page.screenshot({path:path.join(output,c.name+'.png')});
+   console.log('CAPTURED '+c.name+' '+JSON.stringify(data));
    checks.push({name:c.name,weather:c.weather,hour:c.hour,...data});
   }finally{await page.close();}
  }
