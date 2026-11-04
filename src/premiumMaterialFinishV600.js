@@ -5,7 +5,7 @@ import * as THREE from 'three';
  * It never adds new geometry or changes player/world layout.
  */
 export const finishPreset=(mobile=false)=>Object.freeze({
-  anisotropy:mobile?4:12,
+  anisotropy:mobile?4:16,
   maxNormalScale:mobile?.35:.46,
   clothRoughnessMin:.78,
   metalRoughnessMin:.34
@@ -39,11 +39,29 @@ export function finishMaterial(material,meshName='',mobile=false){
    material.flatShading=false;
    material.roughness=Math.max(material.roughness,preset.clothRoughnessMin);
    material.metalness=Math.min(material.metalness,.09);
+   material.envMapIntensity=mobile?.48:.62;
+   if(material.isMeshPhysicalMaterial){
+    material.sheen=Math.max(material.sheen||0,.10);
+    material.sheenRoughness=Math.max(material.sheenRoughness||0,.78);
+    material.sheenColor?.set?.('#8c897d');
+   }
   }else if(hint==='glass'){
-   material.roughness=THREE.MathUtils.clamp(material.roughness,.12,.52);
-   material.metalness=Math.min(material.metalness,.35);
+   material.roughness=THREE.MathUtils.clamp(material.roughness,.10,.42);
+   material.metalness=Math.min(material.metalness,.24);
+   material.envMapIntensity=mobile?1.0:1.35;
+   if(material.isMeshPhysicalMaterial){
+    material.clearcoat=Math.max(material.clearcoat||0,.55);
+    material.clearcoatRoughness=Math.min(material.clearcoatRoughness||.18,.22);
+   }
   }else if(hint==='metal'){
-   material.roughness=THREE.MathUtils.clamp(material.roughness,preset.metalRoughnessMin,.92);
+   material.roughness=THREE.MathUtils.clamp(material.roughness,preset.metalRoughnessMin,.88);
+   material.envMapIntensity=mobile?.92:1.28;
+   if(material.isMeshPhysicalMaterial){
+    material.clearcoat=Math.max(material.clearcoat||0,.06);
+    material.clearcoatRoughness=Math.max(material.clearcoatRoughness||.28,.28);
+   }
+  }else{
+   material.envMapIntensity=mobile?.62:.82;
   }
   if(material.normalMap&&material.normalScale){
    material.normalScale.x=THREE.MathUtils.clamp(material.normalScale.x,-preset.maxNormalScale,preset.maxNormalScale);

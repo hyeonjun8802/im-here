@@ -43,17 +43,18 @@ export function premiumSceneBudget(isMobile=false){return Object.freeze({
 export function calcPostGrade({night=0,storm=0,wetness=0,twilight=0}={}){
  const n=clamp01(night),s=clamp01(storm),w=clamp01(wetness),t=clamp01(twilight);
  return Object.freeze({
-  bloomStrength:.18+n*.09+w*.06,
-  filmGrain:.0020+s*.0006,
-  // Bright, legible midtones and selective color rather than blanket grey.
-  // Weather reduces saturation without crushing the entire scene to black.
-  highlightWarmth:.18+t*.15,
-  shadowBlue:.15+n*.060+s*.055,
-  vignette:.064+n*.022,
-  contrast:1.095+s*.030+n*.015,
-  saturation:1.065-s*.105-n*.045,
-  shadowLift:.033+n*.022+s*.026,
-  midtoneGain:.064+n*.040+s*.023,
-  highlightRolloff:.10+n*.015+w*.018,
+  bloomStrength:.16+n*.12+w*.05,
+  filmGrain:.0018+s*.0005,
+  // v6.2 target: cool graphite/concrete world with small motivated amber
+  // highlights. Preserve material colour; avoid both blanket grey and gamey
+  // oversaturation.
+  highlightWarmth:.24+t*.18,
+  shadowBlue:.20+n*.080+s*.060,
+  vignette:.070+n*.020,
+  contrast:1.120+s*.030+n*.010,
+  saturation:1.000-s*.080-n*.040,
+  shadowLift:.026+n*.018+s*.020,
+  midtoneGain:.055+n*.035+s*.020,
+  highlightRolloff:.14+n*.020+w*.020,
  });
 }
