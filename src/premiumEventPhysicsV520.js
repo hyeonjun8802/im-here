@@ -181,10 +181,14 @@ export class PremiumEventPhysicsV520{
    // position/health and is reset on completion. Accessibility disables it.
    const actor=this.world.survivor;
    if(actor){
-    const a=this.impactAge,amp=(this.kind==='tornadoDirect'?.12:.065)*
-      (reducedMotion?0:1)*Math.max(0,1-a/1.65);
-    actor.rotation.z=Math.sin(a*14)*amp;
-    actor.rotation.x=-Math.abs(Math.sin(a*8))*.40*amp;
+    if(reducedMotion){
+     actor.rotation.x=0;actor.rotation.z=0;
+    }else{
+     const a=this.impactAge,amp=(this.kind==='tornadoDirect'?.12:.065)*
+       Math.max(0,1-a/1.65);
+     actor.rotation.z=Math.sin(a*14)*amp;
+     actor.rotation.x=-Math.abs(Math.sin(a*8))*.40*amp;
+    }
    }
    if(this.impactAge>=IMPACT_SECONDS)this.finishDebris();
   }

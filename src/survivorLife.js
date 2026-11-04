@@ -153,9 +153,13 @@ export class SurvivorLife{
  request(action,manual=true){
   if(action==='radio'&&this.world.activeKit&&!this.world.activeKit.radio)return false;
   if(action==='sleep'&&this.current==='sleep'&&['approach','enter','perform'].includes(this.stage))return true;
-  const spec=action==='sleep'?SLEEP_ACTIVITY:LIFE_ACTIVITIES[action];if(!spec)return false;
+  // Cinematic-only tent construction is a local visual action, never part
+  // of the approved deterministic autonomous-life schedule.
+  const spec=action==='sleep'?SLEEP_ACTIVITY:
+   action==='install_tent'?{label:'야전 텐트 설치 · 밧줄과 기둥 고정',spot:'shelter',duration:9,calm:false}:
+   LIFE_ACTIVITIES[action];if(!spec)return false;
   const w=this.world.previewWeather||this.world.simulatedWeather;
-  if(action!=='sleep'&&!activityAllowed(action,w,manual))return false;
+  if(action!=='sleep'&&action!=='install_tent'&&!activityAllowed(action,w,manual))return false;
   const spot=this.spots[spec.spot];if(!spot)return false;
   // A command issued while in the cot must first stand the survivor up and
   // move them OUT of the bed collision volume, never pathfind from inside it.

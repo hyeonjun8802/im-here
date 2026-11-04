@@ -137,9 +137,10 @@ test('successful item acquisition launches existing tent installer; storms do no
  const life=readFileSync(new URL('../src/lifePlan.js',import.meta.url),'utf8');
  const lifeActor=readFileSync(new URL('../src/survivorLife.js',import.meta.url),'utf8');
  assert.match(main,/result\.item==='tent'\)world\?\.setAction\('install_tent'\)/);
- assert.match(life,/install_tent:.*spot:'shelter'/);
+ assert.doesNotMatch(life,/install_tent/,'approved autonomous schedule remains unchanged');
  assert.match(rig,/a==='repair'\|\|a==='install_tent'/);
  assert.match(lifeActor,/install_tent:\[-1\.25,-1\.34\]/);
+ assert.match(lifeActor,/action==='install_tent'\?\{label:/);
  assert.match(world,/this\.eventPerformance\?\.update\(cinematicDt/);
  assert.match(world,/this\.rescueHelicopterVfx\?\.update\(cinematicDt/);
  assert.match(main,/if\(outcome\.applied\)/);
