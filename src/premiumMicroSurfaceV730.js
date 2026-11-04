@@ -86,7 +86,7 @@ function makeTextureSet(size,seed,mode){
 function classify(mesh,material){
   if(!mesh?.isMesh||!material)return null;
   if(!material.isMeshStandardMaterial&&!material.isMeshPhysicalMaterial)return null;
-  if(material.normalMap)return null; // authored material wins.
+  if(material.normalMap||material.roughnessMap)return null; // authored material wins.
   if(material.transparent&&material.opacity<.94)return null;
   const n=((mesh.name||'')+' '+(material.name||'')).toLowerCase();
   if(/glass|window|lamp|light|emissive|smoke|dust|fog|cloud|water|wet|puddle|pool|scar|soot|grime|cloth|fabric|canvas|plant|leaf/.test(n))return null;
