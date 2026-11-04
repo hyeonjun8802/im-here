@@ -126,6 +126,7 @@ export class PremiumMicroSurfaceV730{
         else if(kind==='asphalt')m.roughness=clamp(m.roughness??.90,.75,.99);
         else m.roughness=clamp(m.roughness??.62,.35,.88);
         m.needsUpdate=true;this.applied.add(m);this.counts[kind]++;
+        this.world.premiumWetMaterial?.registerMaterial(m,kind);
       }
     });
   }
