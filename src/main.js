@@ -288,5 +288,5 @@ async function boot(){try{
   Promise.race([world.heroAssetPromise,new Promise(r=>setTimeout(r,7000))]).finally(()=>{$('#loading').classList.add('hidden')});
   world.start().then(()=>{}).catch(e=>console.warn('asset atlas',e));
   setInterval(()=>{const a=world.assets;const target=$('#asset-progress');if(target)target.textContent=`캐릭터 ${world.beardedSurvivor?.status==='ready'?'3D GLB 로딩 완료':'3D 로딩 '+(world.beardedSurvivor?.status||'중')} · 시설 GLB ${world.heroAssetStatus?.loaded||0}/3 · GitHub 도시 ${a.success}개 · 미로드 ${a.failed.size}개`;},3000);
- }catch(e){console.error('BOOT ERROR',e);$('#loading').classList.add('hidden');$('#error').classList.remove('hidden');$('#error').innerHTML='<b>3D 엔진을 초기화하지 못했습니다.</b><p>'+String(e.message).replace(/[<>&]/g,'')+'</p><p>WebGL을 지원하는 Chrome/Safari에서 npm run dev로 실행해 주세요.</p>'}}
+ }catch(e){console.error('BOOT ERROR',e);$('#loading').classList.add('hidden');$('#error').classList.remove('hidden');$('#error').innerHTML='<b>3D 엔진을 초기화하지 못했습니다.</b><p>'+String(e.message).replace(/[<>&]/g,'')+'</p><p>페이지를 새로고침해 주세요. 오류가 계속되면 위 오류 메시지와 함께 알려 주세요.</p>'}}
 boot();

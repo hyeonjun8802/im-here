@@ -12,6 +12,7 @@ import {CITY_COMPOSITION} from './cityComposition.js';
  * Mobile uses half the local-light count and one haze beam.
  */
 const GROUND=CITY_COMPOSITION.groundY;
+const TAU=Math.PI*2;
 const hash=n=>{const x=Math.sin(n*227.17+97.31)*43758.5453123;return x-Math.floor(x);};
 const clamp01=v=>Math.max(0,Math.min(1,Number(v)||0));
 
