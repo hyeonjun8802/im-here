@@ -264,6 +264,14 @@ async function boot(){try{
       save();renderHUD();
     }
   };
+  // v6.6: slow structural decay can partially collapse background ruins even
+  // without a tornado. IDs/timing are persisted, but this never changes health,
+  // food, water or facilities.
+  world.onAmbientCollapseStateChange=()=>save();
+  world.onAmbientCollapse=(id,serial)=>{
+    addEvent(state,`도시 어딘가에서 노후 건물 일부가 붕괴했다. 붕괴 흔적은 그대로 남는다. · #${serial}`);
+    save();renderHUD();
+  };
   world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};
   eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),
     onExpeditionChoice:choice=>runSurvivalAction(choice==='go'?'scavenge_go':'scavenge_stay'),
