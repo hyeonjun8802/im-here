@@ -9,7 +9,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
 export const defaults = (now=Date.now())=>({
-  version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
+  version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
   itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
@@ -48,6 +48,15 @@ export function sanitize(raw, now=Date.now()) {
   s.tornadoDamageCount=Math.max(legacyCount,s.tornadoDamagedIds.length);
   if(s.tornadoCityDamaged&&s.tornadoDamageCount===0)s.tornadoDamageCount=1;
   s.tornadoCityDamaged=s.tornadoDamageCount>0;
+  // v6.6 autonomous background-city decay. This state is visual-only for the
+  // survival economy, but must be monotonic so a partially collapsed skyline
+  // never repairs itself after reload.
+  s.ambientCollapseIds=Array.isArray(raw.ambientCollapseIds)?
+    [...new Set(raw.ambientCollapseIds.filter(v=>typeof v==='string'&&v.length>0&&v.length<120))].slice(0,18):[];
+  s.ambientCollapseSerial=Math.max(s.ambientCollapseIds.length,
+    Math.max(0,Math.floor(Number(raw.ambientCollapseSerial)||0)));
+  const ambientAt=Number(raw.nextAmbientCollapseAt);
+  s.nextAmbientCollapseAt=Number.isFinite(ambientAt)&&ambientAt>0?ambientAt:now+18*60000;
   s.tornadoCurrentSites=Array.isArray(s.tornadoCurrentSites)?
     [...new Set(s.tornadoCurrentSites.filter(v=>typeof v==='string'&&v.length<120))].slice(0,3):[];
   s.tornadoPreviousCenterId=typeof s.tornadoPreviousCenterId==='string'?s.tornadoPreviousCenterId:null;
