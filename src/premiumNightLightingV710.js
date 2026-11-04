@@ -113,7 +113,7 @@ export class PremiumNightLightingV710{
       pool.name='v7.1 wet-ground emergency light pool';
       pool.rotation.x=-Math.PI/2;pool.position.set(light.position.x,GROUND+.19,light.position.z);
       const radius=8+hash(seed+9)*6;pool.scale.set(radius,radius,1);pool.renderOrder=6;this.group.add(pool);
-      this.locals.push({light,pool,mat,phase:hash(seed+11)*TAU,base:1.15+hash(seed+13)*.75});
+      this.locals.push({id:s.id,light,pool,mat,phase:hash(seed+11)*TAU,base:1.15+hash(seed+13)*.75});
     }
 
     this.beams=[];this.beamMaterials=[];
@@ -131,11 +131,11 @@ export class PremiumNightLightingV710{
       const spot=new THREE.SpotLight('#b7cfe0',0,42,Math.PI*.12,.55,1.6);
       spot.name='v7.1 restrained ruined-city floodlight';spot.castShadow=false;
       spot.position.copy(start);spot.target.position.copy(end);this.group.add(spot,spot.target);
-      cone.userData.spot=spot;cone.userData.phase=hash(seed+9)*TAU;
+      cone.userData.spot=spot;cone.userData.phase=hash(seed+9)*TAU;cone.userData.sourceId=s.id;
     }
   }
 
-  update(dt,weather={},night=0,twilight=0,flash=0,lunar=null){
+  update(dt,weather={},night=0,twilight=0,flash=0,lunar=null,game=null){
     this.time+=Math.min(.10,Math.max(0,Number(dt)||0));
     const n=clamp01(night),cloud=clamp01(weather.cloud),storm=clamp01(weather.storm),
       wet=clamp01(weather.wet),f=clamp01(flash),tw=clamp01(twilight);
@@ -151,23 +151,26 @@ export class PremiumNightLightingV710{
     this.moon.intensity=(.04+n*.34*moonAbove)*(1-cloud*.56)*(1-storm*.38)+f*.12;
     this.moon.color.set(storm?'#879dad':'#9bb8d0');
 
+    const blocked=new Set([...(game?.ambientCollapseIds||[]),...(game?.tornadoDamagedIds||[])]);
     for(let i=0;i<this.locals.length;i++){
-      const o=this.locals[i],flicker=.94+.06*Math.sin(this.time*(3.1+i*.37)+o.phase)*Math.sin(this.time*7.3+o.phase);
-      const intensity=o.base*(n*.92+tw*.24+storm*.08)*flicker;
-      o.light.intensity=intensity+f*1.6;
+      const o=this.locals[i],alive=!blocked.has(o.id);
+      const flicker=.94+.06*Math.sin(this.time*(3.1+i*.37)+o.phase)*Math.sin(this.time*7.3+o.phase);
+      const intensity=alive?o.base*(n*.92+tw*.24+storm*.08)*flicker:0;
+      o.light.intensity=intensity+(alive?f*1.6:0);
       o.light.distance=18+wet*5;
-      o.mat.opacity=(n*.20+tw*.06)*(.75+wet*.62)*(1+f*.40);
-      o.pool.scale.multiplyScalar(1); // keep authored radius; explicit no per-frame growth.
+      o.mat.opacity=alive?(n*.20+tw*.06)*(.75+wet*.62)*(1+f*.40):0;
+      o.pool.visible=alive;
     }
 
     for(let i=0;i<this.beams.length;i++){
       const beam=this.beams[i],m=this.beamMaterials[i],spot=beam.userData.spot;
-      const strength=(n*.44+tw*.09)*(1-cloud*.28)*(1-storm*.42);
+      const alive=!blocked.has(beam.userData.sourceId);
+      const strength=alive?(n*.44+tw*.09)*(1-cloud*.28)*(1-storm*.42):0;
       m.uniforms.uStrength.value=strength;
       m.uniforms.uTime.value=this.time+beam.userData.phase;
       m.uniforms.uStorm.value=storm;m.uniforms.uFlash.value=f;
-      beam.visible=strength>.025;
-      spot.intensity=(this.mobile?.32:.52)*strength+f*.18;
+      beam.visible=alive&&strength>.025;
+      spot.intensity=alive?(this.mobile?.32:.52)*strength+f*.18:0;
     }
   }
 
