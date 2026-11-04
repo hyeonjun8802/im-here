@@ -1,4 +1,5 @@
-/** AFTERDAY · one survivor, one rooftop, risk-and-choice expeditions.
+import {companionProductionFactor,offerCompanionRescue} from './supportCompanion.js';
+/** AFTERDAY · one playable survivor, one rooftop, risk-and-choice expeditions.
  * Day is a GAME DAY (4 real hours at 1x); all rolls use immutable starter seed,
  * not render frames or mutable weather RNG. No backend or monetized loot.
  */
@@ -134,7 +135,7 @@ export function applyAcquiredItemMinute(s,day,weather,{addLog=()=>{}}={}){
  // on a mere page reload.
  if(kit.purifier&&s.facilities.tank>=40&&d.purifierProduced<2&&s.supply.water<16){
    const efficiency=s.facilities.tank>=70?1:.55;
-   d.filterMinutes+=efficiency*(weather==='cold'?.32:1);
+   d.filterMinutes+=efficiency*(weather==='cold'?.32:1)*companionProductionFactor(s);
    if(d.filterMinutes>=240){
      const n=Math.min(Math.floor(d.filterMinutes/240),2-d.purifierProduced,16-s.supply.water);
      if(n>0){s.supply.water+=n;d.purifierProduced+=n;water=n;
@@ -147,7 +148,7 @@ export function applyAcquiredItemMinute(s,day,weather,{addLog=()=>{}}={}){
  if(kit.seeds&&s.facilities.storage>=20&&s.supply.food<16){
    const sunshine=weather==='heat'?.24:weather==='cold'?.25:weather==='tornado'?.10:
      weather==='rain'?.95:weather==='storm'?.45:1;
-   d.farmMinutes+=sunshine;
+   d.farmMinutes+=sunshine*companionProductionFactor(s);
    if(d.farmMinutes>=1860){
      const n=Math.min(2,16-s.supply.food);
      if(n>0){s.supply.food+=n;food=n;d.lastHarvestDay=day;
@@ -173,7 +174,11 @@ export function requestRadioContact(s,day,{addLog=()=>{}}={}){
    else if(reward<.90){s.supply.medicine+=2;msg='구조 헬기에서 응급 치료제 2개를 떨어뜨렸다.';}
    else{s.supply.parts+=4;msg='구조 헬기가 수리용 부품 4개를 투하했다.';}
  }else if(v<.56){
-   kind='contact';msg='무전 교신: 다른 생존자의 신호를 받았다. 서로 위치를 알렸지만 캠프에 합류하지는 않았다.';
+   kind='contact';
+   const pending=offerCompanionRescue(s,day);
+   msg=pending?'무전 교신: 다친 생존자가 계단실로 접근하고 있다. 식량과 식수를 함께 쓰는 대신 정수와 재배를 도울 수 있다. 받아들일지 선택하라.':
+     s.companion?.present?'무전 교신: 외부 생존자와 소식을 나눴다. 지원 생존자는 여전히 옥상에서 함께 일한다.':
+     '무전 교신: 다른 생존자의 신호를 받았다. 더 이상의 동행은 어렵지만 생존자의 존재를 확인했다.';
  }else msg='무전 교신: 잡음뿐이다. 헬기의 위치를 확인하지 못했다.';
  d.radioNewsType=kind;
  addLog('무전 교신 결과: '+msg);

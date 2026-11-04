@@ -50,6 +50,13 @@ function renderHUD(){
  $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
  const open=state.scavenge?.pending;
  $('#expedition-toggle').hidden=!open||dead;
+ const waiting=state.companion?.pending;
+ $('#companion-toggle').hidden=!waiting||dead;
+ $('#companion-status').textContent=state.companion?.present
+   ?'🤝 지원 생존자 동행 · 건강 '+Math.round(state.companion.health)+'% · 식량/식수 매일 -1 · 정수/재배 +30%'
+   : waiting?'📡 다른 생존자의 구조 요청 · 받아들일지 선택하세요'
+   : state.companion?.lost?'🕯 함께하던 생존자는 캠프를 떠났습니다'
+   :'🏙 주변 생존자 신호를 기다리는 중';
  $('#radio-contact').hidden=!state.kit.radio||dead;
  const owned=ITEM_IDS.filter(id=>state.kit?.[id]);
  $('#inventory-items').textContent=owned.length?
@@ -76,17 +83,17 @@ function renderHUD(){
 function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function runSurvivalAction(action){
  const result=applyAction(state,action,gameClock.virtualNow);
- if(action.startsWith('scavenge_'))eventBoard?.dismiss();
+ if(action.startsWith('scavenge_')||action.startsWith('companion_'))eventBoard?.dismiss();
  if(result.good){
-   if(action.startsWith('scavenge_'))world?.syncSurvivalInventory(state);
+   if(action.startsWith('scavenge_')||action.startsWith('companion_'))world?.syncSurvivalInventory(state);
    if(action==='radio_contact')world?.setAction('radio');
    else if(action==='take_cover')world?.setAction('shelter');
    else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
-   else if(!action.startsWith('scavenge_')&&action!=='radio_contact')world?.setAction(action);
+   else if(!action.startsWith('scavenge_')&&!action.startsWith('companion_')&&action!=='radio_contact')world?.setAction(action);
    if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
    save();
  }
- toast(result.msg,action.startsWith('scavenge_')||action==='radio_contact'?'quiet':'');
+ toast(result.msg,action.startsWith('scavenge_')||action.startsWith('companion_')||action==='radio_contact'?'quiet':'');
  return result;
 }
 function bindEvents(){
@@ -130,6 +137,7 @@ function bindEvents(){
     runSurvivalAction(btn.dataset.action);
   }));
  $('#expedition-toggle').addEventListener('click',()=>eventBoard?.openPendingExpedition(state));
+ $('#companion-toggle').addEventListener('click',()=>eventBoard?.openPendingCompanion(state));
  $('#radio-contact').addEventListener('click',()=>runSurvivalAction('radio_contact'));
  $('#restart-game').addEventListener('click',()=>{
   if(window.confirm('현재 생존 기록을 초기화하고 DAY 001부터 다시 시작하시겠습니까?')){
@@ -243,6 +251,7 @@ async function boot(){try{
   world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};
   eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),
     onExpeditionChoice:choice=>runSurvivalAction(choice==='go'?'scavenge_go':'scavenge_stay'),
+    onCompanionChoice:choice=>runSurvivalAction(choice==='invite'?'companion_invite':'companion_decline'),
     onSecure:()=>runSurvivalAction('secure_storage'),
     onCover:()=>runSurvivalAction('take_cover'),
     onPrepare:()=>runSurvivalAction('secure_supplies')});

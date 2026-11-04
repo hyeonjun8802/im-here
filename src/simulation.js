@@ -1,6 +1,7 @@
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
 import {makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
+import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute} from './supportCompanion.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
@@ -11,7 +12,7 @@ export const defaults = (now=Date.now())=>({
   version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
-  itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),
+  itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
   supply:{food:3,water:4,medicine:0,parts:2}, facilities:{shelter:50,tank:66,storage:72},
   events:['DAY 1: 옥상 콘크리트에 누웠다. 텐트도 정수기도 없다. 오늘 탐색할지 결정해야 한다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
 });
@@ -29,6 +30,7 @@ export function sanitize(raw, now=Date.now()) {
   s.itemSystemVersion=1;
   s.kit=normalizeKit(raw.kit,legacy);
   s.scavenge=sanitizeScavengeDirector(raw.scavenge,s.startedAt);
+  s.companion=sanitizeCompanion(raw.companion);
   const offset=Number(s.gameClockOffsetMs);
   s.gameClockOffsetMs=Number.isFinite(offset)?Math.max(0,offset):0;
   // Only clockSchema 2 saves already use the accelerated four-real-hour day.
@@ -235,6 +237,7 @@ export function advance(s,now=Date.now(),offline=false){
     // Tick only from the actual simulation clock, never from weather preview VFX.
     const gameDay=getDay(s.startedAt,tickTime);
     const economy=applyWeatherEconomyMinute(s,e,gameDay);
+    applyCompanionMinute(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     applyAcquiredItemMinute(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     const weatherLedger=s.weatherEconomy;
     if(economy.waterGained&&weatherLedger.benefitNotifiedEpisode!==s.weatherEpisode){
@@ -303,6 +306,11 @@ export function advance(s,now=Date.now(),offline=false){
 export function applyAction(s,action,now=Date.now()){
  const out=(good,msg)=>({good,msg});
  if(s.survivalStatus==='dead')return out(false,'생존이 종료됐다. 새 생존을 시작해야 한다.');
+ if(action==='companion_invite'||action==='companion_decline'){
+   const result=resolveCompanionRescue(s,action==='companion_invite'?'invite':'decline',
+     {day:getDay(s.startedAt,now),addLog:msg=>addEvent(s,msg)});
+   return {good:result.good,msg:result.msg,outcome:result.outcome};
+ }
  if(action==='scavenge_go'||action==='scavenge_stay'){
    const result=resolveScavengeChoice(s,action==='scavenge_go'?'go':'stay',
      {addLog:msg=>addEvent(s,msg)});

@@ -60,3 +60,9 @@
 .afterday-board-expedition button{border:1px solid #cfb78d99;border-radius:6px;background:#7b6039c9;color:#faf0db;padding:7px 12px;min-height:31px;font:700 11px system-ui,sans-serif;cursor:pointer}
 .afterday-board-expedition-stay{background:#44594db9!important;border-color:#9cbaaa88!important}
 @media(max-width:720px){.afterday-board-expedition button{font-size:10px;padding:5px 8px}}
+
+.afterday-board-companion{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.afterday-board-companion[hidden]{display:none!important}
+.afterday-board-companion button{min-height:32px;border:1px solid #d5bea390;background:#53664bbd;color:#f7efd9;border-radius:7px;padding:7px 11px;font:700 11px system-ui,sans-serif;cursor:pointer}
+.afterday-board-companion-decline{background:#595c5ccc!important;border-color:#999c9980!important}
+@media(max-width:720px){.afterday-board-companion button{font-size:10px;padding:6px 8px}}
