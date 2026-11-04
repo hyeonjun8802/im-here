@@ -45,6 +45,9 @@ jobs:
         run: node scripts/qa_visual_v600.mjs
         env:
           AFTERDAY_URL: http://127.0.0.1:5173
+          # CI has no physical GPU. Capture actual WebGL pixels directly at
+          # reduced resolution to avoid Chromium full-page screenshot timeouts.
+          AFTERDAY_CI_SOFTWARE: '1'
       - name: Upload visual proof (requires manual comparison)
         if: always()
         uses: actions/upload-artifact@v4
