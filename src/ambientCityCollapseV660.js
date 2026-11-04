@@ -248,26 +248,28 @@ export class AmbientCityCollapseV660{
 
     // Keep the host transform and city lot. Only replace its visual children.
     const previous=[...host.children];
-    for(const child of previous)child.visible=false;
 
     const replacement=buildCollapsedReplacement(slot,this.materials,this.mobile);
     host.add(replacement);this.roots.push(replacement);
 
     if(immediate){
+      for(const child of previous)child.visible=false;
       replacement.userData.final=true;
       return;
     }
 
+    // Stage 1: keep the intact ruin visible for a brief structural-warning beat.
+    // Dust begins leaking before the facade finally gives way.
+    replacement.visible=false;
     const falling=makeFallingFragments(slot,this.materials,this.mobile);
-    host.add(falling);
+    falling.visible=false;host.add(falling);
     const dust=makeDust(this.mobile,this.materials.dust,slot);
-    host.add(dust);dust.material.opacity=.34;
+    host.add(dust);dust.material.opacity=.065;
 
-    // A short compression sells structural failure without moving the city lot.
     replacement.scale.y=.985;replacement.position.y=.08;
     this.active.push({
       id:slot.id,slot,host,replacement,falling,dust,elapsed:0,
-      previous
+      previous,switched:false
     });
   }
 
@@ -299,8 +301,16 @@ export class AmbientCityCollapseV660{
     for(let i=this.active.length-1;i>=0;i--){
       const c=this.active[i];c.elapsed+=dt;
       const t=c.elapsed;
-      c.replacement.scale.y=THREE.MathUtils.damp(c.replacement.scale.y,1,3.8,dt);
-      c.replacement.position.y=THREE.MathUtils.damp(c.replacement.position.y,0,4.2,dt);
+
+      // Three-stage failure: dust precursor -> structural break -> settling.
+      if(!c.switched&&t>=.58){
+        for(const child of c.previous)child.visible=false;
+        c.replacement.visible=true;c.falling.visible=true;c.switched=true;
+      }
+      if(c.switched){
+        c.replacement.scale.y=THREE.MathUtils.damp(c.replacement.scale.y,1,3.8,dt);
+        c.replacement.position.y=THREE.MathUtils.damp(c.replacement.position.y,0,4.2,dt);
+      }
 
       for(const f of c.falling.userData.fragments){
         if(f.settled)continue;
@@ -320,7 +330,8 @@ export class AmbientCityCollapseV660{
         vel[j]*=.987;vel[j+1]=vel[j+1]*.975-.28*dt;vel[j+2]*=.987;
       }
       c.dust.geometry.attributes.position.needsUpdate=true;
-      c.dust.material.opacity=Math.max(0,(.34+storm*.08)*(1-t/4.8));
+      const dustPeak=c.switched?(.38+storm*.08):(.065+storm*.025);
+      c.dust.material.opacity=Math.max(0,dustPeak*(1-Math.max(0,t-.4)/4.8));
 
       if(t>5.1){
         c.dust.parent?.remove(c.dust);c.dust.geometry.dispose();c.dust.material.dispose();
