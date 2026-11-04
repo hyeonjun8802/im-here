@@ -91,6 +91,16 @@ function runSurvivalAction(action){
    else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
    else if(!action.startsWith('scavenge_')&&!action.startsWith('companion_')&&action!=='radio_contact')world?.setAction(action);
    if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
+   // The camera only celebrates a decision after it has resolved successfully.
+   // No extra roll, item grant, damage, or clock alteration.
+   if(action==='scavenge_go'){
+     const type=result.item||(result.outcome==='injury'||result.outcome==='sickness'?result.outcome:null);
+     if(type)world?.playCinematic(type);
+   }else if(action==='radio_contact'&&result.kind==='drop'){
+     world?.playCinematic('helicopter');
+   }else if(action==='companion_invite'){
+     world?.playCinematic('companion');
+   }
    save();
  }
  toast(result.msg,action.startsWith('scavenge_')||action.startsWith('companion_')||action==='radio_contact'?'quiet':'');
@@ -216,7 +226,7 @@ function animation(){
   if(t-lastHUD>700){renderHUD();lastHUD=t}
   if(real-lastSave>15000){save();lastSave=real}
   try{
-   world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state);
+   world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state,realDt);
   }catch(e){
    console.error('3D frame error',e);
    $('#error').classList.remove('hidden');
@@ -246,7 +256,10 @@ async function boot(){try{
     // Visual flyby and resource loss are ONE persisted event. Weather preview is visual-only.
     if(world.previewWeather||state.weather!=='tornado')return;
     const outcome=resolveTornadoRoofImpact(state,gameClock.virtualNow);
-    if(outcome.applied){save();renderHUD();}
+    if(outcome.applied){
+      world?.playCinematic(outcome.approach==='direct'?'tornadoDirect':'tornadoNear');
+      save();renderHUD();
+    }
   };
   world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};
   eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),

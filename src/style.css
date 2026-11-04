@@ -130,3 +130,33 @@
 @media(prefers-reduced-motion:reduce){
  .actionbar button{transition:none}
 }
+
+/* AFTERDAY 5.1 — live-3D cinematic captions. Not an image or interactive modal.
+   Limited to the player's successful choices; never hides the resource controls. */
+.afterday-cinema{position:absolute;z-index:19;pointer-events:none;
+ left:clamp(22px,7vw,120px);right:clamp(18px,8vw,130px);
+ top:clamp(126px,24vh,250px);max-width:min(520px,72vw);
+ color:#eee6d8;opacity:var(--cinema-opacity,0);
+ filter:drop-shadow(0 3px 15px #03090ee0);
+ text-shadow:0 3px 15px #000e}
+.afterday-cinema[hidden]{display:none!important}
+.afterday-cinema__rule{width:min(225px,60%);height:1px;
+ background:linear-gradient(90deg,#d6ad76b8,#d6ad761a,transparent);margin-bottom:14px}
+.afterday-cinema__rule--end{width:120px;margin:17px 0 0}
+.afterday-cinema__tag{font:700 10px/1.5 'DM Sans','Noto Sans KR',sans-serif;
+ letter-spacing:.22em;color:#d8bf9c;margin-bottom:10px}
+.afterday-cinema__title{font:800 clamp(19px,2.55vw,32px)/1.33 'Noto Sans KR',system-ui,sans-serif;
+ letter-spacing:-.055em;word-break:keep-all;max-width:17em;color:#f4ece1}
+.afterday-cinema__detail{font:500 clamp(11px,1.2vw,14px)/1.75 'Noto Sans KR',system-ui,sans-serif;
+ margin-top:12px;max-width:37em;word-break:keep-all;color:#c4c8c7}
+@media(max-width:720px){
+ .afterday-cinema{left:18px;right:18px;top:calc(122px + env(safe-area-inset-top));
+  max-width:calc(100vw - 40px)}
+ .afterday-cinema__tag{font-size:9px;letter-spacing:.12em;margin-bottom:7px}
+ .afterday-cinema__title{font-size:20px;max-width:16em}
+ .afterday-cinema__detail{font-size:10px;margin-top:7px}
+ .afterday-cinema__rule{margin-bottom:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .afterday-cinema{transition:none!important;animation:none!important}
+}

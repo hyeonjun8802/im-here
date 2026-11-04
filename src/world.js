@@ -23,6 +23,7 @@ import {PremiumEnvironmentV130} from './premiumEnvironmentV130.js';
 import {upgradeSurvivorFinishingV130,animateSurvivorFinishingV130} from './survivorFinishingV130.js';
 import {CinematicPostV130} from './cinematicPostV130.js';
 import {PremiumAtmosphereV500} from './premiumAtmosphereV500.js';
+import {CinematicMomentV510} from './cinematicMomentV510.js';
 import {PremiumStageV140} from './premiumStageV140.js';
 import {CityInfillV150} from './cityInfillV150.js';
 import {CityReclamation} from './cityReclamation.js';
@@ -92,7 +93,7 @@ export class AfterWorld {
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
-  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.cinematicPost=new CinematicPostV130(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.cinematicPost=new CinematicPostV130(this);this.cinematicMoment=new CinematicMomentV510(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -131,12 +132,12 @@ export class AfterWorld {
  }
  resize(){const w=this.canvas.clientWidth||innerWidth,h=this.canvas.clientHeight||innerHeight;this.camera.aspect=w/h;this.camera.fov=w<680?53:48;this.camera.updateProjectionMatrix();this.renderer.setSize(w,h,false);this.cinematicPost?.resize(w,h)}
  setupControls(){const points=new Map();let lastDist=0;const el=this.canvas;el.style.touchAction='none';let moved=false;
-  el.addEventListener('pointerdown',e=>{this.cameraTransition=null;el.setPointerCapture(e.pointerId);points.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false});
+  el.addEventListener('pointerdown',e=>{this.cinematicMoment?.cancel();this.cameraTransition=null;el.setPointerCapture(e.pointerId);points.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=false});
   el.addEventListener('pointermove',e=>{if(!points.has(e.pointerId))return;const p=points.get(e.pointerId);const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
    if(points.size===1){this.yaw-=dx*.006;this.pitch=clamp(this.pitch+dy*.0035,.25,1.48);if(Math.abs(dx)+Math.abs(dy)>3)moved=true}
    else if(points.size===2){const a=[...points.values()];let dist=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(lastDist)this.radius=clamp(this.radius-(dist-lastDist)*.18,this.focusSurvivor?3.55:this.minRadius,this.maxRadius);lastDist=dist;}
   });
-  const stop=e=>{if(e.type==='pointerup'&&!moved&&points.size===1&&this.life){const action=this.life.pickFromPointer(e);if(action&&action!=='eat'){this.life.request(action,true)}else if(action==='eat'){this.report('식량을 사용하려면 아래 식사 버튼을 눌러주세요.')}}points.delete(e.pointerId);if(points.size<2)lastDist=0};el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('wheel',e=>{e.preventDefault();this.cameraTransition=null;this.radius=clamp(this.radius+e.deltaY*.065,this.focusSurvivor?3.55:this.minRadius,this.maxRadius)},{passive:false});
+  const stop=e=>{if(e.type==='pointerup'&&!moved&&points.size===1&&this.life){const action=this.life.pickFromPointer(e);if(action&&action!=='eat'){this.life.request(action,true)}else if(action==='eat'){this.report('식량을 사용하려면 아래 식사 버튼을 눌러주세요.')}}points.delete(e.pointerId);if(points.size<2)lastDist=0};el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('wheel',e=>{e.preventDefault();this.cinematicMoment?.cancel();this.cameraTransition=null;this.radius=clamp(this.radius+e.deltaY*.065,this.focusSurvivor?3.55:this.minRadius,this.maxRadius)},{passive:false});
  }
  addBuilding(model,pos,height,rot=0,tint,slot={tier:'near',width:11}){
   const holder=new THREE.Group();holder.position.set(...pos);holder.rotation.y=rot;
@@ -435,6 +436,7 @@ export class AfterWorld {
   if(this.botany?.fruitMesh)this.botany.fruitMesh.visible=Boolean(kit.seeds);
   if(this.botany?.stemMesh)this.botany.stemMesh.visible=Boolean(kit.seeds);
  }
+ playCinematic(type){return this.cinematicMoment?.play(type)??false;}
  setAction(action){return this.life?.request(action,true) ?? false;}
  async enableCampMusic(){return this.life?.music.enable();}
  toggleCampMusic(){if(this.life?.music.enabled){this.life.music.disable();return false;}return this.life?.music.enable();}
@@ -524,6 +526,7 @@ export class AfterWorld {
   // Deliberately interpolate the *existing* 3D camera. Never jump, swap to a
   // portrait image or move the city's actual world-space coordinates.
   const mobile=window.innerWidth<800;
+  this.cinematicMoment?.cancel();
   this.focusSurvivor=view==='survivor'||view==='portrait';
   const target=view==='portrait'?{pitch:1.35,radius:mobile?5.4:4.45}:
     view==='survivor'?{pitch:1.21,radius:mobile?14.4:12.5}:
@@ -534,7 +537,7 @@ export class AfterWorld {
   this.cityLookHeight=view==='overhead'?2.1:3.3;
  }
  setQuality(value){const low=value==='low'||(value==='auto'&&innerWidth<700);this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1.15:1.8));this.sun.shadow.mapSize.set(low?1024:2048,low?1024:2048);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.cinematicPost?.setQuality(low);this.resize()}
- update(dt,now,game){
+ update(dt,now,game,cinematicDt=dt){
   this.syncSurvivalInventory(game);
   // Accelerated 2×/4× also advances physical weather and survivor animation.
   dt=Math.min(dt,.12);this.simulatedWeather=game.weather;const preset=this.previewWeather||game.weather;
@@ -679,11 +682,12 @@ export class AfterWorld {
    this.camera.position.y+=Math.sin(t*12.7+1.8)*tremor*.48;
   }
   this.camera.lookAt(this.target);
+  this.cinematicMoment?.update(cinematicDt,this.camera,this.target,this.reducedMotion);
   this.premiumAtmosphere?.update(dt,vw,night,lightningStrength);
   this.celestialSky.update(this.camera,solar,lunar,vw.cloud,vw.storm);
   this.cinematicPost?.updateLook(vw,night,twilight);
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
- dispose(){this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
+ dispose(){this.cinematicMoment?.dispose();this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
 }
