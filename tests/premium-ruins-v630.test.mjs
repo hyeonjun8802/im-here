@@ -5,6 +5,7 @@ import {spawnSync} from 'node:child_process';
 
 const ruin=fs.readFileSync(new URL('../src/premiumRuinedBuildingsV630.js',import.meta.url),'utf8');
 const world=fs.readFileSync(new URL('../src/world.js',import.meta.url),'utf8');
+const tornado=fs.readFileSync(new URL('../src/nearTornadoVfx.js',import.meta.url),'utf8');
 
 test('v6.3 premium ruined-city module is syntax-valid and wired to the live world',()=>{
   for(const file of ['src/premiumRuinedBuildingsV630.js','src/world.js']){
