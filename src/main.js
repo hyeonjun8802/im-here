@@ -83,7 +83,7 @@ function renderHUD(){
 function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function runSurvivalAction(action){
  const result=applyAction(state,action,gameClock.virtualNow);
- if(action.startsWith('scavenge_')||action.startsWith('companion_'))eventBoard?.dismiss();
+ if(action.startsWith('scavenge_')||(action.startsWith('companion_')&&result.good))eventBoard?.dismiss();
  if(result.good){
    if(action.startsWith('scavenge_')||action.startsWith('companion_'))world?.syncSurvivalInventory(state);
    if(action==='radio_contact')world?.setAction('radio');

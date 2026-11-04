@@ -161,7 +161,12 @@ export class AfterdayEventBoard {
       shown=this.showOnce(state,'companionInvite',invitation.id,{duration:300000})||shown;
     }
     const radio=state.scavenge;
-    if(radio?.radioNewsId&&radio.radioNewsType!=='silence'){
+    // A contacted survivor already produced a rescue-choice notice.
+    // After accept/decline it must NEVER also emit a second 'survivorCall'
+    // notice/audio for the exact same radioNewsId.
+    const contactWasRescue=radio?.radioNewsType==='contact'&&
+      state.companion?.lastContactId===radio.radioNewsId;
+    if(radio?.radioNewsId&&radio.radioNewsType!=='silence'&&!contactWasRescue){
       const style=radio.radioNewsType==='drop'?'helicopter':'survivorCall';
       if(!expedition&&!invitation)shown=this.showOnce(state,style,
         `radio:${radio.radioNewsId}:${radio.radioNewsDay}`)||shown;

@@ -43,6 +43,11 @@ export function resolveCompanionRescue(s,decision,{addLog=()=>{},day=1}={}){
  if(!c?.pending)return {good:false,msg:'수락할 구조 요청이 없습니다.'};
  if(s.survivalStatus==='dead')return {good:false,msg:'생존이 종료됐습니다.'};
  if(decision!=='invite'&&decision!=='decline')return {good:false,msg:'잘못된 구조 선택입니다.'};
+ // Never create a second hungry survivor out of nothing. Refusal is always
+ // allowed; accepting needs at least one real meal and clean water in stock.
+ // A failed attempt does not consume the saved offer or reroll the radio.
+ if(decision==='invite'&&(s.supply.food<1||s.supply.water<1))
+   return {good:false,msg:'동료를 맞이하려면 식량 1개와 식수 1개를 확보해야 합니다. 합류 요청은 유지됩니다.'};
  c.pending=null;
  if(decision==='decline'){
   const msg='구조 요청을 거절했다. 식량과 식수를 보호했지만 다른 생존자는 도시 저편으로 사라졌다.';
