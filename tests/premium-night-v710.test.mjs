@@ -34,6 +34,8 @@ test('v7.1 uses real lunar position and weather to shape night hierarchy',()=>{
   assert.match(night,/weather\.storm/);
   assert.match(night,/weather\.wet/);
   assert.match(night,/uFlash/);
+  assert.match(night,/const outward=new THREE\.Vector2\(s\.x,s\.z\)/);
+  assert.match(night,/const edge=\(s\.width\|\|11\)\*\.68\+3\.4/);
 });
 
 test('v7.1 local lights are bounded and non-shadow-casting',()=>{
