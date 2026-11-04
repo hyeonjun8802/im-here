@@ -183,10 +183,10 @@ export class PremiumWeatherSurfacesV700{
   makeRoofRunoff(){
     this.runoff=[];
     const specs=[
-      {p:[-22.85,this.world.ROOF_Y-.5,-7],r:[0,Math.PI/2,0],s:[1.0,7.0,1]},
-      {p:[22.85,this.world.ROOF_Y-.5,8],r:[0,-Math.PI/2,0],s:[1.0,6.0,1]},
-      {p:[8,this.world.ROOF_Y-.6,-22.85],r:[0,0,0],s:[1.0,7.5,1]},
-      {p:[-9,this.world.ROOF_Y-.4,22.85],r:[0,Math.PI,0],s:[1.0,6.5,1]}
+      {p:[-22.85,this.world.ROOF_Y-3.35,-7],r:[0,Math.PI/2,0],s:[1.0,6.6,1]},
+      {p:[22.85,this.world.ROOF_Y-2.85,8],r:[0,-Math.PI/2,0],s:[1.0,5.6,1]},
+      {p:[8,this.world.ROOF_Y-3.55,-22.85],r:[0,0,0],s:[1.0,7.0,1]},
+      {p:[-9,this.world.ROOF_Y-3.05,22.85],r:[0,Math.PI,0],s:[1.0,6.0,1]}
     ];
     for(const spec of specs.slice(0,this.mobile?2:4)){
       const m=new THREE.Mesh(new THREE.PlaneGeometry(.55,1),this.runoffMaterial);
