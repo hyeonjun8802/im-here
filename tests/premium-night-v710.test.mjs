@@ -13,7 +13,7 @@ test('v7.1 night-lighting module is syntax-valid and integrated',()=>{
   }
   assert.match(world,/PremiumNightLightingV710/);
   assert.match(world,/this\.premiumNightLighting=new PremiumNightLightingV710\(this\)/);
-  assert.match(world,/premiumNightLighting\?\.update\(dt,vw,night,twilight,lightningStrength,lunar\)/);
+  assert.match(world,/premiumNightLighting\?\.update\(dt,vw,night,twilight,lightningStrength,lunar,game\)/);
   assert.match(world,/premiumNightLighting\?\.dispose\(\)/);
 });
 
@@ -43,5 +43,9 @@ test('v7.1 local lights are bounded and non-shadow-casting',()=>{
   assert.match(night,/mobile\?1:2/);
   assert.match(night,/light\.castShadow=false/);
   assert.match(night,/spot\.castShadow=false/);
+  assert.match(night,/ambientCollapseIds/);
+  assert.match(night,/tornadoDamagedIds/);
+  assert.match(night,/o\.pool\.visible=alive/);
+  assert.match(night,/beam\.visible=alive&&strength>\.025/);
   assert.doesNotMatch(night,/SAVE_KEY|localStorage|game\.health\s*=|game\.food\s*=|game\.water\s*=/);
 });
