@@ -24,8 +24,8 @@ export class CinematicPostV130 {
   // desktop PBR textures and silhouettes look soft/low-resolution.
   this.composer.setPixelRatio(world.renderer.getPixelRatio());
   this.composer.addPass(new RenderPass(world.scene,world.camera));
-  this.bloom=new UnrealBloomPass(new THREE.Vector2(w,h),.23,.36,1.10);
-  this.bloom.threshold=1.10;
+  this.bloom=new UnrealBloomPass(new THREE.Vector2(w,h),.25,.42,1.05);
+  this.bloom.threshold=1.05;
   this.composer.addPass(this.bloom);
   // Premium cinematography: restrained film-tone separation and sensor texture.
   // Unlike a static image overlay, this shades the actual rendered 3D world
@@ -35,16 +35,26 @@ export class CinematicPostV130 {
       uCool:{value:.20},uGrain:{value:.004},uVignette:{value:.075},
       uContrast:{value:1.095},uSaturation:{value:1.065},
       uShadowLift:{value:.033},uMidtoneGain:{value:.064},
-      uRolloff:{value:.10}},
+      uRolloff:{value:.10},uClarity:{value:.075},uTexel:{value:new THREE.Vector2(1/w,1/h)}},
     vertexShader:`varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
     fragmentShader:`precision highp float;
       uniform sampler2D tDiffuse;
       uniform float uTime,uWarm,uCool,uGrain,uVignette,uContrast,uSaturation;
-      uniform float uShadowLift,uMidtoneGain,uRolloff;
+      uniform float uShadowLift,uMidtoneGain,uRolloff,uClarity;uniform vec2 uTexel;
       varying vec2 vUv;
       float rnd(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453123);}
       void main(){
        vec4 raw=texture2D(tDiffuse,vUv);vec3 c=raw.rgb;
+       // Premium local contrast: a restrained 4-tap high-frequency pass gives
+       // PBR seams, bevels and small props the crispness lost in full-screen FX.
+       vec3 n1=texture2D(tDiffuse,vUv+vec2(uTexel.x,0.)).rgb;
+       vec3 n2=texture2D(tDiffuse,vUv-vec2(uTexel.x,0.)).rgb;
+       vec3 n3=texture2D(tDiffuse,vUv+vec2(0.,uTexel.y)).rgb;
+       vec3 n4=texture2D(tDiffuse,vUv-vec2(0.,uTexel.y)).rgb;
+       vec3 blur=(n1+n2+n3+n4)*.25;
+       float localLum=dot(c,vec3(.2126,.7152,.0722));
+       float clarityMask=smoothstep(.035,.18,localLum)*(1.-smoothstep(.82,1.35,localLum));
+       c+=clamp(c-blur,vec3(-.09),vec3(.09))*uClarity*clarityMask;
        // Cinematic cold-steel shadows and motivated amber highlights.
        // Retain midtone detail: screen grading cannot replace PBR materials.
        float lum=dot(c,vec3(.2126,.7152,.0722));
@@ -95,6 +105,8 @@ export class CinematicPostV130 {
   if(!this.fxaa)return;
   const ratio=this.world.renderer.getPixelRatio();
   this.fxaa.material.uniforms.resolution.value.set(
+    1/Math.max(1,width*ratio),1/Math.max(1,height*ratio));
+  if(this.grade?.uniforms?.uTexel)this.grade.uniforms.uTexel.value.set(
     1/Math.max(1,width*ratio),1/Math.max(1,height*ratio));
  }
  setQuality(low){
