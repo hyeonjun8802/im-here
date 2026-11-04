@@ -5,6 +5,7 @@ import {spawnSync} from 'node:child_process';
 
 const street=fs.readFileSync(new URL('../src/premiumStreetV640.js',import.meta.url),'utf8');
 const world=fs.readFileSync(new URL('../src/world.js',import.meta.url),'utf8');
+const apocalypse=fs.readFileSync(new URL('../src/ApocalypseSetDressingV201.js',import.meta.url),'utf8');
 
 test('v6.4 premium street module is syntax-valid and wired to the live world',()=>{
   for(const file of ['src/premiumStreetV640.js','src/world.js']){
