@@ -7,16 +7,28 @@ const hash=n=>{const v=Math.sin(n*127.17+31.71)*43758.5453;return v-Math.floor(v
 const color=v=>new THREE.Color(v);
 
 function farFacadeTexture(seed=1){
- const c=document.createElement('canvas');c.width=96;c.height=192;const x=c.getContext('2d');
- const walls=['#626863','#6c6962','#58615f','#737069'];x.fillStyle=walls[seed%walls.length];x.fillRect(0,0,96,192);
- for(let y=10;y<184;y+=13)for(let col=0;col<6;col++){
+ const c=document.createElement('canvas');c.width=192;c.height=384;const x=c.getContext('2d');
+ const walls=['#626863','#6c6962','#58615f','#737069'];x.fillStyle=walls[seed%walls.length];x.fillRect(0,0,192,384);
+ for(let y=18;y<366;y+=18)for(let col=0;col<8;col++){
   const n=seed*700+y*11+col*37,lit=hash(n)>.82,broken=hash(n+4)>.88;
   x.fillStyle=broken?'#171d1c':lit?'#9a7652':'#293231';
-  x.globalAlpha=lit?.64:.88;x.fillRect(7+col*15,y,8,6);
+  x.globalAlpha=lit?.64:.88;x.fillRect(10+col*22,y,12,8);
  }
  x.globalAlpha=1;
- for(let i=0;i<18;i++){const n=seed*90+i*17;x.fillStyle='rgba(38,43,39,.12)';x.fillRect(hash(n)*96,hash(n+1)*192,3+hash(n+2)*13,18+hash(n+3)*60);}
- const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=2;return t;
+ for(let i=0;i<34;i++){
+  const n=seed*90+i*17;
+  x.fillStyle='rgba(38,43,39,.12)';
+  x.fillRect(hash(n)*192,hash(n+1)*384,4+hash(n+2)*22,24+hash(n+3)*98);
+ }
+ for(let i=0;i<24;i++){
+  const n=seed*500+i*31;
+  x.strokeStyle='rgba(26,32,30,.18)';x.lineWidth=.6+hash(n+1)*1.1;
+  x.beginPath();let px=hash(n+2)*192,py=hash(n+3)*384;x.moveTo(px,py);
+  for(let j=0;j<4;j++){px+=(hash(n+j*7+4)-.5)*28;py+=8+hash(n+j*9+6)*30;x.lineTo(px,py);}
+  x.stroke();
+ }
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;
+ t.anisotropy=8;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;t.generateMipmaps=true;return t;
 }
 
 function tube(parent,points,radius,material,name,segments=52){
@@ -129,7 +141,10 @@ export class HorizonWorldExpansionV210{
     }
     const base=new THREE.BoxGeometry(1,1,1);this.farCityMaterials=[];this.farCityTextures=[];
     for(let t=0;t<4;t++){
-      const tex=farFacadeTexture(t+21),mat=new THREE.MeshStandardMaterial({color:'#ffffff',map:tex,roughness:.94,metalness:.025,vertexColors:true,fog:true});
+      const tex=farFacadeTexture(t+21),mat=new THREE.MeshPhysicalMaterial({
+        color:'#ffffff',map:tex,roughness:.91,metalness:.035,vertexColors:true,fog:true,
+        envMapIntensity:.62,clearcoat:.018,clearcoatRoughness:.72
+      });
       this.farCityTextures.push(tex);this.farCityMaterials.push(mat);this.materials.push(mat);
       this.meshes.push(addInstances(this.group,`Dense far-city slender block layer ${t+1}`,base,mat,boxes[t]));
     }
