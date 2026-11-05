@@ -86,7 +86,7 @@ function scarMaterial(texture){
 }
 function dustMaterial(mobile){
   return new THREE.ShaderMaterial({
-    transparent:true,depthWrite:false,depthTest:true,fog:true,
+    transparent:true,depthWrite:false,depthTest:true,fog:false,
     blending:THREE.NormalBlending,toneMapped:true,
     uniforms:{
       uTime:{value:0},uWind:{value:0},uRain:{value:0},uStorm:{value:0},
