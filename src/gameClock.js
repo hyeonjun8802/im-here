@@ -1,11 +1,11 @@
 /** AFTERDAY game-day clock: 24 in-game hours elapse in 4 real hours.
  * The multiplier applies while the page is visible and while it is closed.
- * Foreground 2x/4x controls are additional temporary multipliers.
+ * Foreground 2x/4x/8x/16x controls are additional temporary multipliers.
  */
 export const GAME_DAY_REAL_MS=4*60*60*1000;
 export const GAME_CLOCK_RATE=24*60*60*1000/GAME_DAY_REAL_MS; // 6x
 export const GAME_CLOCK_SCHEMA=2;
-export const GAME_SPEEDS=Object.freeze([1,2,4]);
+export const GAME_SPEEDS=Object.freeze([1,2,4,8,16]);
 export const clampGameSpeed=value=>GAME_SPEEDS.includes(Number(value))?Number(value):1;
 export class GameClock{
   constructor(realNow,offsetMs=0,lastSavedRealAtMs=null){
@@ -26,7 +26,7 @@ export class GameClock{
   tick(realNow,foreground=true){
     const now=Number(realNow)||this.lastRealNow;
     const elapsed=Math.max(0,now-this.lastRealNow);
-    // Base sixfold game calendar continues offline. The player's 2x/4x
+    // Base sixfold game calendar continues offline. The player's 2x/4x/8x/16x
     // button only adds acceleration during actual active foreground frames.
     const extra=foreground?Math.min(elapsed,250)*GAME_CLOCK_RATE*(this.speed-1):0;
     this.virtualNow+=elapsed*GAME_CLOCK_RATE+extra;
