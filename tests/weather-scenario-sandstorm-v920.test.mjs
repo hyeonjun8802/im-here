@@ -73,7 +73,8 @@ test('weather preludes give warnings with a credible buildup before impact',()=>
  assert.equal(preludeWeather('storm',1),'rain');
  assert.equal(preludeWeather('tornado',1),'storm');
  assert.equal(preludeWeather('cold',2),'cloud');
- assert.equal(preludeWeather('wildfire',4),'heat');
+ assert.equal(preludeWeather('wildfire',4),'clear');
+ assert.equal(preludeWeather('wildfire',2),'heat');
  assert.equal(preludeWeather('dust',2),'heat');
  assert.equal(preludeWeather('dust',5),'clear');
  assert.equal(preludeWeather('tornado',3),'rain');
