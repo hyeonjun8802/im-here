@@ -1,0 +1,48 @@
+name: AFTERDAY 9.4 — Linear HUD real browser screenshots
+on:
+  push:
+    branches:
+      - main
+      - feature/forecast-linear-bar-v940-20261106
+    paths:
+      - 'src/style.css'
+      - 'src/disasterForecastV800.js'
+      - 'index.html'
+      - 'public/assets/ui/disaster_forecast_frame.svg'
+      - 'scripts/qa_forecast_bar_v940.mjs'
+      - '.github/workflows/forecast-hud-visual-v940.yml'
+  workflow_dispatch:
+jobs:
+  hud-screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Install browser for real screenshots
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start game server
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-v940.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:5173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/afterday-v940.log
+          exit 1
+      - name: Capture mobile and desktop early middle late bar states
+        run: node scripts/qa_forecast_bar_v940.mjs
+      - name: Publish screenshots for visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterday-forecast-linear-bar-screenshots
+          path: docs/qa/forecast-v940/
+          if-no-files-found: warn
+          retention-days: 14
