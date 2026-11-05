@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="heat premium weather illustration"><title>heat | AFTERDAY survival weather</title><defs>
+ <radialGradient id="ground" cx="48%" cy="37%" r="65%"><stop stop-color="#4c2820" stop-opacity=".85"/><stop offset=".62" stop-color="#4c2820" stop-opacity=".53"/><stop offset="1" stop-color="#050c10" stop-opacity=".05"/></radialGradient>
+ <linearGradient id="cloud-storm" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#e4edf0"/><stop offset=".23" stop-color="#8eacb7"/><stop offset=".66" stop-color="#475d69"/><stop offset="1" stop-color="#1e2932"/></linearGradient>
+ <linearGradient id="cloud-dust" x1="0" y1="0" x2=".4" y2="1"><stop stop-color="#efcb9b"/><stop offset=".49" stop-color="#ac7b4c"/><stop offset="1" stop-color="#473124"/></linearGradient>
+ <linearGradient id="cloud-fire" x1="0" y1="0" x2=".1" y2="1"><stop stop-color="#b7abaa"/><stop offset=".5" stop-color="#5b5858"/><stop offset="1" stop-color="#292d32"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff6bd"/><stop offset=".32" stop-color="#ffe1a1"/><stop offset=".70" stop-color="#f1a64e"/><stop offset="1" stop-color="#a04b25"/></radialGradient>
+ <linearGradient id="fire" x1="0" y1="1" x2=".3" y2="0"><stop stop-color="#b52d16"/><stop offset=".28" stop-color="#f45a25"/><stop offset=".68" stop-color="#ffb54e"/><stop offset="1" stop-color="#fff1b0"/></linearGradient>
+ <linearGradient id="bolt" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#fffbe9"/><stop offset=".35" stop-color="#ffedbb"/><stop offset=".7" stop-color="#e2a64e"/><stop offset="1" stop-color="#ae582e"/></linearGradient>
+ <linearGradient id="sand" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f5d2a6"/><stop offset=".36" stop-color="#b78a5e"/><stop offset=".76" stop-color="#65432a"/><stop offset="1" stop-color="#e6b46b"/></linearGradient>
+ <linearGradient id="vortex" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9ca4a8"/><stop offset=".4" stop-color="#585b60"/><stop offset=".84" stop-color="#282c2c"/><stop offset="1" stop-color="#b8afa2"/></linearGradient>
+ <filter id="blur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
+ <filter id="aura" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <clipPath id="round"><circle cx="60" cy="60" r="55"/></clipPath>
+ </defs>
+ <g clip-path="url(#round)"><circle cx="60" cy="60" r="54" fill="url(#ground)" opacity=".69"/><circle cx="60" cy="60" r="48" fill="#4c2820" opacity=".13"/><path d="M21 29C38 15 84 9 105 32" fill="none" stroke="#ffbe67" stroke-width="2" opacity=".12" filter="url(#blur)"/>
+<circle cx="60" cy="57" r="31" fill="url(#sun)" opacity=".36" filter="url(#blur)"/><circle cx="60" cy="56" r="23" fill="url(#sun)"/><g stroke="#f2b85a" stroke-width="4" stroke-linecap="round"><path d="M60 12v12M60 87v12M17 57h11M92 57h11M30 25l10 10M81 80l10 10M89 26l-9 9M30 89l10-9"/></g><path d="M21 91c16-11 25 5 40-3s27 2 37-5M21 102c15-9 34 1 48-6 13-7 20 2 31-3" stroke="#ffa846" stroke-width="3" stroke-opacity=".78" fill="none"/><path d="M20 109Q60 99 101 107" fill="none" stroke="#ffbe67" stroke-width="1.5" opacity=".15"/></g></svg>
