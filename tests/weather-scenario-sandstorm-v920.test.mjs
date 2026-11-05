@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {GameClock,GAME_CLOCK_RATE,GAME_DAY_REAL_MS} from '../src/gameClock.js';
 import {defaults,advance,majorDisasterTypeFor,MAJOR_DISASTERS,DAY_MS,sanitize} from '../src/simulation.js';
-import {chooseScenarioWeather,preludeWeather,weatherDurationMs,WEATHER_TRANSITIONS,DISASTER_ARCS} from '../src/weatherScenarioV920.js';
+import {chooseScenarioWeather,preludeWeather,weatherDurationMs,WEATHER_TRANSITIONS,DISASTER_ARCS,disasterGapMsAfter} from '../src/weatherScenarioV920.js';
 import {forecastPresentation} from '../src/disasterForecastV800.js';
 import {premiumDisasterBudget} from '../src/premiumDisasterVfxV810.js';
 
@@ -45,10 +45,13 @@ test('every seven scheduled disasters contain all seven different types exactly 
  }
 });
 
-test('first-week story follows one coherent weather catastrophe arc',()=>{
+test('seven distinct hazards span a coherent multi-day climate arc',()=>{
  assert.deepEqual(Array.from({length:7},(_,i)=>majorDisasterTypeFor(47283,i+1)),
   ['rain','storm','tornado','cold','heat','dust','wildfire']);
  assert.equal(DISASTER_ARCS.length,3);
+ const days=[2];for(let i=1;i<=7;i++)days.push(days.at(-1)+disasterGapMsAfter(i)/DAY_MS);
+ assert.deepEqual(days,[2,5,8,12,16,19,22,26]);
+ assert.ok(days.slice(1).every((day,i)=>day-days[i]>=3));
 });
 
 test('weather transitions cannot jump directly between snow/cold and rainfall or heat',()=>{
@@ -72,14 +75,16 @@ test('weather preludes give warnings with a credible buildup before impact',()=>
  assert.equal(preludeWeather('cold',2),'cloud');
  assert.equal(preludeWeather('wildfire',4),'heat');
  assert.equal(preludeWeather('dust',2),'heat');
+ assert.equal(preludeWeather('dust',5),'clear');
+ assert.equal(preludeWeather('tornado',3),'rain');
  assert.equal(preludeWeather('dust',7),null);
 });
 
-test('weather persists hours rather than shuffling every 15–32 game minutes',()=>{
+test('weather remains stable for hours, avoiding unprompted rain-to-snow jumps',()=>{
  for(const type of Object.keys(WEATHER_TRANSITIONS)){
   const low=weatherDurationMs(type,0),high=weatherDurationMs(type,.999);
-  assert.ok(low>=39*60000,type);
-  assert.ok(high<=6*3600000,type);
+  assert.ok(low>=40*60000,type);
+  assert.ok(high<=14*3600000,type);
   assert.ok(high>=low,type);
  }
  const now=1_800_000_000_000,state=defaults(now);
@@ -87,7 +92,13 @@ test('weather persists hours rather than shuffling every 15–32 game minutes',(
  state.majorDisasterAt=now+DAY_MS;state.pendingWeather='cloud';
  advance(state,now+60000,false);
  const duration=state.nextWeatherAt-state.weatherSinceAt;
- assert.ok(duration>=60*60000);
+ assert.ok(duration>=5*3600000);
+ for(let i=0;i<100;i++){
+  assert.notEqual(chooseScenarioWeather('cloud','dust',22,i/100),'rain');
+  assert.notEqual(chooseScenarioWeather('cloud','cold',22,i/100),'rain');
+  assert.notEqual(chooseScenarioWeather('clear','storm',22,i/100),'cold');
+  assert.notEqual(chooseScenarioWeather('cold','rain',22,i/100),'rain');
+ }
 });
 
 test('a scheduled disaster takes precedence over normal transitions and resets the forecast',()=>{
@@ -99,7 +110,7 @@ test('a scheduled disaster takes precedence over normal transitions and resets t
  assert.equal(state.weather,'dust');
  assert.equal(state.majorDisasterAppliedSerial,1);
  assert.equal(state.majorDisasterSerial,2);
- assert.equal(state.majorDisasterAt,now+60000+DAY_MS);
+ assert.equal(state.majorDisasterAt,now+60000+disasterGapMsAfter(1));
  assert.equal(state.weatherSinceAt,now+60000);
 });
 
@@ -118,8 +129,10 @@ test('sandstorm draws explicit moving haboob fronts and low-altitude shear inste
  const mobile=premiumDisasterBudget(true),desktop=premiumDisasterBudget(false);
  assert.equal(mobile.sandFronts,2);
  assert.ok(mobile.sandGrit<desktop.sandGrit);
- for(const needle of ['rolling haboob sand wall','sandstorm ground-shear grit','makeSandstormFronts','makeWindborneSand','depthTest:true','uWind','this.sandWalls','this.sandGrit'])assert.ok(src.includes(needle),needle);
- assert.match(director,/mist:\.43/);
+ assert.ok(mobile.sandEddies<desktop.sandEddies);
+ for(const needle of ['rolling haboob sand wall','sandstorm ground-shear grit','makeSandstormFronts','makeWindborneSand','makeSandEddies','PlaneGeometry(radius*4,height','this.sandAge','depthTest:true','uWind','this.sandWalls','this.sandGrit'])assert.ok(src.includes(needle),needle);
+ assert.match(director,/mist:\.26/);
+ assert.doesNotMatch(src,/new THREE.CylinderGeometry\(radius,radius,height/);
  assert.doesNotMatch(src,/canvas|getContext|document\.createElement/);
 });
 
@@ -130,4 +143,16 @@ test('legacy survivor, permanent ruins and disaster progress survive clock schem
  assert.equal(restored.clockSchema,3);
  assert.deepEqual(restored.tornadoDamagedIds,['ruin-3']);
  assert.equal(restored.supply.parts,7);
+});
+
+
+test('v9.3 weather schedule persists through save reloads and migrates old forecasts',()=>{
+ const now=1_800_000_000_000;
+ const recent=defaults(now);recent.majorDisasterAt=now+4*DAY_MS;
+ const restored=sanitize(JSON.parse(JSON.stringify(recent)),now+60000);
+ assert.equal(restored.majorDisasterAt,now+4*DAY_MS);
+ assert.equal(restored.weatherScheduleVersion,2);
+ const old=defaults(now);delete old.weatherScheduleVersion;
+ old.majorDisasterAt=now+7*DAY_MS;
+ assert.equal(sanitize(old,now).majorDisasterAt,now+DAY_MS);
 });
