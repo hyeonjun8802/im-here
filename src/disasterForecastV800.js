@@ -6,7 +6,9 @@ const DISASTER_ICON={
   storm:'storm',
   tornado:'tornado',
   heat:'heat',
-  cold:'cold'
+  cold:'cold',
+  dust:'dust',
+  wildfire:'wildfire'
 };
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>t*t*(3-2*t);
