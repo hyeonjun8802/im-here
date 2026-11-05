@@ -152,8 +152,9 @@ export class DisasterForecastHUD{
     const trailKey=p.futureType||'';
     if(trailKey!==this.trailKey){
       this.trailKey=trailKey;
+      const stages=['eve','far','far']; // near → mid → far
       for(const [index,img] of this.trail.entries()){
-        img.src=trailKey?iconSrc(trailKey,index===0?'eve':'far'):'';
+        img.src=trailKey?iconSrc(trailKey,stages[index]||'far'):'';
       }
     }
     for(const img of this.trail)img.classList.toggle('is-visible',Boolean(p.futureType));
