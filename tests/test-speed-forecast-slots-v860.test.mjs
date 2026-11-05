@@ -24,17 +24,21 @@ test('speed HUD advertises the 8x and 16x test intervals',()=>{
   assert.match(main,/16× 15분 \(테스트\)/);
 });
 
-test('both middle forecast sockets are intentionally visible, not ghosted blank',()=>{
+test('all four forecast checkpoints are visible and staged',()=>{
   const css=read('src/style.css');
   const src=read('src/disasterForecastV800.js');
-  assert.match(css,/trail-near\{[\s\S]*?opacity:calc\(\.48 \+ var\(--forecast-approach\)\*\.14\)/);
-  assert.match(css,/trail-mid\{[\s\S]*?opacity:\.44/);
-  assert.match(css,/trail-far\{[\s\S]*?opacity:calc\(\.34 - var\(--forecast-approach\)\*\.10\)/);
-  assert.match(src,/const stages=\['eve','far','far'\]/);
+  for(const slot of ['slot-6h','slot-12h','slot-18h','slot-24h'])assert.match(css,new RegExp(slot));
+  assert.match(css,/slot-6h\.is-visible\{opacity:\.62\}/);
+  assert.match(css,/slot-12h\.is-visible\{opacity:\.52\}/);
+  assert.match(css,/slot-18h\.is-visible\{opacity:\.43\}/);
+  assert.match(css,/slot-24h\.is-visible\{opacity:\.35\}/);
+  assert.match(src,/const stages=\['eve','eve','far','far'\]/);
 });
 
-test('moving forecast remains stronger than the guide sockets',()=>{
+test('active checkpoint is emphasized without a duplicate free-moving future layer',()=>{
   const css=read('src/style.css');
-  assert.match(css,/\.disaster-forecast__future\{[\s\S]*?z-index:8/);
-  assert.match(css,/\.disaster-forecast__forecast-trail\{[\s\S]*?z-index:3/);
+  const html=read('index.html');
+  assert.match(css,/\.disaster-forecast__trail-icon\.is-active/);
+  assert.doesNotMatch(html,/class="disaster-forecast__future"/);
+  assert.match(css,/--forecast-active-x/);
 });
