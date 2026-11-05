@@ -8,7 +8,7 @@ export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
 export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold','dust','wildfire'];
-export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파', dust:'황사', wildfire:'산불'};
+export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파', dust:'모래폭풍', wildfire:'산불'};
 export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold','dust','wildfire'];
 export const MAJOR_DISASTER_LEAD_MS=24*60*60*1000;
 export function majorDisasterTypeFor(seed,serial){
