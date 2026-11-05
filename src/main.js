@@ -1,5 +1,6 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
+import {DisasterForecastHUD} from './disasterForecastV800.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
@@ -15,6 +16,7 @@ const gameClock=new GameClock(now,saved?.gameClockOffsetMs,
 const state=sanitize(saved,gameClock.virtualNow);
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
+const disasterForecast=new DisasterForecastHUD($('#disaster-forecast'));
 const save=()=>{
  try{
   const real=Date.now();
@@ -33,6 +35,7 @@ const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],[
 function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
  $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
+ disasterForecast.sync(state,t);
  $('#days').title='현실 4시간마다 게임 하루가 지나갑니다 (기본 1×)';
  $('#clock').title='게임 내 서울 시간 · 현실 4시간 = 게임 1일';
  const chapter=survivalChapter(day);
