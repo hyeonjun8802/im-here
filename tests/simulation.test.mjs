@@ -17,6 +17,7 @@ test('weather change schedule does not depend on render FPS',()=>{const n=Date.U
 test('legacy seven-day forecast is migrated into the 24-hour window without delaying due events',()=>{
   const now=1_800_000_000_000;
   const future=defaults(now);
+  delete future.weatherScheduleVersion; // truly old save; v9.3 saves preserve a multi-day forecast
   future.majorDisasterAt=now+7*DAY_MS;
   const migrated=sanitize(future,now);
   assert.equal(migrated.majorDisasterAt,now+24*60*60*1000);
