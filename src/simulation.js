@@ -6,9 +6,9 @@ export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
 export const DAY_MS = 86400000;
-export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
-export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
-export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold'];
+export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold','dust','wildfire'];
+export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파', dust:'황사', wildfire:'산불'};
+export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold','dust','wildfire'];
 export const MAJOR_DISASTER_LEAD_MS=7*DAY_MS;
 export function majorDisasterTypeFor(seed,serial){
   let x=((Number(seed)||47283)^Math.imul(Math.max(1,Number(serial)||1),0x9e3779b1))>>>0;
@@ -209,8 +209,12 @@ function armScheduledMajorDisaster(s,tickTime){
   return true;
 }
 function pickWeather(s,now=Date.now()){
- const r=nextRandom(s);
- if(getDay(s.startedAt,now)>=3&&now>=s.nextTornadoAllowedAt&&r<.028)return 'tornado';
+ const r=nextRandom(s),day=getDay(s.startedAt,now);
+ // Rare ambient disasters complement the guaranteed seven-day major forecast.
+ // They reuse the same deterministic RNG so save/reload behavior stays stable.
+ if(day>=5&&r>.992)return 'wildfire';
+ if(day>=2&&r>.955)return 'dust';
+ if(day>=3&&now>=s.nextTornadoAllowedAt&&r<.028)return 'tornado';
  if(r<.065)return 'storm';
  if(r<.35)return 'rain';
  if(r<.62)return 'cloud';
@@ -264,16 +268,16 @@ export function advance(s,now=Date.now(),offline=false){
       }
     }
     s.food=CAP(s.food-SURVIVAL_BALANCE.satietyDrainMinute*(e==='cold'?SURVIVAL_BALANCE.coldSatietyMultiplier:1));
-    s.water=CAP(s.water-SURVIVAL_BALANCE.hydrationDrainMinute*(e==='heat'?SURVIVAL_BALANCE.heatHydrationMultiplier:1));
+    s.water=CAP(s.water-SURVIVAL_BALANCE.hydrationDrainMinute*(e==='wildfire'?1.62:e==='dust'?1.18:e==='heat'?SURVIVAL_BALANCE.heatHydrationMultiplier:1));
     if(s.water<SURVIVAL_BALANCE.lowVitalThreshold||s.food<SURVIVAL_BALANCE.lowVitalThreshold)
       s.health=CAP(s.health-SURVIVAL_BALANCE.lowVitalHealthLossMinute);
     if(s.water<SURVIVAL_BALANCE.lowVitalThreshold&&s.food<SURVIVAL_BALANCE.lowVitalThreshold)
       s.health=CAP(s.health-SURVIVAL_BALANCE.bothLowHealthLossMinute);
     if(s.water>44&&s.food>44&&s.facilities.shelter>65&&s.kit.tent&&['clear','cloud'].includes(e))
       s.health=CAP(s.health+SURVIVAL_BALANCE.healthyRestRecoveryMinute);
-    const targetTemp=e==='heat'?79:e==='cold'?23:e==='rain'||e==='storm'?43:51;
+    const targetTemp=e==='wildfire'?88:e==='heat'?79:e==='dust'?63:e==='cold'?23:e==='rain'||e==='storm'?43:51;
     s.temperature=CAP(s.temperature+(targetTemp-s.temperature)/90);
-    const damage=(e==='storm'?.045:e==='tornado'?.14:e==='rain'?.019:0);
+    const damage=(e==='wildfire'?.072:e==='dust'?.006:e==='storm'?.045:e==='tornado'?.14:e==='rain'?.019:0);
     if(damage){s.facilities.shelter=CAP(s.facilities.shelter-damage);s.facilities.storage=CAP(s.facilities.storage-damage*.4)}
     // Rain fills the filtered tank automatically; heat evaporates stored water.
     // Tick only from the actual simulation clock, never from weather preview VFX.
@@ -293,12 +297,15 @@ export function advance(s,now=Date.now(),offline=false){
     }
     if(s.facilities.shelter<25)s.health=CAP(s.health-SURVIVAL_BALANCE.weakShelterHealthLossMinute);
     if(e==='heat'&&s.water<28)s.health=CAP(s.health-.036);
+    if(e==='wildfire'&&s.water<35)s.health=CAP(s.health-.050);
     if(e==='cold'&&s.facilities.shelter<55)s.health=CAP(s.health-.025);
     if(e==='rain'&&s.facilities.shelter<36)s.sickness=CAP(s.sickness+.018);
+    if(e==='dust')s.sickness=CAP(s.sickness+(s.facilities.shelter<65?.026:.008));
+    if(e==='wildfire')s.sickness=CAP(s.sickness+(s.facilities.shelter<60?.021:.006));
     // Until the tent is found, the survivor sleeps on cold, exposed concrete.
     if(!s.kit.tent&&((tickTime+9*3600000)%DAY_MS<7*3600000||
       (tickTime+9*3600000)%DAY_MS>22*3600000)&&
-      ['rain','cold','storm'].includes(e)){
+      ['rain','cold','storm','dust','wildfire'].includes(e)){
        s.sickness=CAP(s.sickness+.024);
        s.health=CAP(s.health-.012);
     }
@@ -423,14 +430,14 @@ export function applyAction(s,action,now=Date.now()){
    if(now<s.restCooldownAt)return out(false,'아직 충분히 휴식하지 못했다. 4시간 간격으로 회복할 수 있다.');
    s.restCooldownAt=now+SURVIVAL_BALANCE.restCooldownMs;
    const healed=s.kit?.tent?(s.water<12?3:9):(s.water<12?1:3);
-   if(!s.kit?.tent&&['rain','cold','storm'].includes(s.weather))
+   if(!s.kit?.tent&&['rain','cold','storm','dust','wildfire'].includes(s.weather))
      s.sickness=CAP(s.sickness+2);
    s.health=CAP(s.health+healed);s.action='rest';s.actionUntil=now+9000;
    return out(true,`대피소에서 휴식해 건강을 ${healed}만큼 회복했다.`);
  }
  if(action==='explore'){const need=s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38||s.facilities.tank<40;
  if(!need)return out(false,'탐험은 식량·식수 부족 또는 위기일 때만 가능하다.');
- if(['storm','tornado'].includes(s.weather))return out(false,'강풍 중에는 건물 밖 탐색이 위험하다. 잠잠해질 때까지 기다려야 한다.');
+ if(['storm','tornado','dust','wildfire'].includes(s.weather))return out(false,'대형 재난 중에는 건물 밖 탐색이 위험하다. 잠잠해질 때까지 기다려야 한다.');
  if(now<s.exploreCooldownAt)return out(false,'탐색한 계단실이 아직 위험하다. 다음 긴급 탐색까지 20시간을 기다려야 한다.');
  const r=nextRandom(s),injury=r<.22?12:4;
  s.health=CAP(s.health-injury);s.supply.food+=r<.23?3:5;
