@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {defaults,advance,DAY_MS,MAJOR_DISASTER_LEAD_MS} from '../src/simulation.js';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation,FORECAST_CHECKPOINT_HOURS} from '../src/disasterForecastV800.js';
 
 const root=new URL('../',import.meta.url);
 const read=p=>fs.readFileSync(new URL(p,root),'utf8');
@@ -15,17 +15,19 @@ test('v8.0 disaster forecast module and simulation are syntax-valid',()=>{
   }
 });
 
-test('seven-day disaster marker glides from far right to eve socket without bouncing',()=>{
+test('forecast checkpoints are exactly current <- 6h <- 12h <- 18h <- 24h',()=>{
   const now=1_800_000_000_000;
-  const far=forecastPresentation({weather:'clear',majorDisasterType:'tornado',majorDisasterAt:now+7*DAY_MS},now);
-  const mid=forecastPresentation({weather:'clear',majorDisasterType:'tornado',majorDisasterAt:now+4*DAY_MS},now);
-  const eve=forecastPresentation({weather:'clear',majorDisasterType:'tornado',majorDisasterAt:now+DAY_MS},now);
-  assert.equal(far.stage,'far');
-  assert.equal(eve.stage,'eve');
-  assert.ok(far.x>mid.x&&mid.x>eve.x);
-  assert.ok(Math.abs(far.x-88.4)<.01);
-  assert.ok(eve.x<54&&eve.x>50.2,'eve icon should be immediately beside the current-disaster socket');
-  assert.ok(far.scale<mid.scale&&mid.scale<eve.scale);
+  assert.deepEqual(FORECAST_CHECKPOINT_HOURS,[6,12,18,24]);
+  const at=h=>forecastPresentation({weather:'clear',majorDisasterType:'tornado',majorDisasterAt:now+h*3600000},now);
+  assert.equal(at(30).activeLeadHours,24);
+  assert.equal(at(24).activeLeadHours,24);
+  assert.equal(at(18).activeLeadHours,18);
+  assert.equal(at(12).activeLeadHours,12);
+  assert.equal(at(6).activeLeadHours,6);
+  assert.equal(at(0).activeLeadHours,0);
+  assert.ok(at(6).activeX<at(12).activeX);
+  assert.ok(at(12).activeX<at(18).activeX);
+  assert.ok(at(18).activeX<at(24).activeX);
 });
 
 test('active severe weather occupies the central current-disaster medallion',()=>{
@@ -83,15 +85,14 @@ test('forecast motion is restrained and respects reduced-motion preferences',()=
 });
 
 
-test('v8.2 forecast icon keeps approaching during the final day',()=>{
+test('final 24 hours step left at six-hour boundaries',()=>{
   const now=1_800_000_000_000;
-  const day=forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+DAY_MS},now);
-  const sixHours=forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+DAY_MS/4},now);
-  const nearImpact=forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+DAY_MS/24},now);
-  assert.equal(day.stage,'eve');assert.equal(sixHours.stage,'eve');assert.equal(nearImpact.stage,'eve');
-  assert.ok(day.x>sixHours.x&&sixHours.x>nearImpact.x);
-  assert.ok(nearImpact.x<50.5);
-  assert.ok(day.scale<sixHours.scale&&sixHours.scale<nearImpact.scale);
+  const lead=h=>forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+h*3600000},now);
+  assert.equal(lead(23.9).activeLeadHours,24);
+  assert.equal(lead(17.9).activeLeadHours,18);
+  assert.equal(lead(11.9).activeLeadHours,12);
+  assert.equal(lead(5.9).activeLeadHours,6);
+  assert.equal(lead(.01).activeLeadHours,6);
 });
 
 
