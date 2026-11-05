@@ -35,7 +35,7 @@ function instanced(parent,name,geometry,material,records){
 function runoffMaterial(){
   return new THREE.ShaderMaterial({
     transparent:true,depthWrite:false,depthTest:true,side:THREE.DoubleSide,
-    blending:THREE.NormalBlending,fog:true,
+    blending:THREE.NormalBlending,fog:false,
     uniforms:{uTime:{value:0},uWet:{value:0},uFlash:{value:0}},
     vertexShader:`
       varying vec2 vUv;
@@ -59,7 +59,7 @@ function runoffMaterial(){
 
 function splashMaterial(mobile){
   return new THREE.ShaderMaterial({
-    transparent:true,depthWrite:false,depthTest:true,fog:true,
+    transparent:true,depthWrite:false,depthTest:true,fog:false,
     blending:THREE.AdditiveBlending,toneMapped:true,
     uniforms:{uTime:{value:0},uRain:{value:0},uWet:{value:0},uFlash:{value:0},uPixel:{value:mobile?1:1.55}},
     vertexShader:`
