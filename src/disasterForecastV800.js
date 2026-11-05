@@ -54,39 +54,44 @@ export class DisasterForecastHUD{
     this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
   }
 
+export function forecastPresentation(state,now){
+  const currentType=DISASTER_ICON[state.weather]||null;
+  const futureType=DISASTER_ICON[state.majorDisasterType]||null;
+  const at=Number(state.majorDisasterAt);
+  const left=Number.isFinite(at)?Math.max(0,at-now):MAJOR_DISASTER_LEAD_MS;
+  const daysLeft=left/DAY_MS;
+  const stage=daysLeft<=1?'eve':'far';
+  // The physical rail has sockets at roughly x=88%, 75% and 60%.
+  // Movement is continuous between them: no snapping, bouncing or scale-pop.
+  const approach=clamp((MAJOR_DISASTER_LEAD_MS-left)/(6*DAY_MS));
+  const eased=smooth(approach);
+  return {
+    currentType,futureType,stage,daysLeft,
+    x:88.4+(60.0-88.4)*eased,
+    scale:.72+.22*eased,
+    opacity:.48+.50*eased,
+    focus:.18+.82*eased
+  };
+}
+
   sync(state,now){
     if(!this.root)return;
-    const currentType=DISASTER_ICON[state.weather]||null;
-    this.current.set(currentType,'current',Boolean(currentType));
+    const p=forecastPresentation(state,now);
+    this.current.set(p.currentType,'current',Boolean(p.currentType));
 
-    const futureType=DISASTER_ICON[state.majorDisasterType]||null;
-    const at=Number(state.majorDisasterAt);
-    const left=Number.isFinite(at)?Math.max(0,at-now):MAJOR_DISASTER_LEAD_MS;
-    const daysLeft=left/DAY_MS;
-    const stage=daysLeft<=1?'eve':'far';
+    this.root.style.setProperty('--forecast-x',p.x.toFixed(2)+'%');
+    this.root.style.setProperty('--forecast-scale',p.scale.toFixed(3));
+    this.root.style.setProperty('--forecast-opacity',p.opacity.toFixed(3));
+    this.root.style.setProperty('--forecast-focus',p.focus.toFixed(3));
+    this.root.dataset.forecastStage=p.stage;
+    this.root.dataset.currentDisaster=p.currentType||'none';
 
-    // The physical rail has sockets at roughly x=88%, 75% and 60%.
-    // Movement is continuous between them: no snapping, bouncing or scale-pop.
-    const approach=clamp((MAJOR_DISASTER_LEAD_MS-left)/(6*DAY_MS));
-    const eased=smooth(approach);
-    const x=88.4+(60.0-88.4)*eased;
-    const scale=.72+.22*eased;
-    const opacity=.48+.50*eased;
-    const focus=.18+.82*eased;
-
-    this.root.style.setProperty('--forecast-x',x.toFixed(2)+'%');
-    this.root.style.setProperty('--forecast-scale',scale.toFixed(3));
-    this.root.style.setProperty('--forecast-opacity',opacity.toFixed(3));
-    this.root.style.setProperty('--forecast-focus',focus.toFixed(3));
-    this.root.dataset.forecastStage=stage;
-    this.root.dataset.currentDisaster=currentType||'none';
-
-    this.future.set(futureType,stage,Boolean(futureType));
-    const currentLabel=currentType?WEATHER_KO[state.weather]:'현재 대형 재난 없음';
-    const futureLabel=futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
+    this.future.set(p.futureType,p.stage,Boolean(p.futureType));
+    const currentLabel=p.currentType?WEATHER_KO[state.weather]:'현재 대형 재난 없음';
+    const futureLabel=p.futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
     this.root.setAttribute(
       'aria-label',
-      `현재: ${currentLabel}. 다음 재난: ${futureLabel}, ${Math.max(0,daysLeft).toFixed(1)}일 후.`
+      `현재: ${currentLabel}. 다음 재난: ${futureLabel}, ${Math.max(0,p.daysLeft).toFixed(1)}일 후.`
     );
   }
 }
