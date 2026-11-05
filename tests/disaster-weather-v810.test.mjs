@@ -19,7 +19,7 @@ test('v8.1 disaster modules and integration files are syntax valid',()=>{
 
 test('dust and wildfire are authoritative weather and 24-hour forecast types',()=>{
  assert.ok(WEATHER.includes('dust'));assert.ok(WEATHER.includes('wildfire'));
- assert.equal(WEATHER_KO.dust,'황사');assert.equal(WEATHER_KO.wildfire,'산불');
+ assert.equal(WEATHER_KO.dust,'모래폭풍');assert.equal(WEATHER_KO.wildfire,'산불');
  assert.ok(MAJOR_DISASTERS.includes('dust'));assert.ok(MAJOR_DISASTERS.includes('wildfire'));
  const seen=new Set(Array.from({length:80},(_,i)=>majorDisasterTypeFor(47283,i+1)));
  assert.ok(seen.has('dust'));assert.ok(seen.has('wildfire'));
@@ -85,7 +85,7 @@ test('world owns new disaster VFX and disables legacy point-dust renderer',()=>{
 
 test('HUD warnings and weather audio cover both new disasters',()=>{
  const main=read('src/main.js'),audio=read('src/weatherAudio.js');
- assert.match(main,/황사 경보/);assert.match(main,/산불 연기 접근/);
+ assert.match(main,/모래폭풍 경보/);assert.match(main,/산불 연기 접근/);
  assert.match(main,/dust:'29°C'/);assert.match(main,/wildfire:'43°C'/);
  assert.match(audio,/weather==='dust'/);assert.match(audio,/weather==='wildfire'/);
 });

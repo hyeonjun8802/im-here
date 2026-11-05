@@ -60,7 +60,7 @@ function makeDustField(scene,roofY,isMobile){
     vec2 p=(vUv-.5)*2.;float r=dot(p,p);
     float soft=1.-smoothstep(.22,1.0,r);
     float grit=.62+.38*h(floor(vUv*9.)+vVariation);
-    float alpha=soft*grit*vFade*uStrength*.42;
+    float alpha=soft*grit*vFade*uStrength*.15;
     if(alpha<.009)discard;
     vec3 c=mix(vec3(.43,.34,.24),vec3(.72,.56,.36),vVariation);
     gl_FragColor=vec4(c,alpha);
@@ -85,7 +85,7 @@ function makeDustDome(scene,isMobile){
     vec3 p=d*5.2+vec3(uTime*(.014+uWind*.028),.3,uTime*.008);
     float band=n(p)*.64+n(p*2.1+4.7)*.36;
     float horizon=(1.-smoothstep(.12,.72,d.y));
-    float alpha=smoothstep(.30,.72,band)*horizon*uStrength*.28;
+    float alpha=smoothstep(.30,.72,band)*horizon*uStrength*.12;
     if(alpha<.006)discard;
     vec3 col=mix(vec3(.38,.29,.20),vec3(.67,.49,.31),band);
     gl_FragColor=vec4(col,alpha);
@@ -107,16 +107,16 @@ function makeSandstormFronts(scene,roofY,isMobile){
  for(let i=0;i<specs.length;i++){
   const [radius,height,sides,rows]=specs[i];
   const mat=new THREE.ShaderMaterial({
-   uniforms:{uTime:{value:0},uStrength:{value:0},uWind:{value:0},uLayer:{value:i}},
+   uniforms:{uTime:{value:0},uStrength:{value:0},uWind:{value:0},uLayer:{value:i},uHeight:{value:height}},
    vertexShader:`precision highp float;
-    uniform float uTime,uWind,uLayer;
+    uniform float uTime,uWind,uLayer,uHeight;
     varying vec3 vSand;varying float vHeight;
     void main(){
       vec3 p=position;
-      float y=(position.y+90.)/180.;
+      float y=clamp((position.y+uHeight*.5)/uHeight,0.,1.);
       float shear=sin(p.x*.023+uTime*(.60+uWind*.5)+uLayer*3.7)
         +.53*sin(p.z*.043-p.y*.037-uTime*.46);
-      p.xz+=normalize(vec2(p.x+.001,p.z+.001))*shear*(1.6+4.6*y);
+      p.z+=shear*(2.8+8.4*y); // turbulent rolling face, not a fog filter
       p.y+=sin(p.x*.031+p.z*.018+uTime*.58)*3.5*y;
       vSand=p;vHeight=clamp(y,0.,1.);
       gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
@@ -140,17 +140,20 @@ function makeSandstormFronts(scene,roofY,isMobile){
       float columns=smoothstep(.26,.72,billow+.13*base);
       float edge=1.-smoothstep(.64,.93,vHeight+(.50-billow)*.28);
       float gust=.88+.12*sin(uTime*.77+vSand.x*.035+uLayer);
-      float opacity=(base*.48+columns*.37)*edge*uStrength*gust*(uLayer<.5?.70:.54);
+      float opacity=(base*.68+columns*.43)*edge*uStrength*gust*(uLayer<.5?.88:.70);
       if(opacity<.018)discard;
-      vec3 deep=vec3(.23,.145,.085),sand=vec3(.72,.52,.31);
+      vec3 deep=vec3(.20,.115,.060),sand=vec3(.85,.57,.28);
       vec3 col=mix(deep,sand,clamp(.25+billow*.77+vHeight*.10,0.,1.));
-      gl_FragColor=vec4(col,clamp(opacity,0.,.72));
+      gl_FragColor=vec4(col,clamp(opacity,0.,.82));
     }`,
-   side:THREE.BackSide,transparent:true,depthWrite:false,depthTest:true
+   side:THREE.DoubleSide,transparent:true,depthWrite:false,depthTest:true
   });
-  const mesh=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,sides,rows,true),mat);
-  mesh.position.y=roofY+height*.45;
-  mesh.name='AFTERDAY v9.2 rolling haboob sand wall '+i;
+  // v9.3: advance broad 3D walls across the city; the old cylinders
+  // encircled the camera and looked like a stationary brown fog screen.
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(radius*4,height,sides,rows),mat);
+  mesh.rotation.y=Math.PI/2-.23;
+  mesh.position.set(-255-i*85,roofY+height*.35,-28);
+  mesh.name='AFTERDAY v9.3 rolling haboob sand wall '+i;
   mesh.frustumCulled=false;mesh.renderOrder=i?2:3;scene.add(mesh);fronts.push(mesh);
  }
  return fronts;
@@ -190,6 +193,55 @@ function makeWindborneSand(scene,roofY,isMobile){
  const mesh=new THREE.Mesh(geo,mat);
  mesh.name='AFTERDAY v9.2 sandstorm ground-shear grit';
  mesh.frustumCulled=false;mesh.renderOrder=5;scene.add(mesh);return mesh;
+}
+
+/** Narrow revolving grit columns create moving foreground scale and depth
+ * without a screen-covering dust overlay or extra shadow-casting lights. */
+function makeSandEddies(scene,roofY,isMobile){
+ const count=isMobile?160:420;
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(count*3),3));
+ const phase=new Float32Array(count),column=new Float32Array(count),radius=new Float32Array(count);
+ for(let i=0;i<count;i++){
+  phase[i]=hash(i*7+914);column[i]=Math.floor(hash(i*17+322)*3);radius[i]=hash(i*11+77);
+ }
+ geo.setAttribute('aPhase',new THREE.BufferAttribute(phase,1));
+ geo.setAttribute('aColumn',new THREE.BufferAttribute(column,1));
+ geo.setAttribute('aRadius',new THREE.BufferAttribute(radius,1));
+ geo.boundingSphere=new THREE.Sphere(new THREE.Vector3(0,roofY+14,0),125);
+ const mat=new THREE.ShaderMaterial({
+  uniforms:{uTime:{value:0},uStrength:{value:0},uWind:{value:0},uRoofY:{value:roofY}},
+  vertexShader:`precision highp float;
+   attribute float aPhase,aColumn,aRadius;
+   uniform float uTime,uWind,uRoofY;
+   varying float vFade,vTone;
+   void main(){
+    float height=mod(aPhase*27.+uTime*(2.2+uWind*3.8+aRadius*2.),27.);
+    float spin=aPhase*6.283+uTime*(2.6+uWind*3.1)+height*.29;
+    float spiral=(.75+height*.20)*(.55+aRadius*.95);
+    vec3 center=vec3(-35.+aColumn*36.,uRoofY+height,-25.+aColumn*24.);
+    vec3 world=center+vec3(cos(spin)*spiral,0.,sin(spin)*spiral);
+    vec4 view=viewMatrix*vec4(world,1.);
+    gl_Position=projectionMatrix*view;
+    gl_PointSize=clamp((2.7+aRadius*3.8)*105./max(1.,-view.z),1.,10.);
+    vFade=(1.-smoothstep(17.,27.,height))*(.45+.55*aRadius);
+    vTone=aRadius;
+   }`,
+  fragmentShader:`precision highp float;
+   uniform float uStrength;
+   varying float vFade,vTone;
+   void main(){
+    vec2 uv=gl_PointCoord-.5;
+    float core=1.-smoothstep(.08,.46,length(uv));
+    float alpha=core*uStrength*vFade*.74;
+    if(alpha<.028)discard;
+    gl_FragColor=vec4(mix(vec3(.47,.29,.13),vec3(.93,.74,.47),vTone),alpha);
+   }`,
+  transparent:true,depthWrite:false,depthTest:true
+ });
+ const mesh=new THREE.Points(geo,mat);
+ mesh.name='AFTERDAY v9.3 swirling sand eddies';
+ mesh.frustumCulled=false;mesh.renderOrder=6;scene.add(mesh);return mesh;
 }
 
 const FIRE_ANCHORS=[[-215,-168],[-168,205],[232,-126],[205,182],[-286,42],[292,54]];
@@ -287,40 +339,50 @@ function makeEmbers(scene,roofY,isMobile){
 }
 
 export function premiumDisasterBudget(isMobile=false){
- return Object.freeze({dustSheets:isMobile?360:820,sandGrit:isMobile?240:660,sandFronts:2,wildfireFlames:isMobile?34:68,smokeBillboards:isMobile?90:210,embers:isMobile?120:300,shadowCastingFireLights:0});
+ return Object.freeze({dustSheets:isMobile?360:820,sandGrit:isMobile?240:660,sandEddies:isMobile?160:420,sandFronts:2,wildfireFlames:isMobile?34:68,smokeBillboards:isMobile?90:210,embers:isMobile?120:300,shadowCastingFireLights:0});
 }
 
 export class PremiumDisasterVfxV810{
  constructor(scene,roofY,isMobile){
   this.scene=scene;this.elapsed=0;this.dust=makeDustField(scene,roofY,isMobile);this.dustDome=makeDustDome(scene,isMobile);
-  this.sandWalls=makeSandstormFronts(scene,roofY,isMobile);
+  this.sandWalls=makeSandstormFronts(scene,roofY,isMobile);this.sandAge=0;this.sandActive=false;
   this.sandGrit=makeWindborneSand(scene,roofY,isMobile);
+  this.sandEddies=makeSandEddies(scene,roofY,isMobile);
   this.fire=makeFireFront(scene,roofY,isMobile);this.smoke=makeWildfireSmoke(scene,roofY,isMobile);this.embers=makeEmbers(scene,roofY,isMobile);
   this.glows=FIRE_ANCHORS.slice(0,isMobile?1:3).map(([x,z],i)=>{
    const light=new THREE.PointLight(i===1?'#ff8b35':'#ff6b21',0,isMobile?95:150,2.1);
    light.position.set(x,roofY-12,z);light.castShadow=false;scene.add(light);return light;
   });
-  for(const o of [this.dust,this.dustDome,this.sandGrit,...this.sandWalls,this.fire,this.smoke,this.embers])o.visible=false;
+  for(const o of [this.dust,this.dustDome,this.sandGrit,this.sandEddies,...this.sandWalls,this.fire,this.smoke,this.embers])o.visible=false;
  }
  update(dt,w,night=0){
   this.elapsed+=Math.max(0,Math.min(.08,dt));
   const dust=clamp01(w?.dust),fire=clamp01(w?.wildfire),wind=clamp01(w?.wind);
   const du=this.dust.material.uniforms;du.uTime.value=this.elapsed;du.uStrength.value=dust;du.uWind.value=wind;this.dust.visible=dust>.004;
   const dd=this.dustDome.material.uniforms;dd.uTime.value=this.elapsed;dd.uStrength.value=dust;dd.uWind.value=wind;this.dustDome.visible=dust>.004;
-  for(const wall of this.sandWalls){
-   const u=wall.material.uniforms;u.uTime.value=this.elapsed;u.uStrength.value=dust;u.uWind.value=wind;
+  if(dust>.08&&!this.sandActive)this.sandAge=0;
+  this.sandActive=dust>.08;
+  if(this.sandActive)this.sandAge+=Math.max(0,Math.min(.08,dt));
+  for(let i=0;i<this.sandWalls.length;i++){
+   const wall=this.sandWalls[i],u=wall.material.uniforms;
+   u.uTime.value=this.sandAge;u.uStrength.value=dust;u.uWind.value=wind;
+   wall.position.x=-260+((this.sandAge*(6+wind*10)+i*165)%540);
+   wall.position.z=-28+Math.sin(this.sandAge*.08+i)*19;
    wall.visible=dust>.012;
   }
   const grit=this.sandGrit.material.uniforms;
   grit.uTime.value=this.elapsed;grit.uStrength.value=dust;grit.uWind.value=wind;
   this.sandGrit.visible=dust>.025;
+  const ed=this.sandEddies.material.uniforms;
+  ed.uTime.value=this.sandAge;ed.uStrength.value=dust;ed.uWind.value=wind;
+  this.sandEddies.visible=dust>.06;
   const fu=this.fire.material.uniforms;fu.uTime.value=this.elapsed;fu.uStrength.value=fire;fu.uNight.value=clamp01(night);this.fire.visible=fire>.003;
   const su=this.smoke.material.uniforms;su.uTime.value=this.elapsed;su.uStrength.value=fire;su.uWind.value=wind;this.smoke.visible=fire>.003;
   const eu=this.embers.material.uniforms;eu.uTime.value=this.elapsed;eu.uStrength.value=fire*(.55+.45*clamp01(night));this.embers.visible=fire>.03;
   for(let i=0;i<this.glows.length;i++)this.glows[i].intensity=THREE.MathUtils.damp(this.glows[i].intensity,fire*(2.2+clamp01(night)*4.8)*(i===0?1:.72),1.8,dt);
  }
  dispose(){
-  for(const o of [this.dust,this.dustDome,this.sandGrit,...this.sandWalls,this.fire,this.smoke,this.embers]){
+  for(const o of [this.dust,this.dustDome,this.sandGrit,this.sandEddies,...this.sandWalls,this.fire,this.smoke,this.embers]){
    o.parent?.remove(o);o.geometry.dispose();o.material.dispose();
   }
   for(const l of this.glows)l.parent?.remove(l);

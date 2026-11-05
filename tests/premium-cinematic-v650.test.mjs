@@ -44,3 +44,9 @@ test('far skyline facade detail is materially higher resolution and filtered',()
   assert.match(horizon,/LinearMipmapLinearFilter/);
   assert.match(horizon,/MeshPhysicalMaterial/);
 });
+
+
+test('smoke GLSL declares the night uniform used in its vertex shader',()=>{
+ assert.match(city,/uniform float uTime,uWind,uStorm,uPixelRatio,uNight;/);
+ assert.match(city,/vHeat=aHeat\*\(1\.0-travel\)\*\(\.6\+\.4\*uNight\);/);
+});

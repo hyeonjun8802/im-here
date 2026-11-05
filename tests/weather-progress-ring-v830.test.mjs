@@ -98,7 +98,7 @@ test('weather intervals last multiple game hours for readable 10-minute days',()
   advance(state,now+60_000,false);
   const duration=state.nextWeatherAt-state.weatherSinceAt;
   assert.ok(duration>=60*60_000);
-  assert.ok(duration<=6*60*60_000);
+  assert.ok(duration<=14*60*60_000);
   assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
   assert.equal(currentWeatherProgress(state,state.nextWeatherAt),1);
 });

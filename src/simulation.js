@@ -1,4 +1,4 @@
-import {scriptedDisasterType,chooseScenarioWeather,weatherDurationMs} from './weatherScenarioV920.js';
+import {scriptedDisasterType,disasterGapMsAfter,chooseScenarioWeather,weatherDurationMs} from './weatherScenarioV920.js';
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
 import {makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
@@ -8,14 +8,14 @@ export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
 export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold','dust','wildfire'];
-export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파', dust:'황사', wildfire:'산불'};
+export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파', dust:'모래폭풍', wildfire:'산불'};
 export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold','dust','wildfire'];
 export const MAJOR_DISASTER_LEAD_MS=24*60*60*1000;
 export function majorDisasterTypeFor(seed,serial){
  return scriptedDisasterType(seed,serial);
 }
 export const defaults = (now=Date.now())=>({
-  version:4, clockSchema:3, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+4*3600000, pendingWeather:'cloud', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
+  version:4, clockSchema:3, weatherScheduleVersion:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+4*3600000, pendingWeather:'cloud', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
   itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
@@ -77,8 +77,13 @@ export function sanitize(raw, now=Date.now()) {
   s.tornadoSuppliesSecured=Boolean(s.tornadoSuppliesSecured);
   s.tornadoPreview=Boolean(s.tornadoPreview);
   s.weatherEpisode=Math.max(0,Math.floor(Number(s.weatherEpisode)||0));
+  const legacyWeatherSchedule=Number(raw.weatherScheduleVersion)!==2;
+  s.weatherScheduleVersion=2;
   s.weatherSinceAt=Math.max(0,Number(s.weatherSinceAt)||s.startedAt);
   s.nextTornadoAllowedAt=Math.max(0,Number(s.nextTornadoAllowedAt)||0);
+  // v9.3: retain the full multi-day scheduled gap. Only old saves with
+  // shorter weather-schedule schemas are migrated to a 24-hour first warning.
+  // HUD still shows the moving forecast in its final 24 game hours.
   // v8.9: persistent 24-hour major-disaster forecast. The HUD has four
   // physical checkpoints at T-24h, T-18h, T-12h and T-6h.
   s.majorDisasterSerial=Math.max(1,Math.floor(Number(raw.majorDisasterSerial)||1));
@@ -88,7 +93,7 @@ export function sanitize(raw, now=Date.now()) {
   if(Number.isFinite(majorAt)&&majorAt>0){
     // Migrate v8.0-v8.8 seven-day forecasts into the new 24-hour planning
     // horizon without postponing an event that is already due.
-    s.majorDisasterAt=majorAt>now+MAJOR_DISASTER_LEAD_MS
+    s.majorDisasterAt=legacyWeatherSchedule&&majorAt>now+MAJOR_DISASTER_LEAD_MS
       ?now+MAJOR_DISASTER_LEAD_MS
       :majorAt;
   }else{
@@ -212,7 +217,7 @@ function armScheduledMajorDisaster(s,tickTime){
   s.majorDisasterAppliedSerial=serial;
   s.majorDisasterSerial=serial+1;
   s.majorDisasterType=majorDisasterTypeFor(s.weatherSeed,s.majorDisasterSerial);
-  s.majorDisasterAt=tickTime+MAJOR_DISASTER_LEAD_MS;
+  s.majorDisasterAt=tickTime+disasterGapMsAfter(serial);
   addEvent(s,`예보 관측망이 예측했던 ${WEATHER_KO[type]} 재난이 도달했다.`);
   return true;
 }
