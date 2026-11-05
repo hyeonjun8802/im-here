@@ -2,6 +2,7 @@ import {DAY_MS,MAJOR_DISASTER_LEAD_MS,WEATHER_KO} from './simulation.js';
 
 const ICON_ROOT='/assets/ui/disasters';
 const DISASTER_ICON={
+  clear:'clear',
   rain:'rain',
   storm:'storm',
   tornado:'tornado',
@@ -81,8 +82,11 @@ export class DisasterForecastHUD{
     this.current=new CrossfadeIcon(root.querySelector('.disaster-forecast__current'));
     this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
     // Preload all 21 small vector medallions so stage swaps never flash blank.
-    for(const type of Object.values(DISASTER_ICON))for(const stage of ['far','eve','current']){
-      const img=new Image();img.decoding='async';img.src=iconSrc(type,stage);
+    for(const type of Object.values(DISASTER_ICON)){
+      const stages=type==='clear'?['current']:['far','eve','current'];
+      for(const stage of stages){
+        const img=new Image();img.decoding='async';img.src=iconSrc(type,stage);
+      }
     }
   }
 
