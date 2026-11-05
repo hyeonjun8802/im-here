@@ -169,7 +169,8 @@
   --forecast-x:88.4%;
   --forecast-scale:.58;
   --forecast-opacity:.42;
-  --forecast-focus:.10;
+  --forecast-focus:.28;
+  --forecast-approach:0;
   --weather-progress-offset:100;
   --weather-ring-opacity:.72;
   --weather-ring-glow:.32;
@@ -188,6 +189,7 @@
 .disaster-forecast__frame{
   position:absolute;inset:0;width:100%;height:100%;display:block;
   object-fit:contain;user-select:none;-webkit-user-drag:none;
+  z-index:1;
 }
 .disaster-forecast__current,
 .disaster-forecast__future{
@@ -201,21 +203,52 @@
   left:37.67%;top:48.33%;width:21.25%;
   transition:opacity .72s cubic-bezier(.22,.61,.36,1),filter .95s ease;
   filter:saturate(.98) contrast(1.04);
+  z-index:6;
 }
 .disaster-forecast__future{
-  left:var(--forecast-x);top:48.33%;width:11.25%;
+  left:var(--forecast-x);top:48.33%;width:12.9%;
   transform:translate(-50%,-50%) scale(var(--forecast-scale));
   opacity:0;
-  filter:saturate(.78) brightness(calc(.72 + var(--forecast-focus)*.28))
-    drop-shadow(0 0 calc(2px + var(--forecast-focus)*6px) rgba(255,145,42,calc(.10 + var(--forecast-focus)*.30)));
+  filter:saturate(calc(.88 + var(--forecast-focus)*.16))
+    brightness(calc(.96 + var(--forecast-focus)*.18))
+    contrast(1.08)
+    drop-shadow(0 1px 2px rgba(0,0,0,.78))
+    drop-shadow(0 0 calc(3px + var(--forecast-focus)*7px) rgba(255,145,42,calc(.18 + var(--forecast-focus)*.34)));
   transition:
     left .82s cubic-bezier(.22,.61,.36,1),
     transform .82s cubic-bezier(.22,.61,.36,1),
     opacity .72s ease,
     filter .82s ease;
+  z-index:8;
 }
 .disaster-forecast__current.is-visible{opacity:1}
 .disaster-forecast__future.is-visible{opacity:var(--forecast-opacity)}
+
+.disaster-forecast__forecast-trail{
+  position:absolute;inset:0;
+  z-index:3;
+  pointer-events:none;
+}
+.disaster-forecast__trail-icon{
+  position:absolute;
+  top:48.33%;
+  width:9.8%;
+  aspect-ratio:1;
+  object-fit:contain;
+  transform:translate(-50%,-50%);
+  opacity:0;
+  filter:saturate(.62) brightness(.82) contrast(1.02) drop-shadow(0 0 3px rgba(255,145,42,.10));
+  transition:opacity .8s ease,filter .8s ease;
+}
+.disaster-forecast__trail-icon.is-visible{opacity:.14}
+.disaster-forecast__trail-icon.trail-near{left:60%;width:11.3%;opacity:calc(.06 + var(--forecast-approach)*.08)}
+.disaster-forecast__trail-icon.trail-mid{left:75.08%;width:10.1%;opacity:calc(.08 + (1 - abs(var(--forecast-approach) - .5)*2)*.06)}
+.disaster-forecast__trail-icon.trail-far{left:88.42%;width:8.8%;opacity:calc(.14 - var(--forecast-approach)*.07)}
+.disaster-forecast__trail-icon.is-visible.trail-near,
+.disaster-forecast__trail-icon.is-visible.trail-mid,
+.disaster-forecast__trail-icon.is-visible.trail-far{
+  visibility:visible;
+}
 .disaster-forecast[data-current-disaster="clear"] .disaster-forecast__current,
 .disaster-forecast[data-current-disaster="cloud"] .disaster-forecast__current{
   opacity:.62;
@@ -235,7 +268,7 @@
   transform:translate(-50%,-50%) rotate(-90deg);
   overflow:visible;
   pointer-events:none;
-  z-index:4;
+  z-index:7;
 }
 .disaster-forecast__weather-track,
 .disaster-forecast__weather-halo,
@@ -306,11 +339,12 @@
   animation:forecastEmberBreath 6.8s ease-in-out infinite;
 }
 .disaster-forecast__future-focus{
-  left:var(--forecast-x);top:48.33%;width:8.4%;aspect-ratio:1;
+  left:var(--forecast-x);top:48.33%;width:9.6%;aspect-ratio:1;
   transform:translate(-50%,-50%) scale(calc(.76 + var(--forecast-focus)*.24));
   opacity:calc(.06 + var(--forecast-focus)*.28);
-  box-shadow:0 0 14px rgba(255,144,39,.30);
+  box-shadow:0 0 16px rgba(255,144,39,.34);
   transition:left .82s cubic-bezier(.22,.61,.36,1),transform .82s cubic-bezier(.22,.61,.36,1),opacity .82s ease;
+  z-index:5;
 }
 @keyframes forecastEmberBreath{
   0%,100%{opacity:.48;box-shadow:0 0 10px rgba(255,138,38,.10),inset 0 0 10px rgba(255,180,73,.06)}
@@ -326,7 +360,7 @@
     filter:drop-shadow(0 4px 9px rgba(0,0,0,.60));
   }
   .disaster-forecast__current{width:21.8%}
-  .disaster-forecast__future{width:11.8%}
+  .disaster-forecast__future{width:13.6%}
   .disaster-forecast__current-glow{width:20.5%}
   .disaster-forecast__weather-progress{width:24.0%}
 }
