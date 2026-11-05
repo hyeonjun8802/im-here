@@ -7,6 +7,7 @@ import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
+import {persistFreshRestart} from './restartSession.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
@@ -17,7 +18,9 @@ const state=sanitize(saved,gameClock.virtualNow);
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
 const disasterForecast=new DisasterForecastHUD($('#disaster-forecast'));
+let restartInProgress=false;
 const save=()=>{
+ if(restartInProgress)return true;
  try{
   const real=Date.now();
   gameClock.tick(real,document.visibilityState==='visible');
@@ -156,9 +159,19 @@ function bindEvents(){
  $('#companion-toggle').addEventListener('click',()=>eventBoard?.openPendingCompanion(state));
  $('#radio-contact').addEventListener('click',()=>runSurvivalAction('radio_contact'));
  $('#restart-game').addEventListener('click',()=>{
-  if(window.confirm('현재 생존 기록을 초기화하고 DAY 001부터 다시 시작하시겠습니까?')){
-    localStorage.removeItem(SAVE_KEY);window.location.reload();
+  if(!window.confirm('현재 생존 기록을 초기화하고 DAY 001부터 다시 시작하시겠습니까?'))return;
+  restartInProgress=true;
+  const button=$('#restart-game');
+  if(button){button.disabled=true;button.textContent='DAY 001 준비 중…';}
+  try{
+    // Persist a known-good fresh session BEFORE navigation. pagehide,
+    // visibilitychange and the 15s autosave are all blocked by restartInProgress.
+    persistFreshRestart(localStorage,Date.now());
+  }catch{
+    // If persistence itself is unavailable, at least remove the dead save.
+    try{localStorage.removeItem(SAVE_KEY)}catch{}
   }
+  window.location.reload();
  });
  $('#life-panel-toggle').addEventListener('click',()=>{$('#life-panel').classList.toggle('hidden');$('#weather-panel').classList.add('hidden')});
  $('#close-life').addEventListener('click',()=>$('#life-panel').classList.add('hidden'));
