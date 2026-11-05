@@ -24,14 +24,17 @@ test('24h and 6h forecast checkpoints map one moving icon from outer to inner so
   assert.ok(inner.x<outer.x);
 });
 
-test('four right-side forecast sockets remain in the premium frame while only one future image is rendered',()=>{
+test('only one future emblem remains and no circular forecast sockets are rendered',()=>{
   const html=read('index.html');
   const css=read('src/style.css');
   const frame=read('public/assets/ui/disaster_forecast_frame.svg');
   assert.equal((html.match(/class="disaster-forecast__future"/g)||[]).length,1);
   assert.doesNotMatch(html,/slot-6h|slot-12h|slot-18h|slot-24h/);
-  assert.match(css,/\.disaster-forecast__future\{[\s\S]*?left:var\(--forecast-x\)/);
-  assert.match(frame,/cx="690"/);assert.match(frame,/cx="830"/);assert.match(frame,/cx="950"/);assert.match(frame,/cx="1060"/);
+  assert.match(css,/\.disaster-forecast__bar-fill/);
+  assert.match(css,/\.disaster-forecast__future/);
+  assert.match(frame,/Linear forecast channel/);
+  assert.match(frame,/rect x="482" y="143"/);
+  assert.doesNotMatch(frame,/cx="690"|cx="830"|cx="950"|cx="1060"/);
 });
 
 test('single forecast resource crossfades from far to eve before entering current',()=>{
