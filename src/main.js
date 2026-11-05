@@ -65,17 +65,17 @@ function renderHUD(){
  $('#inventory-items').textContent=owned.length?
    owned.map(id=>ITEM_INFO[id].icon+' '+ITEM_INFO[id].label).join(' · '):
    '아직 생존 장비가 없습니다 · 탐색으로 획득';
- $('#life-panel-intro').textContent=state.kit?.tent?'매일 23시~07시에 야전 텐트 안에서 잠듭니다. 비와 한파를 피하며 회복할 수 있습니다.':'매일 23시~07시에 노출된 시멘트 바닥에서 잠듭니다. 비·한파에 병들 수 있습니다. 텐트를 찾아야 합니다.';
+ $('#life-panel-intro').textContent=state.kit?.tent?'매일 23시~07시에 야전 텐트 안에서 잠듭니다. 비·한파·황사와 연기를 피하며 회복할 수 있습니다.':'매일 23시~07시에 노출된 시멘트 바닥에서 잠듭니다. 비·한파·황사·연기에 병들 수 있습니다. 텐트를 찾아야 합니다.';
  $('#sleep-arrangement').textContent=state.kit?.tent?
    '⛺ 텐트에서 수면 · 회복력 강화':'🧱 콘크리트에서 수면 · 감염·체력 위험';
  $('#radio-contact').title=state.kit?.radio?'오늘 무전으로 구조 신호를 요청합니다':'무전기를 찾아야 합니다';
  $('#repair-tank').hidden=state.facilities.tank>=80||dead;
- $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C'}[state.weather]);
+ $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C',dust:'29°C',wildfire:'43°C'}[state.weather]);
  $('#weather-effect').textContent=describeWeatherEconomy(state);
- const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold'].includes(state.pendingWeather);
- const danger=['storm','tornado'].includes(state.weather)||state.health<35||state.water<18||state.sickness>=35||warningAhead;
+ const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold','dust','wildfire'].includes(state.pendingWeather);
+ const danger=['storm','tornado','dust','wildfire'].includes(state.weather)||state.health<35||state.water<18||state.sickness>=35||warningAhead;
  $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':state.sickness>=50?'질병 악화':danger?'주의':'생존 중';
- $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':state.sickness>=35?'⚠ 감염 의심 · 치료제가 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
+ $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.weather==='dust'?'🌫 황사 경보 · 실내 대피 · 호흡기 보호':state.weather==='wildfire'?'🔥 산불 연기 접근 · 식수 확보 · 외부 활동 금지':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':state.sickness>=35?'⚠ 감염 의심 · 치료제가 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
  $('#survivor-bars').innerHTML=statusBars.map(([key,label,color])=>`<div class="stat"><div class="stat-line"><span>${label}</span><strong>${Math.round(state[key])}</strong></div><div class="bar"><i style="width:${state[key]}%;background:${color}"></i></div></div>`).join('');
  const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
