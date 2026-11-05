@@ -8,9 +8,9 @@ export const clamp01=v=>Math.max(0,Math.min(1,Number.isFinite(v)?v:0));
 export function resolveSurvivorExpression({health=100,food=100,water=100,temperature=50,weather='clear',activity='idle'}={}){
   const exhaustion=clamp01((85-Math.min(food,water))/70);
   const injury=clamp01((68-health)/58);
-  const danger=['storm','tornado'].includes(weather);
+  const danger=['storm','tornado','dust','wildfire'].includes(weather);
   const chill=weather==='cold'||temperature<26;
-  const heat=weather==='heat'||temperature>78;
+  const heat=weather==='heat'||weather==='wildfire'||temperature>78;
   const joy=['guitar','sit','eat','rest'].includes(activity)&&!danger;
   const stress=clamp01(Math.max(injury,exhaustion*.7,danger?.82:0));
   return Object.freeze({
