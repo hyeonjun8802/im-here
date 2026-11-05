@@ -101,3 +101,15 @@ test('weather intervals last multiple game hours for readable 10-minute days',()
   assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
   assert.equal(currentWeatherProgress(state,state.nextWeatherAt),1);
 });
+
+
+test('v9.4 scenario title is centered with feathered black fade and bottom duplicate captions removed',()=>{
+  const css=read('src/style.css');
+  const html=read('index.html');
+  assert.match(html,/id="survival-chapter"/);
+  assert.match(css,/#log\.event-log,#activity-label\.activity-label\{display:none!important\}/);
+  assert.match(css,/#survival-chapter\{[\s\S]*?left:50%;top:52%/);
+  assert.match(css,/radial-gradient\(ellipse 65% 48% at 50% 50%/);
+  assert.match(css,/top:48%/);
+  assert.match(css,/\.disaster-forecast__bar-fill\{[\s\S]*?width:var\(--weather-bar-progress\)/);
+});
