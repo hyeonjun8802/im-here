@@ -362,7 +362,6 @@
  display:none!important;
 }
 .disaster-forecast__bar{
- --weather-bar-progress:0%;
  position:absolute;
  left:40.9%;top:42.5%;width:50.15%;height:15.5%;
  z-index:4;overflow:hidden;
