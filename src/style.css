@@ -163,7 +163,7 @@
 
 
 /* AFTERDAY v8.0 — observatory-grade disaster forecast.
-   Motion is deliberately inertial: no bounce, spring, wobble or scale-pop. */
+   Motion is deliberately inertial, restrained and mechanically weighted. */
 .disaster-forecast{
   --forecast-x:88.4%;
   --forecast-scale:.72;
