@@ -44,7 +44,7 @@ test('three right-side forecast sockets receive non-interactive disaster trail m
   assert.match(html,/trail-mid/);
   assert.match(html,/trail-far/);
   assert.match(src,/querySelectorAll\('\.disaster-forecast__trail-icon'\)/);
-  assert.match(src,/iconSrc\(trailKey,index===0\?'eve':'far'\)/);
+  assert.match(src,/const stages=\['eve','far','far'\]/);
   assert.match(css,/trail-near\{left:60%/);
   assert.match(css,/trail-mid\{left:75\.08%/);
   assert.match(css,/trail-far\{left:88\.42%/);
