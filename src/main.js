@@ -34,6 +34,33 @@ const save=()=>{
 let world;
 let eventBoard=null;
 let autoLifeCamera=true;
+// One brief chapter caption per in-game day. Regular HUD refreshes must not
+// restart its timeout or leave a permanent black backdrop over the 3D world.
+const CHAPTER_CAPTION_MS=6500;
+let displayedChapterDay=null;
+let chapterCaptionTimer=null;
+function syncChapterCaption(day,dead){
+ const node=$('#survival-chapter');
+ if(!node)return;
+ if(dead){
+  node.classList.remove('is-visible');
+  node.classList.add('is-hidden');
+  if(chapterCaptionTimer!==null){clearTimeout(chapterCaptionTimer);chapterCaptionTimer=null;}
+  return;
+ }
+ if(displayedChapterDay===day)return;
+ displayedChapterDay=day;
+ const chapter=survivalChapter(day);
+ node.textContent=chapter.title+' · '+chapter.line;
+ node.classList.remove('is-hidden');
+ node.classList.add('is-visible');
+ if(chapterCaptionTimer!==null)clearTimeout(chapterCaptionTimer);
+ chapterCaptionTimer=setTimeout(()=>{
+  node.classList.remove('is-visible');
+  node.classList.add('is-hidden');
+  chapterCaptionTimer=null;
+ },CHAPTER_CAPTION_MS);
+}
 const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280'],['sickness','질병 위험','#c78686']];
 function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
@@ -42,8 +69,7 @@ function renderHUD(){
  $('#days').title='실제 플레이 10분마다 게임 하루가 지나갑니다 (기본 1×)';
  $('#day-pace').textContent='1일 = 플레이 10분';
  $('#clock').title='게임 내 서울 시각 · 플레이 10분 = 게임 1일 · 미접속 시 일시정지';
- const chapter=survivalChapter(day);
- $('#survival-chapter').textContent=chapter.title+' · '+chapter.line;
+ syncChapterCaption(day,dead);
  $('#game-over').classList.toggle('hidden',!dead);
  if(dead){
    $('#game-over-days').textContent='DAY '+String(getDay(state.startedAt,state.diedAt||t)).padStart(3,'0');
