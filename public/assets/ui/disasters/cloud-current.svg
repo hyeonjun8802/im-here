@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="cloudy weather">
+<defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#4b565c"/><stop offset=".22" stop-color="#20292e"/><stop offset=".62" stop-color="#0b1216"/><stop offset="1" stop-color="#273137"/></linearGradient>
+ <linearGradient id="edge"><stop stop-color="#4e463b"/><stop offset=".35" stop-color="#887457"/><stop offset=".75" stop-color="#5a4b39"/><stop offset="1" stop-color="#3c332a"/></linearGradient>
+ <radialGradient id="glass"><stop stop-color="#293940"/><stop offset=".72" stop-color="#162228"/><stop offset="1" stop-color="#081014"/></radialGradient>
+ <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#aab8bd"/><stop offset=".45" stop-color="#697981"/><stop offset="1" stop-color="#38464c"/></linearGradient>
+</defs>
+<circle cx="60" cy="60" r="54" fill="url(#steel)" stroke="#0a0f12" stroke-width="4"/>
+<circle cx="60" cy="60" r="49" fill="url(#glass)" stroke="url(#edge)" stroke-width="3"/>
+<circle cx="60" cy="60" r="44" fill="#17242a" opacity=".20"/>
+<path d="M30 72c-9 0-14-5-14-12 0-7 5-12 13-12 3-11 12-18 24-18 12 0 22 8 24 19 9 0 16 6 16 14s-6 12-14 12z" fill="url(#cloud)" opacity=".82" stroke="#d9e3e6" stroke-opacity=".12"/>
+<path d="M40 50c4-10 12-15 22-15" fill="none" stroke="#d8e2e5" stroke-width="2" stroke-linecap="round" opacity=".12"/>
+<path d="M28 31A47 47 0 0 1 89 28" fill="none" stroke="#c2d0d5" stroke-width="2.2" stroke-linecap="round" opacity=".10"/>
+<g fill="#171d20" stroke="#75664f" stroke-width="1.2"><rect x="53" y="2" width="14" height="8" rx="3"/><rect x="53" y="110" width="14" height="8" rx="3"/><rect x="2" y="53" width="8" height="14" rx="3"/><rect x="110" y="53" width="8" height="14" rx="3"/></g>
+<circle cx="60" cy="114" r="2" fill="#75868d" opacity=".45"/>
+</svg>
