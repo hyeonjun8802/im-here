@@ -1,0 +1,45 @@
+name: AFTERDAY v9.6 actual 3D game viewport diagnostic
+on:
+  push:
+    branches:
+      - main
+      - feature/mobile-weather-art-v960-20261106
+    paths:
+      - 'scripts/qa_live_weather_v960.mjs'
+      - '.github/workflows/live-game-hud-v960.yml'
+      - 'src/style.css'
+      - 'src/disasterForecastV800.js'
+      - 'index.html'
+  workflow_dispatch:
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Start development game and verify HTML
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-v960-server.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:5173/ >/tmp/afterday-v960.html; then break; fi
+            sleep 1
+          done
+          grep -q 'disaster-forecast' /tmp/afterday-v960.html
+          echo 'Server HTML includes HUD markup.'
+      - name: Capture real rooftop game and validate HUD
+        run: node scripts/qa_live_weather_v960.mjs
+      - name: Publish diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterday-v960-full-game-diagnostic
+          path: docs/qa/live-weather-v960/
+          if-no-files-found: warn
+          retention-days: 14
