@@ -240,9 +240,12 @@ export function advance(s,now=Date.now(),offline=false){
       if(s.weather==='tornado')s.nextTornadoAllowedAt=tickTime+60*3600000;
       s.pendingWeather=pickWeather(s,tickTime);
       s.nextWeatherAt=tickTime+(15+Math.round(nextRandom(s)*17))*60000;
+      // v8.5: weatherSinceAt marks the start of the ACTIVE WEATHER INTERVAL,
+      // not only a label change. If rain rolls into rain again, the player sees
+      // one new scheduled rain interval and the progress ring restarts at 0%.
+      s.weatherSinceAt=tickTime;
       if(s.weather!==was){
         s.weatherEpisode++;
-        s.weatherSinceAt=tickTime;
         addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
         // A brief, one-time physical aftermath, NOT a damage roll every frame.
         if(s.weather==='storm'){
