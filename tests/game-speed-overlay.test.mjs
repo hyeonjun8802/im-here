@@ -4,11 +4,13 @@ import {readFileSync,existsSync} from 'node:fs';
 import {GameClock,GAME_SPEEDS,GAME_CLOCK_RATE,GAME_DAY_REAL_MS,clampGameSpeed} from '../src/gameClock.js';
 import {defaults,sanitize,advance,getDay,migrateLegacyGameDay,DAY_MS} from '../src/simulation.js';
 
-test('speed control cycles 1× → 2× → 4× → 1×',()=>{
+test('speed control cycles 1× → 2× → 4× → 8× → 16× → 1×',()=>{
  const c=new GameClock(1000000);
- assert.deepEqual(GAME_SPEEDS,[1,2,4]);
+ assert.deepEqual(GAME_SPEEDS,[1,2,4,8,16]);
  assert.equal(c.cycleSpeed(),2);
  assert.equal(c.cycleSpeed(),4);
+ assert.equal(c.cycleSpeed(),8);
+ assert.equal(c.cycleSpeed(),16);
  assert.equal(c.cycleSpeed(),1);
  assert.equal(clampGameSpeed(7),1);
 });
@@ -90,8 +92,8 @@ test('real four hours equals exactly one complete in-game day at base 1×',()=>{
  assert.equal(getDay(start,clock.virtualNow),3);
 });
 
-test('2× and 4× speed buttons add to the sixfold day clock in foreground',()=>{
- for(const speed of [1,2,4]){
+test('1× through 16× speed buttons multiply the sixfold day clock in foreground',()=>{
+ for(const speed of [1,2,4,8,16]){
    const clock=new GameClock(1000000);
    clock.setSpeed(speed);
    for(let i=1;i<=100;i++)clock.tick(1000000+i*100,true);
