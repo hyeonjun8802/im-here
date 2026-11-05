@@ -17,15 +17,15 @@ test('speed control cycles 1× → 2× → 4× → 8× → 16× → 32× → 50�
  assert.equal(clampGameSpeed(7),1);
 });
 
-test('4× foreground acceleration stacks on 6× base; offline stays 6×',()=>{
+test('4× foreground acceleration stacks on 144× base; inactive time pauses',()=>{
  const c=new GameClock(1000000);
  c.setSpeed(4);
  for(let i=1;i<=100;i++)c.tick(1000000+i*20,true);
- assert.equal(c.virtualNow,1000000+48000);
+ assert.equal(c.virtualNow,1000000+2000*GAME_CLOCK_RATE*4);
  c.tick(1000000+2000+60000,false);
- assert.equal(c.virtualNow,1000000+48000+360000);
+ assert.equal(c.virtualNow,1000000+2000*GAME_CLOCK_RATE*4);
  c.tick(1000000+2000+60020,true);
- assert.equal(c.virtualNow,1000000+48000+360000+480);
+ assert.equal(c.virtualNow,1000000+2020*GAME_CLOCK_RATE*4);
 });
 
 test('speed offset persists across reload without resetting saved damage',()=>{
@@ -39,14 +39,14 @@ test('speed offset persists across reload without resetting saved damage',()=>{
  state.tornadoDamageCount=2;state.tornadoCityDamaged=true;
  state.gameClockOffsetMs=c.offset(start+60000);
  state.gameClockSavedRealAtMs=start+60000;
- state.clockSchema=2;
+ state.clockSchema=3;
  const save=JSON.parse(JSON.stringify(state));
  const reopenedClock=new GameClock(start+65000,save.gameClockOffsetMs,save.gameClockSavedRealAtMs);
  const reopened=sanitize(save,reopenedClock.virtualNow);
  assert.equal(reopened.tornadoDamageCount,2);
  assert.equal(reopened.startedAt,start);
- assert.equal(reopened.gameClockOffsetMs,1380000);
- assert.equal(reopenedClock.virtualNow,start+1470000);
+ assert.equal(reopened.gameClockOffsetMs,60000*GAME_CLOCK_RATE*4-60000);
+ assert.equal(reopenedClock.virtualNow,start+60000*GAME_CLOCK_RATE*4);
 });
 
 test('existing saves without offset start at normal 1× speed',()=>{
@@ -80,21 +80,18 @@ test('speed control, canvas tap and single new scenario audio remain wired',()=>
  assert.equal(existsSync(new URL('../src/metalClangAudio.js',import.meta.url)),false);
 });
 
-test('real four hours equals exactly one complete in-game day at base 1×',()=>{
- const start=Date.UTC(2026,10,4,12);
- const clock=new GameClock(start);
- assert.equal(GAME_CLOCK_RATE,6);
- assert.equal(GAME_DAY_REAL_MS,4*3600000);
- clock.tick(start+GAME_DAY_REAL_MS-1,false);
- assert.equal(getDay(start,clock.virtualNow),1);
- clock.tick(start+GAME_DAY_REAL_MS,false);
+test('ten minutes of active 1x play equals one complete game day',()=>{
+ const start=Date.UTC(2026,10,4,12),clock=new GameClock(start);
+ assert.equal(GAME_CLOCK_RATE,144);
+ assert.equal(GAME_DAY_REAL_MS,10*60000);
+ for(let i=1;i<=600;i++)clock.tick(start+i*1000,true);
  assert.equal(getDay(start,clock.virtualNow),2);
  assert.equal(clock.virtualNow-start,DAY_MS);
- clock.tick(start+2*GAME_DAY_REAL_MS,false);
+ for(let i=601;i<=1200;i++)clock.tick(start+i*1000,true);
  assert.equal(getDay(start,clock.virtualNow),3);
 });
 
-test('1× through 50× speed buttons multiply the sixfold day clock in foreground',()=>{
+test('1× through 50× speed buttons multiply the ten-minute day in foreground',()=>{
  for(const speed of [1,2,4,8,16,32,50]){
    const clock=new GameClock(1000000);
    clock.setSpeed(speed);
@@ -103,14 +100,14 @@ test('1× through 50× speed buttons multiply the sixfold day clock in foregroun
  }
 });
 
-test('reopening after four real hours progresses precisely one game day',()=>{
- const t=Date.UTC(2026,10,4,12);
- const c=new GameClock(t);
- c.tick(t+60000,false);
- const offset=c.offset(t+60000);
- const reopened=new GameClock(t+GAME_DAY_REAL_MS,offset,t+60000);
- assert.equal(reopened.virtualNow,t+DAY_MS);
- assert.equal(getDay(t,reopened.virtualNow),2);
+test('reopening after hours away resumes at exactly the saved virtual time',()=>{
+ const t=Date.UTC(2026,10,4,12),c=new GameClock(t);
+ for(let i=1;i<=60;i++)c.tick(t+i*1000,true);
+ const savedAt=t+60000,offset=c.offset(savedAt);
+ const reopened=new GameClock(t+4*3600000,offset,savedAt);
+ assert.equal(reopened.virtualNow,c.virtualNow);
+ assert.equal(getDay(t,reopened.virtualNow),1);
+ assert.ok(offset>0);
 });
 
 test('legacy KST day migration preserves displayed DAY, ruins and supplies',()=>{

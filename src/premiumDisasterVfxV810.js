@@ -85,7 +85,7 @@ function makeDustDome(scene,isMobile){
     vec3 p=d*5.2+vec3(uTime*(.014+uWind*.028),.3,uTime*.008);
     float band=n(p)*.64+n(p*2.1+4.7)*.36;
     float horizon=(1.-smoothstep(.12,.72,d.y));
-    float alpha=smoothstep(.30,.72,band)*horizon*uStrength*.48;
+    float alpha=smoothstep(.30,.72,band)*horizon*uStrength*.28;
     if(alpha<.006)discard;
     vec3 col=mix(vec3(.38,.29,.20),vec3(.67,.49,.31),band);
     gl_FragColor=vec4(col,alpha);
@@ -94,6 +94,102 @@ function makeDustDome(scene,isMobile){
  });
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(1120,isMobile?24:40,isMobile?14:22),mat);
  mesh.name='AFTERDAY v8.1 spherical dust haze';mesh.renderOrder=-3;mesh.frustumCulled=false;scene.add(mesh);return mesh;
+}
+
+
+/** v9.2: two turbulent, depth-tested haboob walls, not flat camera fog.
+ * Their lower rolling edge and vertical sand columns remain readable against
+ * ruined building silhouettes from any orbit angle. Low-poly mobile budget.
+ */
+function makeSandstormFronts(scene,roofY,isMobile){
+ const fronts=[];
+ const specs=isMobile?[[162,125,38,7],[285,170,40,8]]:[[162,135,64,12],[285,185,72,14]];
+ for(let i=0;i<specs.length;i++){
+  const [radius,height,sides,rows]=specs[i];
+  const mat=new THREE.ShaderMaterial({
+   uniforms:{uTime:{value:0},uStrength:{value:0},uWind:{value:0},uLayer:{value:i}},
+   vertexShader:`precision highp float;
+    uniform float uTime,uWind,uLayer;
+    varying vec3 vSand;varying float vHeight;
+    void main(){
+      vec3 p=position;
+      float y=(position.y+90.)/180.;
+      float shear=sin(p.x*.023+uTime*(.60+uWind*.5)+uLayer*3.7)
+        +.53*sin(p.z*.043-p.y*.037-uTime*.46);
+      p.xz+=normalize(vec2(p.x+.001,p.z+.001))*shear*(1.6+4.6*y);
+      p.y+=sin(p.x*.031+p.z*.018+uTime*.58)*3.5*y;
+      vSand=p;vHeight=clamp(y,0.,1.);
+      gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
+    }`,
+   fragmentShader:`precision highp float;
+    uniform float uTime,uStrength,uWind,uLayer;
+    varying vec3 vSand;varying float vHeight;
+    float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+    float noise(vec3 p){
+      vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+      float a=mix(hash(i),hash(i+vec3(1,0,0)),f.x);
+      float b=mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x);
+      float c=mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x);
+      float d=mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x);
+      return mix(mix(a,b,f.y),mix(c,d,f.y),f.z);
+    }
+    void main(){
+      vec3 flow=vSand*vec3(.042,.042,.042)+vec3(uTime*(.19+uWind*.25),uTime*.027,uTime*.065);
+      float billow=noise(flow)*.65+noise(flow*2.7+uLayer*13.)*.35;
+      float base=1.-smoothstep(.15,.89,vHeight);
+      float columns=smoothstep(.26,.72,billow+.13*base);
+      float edge=1.-smoothstep(.64,.93,vHeight+(.50-billow)*.28);
+      float gust=.88+.12*sin(uTime*.77+vSand.x*.035+uLayer);
+      float opacity=(base*.48+columns*.37)*edge*uStrength*gust*(uLayer<.5?.70:.54);
+      if(opacity<.018)discard;
+      vec3 deep=vec3(.23,.145,.085),sand=vec3(.72,.52,.31);
+      vec3 col=mix(deep,sand,clamp(.25+billow*.77+vHeight*.10,0.,1.));
+      gl_FragColor=vec4(col,clamp(opacity,0.,.72));
+    }`,
+   side:THREE.BackSide,transparent:true,depthWrite:false,depthTest:true
+  });
+  const mesh=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,height,sides,rows,true),mat);
+  mesh.position.y=roofY+height*.45;
+  mesh.name='AFTERDAY v9.2 rolling haboob sand wall '+i;
+  mesh.frustumCulled=false;mesh.renderOrder=i?2:3;scene.add(mesh);fronts.push(mesh);
+ }
+ return fronts;
+}
+
+/** Ground-level sand shear. It follows a coherent lateral wind direction
+ * instead of spawning generic soft dust cards across the camera view. */
+function makeWindborneSand(scene,roofY,isMobile){
+ const geo=billboardGeometry(isMobile?240:660,1922,{radius:58,height:2.8,minSize:.34,maxSize:1.75});
+ const mat=new THREE.ShaderMaterial({
+  uniforms:{uTime:{value:0},uStrength:{value:0},uWind:{value:0},uRoofY:{value:roofY}},
+  vertexShader:`precision highp float;
+    attribute vec3 aOrigin;attribute float aPhase,aSize,aVariation;
+    uniform float uTime,uWind,uRoofY;
+    varying vec2 vUv;varying float vVar;
+    void main(){
+      vUv=uv;vVar=aVariation;
+      float speed=24.+uWind*38.+aVariation*19.;
+      float travel=mod(aOrigin.x+uTime*speed+aPhase*170.+86.,172.)-86.;
+      vec3 center=vec3(travel,uRoofY+.40+aOrigin.y*.65+
+        .28*sin(uTime*4.+aPhase*25.),aOrigin.z+sin(aPhase*32.+uTime*.49)*2.);
+      float len=aSize*(2.6+uWind*3.0);
+      vec3 world=center+vec3(position.x*len,position.y*aSize*.12,position.x*len*.20);
+      gl_Position=projectionMatrix*viewMatrix*vec4(world,1.);
+    }`,
+  fragmentShader:`precision highp float;
+    uniform float uStrength;varying vec2 vUv;varying float vVar;
+    void main(){
+      float edge=smoothstep(0.,.18,vUv.x)*(1.-smoothstep(.74,1.,vUv.x));
+      float feather=1.-smoothstep(.10,.50,abs(vUv.y-.5));
+      float alpha=edge*feather*uStrength*(.30+.21*vVar);
+      if(alpha<.012)discard;
+      gl_FragColor=vec4(mix(vec3(.45,.30,.14),vec3(.91,.72,.43),vVar),alpha);
+    }`,
+  transparent:true,depthWrite:false,depthTest:true,side:THREE.DoubleSide
+ });
+ const mesh=new THREE.Mesh(geo,mat);
+ mesh.name='AFTERDAY v9.2 sandstorm ground-shear grit';
+ mesh.frustumCulled=false;mesh.renderOrder=5;scene.add(mesh);return mesh;
 }
 
 const FIRE_ANCHORS=[[-215,-168],[-168,205],[232,-126],[205,182],[-286,42],[292,54]];
@@ -191,31 +287,40 @@ function makeEmbers(scene,roofY,isMobile){
 }
 
 export function premiumDisasterBudget(isMobile=false){
- return Object.freeze({dustSheets:isMobile?360:820,wildfireFlames:isMobile?34:68,smokeBillboards:isMobile?90:210,embers:isMobile?120:300,shadowCastingFireLights:0});
+ return Object.freeze({dustSheets:isMobile?360:820,sandGrit:isMobile?240:660,sandFronts:2,wildfireFlames:isMobile?34:68,smokeBillboards:isMobile?90:210,embers:isMobile?120:300,shadowCastingFireLights:0});
 }
 
 export class PremiumDisasterVfxV810{
  constructor(scene,roofY,isMobile){
   this.scene=scene;this.elapsed=0;this.dust=makeDustField(scene,roofY,isMobile);this.dustDome=makeDustDome(scene,isMobile);
+  this.sandWalls=makeSandstormFronts(scene,roofY,isMobile);
+  this.sandGrit=makeWindborneSand(scene,roofY,isMobile);
   this.fire=makeFireFront(scene,roofY,isMobile);this.smoke=makeWildfireSmoke(scene,roofY,isMobile);this.embers=makeEmbers(scene,roofY,isMobile);
   this.glows=FIRE_ANCHORS.slice(0,isMobile?1:3).map(([x,z],i)=>{
    const light=new THREE.PointLight(i===1?'#ff8b35':'#ff6b21',0,isMobile?95:150,2.1);
    light.position.set(x,roofY-12,z);light.castShadow=false;scene.add(light);return light;
   });
-  for(const o of [this.dust,this.dustDome,this.fire,this.smoke,this.embers])o.visible=false;
+  for(const o of [this.dust,this.dustDome,this.sandGrit,...this.sandWalls,this.fire,this.smoke,this.embers])o.visible=false;
  }
  update(dt,w,night=0){
   this.elapsed+=Math.max(0,Math.min(.08,dt));
   const dust=clamp01(w?.dust),fire=clamp01(w?.wildfire),wind=clamp01(w?.wind);
   const du=this.dust.material.uniforms;du.uTime.value=this.elapsed;du.uStrength.value=dust;du.uWind.value=wind;this.dust.visible=dust>.004;
   const dd=this.dustDome.material.uniforms;dd.uTime.value=this.elapsed;dd.uStrength.value=dust;dd.uWind.value=wind;this.dustDome.visible=dust>.004;
+  for(const wall of this.sandWalls){
+   const u=wall.material.uniforms;u.uTime.value=this.elapsed;u.uStrength.value=dust;u.uWind.value=wind;
+   wall.visible=dust>.012;
+  }
+  const grit=this.sandGrit.material.uniforms;
+  grit.uTime.value=this.elapsed;grit.uStrength.value=dust;grit.uWind.value=wind;
+  this.sandGrit.visible=dust>.025;
   const fu=this.fire.material.uniforms;fu.uTime.value=this.elapsed;fu.uStrength.value=fire;fu.uNight.value=clamp01(night);this.fire.visible=fire>.003;
   const su=this.smoke.material.uniforms;su.uTime.value=this.elapsed;su.uStrength.value=fire;su.uWind.value=wind;this.smoke.visible=fire>.003;
   const eu=this.embers.material.uniforms;eu.uTime.value=this.elapsed;eu.uStrength.value=fire*(.55+.45*clamp01(night));this.embers.visible=fire>.03;
   for(let i=0;i<this.glows.length;i++)this.glows[i].intensity=THREE.MathUtils.damp(this.glows[i].intensity,fire*(2.2+clamp01(night)*4.8)*(i===0?1:.72),1.8,dt);
  }
  dispose(){
-  for(const o of [this.dust,this.dustDome,this.fire,this.smoke,this.embers]){
+  for(const o of [this.dust,this.dustDome,this.sandGrit,...this.sandWalls,this.fire,this.smoke,this.embers]){
    o.parent?.remove(o);o.geometry.dispose();o.material.dispose();
   }
   for(const l of this.glows)l.parent?.remove(l);

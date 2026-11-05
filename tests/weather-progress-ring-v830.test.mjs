@@ -60,7 +60,7 @@ test('clear and cloud progress rings remain intentionally low-emphasis',()=>{
 });
 
 
-test('v8.5 same-weather rollover starts a fresh progress interval at zero',()=>{
+test('v9.2 every coherent weather interval starts progress from zero',()=>{
   const now=1_800_000_000_000;
   const state=defaults(now);
   state.weather='rain';
@@ -71,7 +71,7 @@ test('v8.5 same-weather rollover starts a fresh progress interval at zero',()=>{
 
   advance(state,now+60_000,false);
 
-  assert.equal(state.weather,'rain');
+  assert.ok(['cloud','rain','storm','clear'].includes(state.weather));
   assert.equal(state.weatherSinceAt,now+60_000);
   assert.ok(state.nextWeatherAt>state.weatherSinceAt);
   assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
@@ -87,7 +87,7 @@ test('v8.5 HUD progress has no private timer cache that can drift from simulatio
   assert.match(src,/currentWeatherProgress\(state,now\)/);
 });
 
-test('weather interval duration stays within the simulation 15-to-32-minute schedule',()=>{
+test('weather intervals last multiple game hours for readable 10-minute days',()=>{
   const now=1_800_000_000_000;
   const state=defaults(now);
   state.weather='clear';
@@ -97,8 +97,8 @@ test('weather interval duration stays within the simulation 15-to-32-minute sche
 
   advance(state,now+60_000,false);
   const duration=state.nextWeatherAt-state.weatherSinceAt;
-  assert.ok(duration>=15*60_000);
-  assert.ok(duration<=32*60_000);
+  assert.ok(duration>=60*60_000);
+  assert.ok(duration<=6*60*60_000);
   assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
   assert.equal(currentWeatherProgress(state,state.nextWeatherAt),1);
 });

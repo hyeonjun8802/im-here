@@ -62,11 +62,11 @@ test('world integrates v1.3 finishing without replacing simulation or city plann
 test('current approved simulation, weather, layout and activity source checksums',()=>{
  const original={
   // Survival Director v4.1 deliberately updates the gameplay rules (2026-11-04).
-  // Simulation source is intentionally versioned separately for four-real-hour days;
+  // Simulation source is intentionally versioned separately for ten-minute active days;
  // behavior and migration are tested in simulation.test.mjs and game-speed-overlay.test.mjs.
   'src/solar.js':'68b7bd176efca52b8ac0d483507d7e9bcd43229a8c8fdd76408f5cf166aa75ad',
   'src/spatialLayout.js':'157bcbc1f606f34d2f3800994c5179c63347e26021e08459b566cd5bb4754c61',
-  'src/weatherDirector.js':'ebb57d8f5c6f60a64c67a750be54a79aa492dee29646e1bd88f1ab88da95bf1e',
+  'src/weatherDirector.js':'19c8938f84dd0eb478da9ea6337bc69c12ff3c1ad0a31b1c51ec4d84638bf722',
   'src/lifePlan.js':'d0f0928d7f19cde7576fcc26d8a96e7a83316f73fca3102a7a83c5698dbaead0'
  };
  for(const [file,expected] of Object.entries(original)){

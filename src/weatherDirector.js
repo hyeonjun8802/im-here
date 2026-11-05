@@ -7,7 +7,7 @@ export const VISUAL_WEATHER = Object.freeze({
  storm: {rain:1,cloud:1,wind:.88,mist:.85,wet:1,storm:1,heat:0,snow:0,tornado:0,dust:0,wildfire:0},
  tornado: {rain:.68,cloud:1,wind:1,mist:.84,wet:.95,storm:1,heat:0,snow:0,tornado:1,dust:0,wildfire:0},
  cold: {rain:0,cloud:.56,wind:.42,mist:.37,wet:.13,storm:0,heat:0,snow:.86,tornado:0,dust:0,wildfire:0},
- dust: {rain:0,cloud:.44,wind:.92,mist:.78,wet:0,storm:0,heat:.18,snow:0,tornado:0,dust:1,wildfire:0},
+ dust: {rain:0,cloud:.37,wind:1,mist:.43,wet:0,storm:0,heat:.22,snow:0,tornado:0,dust:1,wildfire:0},
  wildfire: {rain:0,cloud:.70,wind:.64,mist:.86,wet:0,storm:0,heat:.88,snow:0,tornado:0,dust:.16,wildfire:1},
 });
 export const WEATHER_KEYS=Object.freeze(Object.keys(VISUAL_WEATHER["clear"]));

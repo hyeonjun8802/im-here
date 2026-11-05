@@ -1,3 +1,4 @@
+import {scriptedDisasterType,chooseScenarioWeather,weatherDurationMs} from './weatherScenarioV920.js';
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
 import {makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
@@ -11,12 +12,10 @@ export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'
 export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold','dust','wildfire'];
 export const MAJOR_DISASTER_LEAD_MS=24*60*60*1000;
 export function majorDisasterTypeFor(seed,serial){
-  let x=((Number(seed)||47283)^Math.imul(Math.max(1,Number(serial)||1),0x9e3779b1))>>>0;
-  x^=x>>>16;x=Math.imul(x,0x85ebca6b)>>>0;x^=x>>>13;
-  return MAJOR_DISASTERS[(x>>>0)%MAJOR_DISASTERS.length];
+ return scriptedDisasterType(seed,serial);
 }
 export const defaults = (now=Date.now())=>({
-  version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
+  version:4, clockSchema:3, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+4*3600000, pendingWeather:'cloud', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
   itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
@@ -39,10 +38,11 @@ export function sanitize(raw, now=Date.now()) {
   s.scavenge=sanitizeScavengeDirector(raw.scavenge,s.startedAt);
   s.companion=sanitizeCompanion(raw.companion);
   const offset=Number(s.gameClockOffsetMs);
-  s.gameClockOffsetMs=Number.isFinite(offset)?Math.max(0,offset):0;
-  // Only clockSchema 2 saves already use the accelerated four-real-hour day.
-  // Older saved records must be migrated once without changing their DAY.
-  s.clockSchema=Number(raw.clockSchema)===2?2:1;
+  s.gameClockOffsetMs=Number.isFinite(offset)?offset:0;
+  // v9.2: legacy accelerated saves retain their DAY and ruins; the new
+  // 10-minute day clock resumes from the last saved virtual timestamp.
+  // Schema 1 still uses the one-time KST day migration.
+  s.clockSchema=Number(raw.clockSchema)>=2?3:1;
   const savedRealAt=Number(raw.gameClockSavedRealAtMs);
   s.gameClockSavedRealAtMs=Number.isFinite(savedRealAt)&&savedRealAt>0?savedRealAt:0;
   s.events=Array.isArray(s.events)?s.events.filter(v=>typeof v==='string').slice(-16):b.events;
@@ -108,7 +108,7 @@ export function sanitize(raw, now=Date.now()) {
   if (!WEATHER.includes(s.weather)) s.weather='clear';
   return s;
 }
-/** DAY 2 begins exactly 24 in-game hours after creation (4 real hours at 1×).
+/** DAY 2 begins exactly 24 in-game hours after creation (10 real minutes at 1×).
  * Unlike the old KST-midnight counter, a player never gets a partial first day.
  */
 export function getDay(startedAt,now=Date.now()){
@@ -118,13 +118,13 @@ export function getDay(startedAt,now=Date.now()){
  * Never reset food, damaged buildings, warnings, milestones or user actions.
  */
 export function migrateLegacyGameDay(s,virtualNow){
-  if(s.clockSchema===2)return false;
+  if(s.clockSchema>=2)return false;
   const now=Number(virtualNow);
   const kst=9*3600000;
   const legacyDay=Math.max(1,Math.floor((now+kst)/DAY_MS)-Math.floor((s.startedAt+kst)/DAY_MS)+1);
   const phase=((now+kst)%DAY_MS+DAY_MS)%DAY_MS;
   s.startedAt=now-(legacyDay-1)*DAY_MS-phase;
-  s.clockSchema=2;
+  s.clockSchema=3;
   return true;
 }
 export function wallClock(now=Date.now()) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(now));}
@@ -213,22 +213,15 @@ function armScheduledMajorDisaster(s,tickTime){
   s.majorDisasterSerial=serial+1;
   s.majorDisasterType=majorDisasterTypeFor(s.weatherSeed,s.majorDisasterSerial);
   s.majorDisasterAt=tickTime+MAJOR_DISASTER_LEAD_MS;
-  addEvent(s,`장기 관측망이 예측했던 ${WEATHER_KO[type]} 재난이 도달했다.`);
+  addEvent(s,`예보 관측망이 예측했던 ${WEATHER_KO[type]} 재난이 도달했다.`);
   return true;
 }
 function pickWeather(s,now=Date.now()){
- const r=nextRandom(s),day=getDay(s.startedAt,now);
- // Rare ambient disasters complement the guaranteed seven-day major forecast.
- // They reuse the same deterministic RNG so save/reload behavior stays stable.
- if(day>=5&&r>.992)return 'wildfire';
- if(day>=2&&r>.955)return 'dust';
- if(day>=3&&now>=s.nextTornadoAllowedAt&&r<.028)return 'tornado';
- if(r<.065)return 'storm';
- if(r<.35)return 'rain';
- if(r<.62)return 'cloud';
- if(r<.86)return 'clear';
- if(r<.93)return 'heat';
- return 'cold';
+ // The current weather is the source of the next ordinary transition.
+ // Upcoming major events override the surrounding six-hour prelude.
+ return chooseScenarioWeather(
+  s.weather,s.majorDisasterType,(s.majorDisasterAt-now)/3600000,nextRandom(s)
+ );
 }
 export function advance(s,now=Date.now(),offline=false){
   if(now<s.lastTickAt) return s; // Never process a backward system clock.
@@ -241,13 +234,15 @@ export function advance(s,now=Date.now(),offline=false){
   for(let i=0;i<ticks;i++){
     const tickTime=finalTickTime-(ticks-1-i)*60000;
     if(s.survivalStatus==='dead')break;
-    armScheduledMajorDisaster(s,tickTime);
+    const scheduledImpact=armScheduledMajorDisaster(s,tickTime);
     if(tickTime>=s.nextWeatherAt){
       const was=s.weather;
-      s.weather=s.pendingWeather||pickWeather(s,tickTime);
+      // The forecasted impact must take precedence over ordinary transitions.
+      // Outside impact, nearby forecasts direct their own weather prelude.
+      s.weather=scheduledImpact?s.pendingWeather:pickWeather(s,tickTime);
       if(s.weather==='tornado')s.nextTornadoAllowedAt=tickTime+60*3600000;
       s.pendingWeather=pickWeather(s,tickTime);
-      s.nextWeatherAt=tickTime+(15+Math.round(nextRandom(s)*17))*60000;
+      s.nextWeatherAt=tickTime+weatherDurationMs(s.weather,nextRandom(s));
       // v8.5: weatherSinceAt marks the start of the ACTIVE WEATHER INTERVAL,
       // not only a label change. If rain rolls into rain again, the player sees
       // one new scheduled rain interval and the progress ring restarts at 0%.
