@@ -27,20 +27,20 @@ test('24h and 6h forecast checkpoints map one moving icon from outer to inner so
 test('only one future emblem remains and no circular forecast sockets are rendered',()=>{
   const html=read('index.html');
   const css=read('src/style.css');
-  const frame=read('public/assets/ui/disaster_forecast_frame.svg');
+  const frame=read('public/assets/ui/forecast_hud_frame_v950.svg');
   assert.equal((html.match(/class="disaster-forecast__future"/g)||[]).length,1);
   assert.doesNotMatch(html,/slot-6h|slot-12h|slot-18h|slot-24h/);
   assert.match(css,/\.disaster-forecast__bar-fill/);
   assert.match(css,/\.disaster-forecast__future/);
-  assert.match(frame,/Linear forecast channel/);
-  assert.match(frame,/rect x="482" y="143"/);
+  assert.match(frame,/Right forecast rail/);
+  assert.match(frame,/rect x="994" y="170"/);
   assert.doesNotMatch(frame,/cx="690"|cx="830"|cx="950"|cx="1060"/);
 });
 
 test('single forecast resource crossfades from far to eve before entering current',()=>{
   const src=read('src/disasterForecastV800.js');
   assert.match(src,/const stage=hoursLeft<=12\?'eve':'far'/);
-  assert.match(src,/this\.future\.set\(p\.futureType,p\.stage,p\.visible\)/);
+  assert.match(src,/this\.future\.set\(p\.futureType,'current',p\.visible\)/);
   assert.match(src,/movingForecastX/);
 });
 
