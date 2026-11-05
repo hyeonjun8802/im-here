@@ -44,7 +44,7 @@ test('forecast icon grows and brightens toward current without duplicating itsel
 });
 
 
-test('50x moves a 24h disaster forecast to the 18h checkpoint in about 72 real seconds',()=>{
+test('50x moves a 24h disaster forecast to the 18h checkpoint in three real seconds',()=>{
   const realStart=1_800_000_000_000;
   const clock=new GameClock(realStart);
   clock.setSpeed(50);
@@ -52,7 +52,7 @@ test('50x moves a 24h disaster forecast to the 18h checkpoint in about 72 real s
   const initial=forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:disasterAt},clock.virtualNow);
   assert.equal(initial.activeLeadHours,24);
 
-  for(let i=1;i<=720;i++)clock.tick(realStart+i*100,true);
+  for(let i=1;i<=30;i++)clock.tick(realStart+i*100,true);
   const moved=forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:disasterAt},clock.virtualNow);
   assert.equal(moved.activeLeadHours,18);
   assert.ok(moved.x<initial.x);
