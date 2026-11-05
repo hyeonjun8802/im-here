@@ -8,8 +8,15 @@ export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
 export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파'};
+export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold'];
+export const MAJOR_DISASTER_LEAD_MS=7*DAY_MS;
+export function majorDisasterTypeFor(seed,serial){
+  let x=((Number(seed)||47283)^Math.imul(Math.max(1,Number(serial)||1),0x9e3779b1))>>>0;
+  x^=x>>>16;x=Math.imul(x,0x85ebca6b)>>>0;x^=x>>>13;
+  return MAJOR_DISASTERS[x%MAJOR_DISASTERS.length];
+}
 export const defaults = (now=Date.now())=>({
-  version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
+  version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
   itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
@@ -72,6 +79,14 @@ export function sanitize(raw, now=Date.now()) {
   s.weatherEpisode=Math.max(0,Math.floor(Number(s.weatherEpisode)||0));
   s.weatherSinceAt=Math.max(0,Number(s.weatherSinceAt)||s.startedAt);
   s.nextTornadoAllowedAt=Math.max(0,Number(s.nextTornadoAllowedAt)||0);
+  // v8.0: persistent seven-day major-disaster forecast. Old saves receive a
+  // deterministic first forecast without consuming the ordinary weather RNG.
+  s.majorDisasterSerial=Math.max(1,Math.floor(Number(raw.majorDisasterSerial)||1));
+  s.majorDisasterType=MAJOR_DISASTERS.includes(raw.majorDisasterType)
+    ?raw.majorDisasterType:majorDisasterTypeFor(s.weatherSeed,s.majorDisasterSerial);
+  const majorAt=Number(raw.majorDisasterAt);
+  s.majorDisasterAt=Number.isFinite(majorAt)&&majorAt>0?majorAt:now+MAJOR_DISASTER_LEAD_MS;
+  s.majorDisasterAppliedSerial=Math.max(0,Math.floor(Number(raw.majorDisasterAppliedSerial)||0));
   s.noticeSeenIds=Array.isArray(s.noticeSeenIds)?[...new Set(s.noticeSeenIds.filter(v=>typeof v==='string'&&v.length<160))].slice(-80):[];
   s.eventSerial=Math.max(0,Math.floor(Number(s.eventSerial)||0));
   s.survivalStatus=s.survivalStatus==='dead'?'dead':'alive';
@@ -176,6 +191,23 @@ export function evaluateSurvival(s,now=Date.now()){
  addEvent(s,`생존 종료. ${s.deathCause}. 마지막 날까지 버텼지만 더 이상 움직일 수 없다.`);
  return true;
 }
+function armScheduledMajorDisaster(s,tickTime){
+  if(!Number.isFinite(s.majorDisasterAt)||tickTime<s.majorDisasterAt||
+     s.majorDisasterAppliedSerial===s.majorDisasterSerial)return false;
+  const serial=s.majorDisasterSerial;
+  const type=MAJOR_DISASTERS.includes(s.majorDisasterType)
+    ?s.majorDisasterType:majorDisasterTypeFor(s.weatherSeed,serial);
+  // Feed the event through the existing authoritative weather transition so
+  // health, water, structures, tornado encounters and saves keep one code path.
+  s.pendingWeather=type;
+  s.nextWeatherAt=Math.min(Number(s.nextWeatherAt)||tickTime,tickTime);
+  s.majorDisasterAppliedSerial=serial;
+  s.majorDisasterSerial=serial+1;
+  s.majorDisasterType=majorDisasterTypeFor(s.weatherSeed,s.majorDisasterSerial);
+  s.majorDisasterAt=tickTime+MAJOR_DISASTER_LEAD_MS;
+  addEvent(s,`장기 관측망이 예측했던 ${WEATHER_KO[type]} 재난이 도달했다.`);
+  return true;
+}
 function pickWeather(s,now=Date.now()){
  const r=nextRandom(s);
  if(getDay(s.startedAt,now)>=3&&now>=s.nextTornadoAllowedAt&&r<.028)return 'tornado';
@@ -197,6 +229,7 @@ export function advance(s,now=Date.now(),offline=false){
   for(let i=0;i<ticks;i++){
     const tickTime=finalTickTime-(ticks-1-i)*60000;
     if(s.survivalStatus==='dead')break;
+    armScheduledMajorDisaster(s,tickTime);
     if(tickTime>=s.nextWeatherAt){
       const was=s.weather;
       s.weather=s.pendingWeather||pickWeather(s,tickTime);
