@@ -17,14 +17,17 @@ try{
   for(const [stage,progress] of [['early',.08],['middle',.5],['urgent',.95]]){
    const meta=await page.evaluate(progress=>{
     const root=document.querySelector('#disaster-forecast');
-    root.style.setProperty('--weather-bar-progress',Math.round(progress*100)+'%');
+    // Override only the test rail, so normal HUD ticks cannot race the screenshot.
+    const bar=root.querySelector('.disaster-forecast__bar');
+    bar.style.setProperty('--weather-bar-progress',Math.round(progress*100)+'%');
     root.dataset.weatherBarMode='forecast';
     // Use existing 3D scene and actual HTML/CSS. Do not swap artwork.
-    const bar=root.querySelector('.disaster-forecast__bar');
     const rect=bar.getBoundingClientRect();
+    const fill=bar.querySelector('.disaster-forecast__bar-fill').getBoundingClientRect();
     const frame=root.querySelector('img.disaster-forecast__frame');
     return {rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height},
-     hasBar:rect.width>20&&rect.height>2,
+     fillRatio:fill.width/rect.width,
+     hasBar:rect.width>20&&rect.height>2&&Math.abs(fill.width/rect.width-progress)<.04,
      hasFrame:frame.complete&&frame.naturalWidth>0,
      hasLegacyRings:Boolean(root.querySelector('circle.disaster-forecast__weather-arc'))};
    },progress);
