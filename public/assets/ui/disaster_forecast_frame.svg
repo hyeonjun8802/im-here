@@ -19,7 +19,7 @@
  <circle cx="452" cy="174" r="127" fill="url(#glass)" stroke="url(#edge)" stroke-width="7"/>
  <circle cx="452" cy="174" r="117" fill="none" stroke="#7b8d94" stroke-opacity=".25" stroke-width="2"/>
  <path d="M366 76A126 126 0 0 1 544 74" fill="none" stroke="#829098" stroke-width="7" stroke-linecap="round" opacity=".35"/>
- <path d="M514 58A126 126 0 0 1 574 142" fill="none" stroke="url(#amber)" stroke-width="8" stroke-linecap="round" filter="url(#glow)"/>
+ <path d="M514 58A126 126 0 0 1 574 142" fill="none" stroke="#738087" stroke-width="7" stroke-linecap="round" opacity=".16"/>
  <g fill="#ff9a30" filter="url(#glow)">
   <rect x="411" y="292" width="13" height="22" rx="2"/><rect x="431" y="296" width="13" height="22" rx="2"/><rect x="451" y="298" width="13" height="22" rx="2"/><rect x="471" y="296" width="13" height="22" rx="2"/>
  </g>
