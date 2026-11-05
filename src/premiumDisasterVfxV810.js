@@ -195,6 +195,55 @@ function makeWindborneSand(scene,roofY,isMobile){
  mesh.frustumCulled=false;mesh.renderOrder=5;scene.add(mesh);return mesh;
 }
 
+/** Narrow revolving grit columns create moving foreground scale and depth
+ * without a screen-covering dust overlay or extra shadow-casting lights. */
+function makeSandEddies(scene,roofY,isMobile){
+ const count=isMobile?160:420;
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(count*3),3));
+ const phase=new Float32Array(count),column=new Float32Array(count),radius=new Float32Array(count);
+ for(let i=0;i<count;i++){
+  phase[i]=hash(i*7+914);column[i]=Math.floor(hash(i*17+322)*3);radius[i]=hash(i*11+77);
+ }
+ geo.setAttribute('aPhase',new THREE.BufferAttribute(phase,1));
+ geo.setAttribute('aColumn',new THREE.BufferAttribute(column,1));
+ geo.setAttribute('aRadius',new THREE.BufferAttribute(radius,1));
+ geo.boundingSphere=new THREE.Sphere(new THREE.Vector3(0,roofY+14,0),125);
+ const mat=new THREE.ShaderMaterial({
+  uniforms:{uTime:{value:0},uStrength:{value:0},uWind:{value:0},uRoofY:{value:roofY}},
+  vertexShader:`precision highp float;
+   attribute float aPhase,aColumn,aRadius;
+   uniform float uTime,uWind,uRoofY;
+   varying float vFade,vTone;
+   void main(){
+    float height=mod(aPhase*27.+uTime*(2.2+uWind*3.8+aRadius*2.),27.);
+    float spin=aPhase*6.283+uTime*(2.6+uWind*3.1)+height*.29;
+    float spiral=(.75+height*.20)*(.55+aRadius*.95);
+    vec3 center=vec3(-35.+aColumn*36.,uRoofY+height,-25.+aColumn*24.);
+    vec3 world=center+vec3(cos(spin)*spiral,0.,sin(spin)*spiral);
+    vec4 view=viewMatrix*vec4(world,1.);
+    gl_Position=projectionMatrix*view;
+    gl_PointSize=clamp((2.7+aRadius*3.8)*105./max(1.,-view.z),1.,10.);
+    vFade=(1.-smoothstep(17.,27.,height))*(.45+.55*aRadius);
+    vTone=aRadius;
+   }`,
+  fragmentShader:`precision highp float;
+   uniform float uStrength;
+   varying float vFade,vTone;
+   void main(){
+    vec2 uv=gl_PointCoord-.5;
+    float core=1.-smoothstep(.08,.46,length(uv));
+    float alpha=core*uStrength*vFade*.74;
+    if(alpha<.028)discard;
+    gl_FragColor=vec4(mix(vec3(.47,.29,.13),vec3(.93,.74,.47),vTone),alpha);
+   }`,
+  transparent:true,depthWrite:false,depthTest:true
+ });
+ const mesh=new THREE.Points(geo,mat);
+ mesh.name='AFTERDAY v9.3 swirling sand eddies';
+ mesh.frustumCulled=false;mesh.renderOrder=6;scene.add(mesh);return mesh;
+}
+
 const FIRE_ANCHORS=[[-215,-168],[-168,205],[232,-126],[205,182],[-286,42],[292,54]];
 
 function makeFireFront(scene,roofY,isMobile){
@@ -290,7 +339,7 @@ function makeEmbers(scene,roofY,isMobile){
 }
 
 export function premiumDisasterBudget(isMobile=false){
- return Object.freeze({dustSheets:isMobile?360:820,sandGrit:isMobile?240:660,sandFronts:2,wildfireFlames:isMobile?34:68,smokeBillboards:isMobile?90:210,embers:isMobile?120:300,shadowCastingFireLights:0});
+ return Object.freeze({dustSheets:isMobile?360:820,sandGrit:isMobile?240:660,sandEddies:isMobile?160:420,sandFronts:2,wildfireFlames:isMobile?34:68,smokeBillboards:isMobile?90:210,embers:isMobile?120:300,shadowCastingFireLights:0});
 }
 
 export class PremiumDisasterVfxV810{
@@ -298,12 +347,13 @@ export class PremiumDisasterVfxV810{
   this.scene=scene;this.elapsed=0;this.dust=makeDustField(scene,roofY,isMobile);this.dustDome=makeDustDome(scene,isMobile);
   this.sandWalls=makeSandstormFronts(scene,roofY,isMobile);this.sandAge=0;this.sandActive=false;
   this.sandGrit=makeWindborneSand(scene,roofY,isMobile);
+  this.sandEddies=makeSandEddies(scene,roofY,isMobile);
   this.fire=makeFireFront(scene,roofY,isMobile);this.smoke=makeWildfireSmoke(scene,roofY,isMobile);this.embers=makeEmbers(scene,roofY,isMobile);
   this.glows=FIRE_ANCHORS.slice(0,isMobile?1:3).map(([x,z],i)=>{
    const light=new THREE.PointLight(i===1?'#ff8b35':'#ff6b21',0,isMobile?95:150,2.1);
    light.position.set(x,roofY-12,z);light.castShadow=false;scene.add(light);return light;
   });
-  for(const o of [this.dust,this.dustDome,this.sandGrit,...this.sandWalls,this.fire,this.smoke,this.embers])o.visible=false;
+  for(const o of [this.dust,this.dustDome,this.sandGrit,this.sandEddies,...this.sandWalls,this.fire,this.smoke,this.embers])o.visible=false;
  }
  update(dt,w,night=0){
   this.elapsed+=Math.max(0,Math.min(.08,dt));
@@ -323,13 +373,16 @@ export class PremiumDisasterVfxV810{
   const grit=this.sandGrit.material.uniforms;
   grit.uTime.value=this.elapsed;grit.uStrength.value=dust;grit.uWind.value=wind;
   this.sandGrit.visible=dust>.025;
+  const ed=this.sandEddies.material.uniforms;
+  ed.uTime.value=this.sandAge;ed.uStrength.value=dust;ed.uWind.value=wind;
+  this.sandEddies.visible=dust>.06;
   const fu=this.fire.material.uniforms;fu.uTime.value=this.elapsed;fu.uStrength.value=fire;fu.uNight.value=clamp01(night);this.fire.visible=fire>.003;
   const su=this.smoke.material.uniforms;su.uTime.value=this.elapsed;su.uStrength.value=fire;su.uWind.value=wind;this.smoke.visible=fire>.003;
   const eu=this.embers.material.uniforms;eu.uTime.value=this.elapsed;eu.uStrength.value=fire*(.55+.45*clamp01(night));this.embers.visible=fire>.03;
   for(let i=0;i<this.glows.length;i++)this.glows[i].intensity=THREE.MathUtils.damp(this.glows[i].intensity,fire*(2.2+clamp01(night)*4.8)*(i===0?1:.72),1.8,dt);
  }
  dispose(){
-  for(const o of [this.dust,this.dustDome,this.sandGrit,...this.sandWalls,this.fire,this.smoke,this.embers]){
+  for(const o of [this.dust,this.dustDome,this.sandGrit,this.sandEddies,...this.sandWalls,this.fire,this.smoke,this.embers]){
    o.parent?.remove(o);o.geometry.dispose();o.material.dispose();
   }
   for(const l of this.glows)l.parent?.remove(l);
