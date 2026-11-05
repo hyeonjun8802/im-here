@@ -25,12 +25,12 @@ test('dust and wildfire are authoritative weather and seven-day forecast types',
  assert.ok(seen.has('dust'));assert.ok(seen.has('wildfire'));
 });
 
-test('forecast HUD exposes three-stage dust and wildfire medallions',()=>{
+test('forecast HUD exposes dust and wildfire across exact 24h/18h/12h/6h checkpoints',()=>{
  const now=1_800_000_000_000;
  const dust=forecastPresentation({weather:'dust',majorDisasterType:'wildfire',majorDisasterAt:now+7*DAY_MS},now);
- assert.equal(dust.currentType,'dust');assert.equal(dust.futureType,'wildfire');assert.equal(dust.stage,'far');
- const fire=forecastPresentation({weather:'wildfire',majorDisasterType:'dust',majorDisasterAt:now+DAY_MS},now);
- assert.equal(fire.currentType,'wildfire');assert.equal(fire.futureType,'dust');assert.equal(fire.stage,'eve');
+ assert.equal(dust.currentType,'dust');assert.equal(dust.futureType,'wildfire');assert.equal(dust.activeLeadHours,24);
+ const fire=forecastPresentation({weather:'wildfire',majorDisasterType:'dust',majorDisasterAt:now+12*3600000},now);
+ assert.equal(fire.currentType,'wildfire');assert.equal(fire.futureType,'dust');assert.equal(fire.activeLeadHours,12);
  const sprites=read('public/assets/ui/disaster_forecast_icons.svg');
  for(const type of ['dust','wildfire'])for(const stage of ['far','eve','current'])assert.match(sprites,new RegExp(`id="${type}-${stage}"`));
 });
