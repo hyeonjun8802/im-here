@@ -2,7 +2,7 @@ name: Premium visual frame capture (real WebGL)
 
 on:
   push:
-    branches: [main, feature/premium-lighting-v600-20261104]
+    branches: [main, feature/premium-lighting-v600-20261104, feature/weather-director-sandfront-20261105]
     paths:
       - 'src/**'
       - 'index.html'
