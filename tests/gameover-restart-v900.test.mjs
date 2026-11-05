@@ -25,7 +25,7 @@ test('fresh restart state is alive on DAY 001 with death fields cleared',()=>{
   assert.equal(getDay(s.startedAt,now),1);
   assert.equal(s.gameClockOffsetMs,0);
   assert.equal(s.gameClockSavedRealAtMs,now);
-  assert.equal(s.clockSchema,2);
+  assert.equal(s.clockSchema,3);
 });
 
 test('fresh restart is persisted atomically under the authoritative save key',()=>{
