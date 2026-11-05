@@ -99,7 +99,7 @@ test('clear default is present but deliberately lower emphasis than disasters',(
   const css=read('src/style.css');
   const src=read('src/disasterForecastV800.js');
   assert.match(src,/clear:'clear'/);
-  assert.match(src,/type==='clear'\?\['current'\]/);
+  assert.match(src,/\(type==='clear'\|\|type==='cloud'\)\?\['current'\]/);
   assert.match(css,/data-current-disaster="clear"/);
   assert.match(css,/opacity:\.62/);
   assert.match(css,/animation:none!important/);
