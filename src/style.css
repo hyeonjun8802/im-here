@@ -597,3 +597,20 @@
 @media(prefers-reduced-motion:reduce){
  .disaster-forecast__future,.survival-hud-stat-track i{transition:none!important}
 }
+
+/* Seven matching pictograms in one authored production SVG (no OS emoji drift). */
+.hud-picto{
+ display:inline-block;flex:none;vertical-align:middle;
+ width:1.15em;height:1.15em;min-width:8px;min-height:8px;
+ background-image:url('/assets/ui/hud_symbols_v950.svg');
+ background-size:700% 100%;background-repeat:no-repeat;
+ margin-right:.24em;
+}
+.survival-hud-stat-label,.survival-hud-stock span{display:inline-flex;align-items:center}
+.hud-picto--health{background-position:0% 50%}
+.hud-picto--hunger{background-position:16.6667% 50%}
+.hud-picto--hydration{background-position:33.3333% 50%}
+.hud-picto--food{background-position:50% 50%}
+.hud-picto--water{background-position:66.6667% 50%}
+.hud-picto--medicine{background-position:83.3333% 50%}
+.hud-picto--parts{background-position:100% 50%}
