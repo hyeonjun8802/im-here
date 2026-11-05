@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="AFTERDAY disaster forecast frame">
+<defs>
+ <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#58636a"/><stop offset=".18" stop-color="#222b30"/><stop offset=".55" stop-color="#10171b"/><stop offset=".82" stop-color="#30383b"/><stop offset="1" stop-color="#0b1114"/></linearGradient>
+ <linearGradient id="edge" x1="0" x2="1"><stop stop-color="#8e7658"/><stop offset=".26" stop-color="#d2aa70"/><stop offset=".48" stop-color="#423628"/><stop offset=".78" stop-color="#c7975e"/><stop offset="1" stop-color="#4b3827"/></linearGradient>
+ <radialGradient id="glass"><stop stop-color="#26343b"/><stop offset=".68" stop-color="#152127"/><stop offset="1" stop-color="#081014"/></radialGradient>
+ <linearGradient id="amber" x1="0" x2="1"><stop stop-color="#ffb24f"/><stop offset=".45" stop-color="#ff7d16"/><stop offset="1" stop-color="#a64009"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".72"/></filter>
+ <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <pattern id="ticks" width="13" height="5" patternUnits="userSpaceOnUse"><path d="M1 0v4" stroke="#cda46d" stroke-opacity=".45" stroke-width="1"/></pattern>
+</defs>
+<g filter="url(#shadow)">
+ <path d="M42 142 115 88h210c30-48 70-76 123-82 62-6 113 22 143 82h490l74 54-42 76H607c-34 62-91 96-158 93-57-2-103-31-133-93H94z" fill="url(#steel)" stroke="#11191d" stroke-width="12"/>
+ <path d="M51 142 121 98h213c30-44 67-66 112-70 57-5 102 20 128 70h498l62 44-29 57H594c-31 54-80 83-143 82-53-1-95-27-123-82H105z" fill="none" stroke="url(#edge)" stroke-width="4" opacity=".82"/>
+ <path d="M85 128h225M606 128h489M87 213h226M610 213h485" stroke="#69747a" stroke-opacity=".32" stroke-width="3"/>
+ <path d="M623 249h473" stroke="#33281d" stroke-width="8"/><path d="M623 249h473" stroke="url(#amber)" stroke-width="2.3" filter="url(#glow)"/>
+ <path d="M632 258h454" stroke="url(#ticks)" stroke-width="5" opacity=".8"/>
+ <!-- central socket -->
+ <circle cx="452" cy="174" r="133" fill="#071014" stroke="#090d10" stroke-width="20"/>
+ <circle cx="452" cy="174" r="127" fill="url(#glass)" stroke="url(#edge)" stroke-width="7"/>
+ <circle cx="452" cy="174" r="117" fill="none" stroke="#7b8d94" stroke-opacity=".25" stroke-width="2"/>
+ <path d="M366 76A126 126 0 0 1 544 74" fill="none" stroke="#829098" stroke-width="7" stroke-linecap="round" opacity=".35"/>
+ <path d="M514 58A126 126 0 0 1 574 142" fill="none" stroke="url(#amber)" stroke-width="8" stroke-linecap="round" filter="url(#glow)"/>
+ <g fill="#ff9a30" filter="url(#glow)">
+  <rect x="411" y="292" width="13" height="22" rx="2"/><rect x="431" y="296" width="13" height="22" rx="2"/><rect x="451" y="298" width="13" height="22" rx="2"/><rect x="471" y="296" width="13" height="22" rx="2"/>
+ </g>
+ <g fill="url(#steel)" stroke="url(#edge)" stroke-width="3">
+  <rect x="424" y="8" width="56" height="53" rx="8"/><rect x="303" y="146" width="41" height="61" rx="9"/><rect x="560" y="146" width="41" height="61" rx="9"/><path d="M418 310h68l-34 45z"/>
+ </g>
+ <g fill="#ff9b2e" filter="url(#glow)"><rect x="441" y="19" width="7" height="26" rx="3"/><rect x="451" y="19" width="7" height="26" rx="3"/><rect x="461" y="19" width="7" height="26" rx="3"/></g>
+ <!-- forecast sockets -->
+ <g fill="url(#glass)" stroke="url(#edge)">
+  <circle cx="720" cy="174" r="67" stroke-width="6"/><circle cx="901" cy="174" r="56" stroke-width="5"/><circle cx="1061" cy="174" r="46" stroke-width="4"/>
+ </g>
+ <g fill="none" stroke="#738087" stroke-opacity=".28"><circle cx="720" cy="174" r="58"/><circle cx="901" cy="174" r="48"/><circle cx="1061" cy="174" r="39"/></g>
+ <g fill="#f4a13a" opacity=".92" filter="url(#glow)">
+  <path d="m795 167 12 7-12 7 6-7zM807 167l12 7-12 7 6-7z"/>
+  <path d="m969 167 12 7-12 7 6-7zM981 167l12 7-12 7 6-7z"/>
+ </g>
+ <g fill="#ff9c30" filter="url(#glow)"><circle cx="720" cy="249" r="9"/><circle cx="901" cy="249" r="7"/><circle cx="1061" cy="249" r="5"/></g>
+ <g fill="none" stroke="#c99a5e" stroke-width="2"><circle cx="720" cy="249" r="15"/><circle cx="901" cy="249" r="12"/><circle cx="1061" cy="249" r="9"/></g>
+ <!-- frost / age -->
+ <path d="M84 104c42-12 82-5 122-9M606 93c94 3 183-9 277 5M1005 93c47-4 84 0 112 13" stroke="#bdcbd0" stroke-width="6" stroke-linecap="round" opacity=".42"/>
+ <path d="M122 98l-7 29m19-31-5 18m520-25-5 24m18-23-4 19m405-20-8 25m19-21-5 18" stroke="#d2e0e4" stroke-width="4" stroke-linecap="round" opacity=".45"/>
+ <!-- bolts -->
+ <g fill="#a98a62" stroke="#161a1c" stroke-width="2">
+  <circle cx="74" cy="142" r="6"/><circle cx="1132" cy="142" r="6"/><circle cx="165" cy="98" r="5"/><circle cx="1032" cy="98" r="5"/>
+  <circle cx="333" cy="104" r="5"/><circle cx="594" cy="104" r="5"/><circle cx="626" cy="216" r="5"/><circle cx="1092" cy="216" r="5"/>
+ </g>
+</g>
+</svg>
