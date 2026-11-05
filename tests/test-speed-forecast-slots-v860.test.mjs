@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {GameClock,GAME_CLOCK_RATE,GAME_SPEEDS} from '../src/gameClock.js';
+import {forecastPresentation} from '../src/disasterForecastV800.js';
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
@@ -40,4 +41,20 @@ test('forecast icon grows and brightens toward current without duplicating itsel
   assert.match(src,/scale=\.88\+\.18\*proximity/);
   assert.match(src,/opacity=\.72\+\.28\*proximity/);
   assert.match(src,/stage=hoursLeft<=12\?'eve':'far'/);
+});
+
+
+test('50x moves a 24h disaster forecast to the 18h checkpoint in about 72 real seconds',()=>{
+  const realStart=1_800_000_000_000;
+  const clock=new GameClock(realStart);
+  clock.setSpeed(50);
+  const disasterAt=clock.virtualNow+24*60*60*1000;
+  const initial=forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:disasterAt},clock.virtualNow);
+  assert.equal(initial.activeLeadHours,24);
+
+  for(let i=1;i<=720;i++)clock.tick(realStart+i*100,true);
+  const moved=forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:disasterAt},clock.virtualNow);
+  assert.equal(moved.activeLeadHours,18);
+  assert.ok(moved.x<initial.x);
+  assert.ok(Math.abs((disasterAt-clock.virtualNow)-18*60*60*1000)<1000);
 });
