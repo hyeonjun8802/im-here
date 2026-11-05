@@ -614,3 +614,160 @@
 .hud-picto--water{background-position:66.6667% 50%}
 .hud-picto--medicine{background-position:83.3333% 50%}
 .hud-picto--parts{background-position:100% 50%}
+
+/* AFTERDAY v9.6 — mobile HUD re-layout guided by the actual iPhone screenshot.
+ * A 1000×440 purpose-built MOBILE illustration replaces the crushed 1600×350
+ * desktop art. All overlays are placed in matching normalized SVG zones.
+ * No HUD controls or weather icons protrude outside the steel frame. */
+.disaster-forecast__artwork{
+ position:absolute;inset:0;width:100%;height:100%;z-index:1;
+ display:block;pointer-events:none;
+}
+.disaster-forecast__artwork .disaster-forecast__frame{
+ position:absolute;inset:0;width:100%;height:100%;
+ display:block;object-fit:fill;
+}
+.disaster-forecast{
+ top:calc(2px + env(safe-area-inset-top));
+ width:min(1380px,calc(100vw - 8px));
+ max-width:calc(100vw - 8px);
+}
+.topbar .top-right{
+ top:calc(min(23vw,318px) + 14px + env(safe-area-inset-top));
+}
+#weather-effect{
+ max-width:min(250px,42vw);
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media(max-width:720px){
+ .disaster-forecast{
+  top:calc(2px + env(safe-area-inset-top));
+  width:calc(100vw - 8px);
+  max-width:calc(100vw - 8px);
+  aspect-ratio:1000/440;
+  filter:drop-shadow(0 8px 10px #000c);
+ }
+ .disaster-forecast__current{
+  left:50%;top:49.5%;width:21.8%;height:auto;
+  aspect-ratio:1;opacity:1;transform:translate(-50%,-50%);
+ }
+ .disaster-forecast__future{
+  left:var(--forecast-x);top:44.5%;width:10.4%;height:auto;
+  transform:translate(-50%,-50%);transition:left .7s linear,opacity .36s ease;
+ }
+ .disaster-forecast__approach-arrow{
+  left:62.9%;top:56%;width:2.2%;height:7.0%;
+  transform:scaleX(-1);
+ }
+ .disaster-forecast__bar{
+  left:64.6%;top:55.35%;width:27.4%;height:5.3%;
+  background:rgba(7,12,15,.36);border-radius:1px;
+ }
+ .disaster-forecast__bar-fill{
+  background:linear-gradient(180deg,#fbd49b,#d78b42 42%,#8a481c);
+  box-shadow:0 0 8px #e7a653a8,inset 0 1px #ffe8b0;
+ }
+ .disaster-forecast__bar-cursor{width:5%;transform:translateX(48%) scaleX(-1)}
+ .disaster-forecast__countdown{
+  left:66.2%;top:23%;width:25.8%;height:16%;
+  flex-direction:column;justify-content:center;align-items:center;gap:0;
+  font-size:clamp(8px,2.3vw,11px);line-height:1.2;
+  text-align:center;white-space:nowrap;
+  text-shadow:0 1px 3px #000,0 0 12px #000d;
+ }
+ .disaster-forecast__countdown strong{
+  color:#f6bf73;font-size:clamp(8px,2.15vw,11px);
+ }
+ .survival-hud-stats{
+  left:6.35%;top:20.4%;width:31.95%;height:62.4%;
+  color:#f2e3ce;line-height:1.2;
+ }
+ .survival-hud-date{
+  top:0;left:0;right:0;height:14%;gap:4px;
+  white-space:nowrap;justify-content:space-between;
+  letter-spacing:0;
+ }
+ .survival-hud-date #days{
+  font-size:clamp(9px,2.6vw,12px);
+  letter-spacing:.025em;color:#f0d19e;
+ }
+ .survival-hud-date #day-pace{
+  font-size:clamp(6.7px,1.7vw,8px);
+  color:#c3b5a1;font-weight:500;
+ }
+ .survival-hud-vitals{
+  position:absolute;left:0;right:0;top:21%;bottom:36%;
+  display:flex;flex-direction:column;justify-content:space-between;
+ }
+ .survival-hud-stat{
+  height:31%;gap:1%;font-size:clamp(8px,2.1vw,10px);
+ }
+ .survival-hud-stat-label{width:27%;letter-spacing:-.035em}
+ .survival-hud-stat-track{width:50%;height:40%;min-height:4px}
+ .survival-hud-stat strong{width:21%;font-size:clamp(8px,2.1vw,10px)}
+ .survival-hud-stock{
+  top:65%;left:0;width:100%;height:29%;
+  grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  gap:3px;font-size:clamp(7.7px,2vw,9px);
+ }
+ .survival-hud-stock>div{
+  min-width:0;padding:0 3px;
+  border:0;background:transparent;
+  overflow:hidden;
+ }
+ .survival-hud-stock span{
+  min-width:0;white-space:nowrap;letter-spacing:-.06em;
+  color:#e7d0ad;
+ }
+ .survival-hud-stock strong{flex:none;color:#f1dfc3}
+ .hud-picto{min-width:7px;min-height:7px; margin-right:.08em}
+ .topbar .top-right{
+  top:calc(45vw + 14px + env(safe-area-inset-top));
+  right:14px;
+  min-width:fit-content;
+  z-index:13;
+ }
+ .topbar .top-right #clock{font-size:clamp(20px,5.4vw,26px)}
+ .topbar .top-right #speed-toggle{
+  min-height:32px;margin-top:5px;
+  font-size:12px;
+ }
+ #weather-brief{font-size:clamp(10px,2.7vw,12px);margin-top:7px}
+ #weather-effect{
+  max-width:min(215px,55vw);
+  font-size:clamp(9px,2.3vw,11px);
+  margin-top:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ }
+ .warning{top:calc(250px + env(safe-area-inset-top))}
+}
+@media(max-width:375px){
+ .survival-hud-date #day-pace{font-size:6px}
+ .survival-hud-stock{font-size:7.2px;gap:1px}
+ .survival-hud-stat{font-size:7.6px}
+ .survival-hud-stat strong{font-size:7.6px}
+}
+
+/* AFTERDAY v9.6 — fleeting chapter caption (once per actual day).
+   `renderHUD` updates continuously, but the cinematic subtitle must NOT. */
+#survival-chapter{
+ opacity:0;
+ visibility:hidden;
+ transition:opacity .85s ease,visibility 0s linear .85s;
+ will-change:opacity;
+}
+#survival-chapter.is-visible{
+ opacity:1!important;
+ visibility:visible;
+ transition:opacity .55s ease,visibility 0s;
+}
+#survival-chapter.is-hidden{
+ opacity:0!important;
+ visibility:hidden;
+ transition:opacity .85s ease,visibility 0s linear .85s;
+}
+@media(prefers-reduced-motion:reduce){
+ #survival-chapter,#survival-chapter.is-hidden,#survival-chapter.is-visible{
+  transition:none!important;
+ }
+}

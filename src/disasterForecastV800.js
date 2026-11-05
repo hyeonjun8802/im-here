@@ -1,6 +1,6 @@
 import {DAY_MS,MAJOR_DISASTER_LEAD_MS,WEATHER_KO} from './simulation.js';
 
-const ICON_ROOT='/assets/ui/disasters';
+const ICON_ROOT='/assets/ui/weather-premium';
 const DISASTER_ICON={
   clear:'clear',
   cloud:'cloud',
@@ -15,15 +15,17 @@ const DISASTER_ICON={
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>t*t*(3-2*t);
 
-function iconSrc(type,stage){return `${ICON_ROOT}/${type}-${stage}.svg`;}
+// One consistently centered, premium SVG per weather type for all stages.
+// The icon never changes scale or illustration mid-approach.
+function iconSrc(type,stage){return `${ICON_ROOT}/${type}.svg`;}
 
 export const FORECAST_CHECKPOINT_HOURS=Object.freeze([6,12,18,24]);
 const FORECAST_POINTS=Object.freeze([
   {hours:24,x:90.40},
-  {hours:18,x:82.35},
-  {hours:12,x:74.35},
-  {hours:6,x:66.35},
-  {hours:0,x:59.75}
+  {hours:18,x:85.25},
+  {hours:12,x:80.00},
+  {hours:6,x:74.60},
+  {hours:0,x:68.90}
 ]);
 
 function movingForecastX(hoursLeft){
