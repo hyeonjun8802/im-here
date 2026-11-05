@@ -18,6 +18,7 @@ on:
       - 'scripts/qa_forecast_bar_v940.mjs'
       - 'scripts/qa_unified_hud_v950.mjs'
       - 'scripts/qa_ios_weather_v960.mjs'
+      - 'scripts/qa_live_weather_v960.mjs'
       - '.github/workflows/forecast-hud-visual-v940.yml'
   workflow_dispatch:
 jobs:
@@ -48,6 +49,8 @@ jobs:
         run: node scripts/qa_unified_hud_v950.mjs
       - name: Capture actual mobile WebKit layout and nine-icon asset gallery
         run: node scripts/qa_ios_weather_v960.mjs
+      - name: Capture actual mobile and desktop 3D game screen
+        run: node scripts/qa_live_weather_v960.mjs
       - name: Publish screenshots for visual review
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,5 +59,6 @@ jobs:
           path: |
             docs/qa/unified-hud-v950/
             docs/qa/ios-weather-v960/
+            docs/qa/live-weather-v960/
           if-no-files-found: warn
           retention-days: 14
