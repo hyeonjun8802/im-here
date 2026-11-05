@@ -747,3 +747,27 @@
  .survival-hud-stat{font-size:7.6px}
  .survival-hud-stat strong{font-size:7.6px}
 }
+
+/* AFTERDAY v9.6 — fleeting chapter caption (once per actual day).
+   `renderHUD` updates continuously, but the cinematic subtitle must NOT. */
+#survival-chapter{
+ opacity:0;
+ visibility:hidden;
+ transition:opacity .85s ease,visibility 0s linear .85s;
+ will-change:opacity;
+}
+#survival-chapter.is-visible{
+ opacity:1!important;
+ visibility:visible;
+ transition:opacity .55s ease,visibility 0s;
+}
+#survival-chapter.is-hidden{
+ opacity:0!important;
+ visibility:hidden;
+ transition:opacity .85s ease,visibility 0s linear .85s;
+}
+@media(prefers-reduced-motion:reduce){
+ #survival-chapter,#survival-chapter.is-hidden,#survival-chapter.is-visible{
+  transition:none!important;
+ }
+}
