@@ -77,7 +77,7 @@ function smokeMaterial(mobile=false){
     vertexShader:`
       attribute float aPhase,aSize,aRise,aDrift,aHeat;
       varying float vAlpha,vHeat,vNoise;
-      uniform float uTime,uWind,uStorm,uPixelRatio;
+      uniform float uTime,uWind,uStorm,uPixelRatio,uNight;
       void main(){
         vec3 p=position;
         float travel=mod(aPhase+uTime*aRise,1.0);
