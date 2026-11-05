@@ -104,9 +104,6 @@ export class DisasterForecastHUD{
     this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
     this.progressCircle=root.querySelector('.disaster-forecast__weather-arc');
     this.progressHalo=root.querySelector('.disaster-forecast__weather-halo');
-    this.progressCycleEnd=0;
-    this.progressCycleStart=0;
-    this.progressWeather='';
     this.trail=[...root.querySelectorAll('.disaster-forecast__trail-icon')];
     this.trailKey='';
     // Preload all vector medallions so stage swaps never flash blank.
@@ -120,21 +117,11 @@ export class DisasterForecastHUD{
 
   syncProgress(state,now){
     if(!this.root)return;
-    const end=Number(state.nextWeatherAt);
     const weather=DISASTER_ICON[state.weather]||state.weather||'clear';
 
-    if(this.progressCycleEnd!==end||this.progressWeather!==weather){
-      const sameWeather=this.progressWeather===weather&&this.progressCycleEnd>0;
-      this.progressCycleStart=sameWeather?Number(now):Number(state.weatherSinceAt);
-      if(!Number.isFinite(this.progressCycleStart))this.progressCycleStart=Number(now);
-      this.progressCycleEnd=end;
-      this.progressWeather=weather;
-    }
-
-    let progress=currentWeatherProgress(
-      {...state,weatherSinceAt:this.progressCycleStart,nextWeatherAt:this.progressCycleEnd},
-      now
-    );
+    // v8.5: the simulation is the single source of truth. No HUD-side timer
+    // reset, smoothing window or cached endpoint is allowed to drift from it.
+    let progress=currentWeatherProgress(state,now);
     if(!Number.isFinite(progress))progress=0;
     const profile=weatherRingProfile(weather,progress);
     const offset=100-progress*100;

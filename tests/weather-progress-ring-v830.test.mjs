@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {currentWeatherProgress,forecastPresentation} from '../src/disasterForecastV800.js';
+import {defaults,advance} from '../src/simulation.js';
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
@@ -56,4 +57,48 @@ test('clear and cloud progress rings remain intentionally low-emphasis',()=>{
   assert.match(css,/data-current-disaster="cloud"/);
   assert.match(css,/data-weather-ring="quiet"/);
   assert.match(css,/opacity:\.28/);
+});
+
+
+test('v8.5 same-weather rollover starts a fresh progress interval at zero',()=>{
+  const now=1_800_000_000_000;
+  const state=defaults(now);
+  state.weather='rain';
+  state.pendingWeather='rain';
+  state.weatherSinceAt=now-20*60_000;
+  state.nextWeatherAt=now+60_000;
+  state.lastTickAt=now;
+
+  advance(state,now+60_000,false);
+
+  assert.equal(state.weather,'rain');
+  assert.equal(state.weatherSinceAt,now+60_000);
+  assert.ok(state.nextWeatherAt>state.weatherSinceAt);
+  assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
+
+  const midpoint=state.weatherSinceAt+(state.nextWeatherAt-state.weatherSinceAt)/2;
+  assert.ok(Math.abs(currentWeatherProgress(state,midpoint)-.5)<1e-9);
+  assert.equal(currentWeatherProgress(state,state.nextWeatherAt),1);
+});
+
+test('v8.5 HUD progress has no private timer cache that can drift from simulation',()=>{
+  const src=read('src/disasterForecastV800.js');
+  assert.doesNotMatch(src,/progressCycleStart|progressCycleEnd|progressWeather/);
+  assert.match(src,/currentWeatherProgress\(state,now\)/);
+});
+
+test('weather interval duration stays within the simulation 15-to-32-minute schedule',()=>{
+  const now=1_800_000_000_000;
+  const state=defaults(now);
+  state.weather='clear';
+  state.pendingWeather='rain';
+  state.nextWeatherAt=now+60_000;
+  state.lastTickAt=now;
+
+  advance(state,now+60_000,false);
+  const duration=state.nextWeatherAt-state.weatherSinceAt;
+  assert.ok(duration>=15*60_000);
+  assert.ok(duration<=32*60_000);
+  assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
+  assert.equal(currentWeatherProgress(state,state.nextWeatherAt),1);
 });
