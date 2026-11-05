@@ -17,6 +17,7 @@ on:
       - 'public/assets/ui/hud_*.svg'
       - 'scripts/qa_forecast_bar_v940.mjs'
       - 'scripts/qa_unified_hud_v950.mjs'
+      - 'scripts/qa_ios_weather_v960.mjs'
       - '.github/workflows/forecast-hud-visual-v940.yml'
   workflow_dispatch:
 jobs:
@@ -33,7 +34,7 @@ jobs:
       - name: Install browser for real screenshots
         run: |
           npm install --no-save playwright
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
       - name: Start game server
         run: |
           npm run dev -- --host 127.0.0.1 > /tmp/afterday-v940.log 2>&1 &
@@ -45,11 +46,15 @@ jobs:
           exit 1
       - name: Capture unified mobile and desktop HUD at three disaster distances
         run: node scripts/qa_unified_hud_v950.mjs
+      - name: Capture actual mobile WebKit layout and nine-icon asset gallery
+        run: node scripts/qa_ios_weather_v960.mjs
       - name: Publish screenshots for visual review
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: afterday-mobile-hud-art-v960
-          path: docs/qa/unified-hud-v950/
+          path: |
+            docs/qa/unified-hud-v950/
+            docs/qa/ios-weather-v960/
           if-no-files-found: warn
           retention-days: 14
