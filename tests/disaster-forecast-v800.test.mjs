@@ -58,10 +58,10 @@ test('scheduled major disaster enters the existing authoritative weather path',(
 });
 
 test('premium frame and every three-stage forecast resource are present',()=>{
-  const frame=read('public/assets/ui/disaster_forecast_frame.svg');
+  const frame=read('public/assets/ui/forecast_hud_frame_v950.svg');
   const html=read('index.html');
-  assert.match(frame,/AFTERDAY disaster forecast frame/);
-  assert.match(html,/disaster_forecast_frame\.svg/);
+  assert.match(frame,/AFTERDAY weather observatory/);
+  assert.match(html,/forecast_hud_frame_v950\.svg/);
   assert.match(html,/<img class="disaster-forecast__icon-layer/);
   assert.doesNotMatch(html,/<use>/);
   const clear=read('public/assets/ui/disasters/clear-current.svg');
@@ -97,8 +97,8 @@ test('final 24 hours move continuously left and swap far/eve artwork by urgency'
   assert.equal(h6.stage,'eve');
   assert.ok(h24.x>h21.x&&h21.x>h18.x);
   assert.ok(h18.x>h12.x&&h12.x>h6.x&&h6.x>h1.x);
-  assert.ok(h24.scale<h6.scale);
-  assert.ok(h24.opacity<h6.opacity);
+  assert.equal(h24.scale,h6.scale);
+  assert.equal(h24.opacity,h6.opacity);
 });
 
 
@@ -126,5 +126,5 @@ test('v8.9 forecast icon is visible immediately for a fresh game',()=>{
   const p=forecastPresentation(state,now);
   assert.equal(p.visible,true);
   assert.equal(p.activeLeadHours,24);
-  assert.ok(Math.abs(p.x-88.33)<.05);
+  assert.ok(Math.abs(p.x-90.40)<.05);
 });

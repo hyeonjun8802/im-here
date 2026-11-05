@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 350" role="img" aria-label="AFTERDAY weather observatory — survivor vitals, current weather and approaching forecast">
+<defs>
+ <linearGradient id="iron" x2="0" y2="1"><stop stop-color="#66747a"/><stop offset=".07" stop-color="#3b494d"/><stop offset=".20" stop-color="#1c292e"/><stop offset=".55" stop-color="#101a20"/><stop offset=".84" stop-color="#2e3639"/><stop offset="1" stop-color="#0a1116"/></linearGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2=".25"><stop stop-color="#614c36"/><stop offset=".16" stop-color="#e1b77e"/><stop offset=".37" stop-color="#59432d"/><stop offset=".58" stop-color="#b78b58"/><stop offset=".80" stop-color="#e3b977"/><stop offset="1" stop-color="#533e2c"/></linearGradient>
+ <linearGradient id="glass" x2="0" y2="1"><stop stop-color="#35454a"/><stop offset=".22" stop-color="#18262b"/><stop offset=".75" stop-color="#0c141b"/><stop offset="1" stop-color="#111c21"/></linearGradient>
+ <linearGradient id="edgeGlow" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#8b501b"/><stop offset=".5" stop-color="#ffc574"/><stop offset="1" stop-color="#995019"/></linearGradient>
+ <radialGradient id="dial"><stop stop-color="#2c3b40"/><stop offset=".63" stop-color="#18242b"/><stop offset="1" stop-color="#070e13"/></radialGradient>
+ <filter id="shadow" x="-15%" y="-25%" width="130%" height="155%"><feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#000" flood-opacity=".83"/></filter>
+ <filter id="glow" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="3.3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <pattern id="grain" width="23" height="23" patternUnits="userSpaceOnUse"><path d="M3 5h7m8 14h3M6 16h2" stroke="#b5a79a" stroke-width=".7" opacity=".085"/></pattern>
+</defs>
+<g filter="url(#shadow)">
+ <!-- One continuous riveted frame, not three cards. -->
+ <path d="M39 111 77 78h557l55-45h229l53 45h545l48 35v125l-47 37H970l-48 45H686l-52-45H77l-38-35z" fill="url(#iron)" stroke="#080e12" stroke-width="14"/>
+ <path d="M49 117 83 89h555l56-45h218l54 45h543l43 29v113l-43 32H965l-46 43H688l-46-43H84l-35-31z" fill="none" stroke="url(#rim)" stroke-width="6"/>
+ <path d="M62 126 92 101h529l55-40h246l35 40h542l34 24v102l-34 24H960l-42 35H694l-48-35H94l-32-23z" fill="url(#grain)" stroke="#c2a371" stroke-width="1.5" stroke-opacity=".39"/>
+ <!-- Left status console: low relief compartments supporting real DOM gauges -->
+ <path d="M91 111H617l23 21v98l-22 22H94l-21-20v-99z" fill="url(#glass)" stroke="#7f6d58" stroke-width="3"/>
+ <path d="M102 117h503M102 246h503" stroke="#c5b390" stroke-opacity=".28" stroke-width="2"/>
+ <path d="M95 178h525" stroke="#988369" stroke-opacity=".31" stroke-width="2"/>
+ <path d="M358 183v61" stroke="#9e8663" stroke-opacity=".45" stroke-width="3"/>
+ <!-- Center medallion retains existing circle concept and actual weather icon. -->
+ <circle cx="802" cy="174" r="138" fill="#090f13" stroke="#080b0c" stroke-width="19"/>
+ <circle cx="802" cy="174" r="129" fill="url(#dial)" stroke="url(#rim)" stroke-width="10"/>
+ <circle cx="802" cy="174" r="115" fill="none" stroke="#d2bb98" stroke-opacity=".32" stroke-width="3"/>
+ <circle cx="802" cy="174" r="103" fill="none" stroke="#71878e" stroke-opacity=".20" stroke-width="3"/>
+ <path d="M705 112A120 120 0 0 1 787 54M888 101A119 119 0 0 1 916 167" stroke="#f3cc8e" stroke-width="4" stroke-linecap="round" opacity=".42" fill="none"/>
+ <g fill="url(#iron)" stroke="#a78054" stroke-width="4">
+ <path d="M787 38h30l-15-25z"/><path d="M787 308h30l-15 27z"/>
+ <rect x="657" y="151" width="27" height="45" rx="7"/><rect x="922" y="151" width="27" height="45" rx="7"/>
+ </g>
+ <path d="M787 17h30v24h-30z" fill="#ffbb58" opacity=".71" filter="url(#glow)"/>
+ <!-- Right forecast rail with etched time zones -->
+ <path d="M978 111h517l18 19v100l-20 21H977l-27-22v-93z" fill="url(#glass)" stroke="#816749" stroke-width="4"/>
+ <path d="M991 119h494M991 240h494" stroke="#c3ad81" stroke-width="2.5" opacity=".25"/>
+ <rect x="994" y="170" width="491" height="37" rx="4" fill="#081116" stroke="#796047" stroke-width="2"/>
+ <rect x="998" y="175" width="483" height="27" rx="2" fill="#273039" opacity=".82"/>
+ <g stroke="#91795b" stroke-width="3" opacity=".56"><path d="M1118 171v35M1238 171v35M1358 171v35"/></g>
+ <path d="M997 165h484" stroke="#e6b274" stroke-opacity=".5" stroke-width="3"/>
+ <path d="M997 213h484" stroke="#0a0c0d" stroke-width="4"/>
+ <g fill="#a99376" font-size="22" font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle" letter-spacing="1">
+ <text x="1056" y="239">6H</text><text x="1178" y="239">12H</text><text x="1298" y="239">18H</text><text x="1422" y="239">24H</text>
+ </g>
+ <!-- Upper frost weathering and bolts -->
+ <path d="M91 91c52-9 110-8 150-2M320 91c75-12 160 0 242-4M1000 91c130-8 236-4 308 2M1389 91c47-3 95 5 123 14" fill="none" stroke="#c6d7df" stroke-width="6" stroke-linecap="round" opacity=".35"/>
+ <path d="M111 88l-4 20m14-18-4 13m1007-18-4 18m15-17-5 13m339-2-7 20" stroke="#dce6e6" stroke-opacity=".33" stroke-width="3"/>
+ <g fill="#ae9269" stroke="#161a1a" stroke-width="2"><circle cx="59" cy="143" r="6"/><circle cx="60" cy="226" r="6"/><circle cx="1540" cy="143" r="6"/><circle cx="1539" cy="223" r="6"/><circle cx="112" cy="89" r="6"/><circle cx="1491" cy="89" r="6"/><circle cx="645" cy="91" r="6"/><circle cx="957" cy="91" r="6"/></g>
+</g>
+</svg>

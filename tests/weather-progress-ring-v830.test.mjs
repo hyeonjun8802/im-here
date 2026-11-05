@@ -32,15 +32,15 @@ test('cloudy weather has a quiet current medallion instead of an empty center',(
 
 test('v9.4 observatory replaces circular stages with a dynamic linear bar',()=>{
   const html=read('index.html'),css=read('src/style.css'),src=read('src/disasterForecastV800.js');
-  const frame=read('public/assets/ui/disaster_forecast_frame.svg');
+  const frame=read('public/assets/ui/forecast_hud_frame_v950.svg');
   assert.match(html,/disaster-forecast__bar-fill/);
   assert.match(html,/disaster-forecast__bar-cursor/);
   assert.doesNotMatch(html,/disaster-forecast__weather-progress/);
   assert.match(css,/\.disaster-forecast__bar-fill/);
   assert.match(css,/--weather-bar-progress/);
   assert.match(src,/forecast\.visible\?clamp\(1-forecast\.hoursLeft\/24\):progress/);
-  assert.match(frame,/Linear forecast channel/);
-  assert.match(frame,/rect x="482" y="143"/);
+  assert.match(frame,/Right forecast rail/);
+  assert.match(frame,/rect x="994" y="170"/);
   assert.doesNotMatch(frame,/forecast sockets: current/);
 });
 
