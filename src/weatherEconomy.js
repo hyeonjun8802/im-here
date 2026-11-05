@@ -11,7 +11,9 @@ export const WEATHER_ECONOMY=Object.freeze({
   clear:Object.freeze({harvestPerMinute:0,evaporationPerMinute:.0015}),
   cloud:Object.freeze({harvestPerMinute:0,evaporationPerMinute:0}),
   cold:Object.freeze({harvestPerMinute:0,evaporationPerMinute:0}),
-  tornado:Object.freeze({harvestPerMinute:0,evaporationPerMinute:.008})
+  tornado:Object.freeze({harvestPerMinute:0,evaporationPerMinute:.008}),
+  dust:Object.freeze({harvestPerMinute:0,evaporationPerMinute:.010}),
+  wildfire:Object.freeze({harvestPerMinute:0,evaporationPerMinute:.085})
 });
 export const defaultWeatherEconomy=()=>({
   waterHarvestProgress:0,waterEvaporationProgress:0,foodSpoilageProgress:0,
@@ -71,7 +73,7 @@ export function applyWeatherEconomyMinute(s,weather,day){
 
   // Heat affects BOTH body hydration (in simulation.js) and open/damaged water storage.
   let evap=mode.evaporationPerMinute;
-  if(weather==='heat')evap*=tank>=70?.85:tank>=40?1.45:2.4;
+  if(weather==='heat'||weather==='wildfire')evap*=tank>=70?.85:tank>=40?1.45:2.4;
   // A cracked tank leaks even under cloudy skies.
   if(tank<30)evap+=.004;
   else if(tank<45)evap+=.001;
@@ -84,7 +86,7 @@ export function applyWeatherEconomyMinute(s,weather,day){
 
   // Only unprotected food spoils: a healthy food cache keeps supplies safe.
   const foodRisk=storage<60?Math.max(0,(60-storage)/60):0;
-  const spoilageRate=weather==='heat'?.010:weather==='storm'?.006:weather==='rain'?.0025:0;
+  const spoilageRate=weather==='wildfire'?.014:weather==='heat'?.010:weather==='storm'?.006:weather==='dust'?.0035:weather==='rain'?.0025:0;
   if(foodRisk&&spoilageRate&&s.supply.food>0){
     w.foodSpoilageProgress+=spoilageRate*(.65+foodRisk);
     const spoiled=Math.min(s.supply.food,Math.floor(w.foodSpoilageProgress));
@@ -120,5 +122,7 @@ export function describeWeatherEconomy(s){
   if(s.weather==='clear')return '🌤 건조·건강 회복 · 저장수 미세 증발';
   if(s.weather==='cloud')return '☁ 물 증발 억제 · 천막 정비하기 좋은 날씨';
   if(s.weather==='cold')return '❄ 식량 보존 · 칼로리 소모 증가 · 파손 탱크 결빙';
+  if(s.weather==='dust')return '🌫 황사 · 호흡기 부담 증가 · 식수 증발 · 야외 탐색 중단';
+  if(s.weather==='wildfire')return '🔥 산불 연기 · 급격한 수분 소모 · 식량 변질 · 시설 열손상';
   return '🌪 강풍·건물 붕괴 · 물자 고정과 대피 필요';
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {VISUAL_WEATHER,WEATHER_KEYS,integrateWeather,determineWeatherPhase,visualTargets} from '../src/weatherDirector.js';
 test('all original weather modes support finite bounded visual channels',()=>{
  for(const [name,v] of Object.entries(VISUAL_WEATHER)){
-  assert.equal(WEATHER_KEYS.length,9);
+  assert.equal(WEATHER_KEYS.length,11);
   for(const key of WEATHER_KEYS){assert.equal(typeof v[key],'number',`${name}:${key}`);assert.ok(v[key]>=0&&v[key]<=1,`${name}:${key}`);}
  }
 });

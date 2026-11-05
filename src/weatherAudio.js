@@ -126,6 +126,10 @@ export function weatherAudioMix(weather='clear',w={}){
   mix.wind=.035+.11*wind;
  }else if(weather==='heat'){
   mix.wind=.018+.055*wind;
+ }else if(weather==='dust'){
+  mix.wind=.15+.27*wind;
+ }else if(weather==='wildfire'){
+  mix.wind=.11+.20*wind;
  }
  return mix;
 }

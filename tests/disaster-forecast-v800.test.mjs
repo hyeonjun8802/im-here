@@ -30,7 +30,7 @@ test('seven-day disaster marker glides from far right to eve socket without boun
 
 test('active severe weather occupies the central current-disaster medallion',()=>{
   const now=1_800_000_000_000;
-  for(const weather of ['rain','storm','tornado','heat','cold']){
+  for(const weather of ['rain','storm','tornado','heat','cold','dust','wildfire']){
     const p=forecastPresentation({weather,majorDisasterType:'rain',majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS},now);
     assert.equal(p.currentType,weather);
   }
@@ -50,7 +50,7 @@ test('scheduled major disaster enters the existing authoritative weather path',(
   assert.equal(s.majorDisasterAppliedSerial,serial);
   assert.equal(s.majorDisasterSerial,serial+1);
   assert.equal(s.majorDisasterAt,now+60_000+MAJOR_DISASTER_LEAD_MS);
-  assert.ok(['rain','storm','tornado','heat','cold'].includes(s.majorDisasterType));
+  assert.ok(['rain','storm','tornado','heat','cold','dust','wildfire'].includes(s.majorDisasterType));
 });
 
 test('premium frame and every three-stage forecast resource are present',()=>{
