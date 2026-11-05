@@ -18,6 +18,27 @@ const smooth=t=>t*t*(3-2*t);
 function iconSrc(type,stage){return `${ICON_ROOT}/${type}-${stage}.svg`;}
 
 export const FORECAST_CHECKPOINT_HOURS=Object.freeze([6,12,18,24]);
+const FORECAST_POINTS=Object.freeze([
+  {hours:24,x:88.33},
+  {hours:18,x:79.17},
+  {hours:12,x:69.17},
+  {hours:6,x:57.50},
+  {hours:0,x:37.67}
+]);
+
+function movingForecastX(hoursLeft){
+  if(hoursLeft>=24)return FORECAST_POINTS[0].x;
+  if(hoursLeft<=0)return FORECAST_POINTS.at(-1).x;
+  for(let i=0;i<FORECAST_POINTS.length-1;i++){
+    const a=FORECAST_POINTS[i],b=FORECAST_POINTS[i+1];
+    if(hoursLeft<=a.hours&&hoursLeft>=b.hours){
+      const t=clamp((a.hours-hoursLeft)/(a.hours-b.hours));
+      const eased=smooth(t);
+      return a.x+(b.x-a.x)*eased;
+    }
+  }
+  return FORECAST_POINTS[0].x;
+}
 
 export function forecastPresentation(state,now){
   const currentType=DISASTER_ICON[state.weather]||null;
@@ -27,18 +48,25 @@ export function forecastPresentation(state,now){
   const hoursLeft=left/3600000;
   const daysLeft=left/DAY_MS;
 
-  // v8.7: each right-side socket has an exact semantic meaning.
-  // current <- 6h <- 12h <- 18h <- 24h
-  // Before the event enters the 24h window, the 24h socket remains the
-  // outermost planning checkpoint. As the ETA crosses each threshold the
-  // active emphasis steps left, finally entering the current medallion.
+  // v8.8: render ONE future medallion. It becomes visible at T-24h and then
+  // physically travels through the 24h -> 18h -> 12h -> 6h sockets toward
+  // the current medallion. The resource changes as urgency increases.
+  const visible=Boolean(futureType)&&hoursLeft>0&&hoursLeft<=24;
+  const stage=hoursLeft<=12?'eve':'far';
+  const x=movingForecastX(hoursLeft);
+  const proximity=clamp((24-hoursLeft)/24);
+  const scale=.88+.18*proximity;
+  const opacity=.72+.28*proximity;
   const activeLeadHours=
     hoursLeft<=0?0:
     hoursLeft<=6?6:
     hoursLeft<=12?12:
     hoursLeft<=18?18:24;
-  const activeX={6:57.5,12:69.17,18:79.17,24:88.33}[activeLeadHours]||37.67;
-  return {currentType,futureType,daysLeft,hoursLeft,activeLeadHours,activeX};
+
+  return {
+    currentType,futureType,daysLeft,hoursLeft,activeLeadHours,
+    visible,stage,x,scale,opacity
+  };
 }
 
 export function currentWeatherProgress(state,now){
@@ -103,10 +131,9 @@ export class DisasterForecastHUD{
     this.root=root;
     if(!root)return;
     this.current=new CrossfadeIcon(root.querySelector('.disaster-forecast__current'));
+    this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
     this.progressCircle=root.querySelector('.disaster-forecast__weather-arc');
     this.progressHalo=root.querySelector('.disaster-forecast__weather-halo');
-    this.trail=[...root.querySelectorAll('.disaster-forecast__trail-icon')];
-    this.trailKey='';
     // Preload all vector medallions so stage swaps never flash blank.
     for(const type of Object.values(DISASTER_ICON)){
       const stages=(type==='clear'||type==='cloud')?['current']:['far','eve','current'];
@@ -142,25 +169,14 @@ export class DisasterForecastHUD{
     const p=forecastPresentation(state,now);
     this.current.set(p.currentType,'current',Boolean(p.currentType));
 
-    this.root.style.setProperty('--forecast-active-x',p.activeX.toFixed(2)+'%');
+    this.root.style.setProperty('--forecast-x',p.x.toFixed(2)+'%');
+    this.root.style.setProperty('--forecast-scale',p.scale.toFixed(3));
+    this.root.style.setProperty('--forecast-opacity',p.opacity.toFixed(3));
     this.root.dataset.forecastActiveLead=String(p.activeLeadHours||0);
+    this.root.dataset.forecastStage=p.stage;
     this.root.dataset.currentDisaster=p.currentType||'none';
 
-    const trailKey=p.futureType||'';
-    if(trailKey!==this.trailKey){
-      this.trailKey=trailKey;
-      // DOM order is 6h, 12h, 18h, 24h.
-      const stages=['eve','eve','far','far'];
-      for(const [index,img] of this.trail.entries()){
-        img.src=trailKey?iconSrc(trailKey,stages[index]||'far'):'';
-      }
-    }
-    const leadHours=[6,12,18,24];
-    for(const [index,img] of this.trail.entries()){
-      const visible=Boolean(p.futureType);
-      img.classList.toggle('is-visible',visible);
-      img.classList.toggle('is-active',visible&&leadHours[index]===p.activeLeadHours);
-    }
+    this.future.set(p.futureType,p.stage,p.visible);
     const currentLabel=p.currentType?WEATHER_KO[state.weather]:'현재 대형 재난 없음';
     const futureLabel=p.futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
     this.root.setAttribute(

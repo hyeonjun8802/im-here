@@ -166,7 +166,9 @@
    Motion is continuous, weighted and restrained; the warning icon physically
    approaches the current-disaster socket over the full seven-day lead. */
 .disaster-forecast{
-  --forecast-active-x:88.33%;
+  --forecast-x:88.33%;
+  --forecast-scale:.88;
+  --forecast-opacity:.72;
   --weather-progress-offset:100;
   --weather-ring-opacity:.72;
   --weather-ring-glow:.32;
@@ -202,40 +204,27 @@
 }
 .disaster-forecast__current.is-visible{opacity:1}
 
-.disaster-forecast__forecast-trail{
-  position:absolute;inset:0;
-  z-index:4;
-  pointer-events:none;
-}
-.disaster-forecast__trail-icon{
+.disaster-forecast__future{
   position:absolute;
+  left:var(--forecast-x);
   top:48.33%;
+  width:10.8%;
   aspect-ratio:1;
-  object-fit:contain;
-  transform:translate(-50%,-50%) scale(.94);
+  transform:translate(-50%,-50%) scale(var(--forecast-scale));
   opacity:0;
-  filter:saturate(.78) brightness(.90) contrast(1.04)
-    drop-shadow(0 1px 2px rgba(0,0,0,.68));
-  transition:opacity .65s ease,filter .65s ease,transform .65s cubic-bezier(.22,.61,.36,1);
-}
-.disaster-forecast__trail-icon.slot-6h{left:57.5%;width:10.9%}
-.disaster-forecast__trail-icon.slot-12h{left:69.17%;width:9.9%}
-.disaster-forecast__trail-icon.slot-18h{left:79.17%;width:8.9%}
-.disaster-forecast__trail-icon.slot-24h{left:88.33%;width:8.0%}
-.disaster-forecast__trail-icon.is-visible{
-  visibility:visible;
-  opacity:.34;
-}
-.disaster-forecast__trail-icon.slot-6h.is-visible{opacity:.62}
-.disaster-forecast__trail-icon.slot-12h.is-visible{opacity:.52}
-.disaster-forecast__trail-icon.slot-18h.is-visible{opacity:.43}
-.disaster-forecast__trail-icon.slot-24h.is-visible{opacity:.35}
-.disaster-forecast__trail-icon.is-active{
-  opacity:1!important;
-  transform:translate(-50%,-50%) scale(1.08);
-  filter:saturate(1.02) brightness(1.10) contrast(1.08)
+  z-index:8;
+  will-change:left,transform,opacity,filter;
+  filter:saturate(.98) brightness(1.03) contrast(1.08)
     drop-shadow(0 1px 2px rgba(0,0,0,.76))
-    drop-shadow(0 0 8px rgba(255,145,42,.38));
+    drop-shadow(0 0 7px rgba(255,145,42,.28));
+  transition:
+    left .72s cubic-bezier(.22,.61,.36,1),
+    transform .72s cubic-bezier(.22,.61,.36,1),
+    opacity .48s ease,
+    filter .72s ease;
+}
+.disaster-forecast__future.is-visible{
+  opacity:var(--forecast-opacity);
 }
 .disaster-forecast[data-current-disaster="clear"] .disaster-forecast__current,
 .disaster-forecast[data-current-disaster="cloud"] .disaster-forecast__current{
@@ -327,9 +316,9 @@
   animation:forecastEmberBreath 6.8s ease-in-out infinite;
 }
 .disaster-forecast__future-focus{
-  left:var(--forecast-active-x);top:48.33%;width:8.6%;aspect-ratio:1;
-  transform:translate(-50%,-50%);
-  opacity:.34;
+  left:var(--forecast-x);top:48.33%;width:9.2%;aspect-ratio:1;
+  transform:translate(-50%,-50%) scale(var(--forecast-scale));
+  opacity:.30;
   box-shadow:0 0 16px rgba(255,144,39,.28);
   transition:left .72s cubic-bezier(.22,.61,.36,1),opacity .72s ease;
   z-index:3;
@@ -348,6 +337,7 @@
     filter:drop-shadow(0 4px 9px rgba(0,0,0,.60));
   }
   .disaster-forecast__current{width:21.8%}
+  .disaster-forecast__future{width:11.6%}
   .disaster-forecast__current-glow{width:20.5%}
   .disaster-forecast__weather-progress{width:24.0%}
 }

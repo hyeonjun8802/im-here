@@ -15,19 +15,20 @@ test('v8.0 disaster forecast module and simulation are syntax-valid',()=>{
   }
 });
 
-test('forecast checkpoints are exactly current <- 6h <- 12h <- 18h <- 24h',()=>{
+test('forecast uses one icon that approaches current through 24h 18h 12h 6h checkpoints',()=>{
   const now=1_800_000_000_000;
   assert.deepEqual(FORECAST_CHECKPOINT_HOURS,[6,12,18,24]);
   const at=h=>forecastPresentation({weather:'clear',majorDisasterType:'tornado',majorDisasterAt:now+h*3600000},now);
-  assert.equal(at(30).activeLeadHours,24);
+  assert.equal(at(30).visible,false);
+  assert.equal(at(24).visible,true);
   assert.equal(at(24).activeLeadHours,24);
   assert.equal(at(18).activeLeadHours,18);
   assert.equal(at(12).activeLeadHours,12);
   assert.equal(at(6).activeLeadHours,6);
-  assert.equal(at(0).activeLeadHours,0);
-  assert.ok(at(6).activeX<at(12).activeX);
-  assert.ok(at(12).activeX<at(18).activeX);
-  assert.ok(at(18).activeX<at(24).activeX);
+  assert.equal(at(0).visible,false);
+  assert.ok(at(6).x<at(12).x);
+  assert.ok(at(12).x<at(18).x);
+  assert.ok(at(18).x<at(24).x);
 });
 
 test('active severe weather occupies the central current-disaster medallion',()=>{
@@ -85,14 +86,18 @@ test('forecast motion is restrained and respects reduced-motion preferences',()=
 });
 
 
-test('final 24 hours step left at six-hour boundaries',()=>{
+test('final 24 hours move continuously left and swap far/eve artwork by urgency',()=>{
   const now=1_800_000_000_000;
   const lead=h=>forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+h*3600000},now);
-  assert.equal(lead(23.9).activeLeadHours,24);
-  assert.equal(lead(17.9).activeLeadHours,18);
-  assert.equal(lead(11.9).activeLeadHours,12);
-  assert.equal(lead(5.9).activeLeadHours,6);
-  assert.equal(lead(.01).activeLeadHours,6);
+  const h24=lead(24),h21=lead(21),h18=lead(18),h12=lead(12),h6=lead(6),h1=lead(1);
+  assert.equal(h24.stage,'far');
+  assert.equal(h18.stage,'far');
+  assert.equal(h12.stage,'eve');
+  assert.equal(h6.stage,'eve');
+  assert.ok(h24.x>h21.x&&h21.x>h18.x);
+  assert.ok(h18.x>h12.x&&h12.x>h6.x&&h6.x>h1.x);
+  assert.ok(h24.scale<h6.scale);
+  assert.ok(h24.opacity<h6.opacity);
 });
 
 
