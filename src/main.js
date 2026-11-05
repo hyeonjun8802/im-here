@@ -229,6 +229,7 @@ function animation(){
   const real=Date.now(),foreground=document.visibilityState==='visible';
   const gameNow=gameClock.tick(real,foreground);
   if(gameNow-state.lastTickAt>10000)advance(state,gameNow,!foreground);
+  disasterForecast.syncProgress(state,gameNow);
   if(t-lastHUD>700){renderHUD();lastHUD=t}
   if(real-lastSave>15000){save();lastSave=real}
   try{
