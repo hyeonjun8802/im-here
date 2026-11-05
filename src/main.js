@@ -121,7 +121,7 @@ function bindEvents(){
   speedButton.textContent=gameClock.speed===1?'▶ 1×':`⏩ ${gameClock.speed}×`;
   speedButton.setAttribute('aria-label',`게임 속도 ${gameClock.speed}배 · 게임 하루당 현실 ${GAME_DAY_REAL_MS/3600000/gameClock.speed}시간. 클릭하면 배속 변경`);
   speedButton.setAttribute('aria-pressed',String(gameClock.speed!==1));
-  speedButton.title='하루 진행 속도: 1× 현실 4시간 · 2× 2시간 · 4× 1시간 · 8× 30분 · 16× 15분 (테스트)';
+  speedButton.title='하루 진행 속도: 1× 4시간 · 2× 2시간 · 4× 1시간 · 8× 30분 · 16× 15분 · 32× 7.5분 · 50× 4.8분 (테스트)';
  };
  speedButton.addEventListener('click',()=>{
   gameClock.cycleSpeed();

@@ -2,26 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {GameClock,GAME_CLOCK_RATE,GAME_SPEEDS} from '../src/gameClock.js';
+import {forecastPresentation} from '../src/disasterForecastV800.js';
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
-test('v8.6 test speeds include 8x and 16x in the exact cycle',()=>{
-  assert.deepEqual(GAME_SPEEDS,[1,2,4,8,16]);
+test('v9.1 test speeds include 32x and 50x in the exact cycle',()=>{
+  assert.deepEqual(GAME_SPEEDS,[1,2,4,8,16,32,50]);
   const c=new GameClock(1_000_000);
-  assert.deepEqual([c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed()],[2,4,8,16,1]);
+  assert.deepEqual([c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed(),c.cycleSpeed()],[2,4,8,16,32,50,1]);
 });
 
-test('16x advances foreground game time at the expected test rate',()=>{
+test('50x advances foreground game time at the expected test rate',()=>{
   const start=1_000_000,c=new GameClock(start);
-  c.setSpeed(16);
+  c.setSpeed(50);
   for(let i=1;i<=100;i++)c.tick(start+i*20,true);
-  assert.equal(c.virtualNow,start+2000*GAME_CLOCK_RATE*16);
+  assert.equal(c.virtualNow,start+2000*GAME_CLOCK_RATE*50);
 });
 
-test('speed HUD advertises the 8x and 16x test intervals',()=>{
+test('speed HUD advertises the 32x and 50x test intervals',()=>{
   const main=read('src/main.js');
-  assert.match(main,/8× 30분/);
-  assert.match(main,/16× 15분 \(테스트\)/);
+  assert.match(main,/32× 7\.5분/);
+  assert.match(main,/50× 4\.8분 \(테스트\)/);
 });
 
 test('forecast keeps four empty frame checkpoints but renders only one moving icon',()=>{
@@ -40,4 +41,20 @@ test('forecast icon grows and brightens toward current without duplicating itsel
   assert.match(src,/scale=\.88\+\.18\*proximity/);
   assert.match(src,/opacity=\.72\+\.28\*proximity/);
   assert.match(src,/stage=hoursLeft<=12\?'eve':'far'/);
+});
+
+
+test('50x moves a 24h disaster forecast to the 18h checkpoint in about 72 real seconds',()=>{
+  const realStart=1_800_000_000_000;
+  const clock=new GameClock(realStart);
+  clock.setSpeed(50);
+  const disasterAt=clock.virtualNow+24*60*60*1000;
+  const initial=forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:disasterAt},clock.virtualNow);
+  assert.equal(initial.activeLeadHours,24);
+
+  for(let i=1;i<=720;i++)clock.tick(realStart+i*100,true);
+  const moved=forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:disasterAt},clock.virtualNow);
+  assert.equal(moved.activeLeadHours,18);
+  assert.ok(moved.x<initial.x);
+  assert.ok(Math.abs((disasterAt-clock.virtualNow)-18*60*60*1000)<1000);
 });
