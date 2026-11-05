@@ -14,40 +14,34 @@ test('v8.4 forecast visibility code is syntax-valid',()=>{
   }
 });
 
-test('seven-day forecast remains visibly sized and opaque at the far-right socket',()=>{
+test('24h and 6h forecast checkpoints map to outer and inner sockets',()=>{
   const now=1_800_000_000_000;
-  const far=forecastPresentation({weather:'clear',majorDisasterType:'rain',majorDisasterAt:now+7*DAY_MS},now);
-  const near=forecastPresentation({weather:'clear',majorDisasterType:'rain',majorDisasterAt:now+DAY_MS/24},now);
-  assert.equal(far.futureType,'rain');
-  assert.ok(far.scale>=.82);
-  assert.ok(far.opacity>=.78);
-  assert.ok(far.focus>=.28);
-  assert.ok(near.scale>far.scale);
-  assert.ok(near.opacity>=far.opacity);
-  assert.ok(near.x<far.x);
+  const outer=forecastPresentation({weather:'clear',majorDisasterType:'rain',majorDisasterAt:now+24*3600000},now);
+  const inner=forecastPresentation({weather:'clear',majorDisasterType:'rain',majorDisasterAt:now+6*3600000},now);
+  assert.equal(outer.futureType,'rain');
+  assert.equal(outer.activeLeadHours,24);
+  assert.equal(inner.activeLeadHours,6);
+  assert.ok(inner.activeX<outer.activeX);
 });
 
-test('future forecast layer is explicitly above the decorative frame',()=>{
-  const css=read('src/style.css');
-  assert.match(css,/\.disaster-forecast__frame\{[\s\S]*?z-index:1/);
-  assert.match(css,/\.disaster-forecast__future\{[\s\S]*?z-index:8/);
-  assert.match(css,/\.disaster-forecast__future\{[\s\S]*?width:12\.9%/);
-  assert.match(css,/brightness\(calc\(\.96 \+ var\(--forecast-focus\)\*\.18\)\)/);
-});
-
-test('three right-side forecast sockets receive non-interactive disaster trail medallions',()=>{
+test('four right-side forecast sockets are explicitly present above the decorative frame',()=>{
   const html=read('index.html');
-  const src=read('src/disasterForecastV800.js');
   const css=read('src/style.css');
-  assert.match(html,/disaster-forecast__forecast-trail/);
-  assert.match(html,/trail-near/);
-  assert.match(html,/trail-mid/);
-  assert.match(html,/trail-far/);
-  assert.match(src,/querySelectorAll\('\.disaster-forecast__trail-icon'\)/);
-  assert.match(src,/const stages=\['eve','far','far'\]/);
-  assert.match(css,/trail-near\{[\s\S]*?left:60%/);
-  assert.match(css,/trail-mid\{[\s\S]*?left:75\.08%/);
-  assert.match(css,/trail-far\{[\s\S]*?left:88\.42%/);
+  const frame=read('public/assets/ui/disaster_forecast_frame.svg');
+  for(const slot of ['slot-6h','slot-12h','slot-18h','slot-24h'])assert.match(html,new RegExp(slot));
+  assert.match(css,/slot-6h\{left:57\.5%/);
+  assert.match(css,/slot-12h\{left:69\.17%/);
+  assert.match(css,/slot-18h\{left:79\.17%/);
+  assert.match(css,/slot-24h\{left:88\.33%/);
+  assert.match(css,/\.disaster-forecast__forecast-trail\{[\s\S]*?z-index:4/);
+  assert.match(frame,/cx="690"/);assert.match(frame,/cx="830"/);assert.match(frame,/cx="950"/);assert.match(frame,/cx="1060"/);
+});
+
+test('forecast resources use eve art near current and far art for 18h/24h',()=>{
+  const src=read('src/disasterForecastV800.js');
+  assert.match(src,/const stages=\['eve','eve','far','far'\]/);
+  assert.match(src,/const leadHours=\[6,12,18,24\]/);
+  assert.match(src,/is-active/);
 });
 
 test('forecast visibility patch remains HUD-only and does not alter simulation state',()=>{
