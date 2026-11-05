@@ -4,12 +4,16 @@ on:
     branches:
       - main
       - feature/forecast-linear-bar-v940-20261106
+      - feature/unified-survival-hud-v950-20261106
     paths:
       - 'src/style.css'
       - 'src/disasterForecastV800.js'
       - 'index.html'
       - 'public/assets/ui/disaster_forecast_frame.svg'
+      - 'public/assets/ui/forecast_hud_frame_v950.svg'
+      - 'public/assets/ui/hud_*.svg'
       - 'scripts/qa_forecast_bar_v940.mjs'
+      - 'scripts/qa_unified_hud_v950.mjs'
       - '.github/workflows/forecast-hud-visual-v940.yml'
   workflow_dispatch:
 jobs:
@@ -36,13 +40,13 @@ jobs:
           done
           cat /tmp/afterday-v940.log
           exit 1
-      - name: Capture mobile and desktop early middle late bar states
-        run: node scripts/qa_forecast_bar_v940.mjs
+      - name: Capture unified mobile and desktop HUD at three disaster distances
+        run: node scripts/qa_unified_hud_v950.mjs
       - name: Publish screenshots for visual review
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: afterday-forecast-linear-bar-screenshots
-          path: docs/qa/forecast-v940/
+          name: afterday-unified-survival-hud-v950
+          path: docs/qa/unified-hud-v950/
           if-no-files-found: warn
           retention-days: 14
