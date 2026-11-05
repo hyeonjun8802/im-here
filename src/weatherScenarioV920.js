@@ -39,7 +39,8 @@ export function scriptedDisasterType(seed,serial){
   // Fixed tutorial front during the first seven in-game days. Afterward,
   // choose a deterministic arc variant from the save's seed and cycle index.
   const key=((Number(seed)||47283)>>>0);
-  const arc=DISASTER_ARCS[block===0?0:Math.imul((key^block)>>>0,2654435761)>>>0 % DISASTER_ARCS.length];
+  const arcIndex=block===0?0:(Math.imul((key^block)>>>0,2654435761)>>>0)%DISASTER_ARCS.length;
+  const arc=DISASTER_ARCS[arcIndex];
   return arc[(n-1)%7];
 }
 export function preludeWeather(type,hoursLeft){
