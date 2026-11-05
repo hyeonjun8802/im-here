@@ -19,11 +19,11 @@ function iconSrc(type,stage){return `${ICON_ROOT}/${type}-${stage}.svg`;}
 
 export const FORECAST_CHECKPOINT_HOURS=Object.freeze([6,12,18,24]);
 const FORECAST_POINTS=Object.freeze([
-  {hours:24,x:88.33},
-  {hours:18,x:79.17},
-  {hours:12,x:69.17},
-  {hours:6,x:57.50},
-  {hours:0,x:37.67}
+  {hours:24,x:90.40},
+  {hours:18,x:82.35},
+  {hours:12,x:74.35},
+  {hours:6,x:66.35},
+  {hours:0,x:59.75}
 ]);
 
 function movingForecastX(hoursLeft){
@@ -55,8 +55,11 @@ export function forecastPresentation(state,now){
   const stage=hoursLeft<=12?'eve':'far';
   const x=movingForecastX(hoursLeft);
   const proximity=clamp((24-hoursLeft)/24);
-  const scale=.88+.18*proximity;
-  const opacity=.72+.28*proximity;
+  // One identical-sized disaster emblem moves LEFT across the etched rail.
+  // No scaling/zooming: only position changes. Its final stop borders the
+  // central current-weather dial without crossing or obscuring it.
+  const scale=1;
+  const opacity=1;
   const activeLeadHours=
     hoursLeft<=0?0:
     hoursLeft<=6?6:
@@ -173,6 +176,7 @@ export class DisasterForecastHUD{
     this.current.set(p.currentType,'current',Boolean(p.currentType));
 
     this.root.style.setProperty('--forecast-x',p.x.toFixed(2)+'%');
+    this.root.style.setProperty('--forecast-approach',(Math.max(0,Math.min(1,(24-p.hoursLeft)/24))*100).toFixed(2)+'%');
     this.root.style.setProperty('--forecast-scale',p.scale.toFixed(3));
     this.root.style.setProperty('--forecast-opacity',p.opacity.toFixed(3));
     this.root.dataset.forecastActiveLead=String(p.activeLeadHours||0);
@@ -180,6 +184,10 @@ export class DisasterForecastHUD{
     this.root.dataset.currentDisaster=p.currentType||'none';
 
     this.future.set(p.futureType,p.stage,p.visible);
+    const name=this.root.querySelector('#hud-disaster-name');
+    const eta=this.root.querySelector('#hud-disaster-eta');
+    if(name)name.textContent=p.futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
+    if(eta)eta.textContent=p.visible?Math.max(0,p.hoursLeft).toFixed(p.hoursLeft<1?1:0)+'시간 후':p.hoursLeft>24?'예보 대기':'진행 중';
     const currentLabel=p.currentType?WEATHER_KO[state.weather]:'현재 대형 재난 없음';
     const futureLabel=p.futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
     this.root.setAttribute(
