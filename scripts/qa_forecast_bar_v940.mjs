@@ -56,17 +56,17 @@ try{
    await page.waitForTimeout(1000);
    // Inspect AFTER CSS animations settle. The screenshots reflect the real bar,
    // not an animation frame mid-transition.
-   const actual=await page.evaluate(()=>{
+   const settled=await page.evaluate(()=>{
     const bar=document.querySelector('.disaster-forecast__bar').getBoundingClientRect();
     const fill=document.querySelector('.disaster-forecast__bar-fill').getBoundingClientRect();
-    return fill.width/bar.width;
+    return {ratio:fill.width/bar.width,width:bar.width,height:bar.height};
    });
-   if(!meta.hasBar||!meta.hasFrame||meta.hasLegacyRings||Math.abs(actual-progress)>.04){
-    failures.push(screen+'/'+stage+': '+JSON.stringify({...meta,actual}));
+   if(!meta.hasFrame||meta.hasLegacyRings||settled.width<20||settled.height<2||Math.abs(settled.ratio-progress)>.04){
+    failures.push(screen+'/'+stage+': '+JSON.stringify({...meta,settled}));
    }
    const file=screen+'-'+stage+'.png';
    await page.screenshot({path:path.join(output,file),animations:'disabled',timeout:30000});
-   console.log('HUD SCREENSHOT',file,JSON.stringify({...meta,actual}));
+   console.log('HUD SCREENSHOT',file,JSON.stringify({...meta,settled}));
   }
   await page.close();
  }
