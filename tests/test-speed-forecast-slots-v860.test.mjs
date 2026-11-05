@@ -36,11 +36,12 @@ test('forecast keeps four empty frame checkpoints but renders only one moving ic
   assert.match(src,/hoursLeft>0&&hoursLeft<=24/);
 });
 
-test('forecast icon grows and brightens toward current without duplicating itself',()=>{
+test('forecast icon stays the same size while traveling left toward the central dial',()=>{
   const src=read('src/disasterForecastV800.js');
-  assert.match(src,/scale=\.88\+\.18\*proximity/);
-  assert.match(src,/opacity=\.72\+\.28\*proximity/);
-  assert.match(src,/stage=hoursLeft<=12\?'eve':'far'/);
+  assert.match(src,/const scale=1;/);
+  assert.match(src,/const opacity=1;/);
+  assert.match(src,/this\.future\.set\(p\.futureType,'current',p\.visible\)/);
+  assert.match(src,/movingForecastX/);
 });
 
 
