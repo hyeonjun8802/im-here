@@ -32,9 +32,10 @@ export function forecastPresentation(state,now){
   return {
     currentType,futureType,stage,daysLeft,
     x:88.4+(50.2-88.4)*eased,
-    scale:.58+.40*eased,
-    opacity:.42+.58*eased,
-    focus:.10+.90*eased
+    scale:.82+.28*eased,
+    opacity:.78+.22*eased,
+    focus:.28+.72*eased,
+    approach
   };
 }
 
@@ -106,6 +107,8 @@ export class DisasterForecastHUD{
     this.progressCycleEnd=0;
     this.progressCycleStart=0;
     this.progressWeather='';
+    this.trail=[...root.querySelectorAll('.disaster-forecast__trail-icon')];
+    this.trailKey='';
     // Preload all vector medallions so stage swaps never flash blank.
     for(const type of Object.values(DISASTER_ICON)){
       const stages=(type==='clear'||type==='cloud')?['current']:['far','eve','current'];
@@ -155,9 +158,18 @@ export class DisasterForecastHUD{
     this.root.style.setProperty('--forecast-scale',p.scale.toFixed(3));
     this.root.style.setProperty('--forecast-opacity',p.opacity.toFixed(3));
     this.root.style.setProperty('--forecast-focus',p.focus.toFixed(3));
+    this.root.style.setProperty('--forecast-approach',p.approach.toFixed(3));
     this.root.dataset.forecastStage=p.stage;
     this.root.dataset.currentDisaster=p.currentType||'none';
 
+    const trailKey=p.futureType||'';
+    if(trailKey!==this.trailKey){
+      this.trailKey=trailKey;
+      for(const [index,img] of this.trail.entries()){
+        img.src=trailKey?iconSrc(trailKey,index===0?'eve':'far'):'';
+      }
+    }
+    for(const img of this.trail)img.classList.toggle('is-visible',Boolean(p.futureType));
     this.future.set(p.futureType,p.stage,Boolean(p.futureType));
     const currentLabel=p.currentType?WEATHER_KO[state.weather]:'현재 대형 재난 없음';
     const futureLabel=p.futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
