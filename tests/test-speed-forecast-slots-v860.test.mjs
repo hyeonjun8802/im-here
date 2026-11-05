@@ -21,8 +21,8 @@ test('50x advances foreground game time at the expected test rate',()=>{
 
 test('speed HUD advertises the 32x and 50x test intervals',()=>{
   const main=read('src/main.js');
-  assert.match(main,/32× 7\.5분/);
-  assert.match(main,/50× 4\.8분 \(테스트\)/);
+  assert.match(main,/32× 18\.75초/);
+  assert.match(main,/50× 12초 \(테스트\)/);
 });
 
 test('forecast keeps four empty frame checkpoints but renders only one moving icon',()=>{
