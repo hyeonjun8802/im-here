@@ -68,7 +68,7 @@ function fogVeilMaterial(){
 
 function smokeMaterial(mobile=false){
   return new THREE.ShaderMaterial({
-    transparent:true,depthWrite:false,depthTest:true,fog:true,
+    transparent:true,depthWrite:false,depthTest:true,fog:false,
     blending:THREE.NormalBlending,toneMapped:true,
     uniforms:{
       uTime:{value:0},uWind:{value:.15},uStorm:{value:0},uNight:{value:0},
