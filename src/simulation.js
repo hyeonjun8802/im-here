@@ -118,7 +118,7 @@ export function getDay(startedAt,now=Date.now()){
  * Never reset food, damaged buildings, warnings, milestones or user actions.
  */
 export function migrateLegacyGameDay(s,virtualNow){
-  if(s.clockSchema===2)return false;
+  if(s.clockSchema>=2)return false;
   const now=Number(virtualNow);
   const kst=9*3600000;
   const legacyDay=Math.max(1,Math.floor((now+kst)/DAY_MS)-Math.floor((s.startedAt+kst)/DAY_MS)+1);
