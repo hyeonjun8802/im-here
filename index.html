@@ -25,23 +25,7 @@
 <img class="disaster-forecast__icon-layer is-active" alt="" decoding="async"/>
 <img class="disaster-forecast__icon-layer" alt="" decoding="async"/>
 </div>
-<svg class="disaster-forecast__weather-progress" viewBox="0 0 120 120" aria-hidden="true">
- <defs>
-  <linearGradient id="forecastWeatherProgressGradient" x1="18" y1="16" x2="101" y2="100" gradientUnits="userSpaceOnUse">
-   <stop offset="0" stop-color="#7b4517"/>
-   <stop offset=".42" stop-color="#d97920"/>
-   <stop offset=".78" stop-color="#ff9f2f"/>
-   <stop offset="1" stop-color="#ffd071"/>
-  </linearGradient>
-  <filter id="forecastWeatherProgressGlow" x="-60%" y="-60%" width="220%" height="220%">
-   <feGaussianBlur stdDeviation="2.4" result="blur"/>
-   <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-  </filter>
- </defs>
- <circle class="disaster-forecast__weather-track" cx="60" cy="60" r="53" pathLength="100"/>
- <circle class="disaster-forecast__weather-halo" cx="60" cy="60" r="53" pathLength="100"/>
- <circle class="disaster-forecast__weather-arc" cx="60" cy="60" r="53" pathLength="100"/>
-</svg>
+<div class="disaster-forecast__bar" aria-hidden="true"><span class="disaster-forecast__bar-fill"></span><span class="disaster-forecast__bar-cursor"></span></div>
 <div class="disaster-forecast__future" aria-hidden="true">
 <img class="disaster-forecast__icon-layer is-active" alt="" decoding="async"/>
 <img class="disaster-forecast__icon-layer" alt="" decoding="async"/>
