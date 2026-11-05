@@ -18,7 +18,8 @@ try{
   page.on('console',m=>{if(m.type()==='error'&&/shader|webgl|boot|frame error/i.test(m.text()))pageErrors.push(m.text().slice(0,500));});
   try{
    await page.goto('http://127.0.0.1:5173/?visualqa=1',{waitUntil:'domcontentloaded',timeout:45000});
-   await page.waitForSelector('#disaster-forecast .disaster-forecast__frame',{state:'visible',timeout:25000});
+   await page.waitForSelector('#disaster-forecast .disaster-forecast__frame',{state:'attached',timeout:25000});
+   console.log('LIVE DOM DIAG',name,await page.evaluate(()=>{const el=document.querySelector('.disaster-forecast__frame');return{ready:document.readyState,display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility,parent:getComputedStyle(el.parentElement).display,rect:el.getBoundingClientRect().toJSON(),loading:document.querySelector('#loading')?.className}}));
    // Actual 3D load can take longer than static icons. Allow the procedural fallback.
    await page.waitForTimeout(8200);
    const data=await page.evaluate(()=>{
@@ -37,7 +38,7 @@ try{
       loadingVisible:Boolean(loading&&!loading.classList.contains('hidden')),
       pixelRatio:window.devicePixelRatio};
    });
-   const ok=data.frameReady&&data.frame.y>=0&&data.frame.y<18&&
+   const ok=data.frameReady&&data.frame.width>100&&data.frame.y>=0&&data.frame.y<18&&
     data.speed.y>=data.frame.bottom+1&&
     Math.abs(data.center.x+data.center.width/2-(data.hud.x+data.hud.width/2))<3&&
     data.date.y>data.frame.y&&data.stock.bottom<data.frame.bottom-8&&
