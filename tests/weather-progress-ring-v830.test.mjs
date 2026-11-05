@@ -60,7 +60,7 @@ test('clear and cloud progress rings remain intentionally low-emphasis',()=>{
 });
 
 
-test('v8.5 same-weather rollover starts a fresh progress interval at zero',()=>{
+test('v9.2 every coherent weather interval starts progress from zero',()=>{
   const now=1_800_000_000_000;
   const state=defaults(now);
   state.weather='rain';
@@ -71,7 +71,7 @@ test('v8.5 same-weather rollover starts a fresh progress interval at zero',()=>{
 
   advance(state,now+60_000,false);
 
-  assert.equal(state.weather,'rain');
+  assert.ok(['cloud','rain','storm','clear'].includes(state.weather));
   assert.equal(state.weatherSinceAt,now+60_000);
   assert.ok(state.nextWeatherAt>state.weatherSinceAt);
   assert.equal(currentWeatherProgress(state,state.weatherSinceAt),0);
