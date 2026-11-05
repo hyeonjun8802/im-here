@@ -3,6 +3,7 @@ import {DAY_MS,MAJOR_DISASTER_LEAD_MS,WEATHER_KO} from './simulation.js';
 const ICON_ROOT='/assets/ui/disasters';
 const DISASTER_ICON={
   clear:'clear',
+  cloud:'cloud',
   rain:'rain',
   storm:'storm',
   tornado:'tornado',
@@ -34,6 +35,25 @@ export function forecastPresentation(state,now){
     scale:.58+.40*eased,
     opacity:.42+.58*eased,
     focus:.10+.90*eased
+  };
+}
+
+export function currentWeatherProgress(state,now){
+  const start=Number(state.weatherSinceAt);
+  const end=Number(state.nextWeatherAt);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return 0;
+  return clamp((Number(now)-start)/(end-start));
+}
+
+function weatherRingProfile(type,progress){
+  const quiet=type==='clear'||type==='cloud';
+  const severe=['storm','tornado','dust','wildfire'].includes(type);
+  const ending=progress>=.9;
+  return {
+    quiet,severe,ending,
+    opacity:quiet?.34:severe?.92:.72,
+    glow:quiet?.10:severe?.58:.32,
+    urgency:ending?(quiet?.12:severe?.90:.58):0
   };
 }
 
@@ -81,17 +101,53 @@ export class DisasterForecastHUD{
     if(!root)return;
     this.current=new CrossfadeIcon(root.querySelector('.disaster-forecast__current'));
     this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
-    // Preload all 21 small vector medallions so stage swaps never flash blank.
+    this.progressCircle=root.querySelector('.disaster-forecast__weather-arc');
+    this.progressHalo=root.querySelector('.disaster-forecast__weather-halo');
+    this.progressCycleEnd=0;
+    this.progressCycleStart=0;
+    this.progressWeather='';
+    // Preload all vector medallions so stage swaps never flash blank.
     for(const type of Object.values(DISASTER_ICON)){
-      const stages=type==='clear'?['current']:['far','eve','current'];
+      const stages=(type==='clear'||type==='cloud')?['current']:['far','eve','current'];
       for(const stage of stages){
         const img=new Image();img.decoding='async';img.src=iconSrc(type,stage);
       }
     }
   }
 
+  syncProgress(state,now){
+    if(!this.root)return;
+    const end=Number(state.nextWeatherAt);
+    const weather=DISASTER_ICON[state.weather]||state.weather||'clear';
+
+    if(this.progressCycleEnd!==end||this.progressWeather!==weather){
+      const sameWeather=this.progressWeather===weather&&this.progressCycleEnd>0;
+      this.progressCycleStart=sameWeather?Number(now):Number(state.weatherSinceAt);
+      if(!Number.isFinite(this.progressCycleStart))this.progressCycleStart=Number(now);
+      this.progressCycleEnd=end;
+      this.progressWeather=weather;
+    }
+
+    let progress=currentWeatherProgress(
+      {...state,weatherSinceAt:this.progressCycleStart,nextWeatherAt:this.progressCycleEnd},
+      now
+    );
+    if(!Number.isFinite(progress))progress=0;
+    const profile=weatherRingProfile(weather,progress);
+    const offset=100-progress*100;
+
+    this.root.style.setProperty('--weather-progress-offset',offset.toFixed(3));
+    this.root.style.setProperty('--weather-ring-opacity',profile.opacity.toFixed(3));
+    this.root.style.setProperty('--weather-ring-glow',profile.glow.toFixed(3));
+    this.root.style.setProperty('--weather-ring-urgency',profile.urgency.toFixed(3));
+    this.root.dataset.weatherProgress=progress.toFixed(3);
+    this.root.dataset.weatherEnding=profile.ending?'true':'false';
+    this.root.dataset.weatherRing=profile.quiet?'quiet':profile.severe?'severe':'normal';
+  }
+
   sync(state,now){
     if(!this.root)return;
+    this.syncProgress(state,now);
     const p=forecastPresentation(state,now);
     this.current.set(p.currentType,'current',Boolean(p.currentType));
 
