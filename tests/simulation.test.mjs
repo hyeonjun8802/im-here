@@ -12,3 +12,17 @@ test('DAY increments after 24 in-game hours, not at a partial KST midnight',()=>
 
 test('minute chunks and one large advance have equivalent outcomes',()=>{const n=Date.UTC(2026,9,31),a=defaults(n),b=defaults(n);advance(a,n+3600000,true);for(let t=60000;t<=3600000;t+=60000)advance(b,n+t);for(const k of ['food','water','health','temperature','weather','pendingWeather','weatherSeed'])assert.equal(a[k],b[k]);assert.deepEqual(a.supply,b.supply);assert.deepEqual(a.facilities,b.facilities)});
 test('weather change schedule does not depend on render FPS',()=>{const n=Date.UTC(2026,9,31),a=defaults(n),b=defaults(n);advance(a,n+3*3600000);for(let t=10000;t<=3*3600000;t+=10000)advance(b,n+t);assert.equal(a.weather,b.weather);assert.equal(a.weatherSeed,b.weatherSeed)});
+
+
+test('legacy seven-day forecast is migrated into the 24-hour window without delaying due events',()=>{
+  const now=1_800_000_000_000;
+  const future=defaults(now);
+  future.majorDisasterAt=now+7*DAY_MS;
+  const migrated=sanitize(future,now);
+  assert.equal(migrated.majorDisasterAt,now+24*60*60*1000);
+
+  const due=defaults(now);
+  due.majorDisasterAt=now-60_000;
+  const kept=sanitize(due,now);
+  assert.equal(kept.majorDisasterAt,now-60_000);
+});

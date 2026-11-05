@@ -9,7 +9,7 @@ export const DAY_MS = 86400000;
 export const WEATHER = ['clear','heat','cloud','rain','storm','tornado','cold','dust','wildfire'];
 export const WEATHER_KO = {clear:'맑음', heat:'폭염', cloud:'흐림', rain:'폭우', storm:'낙뢰', tornado:'토네이도', cold:'한파', dust:'황사', wildfire:'산불'};
 export const MAJOR_DISASTERS=['rain','storm','tornado','heat','cold','dust','wildfire'];
-export const MAJOR_DISASTER_LEAD_MS=7*DAY_MS;
+export const MAJOR_DISASTER_LEAD_MS=24*60*60*1000;
 export function majorDisasterTypeFor(seed,serial){
   let x=((Number(seed)||47283)^Math.imul(Math.max(1,Number(serial)||1),0x9e3779b1))>>>0;
   x^=x>>>16;x=Math.imul(x,0x85ebca6b)>>>0;x^=x>>>13;
@@ -79,13 +79,21 @@ export function sanitize(raw, now=Date.now()) {
   s.weatherEpisode=Math.max(0,Math.floor(Number(s.weatherEpisode)||0));
   s.weatherSinceAt=Math.max(0,Number(s.weatherSinceAt)||s.startedAt);
   s.nextTornadoAllowedAt=Math.max(0,Number(s.nextTornadoAllowedAt)||0);
-  // v8.0: persistent seven-day major-disaster forecast. Old saves receive a
-  // deterministic first forecast without consuming the ordinary weather RNG.
+  // v8.9: persistent 24-hour major-disaster forecast. The HUD has four
+  // physical checkpoints at T-24h, T-18h, T-12h and T-6h.
   s.majorDisasterSerial=Math.max(1,Math.floor(Number(raw.majorDisasterSerial)||1));
   s.majorDisasterType=MAJOR_DISASTERS.includes(raw.majorDisasterType)
     ?raw.majorDisasterType:majorDisasterTypeFor(s.weatherSeed,s.majorDisasterSerial);
   const majorAt=Number(raw.majorDisasterAt);
-  s.majorDisasterAt=Number.isFinite(majorAt)&&majorAt>0?majorAt:now+MAJOR_DISASTER_LEAD_MS;
+  if(Number.isFinite(majorAt)&&majorAt>0){
+    // Migrate v8.0-v8.8 seven-day forecasts into the new 24-hour planning
+    // horizon without postponing an event that is already due.
+    s.majorDisasterAt=majorAt>now+MAJOR_DISASTER_LEAD_MS
+      ?now+MAJOR_DISASTER_LEAD_MS
+      :majorAt;
+  }else{
+    s.majorDisasterAt=now+MAJOR_DISASTER_LEAD_MS;
+  }
   s.majorDisasterAppliedSerial=Math.max(0,Math.floor(Number(raw.majorDisasterAppliedSerial)||0));
   s.noticeSeenIds=Array.isArray(s.noticeSeenIds)?[...new Set(s.noticeSeenIds.filter(v=>typeof v==='string'&&v.length<160))].slice(-80):[];
   s.eventSerial=Math.max(0,Math.floor(Number(s.eventSerial)||0));

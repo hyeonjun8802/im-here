@@ -110,3 +110,20 @@ test('clear default is present but deliberately lower emphasis than disasters',(
   assert.match(css,/opacity:\.62/);
   assert.match(css,/animation:none!important/);
 });
+
+
+test('v8.9 major-disaster lead is exactly 24 in-game hours',()=>{
+  assert.equal(MAJOR_DISASTER_LEAD_MS,24*60*60*1000);
+  const now=1_800_000_000_000;
+  const state=defaults(now);
+  assert.equal(state.majorDisasterAt-now,24*60*60*1000);
+});
+
+test('v8.9 forecast icon is visible immediately for a fresh game',()=>{
+  const now=1_800_000_000_000;
+  const state=defaults(now);
+  const p=forecastPresentation(state,now);
+  assert.equal(p.visible,true);
+  assert.equal(p.activeLeadHours,24);
+  assert.ok(Math.abs(p.x-88.33)<.05);
+});
