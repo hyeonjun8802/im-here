@@ -47,7 +47,7 @@ test('dust storm has real survival consequences without inventing new save schem
 
 test('wildfire raises heat stress and physically damages camp systems',()=>{
  const now=1_800_000_000_000,s=defaults(now);
- s.weather='wildfire';s.pendingWeather='wildfire';s.nextWeatherAt=now+99*60000;s.facilities.shelter=50;s.water=30;
+ s.weather='wildfire';s.pendingWeather='wildfire';s.nextWeatherAt=now+99*60000;s.facilities.shelter=50;s.water=30;s.supply.water=0;
  const water=s.water,health=s.health,shelter=s.facilities.shelter,temperature=s.temperature;
  advance(s,now+60000,false);
  assert.ok(s.water<water);assert.ok(s.health<health);assert.ok(s.facilities.shelter<shelter);assert.ok(s.temperature>temperature);
