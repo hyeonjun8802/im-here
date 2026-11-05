@@ -242,7 +242,7 @@
 }
 .disaster-forecast__trail-icon.is-visible{opacity:.14}
 .disaster-forecast__trail-icon.trail-near{left:60%;width:11.3%;opacity:calc(.06 + var(--forecast-approach)*.08)}
-.disaster-forecast__trail-icon.trail-mid{left:75.08%;width:10.1%;opacity:calc(.08 + (1 - abs(var(--forecast-approach) - .5)*2)*.06)}
+.disaster-forecast__trail-icon.trail-mid{left:75.08%;width:10.1%;opacity:.10}
 .disaster-forecast__trail-icon.trail-far{left:88.42%;width:8.8%;opacity:calc(.14 - var(--forecast-approach)*.07)}
 .disaster-forecast__trail-icon.is-visible.trail-near,
 .disaster-forecast__trail-icon.is-visible.trail-mid,
