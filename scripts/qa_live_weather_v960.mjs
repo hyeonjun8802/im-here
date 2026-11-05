@@ -17,8 +17,16 @@ try{
   page.on('pageerror',e=>pageErrors.push('pageerror '+e.message));
   page.on('console',m=>{if(m.type()==='error'&&/shader|webgl|boot|frame error/i.test(m.text()))pageErrors.push(m.text().slice(0,500));});
   try{
-   await page.goto('http://127.0.0.1:5173/?visualqa=1',{waitUntil:'domcontentloaded',timeout:45000});
-   await page.waitForSelector('#disaster-forecast .disaster-forecast__frame',{state:'attached',timeout:25000});
+   const response=await page.goto('http://127.0.0.1:5173/?visualqa=1',{waitUntil:'domcontentloaded',timeout:45000});
+   const navigation=await page.evaluate(()=>({
+     url:location.href,title:document.title,bodyNodes:document.querySelectorAll('body *').length,
+     hasHud:Boolean(document.getElementById('disaster-forecast')),
+     bodyLead:document.body?.innerHTML.slice(0,380),
+     ready:document.readyState
+   }));
+   console.log('LIVE NAVIGATION',name,response?.status(),JSON.stringify(navigation));
+   if(!navigation.hasHud)throw Error('Live page did not include game HUD: '+JSON.stringify(navigation));
+   await page.waitForSelector('#disaster-forecast .disaster-forecast__frame',{state:'attached',timeout:12000});
    console.log('LIVE DOM DIAG',name,await page.evaluate(()=>{const el=document.querySelector('.disaster-forecast__frame');return{ready:document.readyState,display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility,parent:getComputedStyle(el.parentElement).display,rect:el.getBoundingClientRect().toJSON(),loading:document.querySelector('#loading')?.className}}));
    // Actual 3D load can take longer than static icons. Allow the procedural fallback.
    await page.waitForTimeout(8200);
