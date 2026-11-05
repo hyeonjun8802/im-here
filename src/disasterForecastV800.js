@@ -1,7 +1,8 @@
 import {DAY_MS,MAJOR_DISASTER_LEAD_MS,WEATHER_KO} from './simulation.js';
 
-const SPRITE='/assets/ui/disaster_forecast_icons.svg';
+const ICON_ROOT='/assets/ui/disasters';
 const DISASTER_ICON={
+  clear:'clear',
   rain:'rain',
   storm:'storm',
   tornado:'tornado',
@@ -13,12 +14,7 @@ const DISASTER_ICON={
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const smooth=t=>t*t*(3-2*t);
 
-function setUse(use,type,stage){
-  const href=`${SPRITE}#${type}-${stage}`;
-  use.setAttribute('href',href);
-  // Older iOS WebKit still benefits from the legacy namespace on external SVG use.
-  use.setAttributeNS('http://www.w3.org/1999/xlink','href',href);
-}
+function iconSrc(type,stage){return `${ICON_ROOT}/${type}-${stage}.svg`;}
 
 export function forecastPresentation(state,now){
   const currentType=DISASTER_ICON[state.weather]||null;
@@ -27,16 +23,17 @@ export function forecastPresentation(state,now){
   const left=Number.isFinite(at)?Math.max(0,at-now):MAJOR_DISASTER_LEAD_MS;
   const daysLeft=left/DAY_MS;
   const stage=daysLeft<=1?'eve':'far';
-  // The physical rail has sockets at roughly x=88%, 75% and 60%.
-  // Movement is continuous between them: no snapping, bouncing or scale-pop.
-  const approach=clamp((MAJOR_DISASTER_LEAD_MS-left)/(6*DAY_MS));
+  // v8.2: the warning icon physically travels for the full seven-day lead.
+  // It starts at the far-right socket and keeps moving until it reaches the
+  // lip of the current-disaster medallion immediately before impact.
+  const approach=clamp((MAJOR_DISASTER_LEAD_MS-left)/MAJOR_DISASTER_LEAD_MS);
   const eased=smooth(approach);
   return {
     currentType,futureType,stage,daysLeft,
-    x:88.4+(60.0-88.4)*eased,
-    scale:.72+.22*eased,
-    opacity:.48+.50*eased,
-    focus:.18+.82*eased
+    x:88.4+(50.2-88.4)*eased,
+    scale:.58+.40*eased,
+    opacity:.42+.58*eased,
+    focus:.10+.90*eased
   };
 }
 
@@ -44,9 +41,9 @@ class CrossfadeIcon{
   constructor(shell){
     this.shell=shell;
     this.layers=[...shell.querySelectorAll('.disaster-forecast__icon-layer')];
-    this.uses=this.layers.map(layer=>layer.querySelector('use'));
     this.index=0;
     this.key='';
+    this.pendingKey='';
   }
   set(type,stage,visible=true){
     const key=visible?`${type}:${stage}`:'';
@@ -60,11 +57,21 @@ class CrossfadeIcon{
       return;
     }
     const next=1-this.index;
-    setUse(this.uses[next],type,stage);
-    this.layers[next].classList.add('is-active');
-    this.layers[this.index].classList.remove('is-active');
-    this.index=next;
-    this.shell.classList.add('is-visible');
+    const incoming=this.layers[next],outgoing=this.layers[this.index];
+    const src=iconSrc(type,stage);
+    this.pendingKey=key;
+    const reveal=()=>{
+      if(this.pendingKey!==key)return;
+      incoming.classList.add('is-active');
+      outgoing.classList.remove('is-active');
+      this.index=next;
+      this.shell.classList.add('is-visible');
+    };
+    incoming.onload=reveal;
+    incoming.onerror=()=>{ if(this.pendingKey===key)this.shell.classList.remove('is-visible'); };
+    incoming.src=src;
+    incoming.alt='';
+    if(incoming.complete&&incoming.naturalWidth>0)reveal();
   }
 }
 
@@ -74,6 +81,13 @@ export class DisasterForecastHUD{
     if(!root)return;
     this.current=new CrossfadeIcon(root.querySelector('.disaster-forecast__current'));
     this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
+    // Preload all 21 small vector medallions so stage swaps never flash blank.
+    for(const type of Object.values(DISASTER_ICON)){
+      const stages=type==='clear'?['current']:['far','eve','current'];
+      for(const stage of stages){
+        const img=new Image();img.decoding='async';img.src=iconSrc(type,stage);
+      }
+    }
   }
 
   sync(state,now){

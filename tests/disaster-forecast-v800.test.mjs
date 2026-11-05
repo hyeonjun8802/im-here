@@ -24,7 +24,7 @@ test('seven-day disaster marker glides from far right to eve socket without boun
   assert.equal(eve.stage,'eve');
   assert.ok(far.x>mid.x&&mid.x>eve.x);
   assert.ok(Math.abs(far.x-88.4)<.01);
-  assert.ok(Math.abs(eve.x-60)<.01);
+  assert.ok(eve.x<54&&eve.x>50.2,'eve icon should be immediately beside the current-disaster socket');
   assert.ok(far.scale<mid.scale&&mid.scale<eve.scale);
 });
 
@@ -34,7 +34,7 @@ test('active severe weather occupies the central current-disaster medallion',()=
     const p=forecastPresentation({weather,majorDisasterType:'rain',majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS},now);
     assert.equal(p.currentType,weather);
   }
-  assert.equal(forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:now+DAY_MS},now).currentType,null);
+  assert.equal(forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:now+DAY_MS},now).currentType,'clear');
 });
 
 test('scheduled major disaster enters the existing authoritative weather path',()=>{
@@ -55,22 +55,52 @@ test('scheduled major disaster enters the existing authoritative weather path',(
 
 test('premium frame and every three-stage forecast resource are present',()=>{
   const frame=read('public/assets/ui/disaster_forecast_frame.svg');
-  const icons=read('public/assets/ui/disaster_forecast_icons.svg');
   const html=read('index.html');
   assert.match(frame,/AFTERDAY disaster forecast frame/);
   assert.match(html,/disaster_forecast_frame\.svg/);
+  assert.match(html,/<img class="disaster-forecast__icon-layer/);
+  assert.doesNotMatch(html,/<use>/);
+  const clear=read('public/assets/ui/disasters/clear-current.svg');
+  assert.match(clear,/clear weather/);
   for(const type of ['storm','rain','cold','heat','tornado','dust','wildfire']){
-    for(const stage of ['far','eve','current'])assert.match(icons,new RegExp(`id="${type}-${stage}"`));
+    for(const stage of ['far','eve','current']){
+      const icon=read(`public/assets/ui/disasters/${type}-${stage}.svg`);
+      assert.match(icon,/viewBox="0 0 120 120"/);
+    }
   }
 });
 
 test('forecast motion is restrained and respects reduced-motion preferences',()=>{
   const css=read('src/style.css');
-  const start=css.indexOf('AFTERDAY v8.0');
+  const start=css.indexOf('AFTERDAY v8.2');
   const block=css.slice(start);
   assert.ok(start>=0);
   assert.match(block,/cubic-bezier\(\.22,\.61,\.36,1\)/);
-  assert.match(block,/forecastEmberBreath 6\.4s/);
+  assert.match(block,/forecastEmberBreath 6\.8s/);
   assert.match(block,/prefers-reduced-motion:reduce/);
-  assert.doesNotMatch(block,/bounce|spring|elastic/i);
+  assert.doesNotMatch(block,/spring|elastic/i);
+  assert.match(block,/width:min\(390px,30vw\)/);
+});
+
+
+test('v8.2 forecast icon keeps approaching during the final day',()=>{
+  const now=1_800_000_000_000;
+  const day=forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+DAY_MS},now);
+  const sixHours=forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+DAY_MS/4},now);
+  const nearImpact=forecastPresentation({weather:'clear',majorDisasterType:'wildfire',majorDisasterAt:now+DAY_MS/24},now);
+  assert.equal(day.stage,'eve');assert.equal(sixHours.stage,'eve');assert.equal(nearImpact.stage,'eve');
+  assert.ok(day.x>sixHours.x&&sixHours.x>nearImpact.x);
+  assert.ok(nearImpact.x<50.5);
+  assert.ok(day.scale<sixHours.scale&&sixHours.scale<nearImpact.scale);
+});
+
+
+test('clear default is present but deliberately lower emphasis than disasters',()=>{
+  const css=read('src/style.css');
+  const src=read('src/disasterForecastV800.js');
+  assert.match(src,/clear:'clear'/);
+  assert.match(src,/type==='clear'\?\['current'\]/);
+  assert.match(css,/data-current-disaster="clear"/);
+  assert.match(css,/opacity:\.62/);
+  assert.match(css,/animation:none!important/);
 });

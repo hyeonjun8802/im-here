@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><defs>
+ <linearGradient id="ringOuter" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#5d666a"/><stop offset=".18" stop-color="#1d262a"/><stop offset=".55" stop-color="#0b1114"/><stop offset=".86" stop-color="#333b3d"/><stop offset="1" stop-color="#111719"/></linearGradient>
+ <linearGradient id="brass"><stop stop-color="#604b34"/><stop offset=".28" stop-color="#c69a61"/><stop offset=".52" stop-color="#4c3927"/><stop offset=".8" stop-color="#d0a66c"/><stop offset="1" stop-color="#42301f"/></linearGradient>
+ <radialGradient id="glass"><stop stop-color="#33444b"/><stop offset=".6" stop-color="#17242a"/><stop offset="1" stop-color="#071014"/></radialGradient>
+ <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a8b6bc"/><stop offset=".35" stop-color="#596971"/><stop offset="1" stop-color="#222b30"/></linearGradient>
+ <linearGradient id="funnel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d8dde0"/><stop offset=".4" stop-color="#8d989d"/><stop offset="1" stop-color="#493c34"/></linearGradient>
+ <linearGradient id="dust" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#63513a"/><stop offset=".5" stop-color="#b28a56"/><stop offset="1" stop-color="#4e3a27"/></linearGradient>
+ <radialGradient id="sun"><stop stop-color="#fff4a0"/><stop offset=".32" stop-color="#ffd34e"/><stop offset=".78" stop-color="#ff8a1d"/><stop offset="1" stop-color="#8f310c"/></radialGradient>
+ <linearGradient id="fire" x1="0" y1="1" x2=".5" y2="0"><stop stop-color="#8f1f0b"/><stop offset=".35" stop-color="#f04a0f"/><stop offset=".72" stop-color="#ff9b18"/><stop offset="1" stop-color="#ffe16b"/></linearGradient>
+ <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <filter id="hotGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ </defs>
+  <g transform="translate(60 60) scale(0.9) translate(-60 -60)">
+   <circle cx="60" cy="60" r="54" fill="url(#ringOuter)" stroke="#0a0f12" stroke-width="4"/>
+   <circle cx="60" cy="60" r="49" fill="url(#glass)" stroke="url(#brass)" stroke-width="3"/>
+   <circle cx="60" cy="60" r="44" fill="#35444d" opacity=".22"/>
+   <g fill="none" stroke="#ff9a2f" stroke-width="2" stroke-linecap="round" opacity="0.62" filter="url(#softGlow)"><path d="M68.2 13.7L69.0 8.8"/><path d="M85.5 20.5L88.2 16.3"/><path d="M98.8 33.5L103.0 30.7"/><path d="M106.1 50.7L111.0 49.7"/><path d="M106.1 69.3L111.0 70.3"/><path d="M98.8 86.5L103.0 89.3"/><path d="M85.5 99.5L88.2 103.7"/><path d="M68.2 106.3L69.0 111.2"/></g>
+   <path d="M27 33A48 48 0 0 1 94 35" fill="none" stroke="#c8d4d8" stroke-width="3" stroke-linecap="round" opacity=".18"/>
+   <path d="M35 62c-8 0-12-5-12-11 0-7 5-12 12-12 3-10 12-16 22-16 11 0 20 7 22 17 8 0 14 5 14 12 0 6-5 10-12 10z" fill="url(#cloud)" stroke="#d9e3e6" stroke-opacity=".18"/>
+  <g stroke="#b9d9e8" stroke-width="1.8" stroke-linecap="round" opacity="0.88">
+   <path d="M45 66l-4 10M56 67l-4 12M67 67l-4 11M78 65l-4 10"/>
+  </g><path d="M61 61 52 78h9l-5 18 18-25h-10l7-10z" fill="#ffc04e" filter="url(#hotGlow)"/><path d="M82 48c8 2 14 7 18 14" fill="none" stroke="#e9edf0" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+   <g fill="#171d20" stroke="#a9865b" stroke-width="1.5"><rect x="53" y="1" width="14" height="9" rx="3"/><rect x="53" y="110" width="14" height="9" rx="3"/><rect x="1" y="53" width="9" height="14" rx="3"/><rect x="110" y="53" width="9" height="14" rx="3"/></g>
+   <g fill="#ff9a2f" filter="url(#softGlow)" opacity="0.56"><circle cx="60" cy="114" r="3"/><rect x="88" y="19" width="16" height="3" rx="1.5" transform="rotate(35 88 19)"/></g>
+  </g>
+ </svg>
