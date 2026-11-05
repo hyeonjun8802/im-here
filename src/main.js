@@ -11,9 +11,9 @@ import {persistFreshRestart} from './restartSession.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
-// Six in-game hours pass per real hour, including offline time.
+// One in-game day passes every ten minutes of active play; background time pauses.
 const gameClock=new GameClock(now,saved?.gameClockOffsetMs,
-  saved?.clockSchema===2?saved?.gameClockSavedRealAtMs:null);
+  Number(saved?.clockSchema)>=2?saved?.gameClockSavedRealAtMs:null);
 const state=sanitize(saved,gameClock.virtualNow);
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
@@ -26,7 +26,7 @@ const save=()=>{
   gameClock.tick(real,document.visibilityState==='visible');
   state.gameClockOffsetMs=gameClock.offset(real);
   state.gameClockSavedRealAtMs=real;
-  state.clockSchema=2;
+  state.clockSchema=3;
   localStorage.setItem(SAVE_KEY,JSON.stringify(state));
   return true;
  }catch{return false}
@@ -39,8 +39,9 @@ function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
  $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
  disasterForecast.sync(state,t);
- $('#days').title='현실 4시간마다 게임 하루가 지나갑니다 (기본 1×)';
- $('#clock').title='게임 내 서울 시간 · 현실 4시간 = 게임 1일';
+ $('#days').title='실제 플레이 10분마다 게임 하루가 지나갑니다 (기본 1×)';
+ $('#day-pace').textContent='1일 = 플레이 10분';
+ $('#clock').title='게임 내 서울 시각 · 플레이 10분 = 게임 1일 · 미접속 시 일시정지';
  const chapter=survivalChapter(day);
  $('#survival-chapter').textContent=chapter.title+' · '+chapter.line;
  $('#game-over').classList.toggle('hidden',!dead);
@@ -75,10 +76,10 @@ function renderHUD(){
  $('#repair-tank').hidden=state.facilities.tank>=80||dead;
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C',dust:'29°C',wildfire:'43°C'}[state.weather]);
  $('#weather-effect').textContent=describeWeatherEconomy(state);
- const warningAhead=state.nextWeatherAt-t<3*60000 && ['storm','tornado','heat','rain','cold','dust','wildfire'].includes(state.pendingWeather);
+ const warningAhead=state.majorDisasterAt>t&&state.majorDisasterAt-t<=2*3600000;
  const danger=['storm','tornado','dust','wildfire'].includes(state.weather)||state.health<35||state.water<18||state.sickness>=35||warningAhead;
  $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':state.sickness>=50?'질병 악화':danger?'주의':'생존 중';
- $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.weather==='dust'?'🌫 황사 경보 · 실내 대피 · 호흡기 보호':state.weather==='wildfire'?'🔥 산불 연기 접근 · 식수 확보 · 외부 활동 금지':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':state.sickness>=35?'⚠ 감염 의심 · 치료제가 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.pendingWeather]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
+ $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.weather==='dust'?'🌫 황사 경보 · 실내 대피 · 호흡기 보호':state.weather==='wildfire'?'🔥 산불 연기 접근 · 식수 확보 · 외부 활동 금지':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':state.sickness>=35?'⚠ 감염 의심 · 치료제가 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.majorDisasterType]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
  $('#survivor-bars').innerHTML=statusBars.map(([key,label,color])=>`<div class="stat"><div class="stat-line"><span>${label}</span><strong>${Math.round(state[key])}</strong></div><div class="bar"><i style="width:${state[key]}%;background:${color}"></i></div></div>`).join('');
  const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
@@ -119,9 +120,9 @@ function bindEvents(){
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
   speedButton.textContent=gameClock.speed===1?'▶ 1×':`⏩ ${gameClock.speed}×`;
-  speedButton.setAttribute('aria-label',`게임 속도 ${gameClock.speed}배 · 게임 하루당 현실 ${GAME_DAY_REAL_MS/3600000/gameClock.speed}시간. 클릭하면 배속 변경`);
+  speedButton.setAttribute('aria-label',`게임 속도 ${gameClock.speed}배 · 게임 하루당 플레이 ${(GAME_DAY_REAL_MS/60000/gameClock.speed).toFixed(2)}분. 클릭하면 배속 변경`);
   speedButton.setAttribute('aria-pressed',String(gameClock.speed!==1));
-  speedButton.title='하루 진행 속도: 1× 4시간 · 2× 2시간 · 4× 1시간 · 8× 30분 · 16× 15분 · 32× 7.5분 · 50× 4.8분 (테스트)';
+  speedButton.title='게임 1일: 1× 10분 · 2× 5분 · 4× 2.5분 · 8× 75초 · 16× 37.5초 · 32× 18.75초 · 50× 12초 (테스트)';
  };
  speedButton.addEventListener('click',()=>{
   gameClock.cycleSpeed();
