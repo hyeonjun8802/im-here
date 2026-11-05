@@ -1,60 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="AFTERDAY disaster forecast frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-label="AFTERDAY disaster forecast frame — linear stages">
 <defs>
- <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#58636a"/><stop offset=".18" stop-color="#222b30"/><stop offset=".55" stop-color="#10171b"/><stop offset=".82" stop-color="#30383b"/><stop offset="1" stop-color="#0b1114"/></linearGradient>
- <linearGradient id="edge" x1="0" x2="1"><stop stop-color="#8e7658"/><stop offset=".26" stop-color="#d2aa70"/><stop offset=".48" stop-color="#423628"/><stop offset=".78" stop-color="#c7975e"/><stop offset="1" stop-color="#4b3827"/></linearGradient>
- <radialGradient id="glass"><stop stop-color="#26343b"/><stop offset=".68" stop-color="#152127"/><stop offset="1" stop-color="#081014"/></radialGradient>
- <linearGradient id="amber" x1="0" x2="1"><stop stop-color="#ffb24f"/><stop offset=".45" stop-color="#ff7d16"/><stop offset="1" stop-color="#a64009"/></linearGradient>
- <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".72"/></filter>
- <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
- <pattern id="ticks" width="13" height="5" patternUnits="userSpaceOnUse"><path d="M1 0v4" stroke="#cda46d" stroke-opacity=".45" stroke-width="1"/></pattern>
+ <linearGradient id="steel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#626e72"/><stop offset=".16" stop-color="#263137"/><stop offset=".52" stop-color="#111b21"/><stop offset=".84" stop-color="#2f383b"/><stop offset="1" stop-color="#0a1116"/></linearGradient>
+ <linearGradient id="brass" x1="0" x2="1"><stop stop-color="#745942"/><stop offset=".24" stop-color="#c69d67"/><stop offset=".52" stop-color="#534130"/><stop offset=".79" stop-color="#d0a56c"/><stop offset="1" stop-color="#624b36"/></linearGradient>
+ <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#34434b"/><stop offset=".38" stop-color="#18252b"/><stop offset="1" stop-color="#0a1319"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-40%" width="140%" height="180%"><feDropShadow dx="0" dy="9" stdDeviation="9" flood-color="#000" flood-opacity=".68"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
 </defs>
 <g filter="url(#shadow)">
- <path d="M42 142 115 88h210c30-48 70-76 123-82 62-6 113 22 143 82h490l74 54-42 76H607c-34 62-91 96-158 93-57-2-103-31-133-93H94z" fill="url(#steel)" stroke="#11191d" stroke-width="12"/>
- <path d="M51 142 121 98h213c30-44 67-66 112-70 57-5 102 20 128 70h498l62 44-29 57H594c-31 54-80 83-143 82-53-1-95-27-123-82H105z" fill="none" stroke="url(#edge)" stroke-width="4" opacity=".82"/>
- <path d="M85 128h225M606 128h489M87 213h226M610 213h485" stroke="#69747a" stroke-opacity=".32" stroke-width="3"/>
- <path d="M623 249h473" stroke="#33281d" stroke-width="8"/><path d="M623 249h473" stroke="url(#amber)" stroke-width="2.3" filter="url(#glow)"/>
- <path d="M632 258h454" stroke="url(#ticks)" stroke-width="5" opacity=".8"/>
- <!-- central socket -->
- <circle cx="452" cy="174" r="133" fill="#071014" stroke="#090d10" stroke-width="20"/>
- <circle cx="452" cy="174" r="127" fill="url(#glass)" stroke="url(#edge)" stroke-width="7"/>
- <circle cx="452" cy="174" r="117" fill="none" stroke="#7b8d94" stroke-opacity=".25" stroke-width="2"/>
- <path d="M366 76A126 126 0 0 1 544 74" fill="none" stroke="#829098" stroke-width="7" stroke-linecap="round" opacity=".35"/>
- <path d="M514 58A126 126 0 0 1 574 142" fill="none" stroke="#738087" stroke-width="7" stroke-linecap="round" opacity=".16"/>
- <g fill="#ff9a30" filter="url(#glow)">
-  <rect x="411" y="292" width="13" height="22" rx="2"/><rect x="431" y="296" width="13" height="22" rx="2"/><rect x="451" y="298" width="13" height="22" rx="2"/><rect x="471" y="296" width="13" height="22" rx="2"/>
+ <!-- Retain the observatory's silhouette, palette and surface finish. Only the giant dial
+      and its five circular step sockets become one legible bar with square divisions. -->
+ <path d="M40 132 110 92h963l82 44-29 90-72 41H102l-65-46z" fill="url(#steel)" stroke="#080d10" stroke-width="13"/>
+ <path d="M51 139 122 103h943l75 37-24 75-68 40H111l-61-39z" fill="none" stroke="url(#brass)" stroke-width="6"/>
+ <path d="M90 125h1026M110 245h994" stroke="#a0abb0" stroke-opacity=".18" stroke-width="3"/>
+ <!-- Current weather uses a horizontal recessed plate; no circular dial. -->
+ <path d="M84 139 107 117h315l19 21v82l-24 24H111l-27-23z" fill="url(#glass)" stroke="#8c7352" stroke-width="5"/>
+ <path d="M95 148h335M104 232h313" stroke="#d1c0a2" stroke-opacity=".22" stroke-width="2"/>
+ <path d="M445 126h6v109h-6z" fill="#de9d48" opacity=".72"/>
+ <!-- Linear forecast channel: the passage of time is ONE continuous rectangular rail. -->
+ <rect x="482" y="143" width="621" height="76" rx="6" fill="#080f14" stroke="#8f795c" stroke-width="6"/>
+ <rect x="492" y="153" width="601" height="56" rx="2" fill="#18242a" stroke="#536269" stroke-opacity=".7" stroke-width="2"/>
+ <path d="M642 151v61M792 151v61M942 151v61" stroke="#b19a75" stroke-width="5" opacity=".72"/>
+ <path d="M493 163h599M493 197h599" stroke="#a9b5b9" stroke-opacity=".17" stroke-width="3"/>
+ <path d="M488 133h619" stroke="#d1ab6d" stroke-opacity=".52" stroke-width="3"/>
+ <path d="M488 228h619" stroke="#14191b" stroke-width="6"/>
+ <!-- Four etched rectangular time marks, no stage dots. -->
+ <g fill="#c7af8b" font-family="Arial,sans-serif" text-anchor="middle" font-size="23" font-weight="700" letter-spacing="1">
+ <text x="560" y="279">6H</text><text x="713" y="279">12H</text><text x="864" y="279">18H</text><text x="1015" y="279">24H</text>
  </g>
- <g fill="url(#steel)" stroke="url(#edge)" stroke-width="3">
-  <rect x="424" y="8" width="56" height="53" rx="8"/><rect x="303" y="146" width="41" height="61" rx="9"/><rect x="560" y="146" width="41" height="61" rx="9"/><path d="M418 310h68l-34 45z"/>
- </g>
- <g fill="#ff9b2e" filter="url(#glow)"><rect x="441" y="19" width="7" height="26" rx="3"/><rect x="451" y="19" width="7" height="26" rx="3"/><rect x="461" y="19" width="7" height="26" rx="3"/></g>
- <!-- forecast sockets: current <- 6h <- 12h <- 18h <- 24h -->
- <g fill="url(#glass)" stroke="url(#edge)">
-  <circle cx="690" cy="174" r="58" stroke-width="5.5"/>
-  <circle cx="830" cy="174" r="52" stroke-width="5"/>
-  <circle cx="950" cy="174" r="46" stroke-width="4.5"/>
-  <circle cx="1060" cy="174" r="40" stroke-width="4"/>
- </g>
- <g fill="none" stroke="#738087" stroke-opacity=".28">
-  <circle cx="690" cy="174" r="50"/><circle cx="830" cy="174" r="45"/><circle cx="950" cy="174" r="39"/><circle cx="1060" cy="174" r="34"/>
- </g>
- <g fill="#f4a13a" opacity=".92" filter="url(#glow)">
-  <path d="m754 167 11 7-11 7 5.5-7zM766 167l11 7-11 7 5.5-7z"/>
-  <path d="m883 167 11 7-11 7 5.5-7zM895 167l11 7-11 7 5.5-7z"/>
-  <path d="m1001 167 11 7-11 7 5.5-7zM1013 167l11 7-11 7 5.5-7z"/>
- </g>
- <g fill="#ff9c30" filter="url(#glow)">
-  <circle cx="690" cy="249" r="8"/><circle cx="830" cy="249" r="7"/><circle cx="950" cy="249" r="6"/><circle cx="1060" cy="249" r="5"/>
- </g>
- <g fill="none" stroke="#c99a5e" stroke-width="2">
-  <circle cx="690" cy="249" r="14"/><circle cx="830" cy="249" r="12"/><circle cx="950" cy="249" r="10"/><circle cx="1060" cy="249" r="9"/>
- </g>
- <!-- frost / age -->
- <path d="M84 104c42-12 82-5 122-9M606 93c94 3 183-9 277 5M1005 93c47-4 84 0 112 13" stroke="#bdcbd0" stroke-width="6" stroke-linecap="round" opacity=".42"/>
- <path d="M122 98l-7 29m19-31-5 18m520-25-5 24m18-23-4 19m405-20-8 25m19-21-5 18" stroke="#d2e0e4" stroke-width="4" stroke-linecap="round" opacity=".45"/>
- <!-- bolts -->
- <g fill="#a98a62" stroke="#161a1c" stroke-width="2">
-  <circle cx="74" cy="142" r="6"/><circle cx="1132" cy="142" r="6"/><circle cx="165" cy="98" r="5"/><circle cx="1032" cy="98" r="5"/>
-  <circle cx="333" cy="104" r="5"/><circle cx="594" cy="104" r="5"/><circle cx="626" cy="216" r="5"/><circle cx="1092" cy="216" r="5"/>
+ <g stroke="#aa8960" stroke-width="4"><path d="M560 219v17M713 219v17M864 219v17M1015 219v17"/></g>
+ <path d="M93 107c60-11 114-3 166-8M480 103c128 4 251-9 385-2M965 103c50-4 105 2 151 9" stroke="#c1cdd1" stroke-width="7" opacity=".26" stroke-linecap="round"/>
+ <path d="M132 103l-6 16m17-17-4 15m536-12-7 18m19-17-4 13m383-2-6 16" stroke="#d4e4e8" stroke-width="4" opacity=".28" stroke-linecap="round"/>
+ <g fill="#aa8e65" stroke="#15181a" stroke-width="2">
+ <circle cx="70" cy="145" r="5"/><circle cx="1131" cy="145" r="5"/><circle cx="128" cy="103" r="5"/><circle cx="1078" cy="103" r="5"/><circle cx="114" cy="243" r="5"/><circle cx="1088" cy="245" r="5"/>
  </g>
 </g>
 </svg>
