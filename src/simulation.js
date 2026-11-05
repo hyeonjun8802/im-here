@@ -13,7 +13,7 @@ export const MAJOR_DISASTER_LEAD_MS=7*DAY_MS;
 export function majorDisasterTypeFor(seed,serial){
   let x=((Number(seed)||47283)^Math.imul(Math.max(1,Number(serial)||1),0x9e3779b1))>>>0;
   x^=x>>>16;x=Math.imul(x,0x85ebca6b)>>>0;x^=x>>>13;
-  return MAJOR_DISASTERS[x%MAJOR_DISASTERS.length];
+  return MAJOR_DISASTERS[(x>>>0)%MAJOR_DISASTERS.length];
 }
 export const defaults = (now=Date.now())=>({
   version:4, clockSchema:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+22*60000, pendingWeather:'rain', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
