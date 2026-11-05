@@ -56,7 +56,7 @@ test('wildfire raises heat stress and physically damages camp systems',()=>{
 
 test('visual director gives dust and wildfire distinct bounded physical blends',()=>{
  const d=visualTargets('dust'),f=visualTargets('wildfire');
- assert.equal(d.dust,1);assert.equal(d.wildfire,0);assert.ok(d.wind>.8&&d.mist>.7);
+ assert.equal(d.dust,1);assert.equal(d.wildfire,0);assert.ok(d.wind>.9&&d.mist<.6);
  assert.equal(f.wildfire,1);assert.ok(f.heat>.8&&f.mist>.8);assert.equal(f.rain,0);
 });
 
