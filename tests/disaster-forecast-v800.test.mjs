@@ -34,7 +34,7 @@ test('active severe weather occupies the central current-disaster medallion',()=
     const p=forecastPresentation({weather,majorDisasterType:'rain',majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS},now);
     assert.equal(p.currentType,weather);
   }
-  assert.equal(forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:now+DAY_MS},now).currentType,null);
+  assert.equal(forecastPresentation({weather:'clear',majorDisasterType:'storm',majorDisasterAt:now+DAY_MS},now).currentType,'clear');
 });
 
 test('scheduled major disaster enters the existing authoritative weather path',()=>{
@@ -60,6 +60,8 @@ test('premium frame and every three-stage forecast resource are present',()=>{
   assert.match(html,/disaster_forecast_frame\.svg/);
   assert.match(html,/<img class="disaster-forecast__icon-layer/);
   assert.doesNotMatch(html,/<use>/);
+  const clear=read('public/assets/ui/disasters/clear-current.svg');
+  assert.match(clear,/clear weather/);
   for(const type of ['storm','rain','cold','heat','tornado','dust','wildfire']){
     for(const stage of ['far','eve','current']){
       const icon=read(`public/assets/ui/disasters/${type}-${stage}.svg`);
@@ -90,4 +92,15 @@ test('v8.2 forecast icon keeps approaching during the final day',()=>{
   assert.ok(day.x>sixHours.x&&sixHours.x>nearImpact.x);
   assert.ok(nearImpact.x<50.5);
   assert.ok(day.scale<sixHours.scale&&sixHours.scale<nearImpact.scale);
+});
+
+
+test('clear default is present but deliberately lower emphasis than disasters',()=>{
+  const css=read('src/style.css');
+  const src=read('src/disasterForecastV800.js');
+  assert.match(src,/clear:'clear'/);
+  assert.match(src,/type==='clear'\?\['current'\]/);
+  assert.match(css,/data-current-disaster="clear"/);
+  assert.match(css,/opacity:\.62/);
+  assert.match(css,/animation:none!important/);
 });
