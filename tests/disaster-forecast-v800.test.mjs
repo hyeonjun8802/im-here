@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {defaults,advance,DAY_MS,MAJOR_DISASTER_LEAD_MS} from '../src/simulation.js';
+import {disasterGapMsAfter} from '../src/weatherScenarioV920.js';
 import {forecastPresentation,FORECAST_CHECKPOINT_HOURS} from '../src/disasterForecastV800.js';
 
 const root=new URL('../',import.meta.url);
@@ -52,7 +53,7 @@ test('scheduled major disaster enters the existing authoritative weather path',(
   assert.equal(s.weather,'storm');
   assert.equal(s.majorDisasterAppliedSerial,serial);
   assert.equal(s.majorDisasterSerial,serial+1);
-  assert.equal(s.majorDisasterAt,now+60_000+MAJOR_DISASTER_LEAD_MS);
+  assert.equal(s.majorDisasterAt,now+60_000+disasterGapMsAfter(serial));
   assert.ok(['rain','storm','tornado','heat','cold','dust','wildfire'].includes(s.majorDisasterType));
 });
 
