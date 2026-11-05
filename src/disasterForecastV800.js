@@ -18,6 +18,26 @@ function setUse(use,type,stage){
   use.setAttributeNS('http://www.w3.org/1999/xlink','href',href);
 }
 
+export function forecastPresentation(state,now){
+  const currentType=DISASTER_ICON[state.weather]||null;
+  const futureType=DISASTER_ICON[state.majorDisasterType]||null;
+  const at=Number(state.majorDisasterAt);
+  const left=Number.isFinite(at)?Math.max(0,at-now):MAJOR_DISASTER_LEAD_MS;
+  const daysLeft=left/DAY_MS;
+  const stage=daysLeft<=1?'eve':'far';
+  // The physical rail has sockets at roughly x=88%, 75% and 60%.
+  // Movement is continuous between them: no snapping, bouncing or scale-pop.
+  const approach=clamp((MAJOR_DISASTER_LEAD_MS-left)/(6*DAY_MS));
+  const eased=smooth(approach);
+  return {
+    currentType,futureType,stage,daysLeft,
+    x:88.4+(60.0-88.4)*eased,
+    scale:.72+.22*eased,
+    opacity:.48+.50*eased,
+    focus:.18+.82*eased
+  };
+}
+
 class CrossfadeIcon{
   constructor(shell){
     this.shell=shell;
@@ -53,26 +73,6 @@ export class DisasterForecastHUD{
     this.current=new CrossfadeIcon(root.querySelector('.disaster-forecast__current'));
     this.future=new CrossfadeIcon(root.querySelector('.disaster-forecast__future'));
   }
-
-export function forecastPresentation(state,now){
-  const currentType=DISASTER_ICON[state.weather]||null;
-  const futureType=DISASTER_ICON[state.majorDisasterType]||null;
-  const at=Number(state.majorDisasterAt);
-  const left=Number.isFinite(at)?Math.max(0,at-now):MAJOR_DISASTER_LEAD_MS;
-  const daysLeft=left/DAY_MS;
-  const stage=daysLeft<=1?'eve':'far';
-  // The physical rail has sockets at roughly x=88%, 75% and 60%.
-  // Movement is continuous between them: no snapping, bouncing or scale-pop.
-  const approach=clamp((MAJOR_DISASTER_LEAD_MS-left)/(6*DAY_MS));
-  const eased=smooth(approach);
-  return {
-    currentType,futureType,stage,daysLeft,
-    x:88.4+(60.0-88.4)*eased,
-    scale:.72+.22*eased,
-    opacity:.48+.50*eased,
-    focus:.18+.82*eased
-  };
-}
 
   sync(state,now){
     if(!this.root)return;
