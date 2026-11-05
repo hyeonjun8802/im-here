@@ -124,7 +124,7 @@ export function migrateLegacyGameDay(s,virtualNow){
   const legacyDay=Math.max(1,Math.floor((now+kst)/DAY_MS)-Math.floor((s.startedAt+kst)/DAY_MS)+1);
   const phase=((now+kst)%DAY_MS+DAY_MS)%DAY_MS;
   s.startedAt=now-(legacyDay-1)*DAY_MS-phase;
-  s.clockSchema=2;
+  s.clockSchema=3;
   return true;
 }
 export function wallClock(now=Date.now()) {return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(now));}
