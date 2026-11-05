@@ -183,7 +183,9 @@ export class DisasterForecastHUD{
     this.root.dataset.forecastStage=p.stage;
     this.root.dataset.currentDisaster=p.currentType||'none';
 
-    this.future.set(p.futureType,p.stage,p.visible);
+    // The icon artwork itself is the SAME asset at every checkpoint: no
+    // far/eve art swap can change its apparent radius during travel.
+    this.future.set(p.futureType,'current',p.visible);
     const name=this.root.querySelector('#hud-disaster-name');
     const eta=this.root.querySelector('#hud-disaster-eta');
     if(name)name.textContent=p.futureType?WEATHER_KO[state.majorDisasterType]:'예보 없음';
