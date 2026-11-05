@@ -17,7 +17,7 @@ test('v8.1 disaster modules and integration files are syntax valid',()=>{
  }
 });
 
-test('dust and wildfire are authoritative weather and seven-day forecast types',()=>{
+test('dust and wildfire are authoritative weather and 24-hour forecast types',()=>{
  assert.ok(WEATHER.includes('dust'));assert.ok(WEATHER.includes('wildfire'));
  assert.equal(WEATHER_KO.dust,'황사');assert.equal(WEATHER_KO.wildfire,'산불');
  assert.ok(MAJOR_DISASTERS.includes('dust'));assert.ok(MAJOR_DISASTERS.includes('wildfire'));
@@ -27,7 +27,7 @@ test('dust and wildfire are authoritative weather and seven-day forecast types',
 
 test('forecast HUD exposes dust and wildfire across exact 24h/18h/12h/6h checkpoints',()=>{
  const now=1_800_000_000_000;
- const dust=forecastPresentation({weather:'dust',majorDisasterType:'wildfire',majorDisasterAt:now+7*DAY_MS},now);
+ const dust=forecastPresentation({weather:'dust',majorDisasterType:'wildfire',majorDisasterAt:now+24*3600000},now);
  assert.equal(dust.currentType,'dust');assert.equal(dust.futureType,'wildfire');assert.equal(dust.activeLeadHours,24);
  const fire=forecastPresentation({weather:'wildfire',majorDisasterType:'dust',majorDisasterAt:now+12*3600000},now);
  assert.equal(fire.currentType,'wildfire');assert.equal(fire.futureType,'dust');assert.equal(fire.activeLeadHours,12);
