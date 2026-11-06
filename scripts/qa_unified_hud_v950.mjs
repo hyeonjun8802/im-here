@@ -55,7 +55,7 @@ try{
     const bar=rect('.disaster-forecast__bar'),fill=rect('.disaster-forecast__bar-fill');
     const stock=rect('.survival-hud-stock'),date=rect('.survival-hud-date'),vitals=rect('.survival-hud-vitals');
     const frameSource=document.querySelector('.disaster-forecast__frame').currentSrc;
-    return {frame,icon,center,speed,bar,fill,stock,date,vitals,frameSource,centerGap:center.x-stock.right,
+    return {frame,icon,center,speed,bar,fill,stock,date,vitals,frameSource,aspect:frame.h/frame.w,centerGap:center.x-stock.right,
       barRatio:fill.w/bar.w,centerOffset:Math.abs(center.x+center.w/2-(r.x+r.w/2)),
       statsVisible:document.querySelectorAll('.survival-hud-stat').length===3,
       inventoryCells:document.querySelectorAll('.survival-hud-stock>div').length,
@@ -64,9 +64,9 @@ try{
    });
    metrics.push({screen,step,...data});
    if(!(data.iconReady&&data.statsVisible&&data.inventoryCells===4&&
-       data.centerOffset<3&&data.speed.y>=data.frame.bottom-1&&
+       data.centerOffset<3&&Math.abs(data.aspect-(screen.startsWith('mobile')?.22:175/1600))<.005&&data.speed.y>=data.frame.bottom-1&&
        data.date.y>=data.frame.y+2&&data.stock.bottom<=data.frame.bottom-6&&data.centerGap>-3&&
-       (screen.startsWith('mobile')?data.frameSource.includes('forecast_hud_mobile_v960.svg'):!data.frameSource.includes('forecast_hud_mobile_v960.svg'))&&
+       (screen.startsWith('mobile')?data.frameSource.includes('forecast_hud_mobile_v970.svg'):!data.frameSource.includes('forecast_hud_mobile_v970.svg'))&&
        Math.abs(data.barRatio-progress)<.04&&data.icon.w>0&&data.frame.w>screen.length)){
       failed.push({screen,step,data});
    }
