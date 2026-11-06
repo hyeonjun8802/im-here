@@ -18,17 +18,17 @@ test('nine unique premium meteorological illustrations share an optically aligne
  assert.match(source,/ICON_ROOT='\/assets\/ui\/weather-premium'/);
  assert.match(source,/function iconSrc\(type,stage\)\{return \x60\$\{ICON_ROOT\}\/\$\{type\}\.svg\x60;\}/);
 });
-test('mobile gets dedicated tall artwork, desktop retains original metal frame',()=>{
+test('mobile uses compact half-height artwork while preserving the center circular dial',()=>{
  const html=read('index.html');
- const svg=read('public/assets/ui/forecast_hud_mobile_v960.svg');
+ const svg=read('public/assets/ui/forecast_hud_mobile_v970.svg');
  const css=read('src/style.css');
  assert.match(html,/source media="\(max-width:720px\)" srcset="\.\/assets\/ui\/forecast_hud_mobile_v960\.svg"/);
  assert.match(html,/forecast_hud_frame_v950\.svg/);
- assert.match(svg,/viewBox="0 0 1000 440"/);
+ assert.match(svg,/viewBox="0 0 1000 220"/);
  assert.match(svg,/circle cx="500" cy="218"/);
- assert.match(css,/aspect-ratio:1000\/440/);
- assert.match(css,/\.disaster-forecast__current\{\s*left:50%;top:49\.5%;width:21\.8%/);
- assert.match(css,/\.topbar \.top-right\{\s*top:calc\(45vw \+ 14px/);
+ assert.match(css,/aspect-ratio:1000 \/ 220/);
+ assert.match(css,/left:50%;top:49\.5%;width:10\.9%/);
+ assert.match(css,/top:calc\(22vw \+ 10px/);
  assert.match(css,/\.survival-hud-stock\{[\s\S]*?grid-template-columns:1fr 1fr/);
 });
 test('same-sized premium weather icon passes from +24 to 0 hours without crossing the present-weather circle',()=>{
