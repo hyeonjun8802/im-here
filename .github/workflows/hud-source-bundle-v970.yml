@@ -1,0 +1,30 @@
+name: Downloadable HUD source bundle for pixel-level QA
+on:
+  push:
+    branches:
+      - feature/hud-art-final-qa-20261106
+    paths:
+      - '.github/workflows/hud-source-bundle-v970.yml'
+  workflow_dispatch:
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export only real HUD sources, assets and game page
+        run: |
+          mkdir -p /tmp/afterday-hud
+          cp index.html package.json package-lock.json /tmp/afterday-hud/
+          cp -r src /tmp/afterday-hud/src
+          mkdir -p /tmp/afterday-hud/public/assets
+          cp -r public/assets/ui /tmp/afterday-hud/public/assets/ui
+          cp -r tests /tmp/afterday-hud/tests
+          printf '%s\n' "Existing HUD sources, v9.6 baseline" > /tmp/afterday-hud/README.txt
+          cd /tmp && tar -czf afterday-hud-source.tar.gz afterday-hud
+          du -h afterday-hud-source.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: afterday-hud-source-baseline
+          path: /tmp/afterday-hud-source.tar.gz
+          retention-days: 2
