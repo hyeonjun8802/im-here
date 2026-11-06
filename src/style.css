@@ -850,3 +850,47 @@
  .disaster-forecast__future{width:6.2%}
  .topbar .top-right{top:calc(22vw + 10px + env(safe-area-inset-top))}
 }
+
+/* AFTERDAY v9.8.1 — live DOM forecast ticks; never bake text in the image.
+   First screenshot pass found missing 6/12/18/24H and a desktop date overlap. */
+.disaster-forecast__bar{
+  border:1px solid rgba(182,137,84,.75);
+  border-radius:2px;
+  background:linear-gradient(180deg,#23313a 0%,#080f14 65%,#1b2730 100%);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.65),0 0 0 1px rgba(233,194,133,.08);
+}
+.disaster-forecast__bar::after{
+  content:"";position:absolute;inset:0;z-index:8;pointer-events:none;
+  background:linear-gradient(90deg,
+   transparent 24.35%,rgba(177,144,95,.72) 24.6%,transparent 24.85%,
+   transparent 49.35%,rgba(177,144,95,.72) 49.6%,transparent 49.85%,
+   transparent 74.35%,rgba(177,144,95,.72) 74.6%,transparent 74.85%);
+}
+.disaster-forecast__time-markers{
+  position:absolute;z-index:7;left:62.35%;top:59.5%;width:30.3%;height:10%;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;
+  color:#e0c294;font-weight:800;font-size:clamp(7px,.75vw,11px);
+  text-align:center;font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 3px #000;pointer-events:none;
+}
+.disaster-forecast__countdown{
+  top:77%;height:12%;
+  font-size:clamp(7px,.73vw,10px);
+}
+@media(min-width:721px){
+  .survival-hud-date{top:-28%}
+}
+@media(max-width:720px){
+  .disaster-forecast__time-markers{
+    left:64.6%;top:60%;width:27.4%;height:9%;
+    font-size:clamp(6.3px,1.75vw,8px);letter-spacing:-.04em;
+  }
+  .disaster-forecast__countdown{
+    left:65.2%;top:72%;width:27%;height:11%;
+    flex-direction:row;gap:3px;
+    font-size:clamp(6.5px,1.8vw,8px);line-height:1;
+  }
+  .disaster-forecast__countdown strong{
+    font-size:clamp(6.5px,1.8vw,8px);
+  }
+}
