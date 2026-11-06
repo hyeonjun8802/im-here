@@ -2,7 +2,7 @@
    Loaded after style.css; no simulation or save-state changes. */
 .disaster-forecast__current-label{display:none}
 .topbar .top-right #clock{color:#f0f0e8;text-shadow:0 2px 11px #000}
-@media(max-width:720px){
+@media(max-width:900px){
  .disaster-forecast{
   top:calc(3px + env(safe-area-inset-top));
   width:calc(100vw - 8px);max-width:calc(100vw - 8px);
@@ -88,4 +88,16 @@
 }
 @media(prefers-reduced-motion:reduce){
  .disaster-forecast__future,.disaster-forecast__bar-fill{transition:none!important}
+}
+/* Intermediate viewports use a bounded-width mobile console, not a stretched
+   720px-wide panel nor the mismatched 1600×350 desktop overlay geometry. */
+@media(min-width:521px) and (max-width:900px){
+ .disaster-forecast{width:min(560px,calc(100vw - 10px));max-width:calc(100vw - 10px)}
+ .topbar .top-right{top:clamp(285px,calc(52vw + 17px + env(safe-area-inset-top)),312px)}
+ .survival-hud-date #days{font-size:11px}
+ .survival-hud-date #day-pace{font-size:8px}
+ .survival-hud-stat,.survival-hud-stat strong{font-size:11px}
+ .survival-hud-stock{font-size:10px}
+ .disaster-forecast__countdown{font-size:12px}
+ .disaster-forecast__countdown strong{font-size:11px}
 }
