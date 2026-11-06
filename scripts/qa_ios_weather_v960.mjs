@@ -41,7 +41,7 @@ try{
   });
   await page.waitForFunction(()=>{
     const f=document.querySelector('.disaster-forecast__frame');
-    return f&&f.complete&&f.naturalWidth>0&&f.currentSrc.includes('forecast_hud_mobile_v960.svg');
+    return f&&f.complete&&f.naturalWidth>0&&f.currentSrc.includes('forecast_hud_mobile_v970.svg');
   },{timeout:20000});
   await page.waitForTimeout(1100);
   const data=await page.evaluate(()=>{
@@ -53,7 +53,7 @@ try{
    const labels=[...document.querySelectorAll('.survival-hud-stat-label,.survival-hud-stock span')].map(e=>e.textContent.trim());
    return {frame,day,vital,stock,present,forecast,speed,rail,centerDelta,labels,frameSrc:document.querySelector('.disaster-forecast__frame').currentSrc};
   });
-  const okay=data.frame.y>=0&&data.frame.y<18&&data.frame.width>w-16&&
+  const okay=Math.abs(data.frame.height/data.frame.width-.22)<.005&&data.frame.y>=0&&data.frame.y<18&&data.frame.width>w-16&&
     data.day.y>data.frame.y+9&&data.day.bottom<data.vital.y+5&&
     data.stock.y>data.vital.y&&data.stock.bottom<data.frame.bottom-12&&
     data.stock.right<data.present.x+10&&data.centerDelta<3&&
