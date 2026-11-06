@@ -26,6 +26,18 @@ on:
       - 'scripts/qa_ios_weather_v960.mjs'
       - 'scripts/qa_live_weather_v960.mjs'
       - '.github/workflows/forecast-hud-visual-v940.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/style.css'
+      - 'index.html'
+      - 'public/assets/ui/forecast_hud_desktop_v980.svg'
+      - 'public/assets/ui/forecast_hud_mobile_v980.svg'
+      - 'scripts/qa_unified_hud_v950.mjs'
+      - 'scripts/qa_ios_weather_v960.mjs'
+      - 'scripts/qa_live_weather_v960.mjs'
+      - '.github/workflows/forecast-hud-visual-v940.yml'
   workflow_dispatch:
 jobs:
   hud-screenshots:
