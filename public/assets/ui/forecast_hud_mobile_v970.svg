@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 220" role="img" aria-label="Mobile AFTERDAY premium industrial weather observatory">
+<defs>
+ <linearGradient id="metal" x2="0" y2="1"><stop stop-color="#778589"/><stop offset=".11" stop-color="#344348"/><stop offset=".51" stop-color="#111b22"/><stop offset=".85" stop-color="#343d40"/><stop offset="1" stop-color="#10191e"/></linearGradient>
+ <linearGradient id="brass"><stop stop-color="#594332"/><stop offset=".2" stop-color="#e7be82"/><stop offset=".4" stop-color="#745437"/><stop offset=".65" stop-color="#d0a369"/><stop offset=".87" stop-color="#816144"/><stop offset="1" stop-color="#e1b377"/></linearGradient>
+ <linearGradient id="panel" x2="0" y2="1"><stop stop-color="#34434a"/><stop offset=".2" stop-color="#15232b"/><stop offset=".7" stop-color="#0b171e"/><stop offset="1" stop-color="#243137"/></linearGradient>
+ <radialGradient id="dial"><stop stop-color="#344952"/><stop offset=".7" stop-color="#14222b"/><stop offset="1" stop-color="#070e13"/></radialGradient>
+ <filter id="shade" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="9" flood-opacity=".83"/></filter>
+ <filter id="light"><feGaussianBlur stdDeviation="4"/></filter>
+ <pattern id="grain" width="27" height="28" patternUnits="userSpaceOnUse"><path d="M2 7h6m16 12h3M7 23h4" stroke="#d4dce0" stroke-width=".6" opacity=".09"/></pattern>
+</defs>
+<g filter="url(#shade)" transform="scale(1 .5)">
+ <path d="M22 88 61 52H394l47-34h118l49 34h327l43 39v260l-44 37H609l-50 31H443l-48-31H60l-38-37Z" fill="url(#metal)" stroke="#080e12" stroke-width="14"/>
+ <path d="M34 94 69 64h331l48-33h105l49 33h329l34 31v253l-35 28H603l-47 30H448l-46-30H68l-34-28Z" fill="none" stroke="url(#brass)" stroke-width="6"/>
+ <path d="M52 103 80 76h329l46-27h96l46 27h327l27 28v238l-28 22H597l-48 26h-95l-48-26H82l-30-22Z" fill="url(#grain)" stroke="#bda37d" stroke-width="1.8" stroke-opacity=".35"/>
+ <rect x="52" y="89" width="337" height="268" rx="11" fill="url(#panel)" stroke="#a68b66" stroke-width="3"/>
+ <path d="M68 130h308M68 260h308" stroke="#bfa785" stroke-opacity=".45" stroke-width="2"/>
+ <path d="M222 268v79" stroke="#ac9574" opacity=".4" stroke-width="2"/>
+ <g fill="url(#dial)" stroke="#9e8460" stroke-width="2.5"><rect x="70" y="267" width="136" height="36" rx="4"/><rect x="220" y="267" width="156" height="36" rx="4"/><rect x="70" y="307" width="136" height="35" rx="4"/><rect x="220" y="307" width="156" height="35" rx="4"/></g>
+ <!-- v9.7: dial rendered unwarped and proportionally smaller below. -->
+ <rect x="616" y="88" width="336" height="269" rx="11" fill="url(#panel)" stroke="#aa8d66" stroke-width="3"/>
+ <path d="M629 137h310M630 341h308" stroke="#c3ac86" stroke-opacity=".35" stroke-width="2"/>
+ <rect x="643" y="242" width="282" height="35" rx="4" fill="#060d13" stroke="#978062" stroke-width="3"/>
+ <rect x="651" y="248" width="266" height="22" rx="2" fill="#263038" stroke="#9d855e" stroke-opacity=".45"/>
+ <path d="M718 246v28M784 246v28M850 246v28" stroke="#c8aa83" stroke-opacity=".55" stroke-width="3"/>
+ <g font-family="Arial,sans-serif" font-size="17" fill="#c6ab85" font-weight="bold" text-anchor="middle">
+ <text x="684" y="297">6H</text><text x="750" y="297">12H</text><text x="819" y="297">18H</text><text x="886" y="297">24H</text></g>
+ <g fill="#af916c" stroke="#141a1f" stroke-width="2"><circle cx="43" cy="118" r="5"/><circle cx="43" cy="336" r="5"/><circle cx="959" cy="118" r="5"/><circle cx="959" cy="337" r="5"/><circle cx="92" cy="64" r="5"/><circle cx="907" cy="64" r="5"/></g>
+ <path d="M80 72c59-8 122-5 164-8m433-2c81-4 173-5 255 5" stroke="#dce6e9" stroke-width="6" stroke-opacity=".28" stroke-linecap="round"/>
+</g>
+<!-- The metal side panels are vertically compacted; the round central instrument
+     is instead scaled uniformly on both axes to preserve its round geometry. -->
+<g filter="url(#shade)" transform="translate(250 0) scale(.5)">
+<!-- The original central current-weather circular instrument remains unchanged in concept. -->
+ <circle cx="500" cy="218" r="124" fill="#080e13" stroke="#03090d" stroke-width="13"/>
+ <circle cx="500" cy="218" r="114" fill="url(#dial)" stroke="url(#brass)" stroke-width="10"/>
+ <circle cx="500" cy="218" r="102" fill="none" stroke="#e5c998" stroke-opacity=".3" stroke-width="3"/>
+ <path d="M408 166A112 112 0 0 1 489 108M594 165A112 112 0 0 1 607 222" stroke="#eed2a4" stroke-width="4" stroke-opacity=".33" fill="none" stroke-linecap="round"/>
+ <g fill="url(#metal)" stroke="#b58e61" stroke-width="4"><path d="M489 91h22l-11-31Z"/><path d="M490 345h20l-10 28Z"/><rect x="365" y="205" width="20" height="28" rx="5"/><rect x="615" y="205" width="20" height="28" rx="5"/></g>
+ <circle cx="500" cy="95" r="8" fill="#e9b36b"/>
+ </g>
+</svg>
