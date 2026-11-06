@@ -20,12 +20,12 @@ test('nine unique premium meteorological illustrations share an optically aligne
 });
 test('mobile uses compact half-height artwork while preserving the center circular dial',()=>{
  const html=read('index.html');
- const svg=read('public/assets/ui/forecast_hud_mobile_v970.svg');
+ const svg=read('public/assets/ui/forecast_hud_mobile_v980.svg');
  const css=read('src/style.css');
- assert.match(html,/source media="\(max-width:720px\)" srcset="\.\/assets\/ui\/forecast_hud_mobile_v970\.svg"/);
- assert.match(html,/forecast_hud_frame_v970\.svg/);
+ assert.match(html,/source media="\(max-width:720px\)" srcset="\.\/assets\/ui\/forecast_hud_mobile_v980\.svg"/);
+ assert.match(html,/forecast_hud_desktop_v980\.svg/);
  assert.match(svg,/viewBox="0 0 1000 220"/);
- assert.match(svg,/circle cx="500" cy="218"/);
+ assert.match(svg,/circle cx="500" cy="107"/);
  assert.match(css,/aspect-ratio:1000 \/ 220/);
  assert.match(css,/left:50%;top:49\.5%;width:10\.9%/);
  assert.match(css,/top:calc\(22vw \+ 10px/);
