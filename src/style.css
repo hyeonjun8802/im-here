@@ -771,3 +771,69 @@
   transition:none!important;
  }
 }
+
+
+/* AFTERDAY v9.7 — compact HEIGHT, not width.  Keep every premium brass
+   detail, 4-stock inventory, 3 vital bars, segmented timeline and round dial.
+   Assets v970 have horizontally unchanged proportions; only their metal wings
+   are vertically compacted while the central circle scales uniformly. */
+.disaster-forecast{
+  top:env(safe-area-inset-top);
+  width:min(1380px,calc(100vw - 8px));
+  max-width:calc(100vw - 8px);
+  aspect-ratio:1600 / 175;
+}
+.disaster-forecast__current{
+  left:50.125%;top:49.8%;
+  width:8%;height:auto;aspect-ratio:1;
+}
+.disaster-forecast__future{
+  width:5.1%;height:auto;aspect-ratio:1;
+}
+.survival-hud-stat{
+  font-size:clamp(7px,.70vw,10px);
+  line-height:1;
+}
+.survival-hud-stat strong{font-size:clamp(7px,.71vw,10px)}
+.survival-hud-stock{font-size:clamp(7px,.68vw,10px)}
+.survival-hud-stock>div{padding:0 4px}
+.survival-hud-date #days{font-size:clamp(8px,.92vw,12px)}
+.survival-hud-date #day-pace{font-size:clamp(6px,.58vw,8px)}
+.disaster-forecast__countdown{font-size:clamp(7px,.75vw,10px)}
+.topbar .top-right{
+  top:calc(min(10.95vw,151px) + 10px + env(safe-area-inset-top));
+}
+@media(min-width:721px) and (max-width:1150px){
+  .survival-hud-stat,.survival-hud-stat strong,
+  .survival-hud-stock{font-size:clamp(6.5px,.7vw,8px)}
+  .survival-hud-stock>div{padding:0 2px}
+  .survival-hud-date #days{font-size:clamp(7px,.9vw,10px)}
+  .survival-hud-date #day-pace{font-size:clamp(5.5px,.65vw,7px)}
+  .disaster-forecast__countdown{font-size:clamp(6px,.75vw,8px)}
+}
+@media(max-width:720px){
+  .disaster-forecast{
+    top:env(safe-area-inset-top);
+    width:calc(100vw - 8px);
+    max-width:calc(100vw - 8px);
+    aspect-ratio:1000 / 220;
+  }
+  .disaster-forecast__current{
+    left:50%;top:49.5%;width:10.9%;height:auto;
+  }
+  .disaster-forecast__future{width:6.2%;height:auto}
+  .survival-hud-stat,.survival-hud-stat strong{
+    font-size:clamp(7px,1.85vw,9px);line-height:1;
+  }
+  .survival-hud-stock{font-size:clamp(6.5px,1.8vw,8.2px)}
+  .survival-hud-stock>div{padding:0 2px}
+  .survival-hud-date #days{font-size:clamp(8px,2.25vw,10px)}
+  .survival-hud-date #day-pace{font-size:clamp(6px,1.6vw,7.5px)}
+  .disaster-forecast__countdown{font-size:clamp(7px,1.95vw,9px)}
+  .disaster-forecast__countdown strong{font-size:clamp(7px,1.95vw,9px)}
+  .topbar .top-right{
+    top:calc(22vw + 10px + env(safe-area-inset-top));
+    right:14px;
+  }
+  .warning{top:calc(22vw + 107px + env(safe-area-inset-top))}
+}
