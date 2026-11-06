@@ -66,7 +66,7 @@ try{
    if(!(data.iconReady&&data.statsVisible&&data.inventoryCells===4&&
        data.centerOffset<3&&Math.abs(data.aspect-(screen.startsWith('mobile')?.22:175/1600))<.005&&data.speed.y>=data.frame.bottom-1&&
        data.date.y>=data.frame.y+2&&data.stock.bottom<=data.frame.bottom-6&&data.centerGap>-3&&
-       (screen.startsWith('mobile')?data.frameSource.includes('forecast_hud_mobile_v970.svg'):!data.frameSource.includes('forecast_hud_mobile_v970.svg'))&&
+       (screen.startsWith('mobile')?data.frameSource.includes('forecast_hud_mobile_v980.svg'):!data.frameSource.includes('forecast_hud_mobile_v980.svg'))&&
        Math.abs(data.barRatio-progress)<.04&&data.icon.w>0&&data.frame.w>screen.length)){
       failed.push({screen,step,data});
    }
