@@ -9,6 +9,8 @@ test('v980 vector HUD uses native responsive coordinates with no baked labels or
  assert.match(css,/aspect-ratio:1000 \/ 220/);
  assert.match(html,/forecast_hud_desktop_v980\.svg/);
  assert.match(html,/forecast_hud_mobile_v980\.svg/);
+ assert.match(html,/class="disaster-forecast__time-markers"/);
+ for(const tick of ['6H','12H','18H','24H'])assert.ok(html.includes('<span>'+tick+'</span>'));
  for(const [file,vb,cx,cy] of [
  ['forecast_hud_desktop_v980.svg','1600 175','800','87'],
  ['forecast_hud_mobile_v980.svg','1000 220','500','107']
