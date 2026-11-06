@@ -18,7 +18,7 @@ test('v9.5 authored vector resources are actual separate production-ready assets
 });
 test('HUD includes live three vital bars and 2x2 inventory but no external AFTERDAY logo',()=>{
  const html=read('index.html');
- assert.match(html,/forecast_hud_frame_v950\.svg/);
+ assert.match(html,/forecast_hud_frame_v970\.svg/);
  for(const id of ['hud-health-val','hud-food-val','hud-water-val','hud-stock-food','hud-stock-water','hud-stock-medicine','hud-stock-parts','days','speed-toggle']){
   assert.match(html,new RegExp('id="'+id+'"'));
  }
@@ -28,7 +28,7 @@ test('HUD includes live three vital bars and 2x2 inventory but no external AFTER
  const css=read('src/style.css');
  assert.match(css,/grid-template-columns:1fr 1fr/);
  assert.match(css,/#survivor-status-panel\{display:none!important\}/);
- assert.match(css,/.topbar .top-right\{[\s\S]*?top:calc\(min\(22vw,341px\)/);
+ assert.match(css,/top:calc\(min\(10\.95vw,151px\)/);
 });
 test('live profile values and quantities use state without affecting persistent simulation',()=>{
  const main=read('src/main.js');
