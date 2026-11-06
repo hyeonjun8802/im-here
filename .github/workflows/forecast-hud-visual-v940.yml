@@ -7,6 +7,7 @@ on:
       - feature/unified-survival-hud-v950-20261106
       - feature/mobile-weather-art-v960-20261106
       - feature/slim-weather-hud-v970-20261106
+      - feature/frostpunk-hud-art-v980-20261106
     paths:
       - 'src/style.css'
       - 'src/disasterForecastV800.js'
@@ -16,6 +17,8 @@ on:
       - 'public/assets/ui/forecast_hud_mobile_v960.svg'
       - 'public/assets/ui/forecast_hud_frame_v970.svg'
       - 'public/assets/ui/forecast_hud_mobile_v970.svg'
+      - 'public/assets/ui/forecast_hud_desktop_v980.svg'
+      - 'public/assets/ui/forecast_hud_mobile_v980.svg'
       - 'public/assets/ui/weather-premium/*.svg'
       - 'public/assets/ui/hud_*.svg'
       - 'scripts/qa_forecast_bar_v940.mjs'
