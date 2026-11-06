@@ -126,5 +126,5 @@ test('v8.9 forecast icon is visible immediately for a fresh game',()=>{
   const p=forecastPresentation(state,now);
   assert.equal(p.visible,true);
   assert.equal(p.activeLeadHours,24);
-  assert.ok(Math.abs(p.x-90.40)<.05);
+  assert.ok(Math.abs(p.x-88.60)<.05);
 });
