@@ -46,11 +46,11 @@ try{
       loadingVisible:Boolean(loading&&!loading.classList.contains('hidden')),
       pixelRatio:window.devicePixelRatio};
    });
-   const ok=data.frameReady&&data.frame.width>100&&data.frame.y>=0&&data.frame.y<18&&
+   const ok=data.frameReady&&Math.abs(data.frame.height/data.frame.width-(w<=720?.22:175/1600))<.005&&data.frame.width>100&&data.frame.y>=0&&data.frame.y<18&&
     data.speed.y>=data.frame.bottom+1&&
     Math.abs(data.center.x+data.center.width/2-(data.hud.x+data.hud.width/2))<3&&
     data.date.y>data.frame.y&&data.stock.bottom<data.frame.bottom-8&&
-    (w<=720?data.frameSource.includes('forecast_hud_mobile_v960.svg'):!data.frameSource.includes('forecast_hud_mobile_v960.svg'));
+    (w<=720?data.frameSource.includes('forecast_hud_mobile_v970.svg'):!data.frameSource.includes('forecast_hud_mobile_v970.svg'));
    if(!ok)issues.push({name,kind:'real scene HUD layout',data});
    // A game boot failure is reported separately from layout and is not masked.
    if(data.gameError||!data.gameBooted)issues.push({name,kind:'3D runtime initialization',error:data.gameError,booted:data.gameBooted});
