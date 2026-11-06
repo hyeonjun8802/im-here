@@ -1,0 +1,144 @@
+/* AFTERDAY v10.0: LOCKED ART. No gameplay/layout modifications outside weather HUD. */
+.disaster-forecast.premium-hud-v1000{
+ --premium-h:clamp(93px,10vw,158px);
+ position:absolute!important;top:env(safe-area-inset-top)!important;left:50%!important;
+ width:min(1520px,calc(100vw - 8px))!important;max-width:calc(100vw - 8px)!important;
+ height:var(--premium-h)!important;aspect-ratio:auto!important;transform:translateX(-50%)!important;
+ z-index:11;isolation:isolate;overflow:visible;filter:drop-shadow(0 5px 11px rgba(1,7,14,.58));pointer-events:none;
+}
+.premium-hud-v1000>.disaster-forecast__artwork,
+.premium-hud-v1000>.disaster-forecast__current,
+.premium-hud-v1000>.disaster-forecast__future,
+.premium-hud-v1000>.disaster-forecast__approach-arrow,
+.premium-hud-v1000>.disaster-forecast__bar,
+.premium-hud-v1000>.disaster-forecast__countdown,
+.premium-hud-v1000>.disaster-forecast__time-markers{display:none!important}
+.premium-hud-v1000 .premium-hud__frame{position:absolute;inset:0;z-index:0;pointer-events:none}
+.premium-hud-v1000 .premium-hud__frame picture{position:absolute;pointer-events:none;display:block}
+.premium-hud-v1000 .premium-hud__art{display:block;width:100%;height:100%;object-fit:fill;-webkit-user-drag:none}
+/* Both wings overlap beneath the central medallion, so no raw crop seam is visible. */
+.premium-hud-v1000 .premium-hud__left-wing,
+.premium-hud-v1000 .premium-hud__right-wing{top:23%;height:59%;width:46.7%;z-index:1}
+.premium-hud-v1000 .premium-hud__left-wing{left:0}
+.premium-hud-v1000 .premium-hud__right-wing{right:0}
+.premium-hud-v1000 .premium-hud__center-medallion{height:100%;width:calc(var(--premium-h)*1.24);left:50%;top:0;transform:translateX(-50%);z-index:3}
+.premium-hud-v1000 .premium-hud__current-art{position:absolute;left:50%;top:12%;width:calc(var(--premium-h)*.76);height:70%;transform:translateX(-50%);object-fit:contain;z-index:4;pointer-events:none}
+.premium-hud-v1000 .premium-hud__current-caption{position:absolute;left:50%;top:69%;transform:translateX(-50%);z-index:5;
+ max-width:calc(var(--premium-h)*.78);white-space:nowrap;text-align:center;
+ color:#ffddac;text-shadow:0 1px 4px #03090b,0 0 5px #ff7729;
+ border-radius:10px;background:rgba(7,15,23,.65);font-size:clamp(8px,.92vw,13px);font-weight:780;line-height:1.15;padding:1px 4px}
+.premium-hud-v1000 .premium-hud__info{position:absolute;left:50%;top:86%;transform:translateX(-50%);z-index:5;
+ display:flex;align-items:center;justify-content:center;width:clamp(10px,1.25vw,18px);height:clamp(10px,1.25vw,18px);
+ color:#ffe2bd;font:bold clamp(8px,.85vw,13px) Georgia,serif;border-radius:50%;background:rgba(9,24,36,.9);border:1px solid rgba(239,175,111,.74)}
+/* 3 simulation-owned vitals + four live resource counters. No synthesized values. */
+.premium-hud-v1000 .survival-hud-stats{position:absolute!important;left:6.7%!important;top:36%!important;
+ width:36.9%!important;height:43%!important;z-index:4;color:#fff3e3!important;pointer-events:none;text-shadow:0 1px 3px #000d}
+.premium-hud-v1000 .survival-hud-date{display:none!important}
+.premium-hud-v1000 .survival-hud-vitals{position:absolute!important;inset:0 auto auto 0!important;width:70%;height:100%;
+ display:flex;flex-direction:column;justify-content:space-between}
+.premium-hud-v1000 .survival-hud-stat{height:32%;display:flex;align-items:center;gap:1%;font-size:clamp(7px,.80vw,12px);line-height:1}
+.premium-hud-v1000 .survival-hud-stat-label{width:27%;min-width:0;display:inline-flex;align-items:center;justify-content:flex-start;
+ color:#f2e6d5!important;white-space:nowrap;font-size:inherit;letter-spacing:-.02em}
+.premium-hud-v1000 .hud-picto{display:inline-block;flex:none;width:1.12em;height:1.12em;min-width:6px;min-height:6px;
+ background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;margin-right:2px}
+.premium-hud-v1000 .hud-picto--health{background-image:url('/assets/ui/afterday-premium-v1000/vitals/health.png')!important}
+.premium-hud-v1000 .hud-picto--hunger{background-image:url('/assets/ui/afterday-premium-v1000/vitals/hunger.png')!important}
+.premium-hud-v1000 .hud-picto--hydration{background-image:url('/assets/ui/afterday-premium-v1000/vitals/water.png')!important}
+.premium-hud-v1000 .hud-picto--food{background-image:url('/assets/ui/afterday-premium-v1000/vitals/food.png')!important}
+.premium-hud-v1000 .hud-picto--water{background-image:url('/assets/ui/afterday-premium-v1000/vitals/water.png')!important}
+.premium-hud-v1000 .hud-picto--medicine{background-image:url('/assets/ui/afterday-premium-v1000/vitals/medicine.png')!important}
+.premium-hud-v1000 .hud-picto--parts{background-image:url('/assets/ui/afterday-premium-v1000/vitals/parts.png')!important}
+.premium-hud-v1000 .survival-hud-stat-track{position:relative;flex:1;min-width:0;height:37%;min-height:3px;
+ overflow:hidden;border-radius:50px;border:1px solid rgba(151,197,214,.45);background:linear-gradient(180deg,rgba(1,8,14,.88),rgba(17,38,54,.64))!important;
+ box-shadow:inset 0 1px 3px #000a,0 0 2px #90c5d46b}
+.premium-hud-v1000 .survival-hud-stat-track i{top:10%;left:0;height:80%;border:0;border-radius:50px;box-shadow:inset 0 1px 2px #fff8;background-image:none!important}
+.premium-hud-v1000 .survival-hud-stat[data-meter=health] .survival-hud-stat-track i{background:linear-gradient(90deg,#a31e34,#f6a18f)!important}
+.premium-hud-v1000 .survival-hud-stat[data-meter=food] .survival-hud-stat-track i{background:linear-gradient(90deg,#868426,#f1df66)!important}
+.premium-hud-v1000 .survival-hud-stat[data-meter=water] .survival-hud-stat-track i{background:linear-gradient(90deg,#17618f,#a2ddee)!important}
+.premium-hud-v1000 .survival-hud-stat strong{width:17%;font-size:inherit;font-variant-numeric:tabular-nums;text-align:right;color:#fff4e1}
+.premium-hud-v1000 .survival-hud-stock{position:absolute!important;left:73%!important;top:0!important;width:26.2%!important;height:100%!important;
+ display:grid;grid-template:repeat(2,minmax(0,1fr))/repeat(2,minmax(0,1fr));gap:1%;font-size:clamp(7px,.8vw,12px)}
+.premium-hud-v1000 .survival-hud-stock>div{display:flex;align-items:center;justify-content:center;gap:1px;min-width:0;
+ border:0!important;background:transparent!important;padding:0!important;border-radius:0!important}
+.premium-hud-v1000 .survival-hud-stock span{display:inline-flex;align-items:center;min-width:0;font-size:0!important;color:transparent!important}
+.premium-hud-v1000 .survival-hud-stock span .hud-picto{font-size:clamp(9px,1.0vw,16px);margin:0;width:1em;height:1em}
+.premium-hud-v1000 .survival-hud-stock strong{font-size:inherit;color:#ffedd7;font-variant-numeric:tabular-nums}
+/* Right wing: timeline has no historical resource icons and no invented intermediate prediction. */
+.premium-hud-v1000 .premium-hud__timeline{position:absolute;right:3.7%;top:34%;width:35.3%;height:46%;
+ font-family:'Noto Sans KR',system-ui,sans-serif;font-size:clamp(8px,.88vw,13px);font-variant-numeric:tabular-nums;
+ color:#eaf2f5;z-index:4;text-shadow:0 1px 3px #000b;pointer-events:none}
+.premium-hud-v1000 .premium-hud__timeline-title{position:absolute;left:1.7%;top:0;color:#ffe0ad;font-weight:760;white-space:nowrap}
+.premium-hud-v1000 .premium-hud__eta{position:absolute;right:0;top:0;font-size:.72em;color:#f0ba7e;white-space:nowrap}
+.premium-hud-v1000 .premium-hud__timeline-track{position:absolute;left:7%;right:7%;top:66%;height:2px;border-radius:5px;
+ background:linear-gradient(90deg,rgba(252,188,111,.55),#b5d4e3 53%,rgba(155,203,224,.55));box-shadow:0 0 4px #a2c9db6b}
+.premium-hud-v1000 .premium-hud__timeline-marks{position:absolute;left:0;right:0;top:65%;height:35%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:start}
+.premium-hud-v1000 .premium-hud__timeline-mark{position:relative;display:flex;flex-direction:column;align-items:center;white-space:nowrap;gap:3px;min-width:0}
+.premium-hud-v1000 .premium-hud__timeline-dot{height:clamp(5px,.5vw,8px);width:clamp(5px,.5vw,8px);
+ background:#133146;border:1px solid #d5e2eb;border-radius:50%;box-shadow:0 0 3px #7cabbf;transform:translateY(-35%)}
+.premium-hud-v1000 .premium-hud__timeline-hour{font-size:.85em;color:#e7f1f5;font-weight:650}
+.premium-hud-v1000 .premium-hud__timeline-mark.is-checkpoint .premium-hud__timeline-dot{border-color:#ffe5c3;background:#f6863f;box-shadow:0 0 5px #ff7a32}
+.premium-hud-v1000 .premium-hud__timeline-mark.is-checkpoint .premium-hud__timeline-hour{color:#ffd6a2;text-shadow:0 0 5px #ed743c}
+.premium-hud-v1000 .premium-hud__future-art{position:absolute;left:var(--premium-event-x,8.33%);top:19%;height:50%;aspect-ratio:1;
+ object-fit:contain;transform:translateX(-50%);opacity:0;z-index:5;filter:drop-shadow(0 1px 3px #f4823c);
+ transition:left .7s linear,opacity .3s}
+.premium-hud-v1000 .premium-hud__forecast-focus{position:absolute;left:var(--premium-event-x,8.33%);top:12%;height:64%;aspect-ratio:1;
+ transform:translateX(-50%);border:1px solid #f8a46e;border-radius:50%;box-shadow:0 0 6px #f48341a5,inset 0 0 5px #f58f5a77;
+ background:radial-gradient(ellipse,rgba(244,117,41,.13),transparent 70%);opacity:0;z-index:4;transition:left .7s linear,opacity .3s}
+.premium-hud-v1000 .premium-hud__timeline.has-future .premium-hud__future-art,
+.premium-hud-v1000 .premium-hud__timeline.has-future .premium-hud__forecast-focus{opacity:1}
+@media(max-width:900px){.premium-hud-v1000 .premium-hud__timeline{right:2.3%;width:37%}
+ .premium-hud-v1000 .survival-hud-stats{left:5.4%!important;width:38%!important}}
+@media(max-width:720px){
+ .disaster-forecast.premium-hud-v1000{--premium-h:clamp(76px,20.6vw,105px);width:calc(100vw - 4px)!important;max-width:calc(100vw - 4px)!important}
+ .premium-hud-v1000 .premium-hud__left-wing,.premium-hud-v1000 .premium-hud__right-wing{top:24%;height:55%;width:46.9%}
+ .premium-hud-v1000 .survival-hud-stats{left:4.5%!important;top:36%!important;width:39.0%!important;height:38%!important}
+ .premium-hud-v1000 .survival-hud-stat{font-size:clamp(5.5px,1.7vw,7.7px);gap:.4%;height:33%}
+ .premium-hud-v1000 .survival-hud-stat-label{width:29%;letter-spacing:-.04em}
+ .premium-hud-v1000 .survival-hud-stat strong{width:17%}
+ .premium-hud-v1000 .survival-hud-stock{left:75%!important;width:24.5%!important;font-size:clamp(5.5px,1.6vw,7px)}
+ .premium-hud-v1000 .survival-hud-stock span .hud-picto{font-size:clamp(7px,1.65vw,9px)}
+ .premium-hud-v1000 .premium-hud__current-caption{top:69%;font-size:clamp(6.5px,1.8vw,9px);padding:0 2px}
+ .premium-hud-v1000 .premium-hud__info{top:83%;width:12px;height:12px;font-size:9px}
+ .premium-hud-v1000 .premium-hud__timeline{top:36%;right:1.3%;width:39%;height:36%;font-size:clamp(5.6px,1.7vw,8px)}
+ .premium-hud-v1000 .premium-hud__timeline-title{font-size:.88em}
+ .premium-hud-v1000 .premium-hud__eta{font-size:.6em}
+ .premium-hud-v1000 .premium-hud__timeline-hour{font-size:.86em;letter-spacing:-.08em}
+ .premium-hud-v1000 .premium-hud__timeline-dot{width:4px;height:4px}
+ .premium-hud-v1000 .premium-hud__future-art{top:12%;height:55%}
+ .premium-hud-v1000 .premium-hud__forecast-focus{top:8%;height:66%}
+ .topbar .top-right{top:calc(env(safe-area-inset-top) + clamp(76px,20.6vw,105px) + 8px)!important}
+ .warning{top:calc(env(safe-area-inset-top) + clamp(76px,20.6vw,105px) + 86px)!important}
+}
+@media(prefers-reduced-motion:reduce){.premium-hud-v1000 .premium-hud__future-art,.premium-hud-v1000 .premium-hud__forecast-focus{transition:none}}
+
+.premium-hud-v1000 .premium-hud__present-art{position:absolute;z-index:5;left:91.66667%;top:18%;height:48%;aspect-ratio:1;transform:translateX(-50%);object-fit:contain;opacity:.92;filter:drop-shadow(0 1px 2px #152431)}
+.premium-hud-v1000 .premium-hud__timeline-mark:not(.is-checkpoint)::before{content:"";position:absolute;left:50%;top:-20px;transform:translateX(-50%);width:clamp(11px,2vw,26px);height:clamp(11px,2vw,26px);border:1px solid rgba(200,224,235,.19);border-radius:50%;background:radial-gradient(circle,rgba(98,150,185,.22),rgba(5,21,35,.16));box-shadow:inset 0 0 6px #b5cbd22b;pointer-events:none}
+@media(max-width:720px){.premium-hud-v1000 .premium-hud__timeline-mark:not(.is-checkpoint)::before{width:8px;height:8px;top:-13px}.premium-hud-v1000 .premium-hud__present-art{height:46%;top:14%}}
+/* Seam protection: the ornamental joining areas are underneath the round medallion.
+   Fade only the hidden, inner edge; never distort the central glass circle. */
+.premium-hud-v1000 .premium-hud__left-wing{-webkit-mask-image:linear-gradient(90deg,#000 0%,#000 84%,transparent 100%);mask-image:linear-gradient(90deg,#000 0%,#000 84%,transparent 100%)}
+.premium-hud-v1000 .premium-hud__right-wing{-webkit-mask-image:linear-gradient(270deg,#000 0%,#000 84%,transparent 100%);mask-image:linear-gradient(270deg,#000 0%,#000 84%,transparent 100%)}
+@media(max-width:720px){
+ .disaster-forecast.premium-hud-v1000{--premium-h:clamp(94px,30vw,120px)}
+ .premium-hud-v1000 .survival-hud-stat{font-size:clamp(6.4px,2vw,8.4px)}
+ .premium-hud-v1000 .survival-hud-stock{font-size:clamp(6.3px,1.95vw,8.1px)}
+ .premium-hud-v1000 .premium-hud__timeline{font-size:clamp(6.2px,1.93vw,8.5px)}
+ .premium-hud-v1000 .premium-hud__current-caption{font-size:clamp(7px,2.1vw,10px)}
+ .topbar .top-right{top:calc(env(safe-area-inset-top) + clamp(94px,30vw,120px) + 8px)!important}
+ .warning{top:calc(env(safe-area-inset-top) + clamp(94px,30vw,120px) + 86px)!important}
+}
+/* Narrow portrait: reserve the central medallion's actual footprint before placing state/forecast. */
+@media(max-width:720px){
+ .premium-hud-v1000 .premium-hud__center-medallion{top:8%;height:82%;width:calc(var(--premium-h)*1.04)}
+ .premium-hud-v1000 .premium-hud__current-art{top:19%;height:56%;width:calc(var(--premium-h)*.60)}
+ .premium-hud-v1000 .premium-hud__current-caption{top:69%;font-size:clamp(6.5px,1.9vw,8px)}
+ .premium-hud-v1000 .premium-hud__info{top:83%}
+ .premium-hud-v1000 .survival-hud-stats{left:4.5%!important;top:36%!important;width:30.8%!important;height:37%!important}
+ .premium-hud-v1000 .survival-hud-vitals{width:69%}
+ .premium-hud-v1000 .survival-hud-stat-label{font-size:0!important;width:18%}
+ .premium-hud-v1000 .survival-hud-stat-label .hud-picto{font-size:8px;width:8px;height:8px;margin-right:0}
+ .premium-hud-v1000 .survival-hud-stat strong{font-size:clamp(6px,1.7vw,7px);width:27%}
+ .premium-hud-v1000 .survival-hud-stock{left:73%!important;width:26%!important;font-size:clamp(5.8px,1.7vw,7px)}
+ .premium-hud-v1000 .survival-hud-stock span .hud-picto{font-size:clamp(6px,1.6vw,8px)}
+ .premium-hud-v1000 .premium-hud__timeline{right:2%;width:33%;top:35%;height:38%;font-size:clamp(6px,1.7vw,7.4px)}
+}

@@ -1,6 +1,7 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
 import {DisasterForecastHUD} from './disasterForecastV800.js';
+import {installPremiumHud} from './premiumHudV1000.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
@@ -18,6 +19,7 @@ const state=sanitize(saved,gameClock.virtualNow);
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
 const disasterForecast=new DisasterForecastHUD($('#disaster-forecast'));
+const premiumHud=installPremiumHud($('#disaster-forecast'));
 let restartInProgress=false;
 const save=()=>{
  if(restartInProgress)return true;
@@ -66,6 +68,7 @@ function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
  $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
  disasterForecast.sync(state,t);
+ premiumHud.sync(state,t);
  $('#days').title='실제 플레이 10분마다 게임 하루가 지나갑니다 (기본 1×)';
  $('#day-pace').textContent='1일 = 플레이 10분';
  $('#clock').title='게임 내 서울 시각 · 플레이 10분 = 게임 1일 · 미접속 시 일시정지';

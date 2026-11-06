@@ -1,0 +1,52 @@
+name: AFTERDAY Premium HUD v1000 — release gate
+on:
+  push:
+    branches:
+      - feature/premium-weather-hud-v1000-20261107
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/premiumHudV1000.*'
+      - 'src/main.js'
+      - 'public/assets/ui/afterday-premium-v1000/**'
+      - 'scripts/qa_live_premium_hud_v1000.mjs'
+      - 'tests/premium-hud-v1000.test.mjs'
+  workflow_dispatch:
+jobs:
+  real-game-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Run regression tests
+        run: npm test
+      - name: Build the complete Three.js game
+        run: npm run build
+      - name: Install real browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start complete game for actual screenshot validation
+        run: |
+          npm run dev -- --host 127.0.0.1 >/tmp/afterday-premium-hud-v1000.log 2>&1 &
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/afterday-premium-hud-v1000.log
+          exit 1
+      - name: Real-game PC / mobile viewport screenshots (release gate)
+        run: node scripts/qa_live_premium_hud_v1000.mjs
+      - name: Upload screenshot and failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-hud-v1000-real-game-qa
+          path: docs/qa/premium-hud-v1000/
+          retention-days: 14
+          if-no-files-found: warn
