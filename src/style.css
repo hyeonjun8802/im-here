@@ -837,3 +837,16 @@
   }
   .warning{top:calc(22vw + 107px + env(safe-area-inset-top))}
 }
+
+/* AFTERDAY v9.8: new PC/mobile Frostpunk-grade metal resources.
+   Keep live game content and exact intrinsic dimensions, no squeezed gradients/shadows. */
+.disaster-forecast{top:env(safe-area-inset-top);width:min(1380px,calc(100vw - 8px));max-width:calc(100vw - 8px);aspect-ratio:1600 / 175;filter:drop-shadow(0 1px 2px rgba(0,0,0,.23))}
+.disaster-forecast__frame{width:100%;height:100%;object-fit:fill}
+.disaster-forecast__current{left:50%;top:49.8%;width:6.45%;aspect-ratio:1}
+.disaster-forecast__future{width:5.1%;aspect-ratio:1}
+@media(max-width:720px){
+ .disaster-forecast{top:env(safe-area-inset-top);width:calc(100vw - 8px);max-width:calc(100vw - 8px);aspect-ratio:1000 / 220;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+ .disaster-forecast__current{left:50%;top:49.5%;width:10.9%;aspect-ratio:1}
+ .disaster-forecast__future{width:6.2%}
+ .topbar .top-right{top:calc(22vw + 10px + env(safe-area-inset-top))}
+}
