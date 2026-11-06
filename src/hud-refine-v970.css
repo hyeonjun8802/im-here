@@ -1,0 +1,91 @@
+/* AFTERDAY v9.7 — meticulously re-aligned original industrial HUD.
+   Loaded after style.css; no simulation or save-state changes. */
+.disaster-forecast__current-label{display:none}
+.topbar .top-right #clock{color:#f0f0e8;text-shadow:0 2px 11px #000}
+@media(max-width:720px){
+ .disaster-forecast{
+  top:calc(3px + env(safe-area-inset-top));
+  width:calc(100vw - 8px);max-width:calc(100vw - 8px);
+  aspect-ratio:1000/520;
+  filter:drop-shadow(0 10px 13px rgba(0,0,0,.88))
+ }
+ .disaster-forecast__frame{object-fit:fill}
+ .survival-hud-stats{
+  left:6.4%;top:19.35%;width:31.35%;height:65%;
+  line-height:1.05;letter-spacing:0
+ }
+ .survival-hud-date{top:0;height:14%;align-items:center;gap:3px}
+ .survival-hud-date #days{
+  font-size:clamp(9px,2.55vw,12px);font-weight:850;letter-spacing:.04em
+ }
+ .survival-hud-date #day-pace{
+  font-size:clamp(6.3px,1.66vw,7.8px);font-weight:550;letter-spacing:-.03em
+ }
+ .survival-hud-vitals{top:22%;bottom:34%;justify-content:space-around}
+ .survival-hud-stat{
+  height:31%;width:100%;font-size:clamp(8.4px,2.21vw,10.8px);
+  gap:1%;align-items:center
+ }
+ .survival-hud-stat-label{width:26%;font-weight:800;letter-spacing:-.02em}
+ .survival-hud-stat-track{width:51%;min-height:4px;height:40%}
+ .survival-hud-stat strong{width:20%;font-size:clamp(8.5px,2.21vw,10.8px);font-weight:850}
+ .survival-hud-stock{
+  top:77%;left:0;height:21%;width:100%;column-gap:5px;row-gap:2px;
+  grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  font-size:clamp(8.2px,2.15vw,10.5px)
+ }
+ .survival-hud-stock>div{
+  padding:0 3px;min-width:0;border:0;background:transparent;justify-content:space-between
+ }
+ .survival-hud-stock span{flex:1;overflow:visible;white-space:nowrap;letter-spacing:-.04em}
+ .survival-hud-stock strong{padding:0;margin-left:2px;font-size:1.02em;font-weight:900}
+ .hud-picto{width:1em;height:1em;min-width:8px;min-height:8px;margin-right:1px}
+ .disaster-forecast__current{
+  left:50%;top:50%;width:21.5%;height:auto;aspect-ratio:1;
+  transform:translate(-50%,-50%);filter:contrast(1.15) saturate(1.12)
+ }
+ .disaster-forecast__future{
+  left:var(--forecast-x);top:52.2%;width:13.2%;height:auto;aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  filter:drop-shadow(0 3px 4px #000b) drop-shadow(0 0 4px #e4b26a77);
+  transition:left .72s linear,opacity .45s ease
+ }
+ .disaster-forecast__future::after{
+  content:'';position:absolute;left:calc(50% - 1px);top:97%;
+  height:18%;width:2px;max-width:2px;
+  background:linear-gradient(#e4d3b8,#e7aa56 65%,transparent);
+  box-shadow:0 0 5px #f3bb6a99;pointer-events:none
+ }
+ .disaster-forecast__approach-arrow{display:none!important}
+ .disaster-forecast__bar{
+  left:64.9%;top:68.1%;width:27.1%;height:5.3%;
+  background:linear-gradient(#131b21,#060b10);border:0;border-radius:2px
+ }
+ .disaster-forecast__bar-fill{
+  background:linear-gradient(180deg,#fff1b9 0%,#e2a75b 25%,#b76824 74%,#4e2d1b 100%);
+  border-left:1px solid #ffe5ab;
+  box-shadow:inset 0 1px 1px #fff9bc99,0 0 7px #d68b3d88
+ }
+ .disaster-forecast__bar-cursor{width:5%;opacity:.93}
+ .disaster-forecast__countdown{
+  left:65%;top:22%;width:28%;height:16%;gap:1px;
+  flex-direction:column;justify-content:center;align-items:center;
+  font-size:clamp(10px,2.65vw,13px);font-weight:900;
+  line-height:1.28;letter-spacing:.025em;
+  color:#f1e6d3
+ }
+ .disaster-forecast__countdown strong{
+  color:#f4b968;font-size:clamp(9px,2.35vw,12px);font-weight:850
+ }
+ .topbar .top-right{
+  top:calc(52vw + 17px + env(safe-area-inset-top));right:14px;z-index:13
+ }
+ .topbar .top-right #clock{font-size:clamp(19px,5vw,26px)}
+ #speed-toggle{margin-top:5px;min-height:32px}
+ #weather-brief{font-size:clamp(10px,2.6vw,12px);margin-top:6px}
+ #weather-effect{display:none!important}
+ .warning{top:calc(54vw + 110px + env(safe-area-inset-top))}
+}
+@media(prefers-reduced-motion:reduce){
+ .disaster-forecast__future,.disaster-forecast__bar-fill{transition:none!important}
+}
