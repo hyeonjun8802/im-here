@@ -1,0 +1,56 @@
+name: AFTERDAY v9.7 — cross-browser HUD optics gate
+on:
+  push:
+    branches:
+      - main
+      - feature/hud-art-final-qa-20261106
+    paths:
+      - 'src/disasterForecastV800.js'
+      - 'src/hud-refine-v970.css'
+      - 'index.html'
+      - 'public/assets/ui/forecast_hud_mobile_v970.svg'
+      - 'public/assets/ui/weather-premium-v970/**'
+      - 'scripts/qa_hud_optics_v970.mjs'
+      - 'tests/forecast-hud-v970.test.mjs'
+      - '.github/workflows/hud-optical-release-v970.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pixel-review:
+    name: Chromium + iOS WebKit optical regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Functional tests
+        run: npm test
+      - name: Production bundle check
+        run: npm run build
+      - name: Install browsers
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Run real stylesheet and asset server
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/hud-v970-server.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          tail -60 /tmp/hud-v970-server.log
+          exit 1
+      - name: Pixel geometry, optical alignment and weather-art screenshot check
+        run: node scripts/qa_hud_optics_v970.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AFTERDAY-v970-mobile-desktop-webkit-screenshots
+          path: docs/qa/hud-v970/
+          retention-days: 14
+          if-no-files-found: warn
