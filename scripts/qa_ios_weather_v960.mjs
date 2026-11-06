@@ -41,7 +41,7 @@ try{
   });
   await page.waitForFunction(()=>{
     const f=document.querySelector('.disaster-forecast__frame');
-    return f&&f.complete&&f.naturalWidth>0&&f.currentSrc.includes('forecast_hud_mobile_v970.svg');
+    return f&&f.complete&&f.naturalWidth>0&&f.currentSrc.includes('forecast_hud_mobile_v980.svg');
   },{timeout:20000});
   await page.waitForTimeout(1100);
   const data=await page.evaluate(()=>{
