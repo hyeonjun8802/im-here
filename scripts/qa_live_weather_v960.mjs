@@ -50,7 +50,7 @@ try{
     data.speed.y>=data.frame.bottom+1&&
     Math.abs(data.center.x+data.center.width/2-(data.hud.x+data.hud.width/2))<3&&
     data.date.y>data.frame.y&&data.stock.bottom<data.frame.bottom-8&&
-    (w<=720?data.frameSource.includes('forecast_hud_mobile_v970.svg'):!data.frameSource.includes('forecast_hud_mobile_v970.svg'));
+    (w<=720?data.frameSource.includes('forecast_hud_mobile_v980.svg'):!data.frameSource.includes('forecast_hud_mobile_v980.svg'));
    if(!ok)issues.push({name,kind:'real scene HUD layout',data});
    // A game boot failure is reported separately from layout and is not masked.
    if(data.gameError||!data.gameBooted)issues.push({name,kind:'3D runtime initialization',error:data.gameError,booted:data.gameBooted});
