@@ -1,6 +1,6 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
-import {DisasterForecastHUD} from './disasterForecastV800.js';
+import {installPremiumHudV1000} from './premiumHudV1000.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
@@ -17,7 +17,7 @@ const gameClock=new GameClock(now,saved?.gameClockOffsetMs,
 const state=sanitize(saved,gameClock.virtualNow);
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
-const disasterForecast=new DisasterForecastHUD($('#disaster-forecast'));
+const disasterForecast=installPremiumHudV1000($('#disaster-forecast'));
 let restartInProgress=false;
 const save=()=>{
  if(restartInProgress)return true;
