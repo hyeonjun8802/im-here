@@ -196,3 +196,42 @@
     font-size:clamp(5px,1.45vw,7px)!important;
   }
 }
+
+
+/* v1006: reference proportions from the four user-supplied original HUD images.
+   Match legacy compact display width (max 1600 px), not the previous full viewport.
+   Keep the approved v1004 texture and round center by using separately resliced PNGs.
+   Only this weather HUD and its vertical clearance change; not the game-wide UI. */
+.disaster-forecast.premium-hud-v1000{
+ --approved-hud-aspect:1700 / 190;
+ position:fixed!important;
+ top:0!important;
+ left:50%!important;
+ width:min(1600px,calc(100vw - 8px))!important;
+ max-width:calc(100vw - 8px)!important;
+ aspect-ratio:var(--approved-hud-aspect)!important;
+ transform:translateX(-50%)!important;
+ transform-origin:center top!important;
+}
+@media(min-width:721px){
+ .topbar .top-right{
+  top:calc(min(1600px,100vw - 8px) * 190 / 1700 + 12px + env(safe-area-inset-top))!important;
+ }
+}
+@media(max-width:720px){
+ .disaster-forecast.premium-hud-v1000{
+  --approved-hud-aspect:1000 / 210;
+  top:0!important;
+  left:50%!important;
+  width:calc(100vw - 4px)!important;
+  max-width:calc(100vw - 4px)!important;
+  transform:translateX(-50%)!important;
+  transform-origin:center top!important;
+ }
+ .topbar .top-right{
+  top:calc((100vw - 4px) * 210 / 1000 + 10px + env(safe-area-inset-top))!important;
+ }
+ .warning{
+  top:calc((100vw - 4px) * 210 / 1000 + 104px + env(safe-area-inset-top))!important;
+ }
+}
