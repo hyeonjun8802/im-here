@@ -366,13 +366,13 @@ export function advance(s,now=Date.now(),offline=false){
 export function applyAction(s,action,now=Date.now()){
  const out=(good,msg)=>({good,msg});
  if(s.survivalStatus==='dead')return out(false,'생존이 종료됐다. 새 생존을 시작해야 한다.');
- if(action==='companion_invite'||action==='companion_decline'){
-   const result=resolveCompanionRescue(s,action==='companion_invite'?'invite':'decline',
+ if(['companion_invite','companion_aid','companion_trade','companion_decline'].includes(action)){
+   const result=resolveCompanionRescue(s,action.slice('companion_'.length),
      {day:getDay(s.startedAt,now),addLog:msg=>addEvent(s,msg)});
    return {good:result.good,msg:result.msg,outcome:result.outcome};
  }
- if(action==='scavenge_go'||action==='scavenge_stay'){
-   const result=resolveScavengeChoice(s,action==='scavenge_go'?'go':'stay',
+ if(['scavenge_go','scavenge_scout','scavenge_salvage','scavenge_stay'].includes(action)){
+   const result=resolveScavengeChoice(s,action.slice('scavenge_'.length),
      {addLog:msg=>addEvent(s,msg)});
    if(result.good)evaluateSurvival(s,now);
    return {good:result.good,msg:result.msg,outcome:result.outcome,item:result.item};

@@ -10,8 +10,19 @@ export const ITEM_INFO=Object.freeze({
  seeds:{icon:'🌱',label:'먹을 수 있는 씨앗',description:'옥상 화단에서 채소가 자라며 며칠 간격으로 식량이 수확된다'},
  radio:{icon:'📻',label:'단파 무전기',description:'다른 생존자의 신호를 듣고 구조 헬기에 보급품을 요청한다'}
 });
-export const SCAVENGE_CHANCE=Object.freeze({day1:1,early:.78,mid:.66,late:.51});
-export const SCAVENGE_OUTCOME=Object.freeze({item:.64,injury:.20,sickness:.11,nothing:.05});
+export const SCAVENGE_CHANCE=Object.freeze({day1:1,early:.72,mid:.60,late:.49});
+export const SCAVENGE_OUTCOME=Object.freeze({item:.48,injury:.29,sickness:.15,nothing:.08});
+export const QUEST_DECISIONS=Object.freeze(['go','scout','salvage','stay']);
+export const SCAVENGE_PROFILES=Object.freeze({"go":{"item":0.48,"supplies":0,"injury":0.29,"sickness":0.15,"empty":0.08},"scout":{"item":0.27,"supplies":0.3,"injury":0.13,"sickness":0.1,"empty":0.2},"salvage":{"item":0,"supplies":0.65,"injury":0.17,"sickness":0.08,"empty":0.1}});
+export function scavengeOdds(decision,weather='clear'){
+ const p=SCAVENGE_PROFILES[decision];
+ if(!p)return null;
+ const penalty=['storm','tornado','wildfire'].includes(weather)?.12:
+  ['heat','cold','dust','rain'].includes(weather)?.06:0;
+ return {item:p.item?Math.max(0,p.item-penalty):0,
+  supplies:p.supplies?Math.max(0,p.supplies-(p.item?0:penalty)):0,
+  injury:p.injury+penalty*.55,sickness:p.sickness+penalty*.45,empty:p.empty};
+}
 export const STARTING_KIT=Object.freeze({
   tent:false,purifier:false,seeds:false,radio:false
 });
@@ -71,60 +82,85 @@ export function offerDailyScavenge(s,day,{force=false}={}){
  const missing=anyOwn(s);
  const target=missing.length?
    missing[Math.min(missing.length-1,Math.floor(roll(d.seed,day*937+89)*missing.length))]:'cache';
- const intro=day===1?'옥상 아래 계단실에서 금속성 소리가 들린다. 무언가를 찾을 수 있을 것 같다.':
-  day<=5?'폐허 창고 쪽에서 쓸 만한 흔적이 보인다.':'어둠이 내린 건물 사이에서 보급 흔적이 발견됐다.';
- const title=day===1?'DAY 1 · 첫 번째 선택':`DAY ${day} · 폐허의 흔적`;
- const description=`${intro} 내려가면 부상이나 질병에 걸릴 수 있다. 오늘은 탐색할까, 옥상에 남을까?`;
+ const {title,description}=questNarrative(target,day,s.weather);
  d.pending={day,id:`scavenge:${day}:${target}`,title,description,target};
  return d.pending;
+}
+export function questNarrative(target,day,weather){
+ const scenes={
+  tent:['찢어진 방수포가 남겨진 대피소','철제 침대 틀과 방수포 흔적이 보인다. 추락 위험을 감수하고 회수할 것인가?'],
+  purifier:['무너진 급수실의 정수 장치','급수실 아래서 정수 장치의 부품이 보인다. 어두운 배관에 접근해야 한다.'],
+  seeds:['폐허 온실의 종자 상자','부서진 옥상 온실에 씨앗이 남아 있다. 깨진 유리와 오염에 주의하라.'],
+  radio:['정전된 통신실의 신호','무전기 부품이 발견됐다. 무너진 전기실에서 신호가 끊기기 전에 회수해야 한다.'],
+  cache:['계단실 보급 상자의 흔적','누군가 남긴 보급품 상자다. 안에는 식수나 부품이 있을 수도 있다.']
+ };
+ const story=scenes[target]||scenes.cache;
+ const weatherText=['storm','tornado','wildfire'].includes(weather)?'밖은 매우 위험하다.':
+  ['heat','cold','dust','rain'].includes(weather)?'날씨 때문에 이동 위험이 높다.':'옥상 밖의 안전은 보장되지 않는다.';
+ return {title:day===1?'DAY 1 · 생존 첫날의 선택':`DAY ${day} · ${story[0]}`,
+  description:`${story[1]} ${weatherText} 네 가지 행동 중 하나를 결정하라.`};
 }
 export function resolveScavengeChoice(s,decision,{day,addLog=()=>{}}={}){
  const d=s.scavenge,p=d.pending;
  if(!p)return {good:false,msg:'선택할 탐색 기회가 없습니다.'};
  if(s.survivalStatus==='dead')return {good:false,msg:'생존이 종료되었습니다.'};
- if(decision!=='go'&&decision!=='stay')return {good:false,msg:'잘못된 선택입니다.'};
- // Commit the decision before mutating inventory: repeat click/reload cannot reroll.
+ if(!QUEST_DECISIONS.includes(decision))return {good:false,msg:'잘못된 선택입니다.'};
+ if(decision==='scout'&&s.supply.water<1)
+  return {good:false,msg:'안전 정찰에는 식수 1개가 필요합니다. 다른 행동을 선택할 수 있습니다.'};
+ // Commit before the deterministic roll; no duplicate resource award on reload.
  d.pending=null;d.lastResolvedDay=p.day;
  if(decision==='stay'){
-  const msg='탐색 포기: 오늘은 옥상에 남아 몸을 지키기로 했다. 물자와 건강은 그대로다.';
+  const msg='옥상 방어를 선택했다. 부상과 감염을 피했지만 오늘 발견한 보급 기회는 사라졌다.';
   addLog(msg);return {good:true,choice:'stay',outcome:'safe',msg};
  }
  d.expeditionCount++;
- const r=roll(d.seed,p.day*601+d.expeditionCount*701+19);
- const w=s.weather;
- const danger=['storm','tornado'].includes(w)?.14:['heat','cold'].includes(w)?.07:0;
- const successChance=Math.max(.38,SCAVENGE_OUTCOME.item-danger);
- let outcome='nothing',msg;
- if(r<successChance){
-   const target=p.target;
-   if(target==='cache'||hasItem(s,target)){
-     const spare=roll(d.seed,p.day*411+29);
-     if(spare<.35){const gained=Math.min(2,Math.max(0,16-s.supply.water));s.supply.water+=gained;msg=`탐색 성공: 버려진 식수 ${gained}개를 건졌다.`;}
-     else if(spare<.68){s.supply.food+=3;msg='탐색 성공: 오래된 비상식량 3개를 찾았다.';}
-     else {s.supply.parts+=3;s.supply.medicine+=1;msg='탐색 성공: 수리 부품 3개와 응급 치료제 1개를 찾았다.';}
-     outcome='supplies';
-   }else{
-     s.kit[target]=true;outcome='item';
-     const extra=target==='purifier'?' 이제 빗물 정수와 맑은 물 생산이 가능하다.':
-       target==='seeds'?' 옥상 화단에서 식량이 자라기 시작한다.':
-       target==='tent'?' 이제는 비를 피하고 누워 잘 공간이 생겼다.':
-       ' 주파수를 맞추면 다른 생존자의 신호와 구조 보급 기회를 얻는다.';
-     msg=`탐색 성공: ${ITEM_INFO[target].label} 획득!${extra}`;
-   }
- }else if(r<successChance+.20){
-   const injury=7+Math.floor(roll(d.seed,p.day*415+33)*15);
-   s.health=Math.max(0,s.health-injury);
-   outcome='injury';msg=`탐색 실패: 무너진 계단실 파편에 다쳐 건강 -${injury}. 아무것도 얻지 못했다.`;
- }else if(r<successChance+.32){
-   const sickness=17+Math.floor(roll(d.seed,p.day*113+41)*21);
-   s.sickness=Math.min(100,s.sickness+sickness);
-   s.health=Math.max(0,s.health-4);
-   outcome='sickness';msg=`탐색 실패: 오염된 지하 공간에서 병을 얻었다. 질병 +${sickness}, 건강 -4.`;
+ if(decision==='scout')s.supply.water--;
+ const r=roll(d.seed,p.day*601+d.expeditionCount*701+(decision==='go'?19:decision==='scout'?37:53));
+ const odds=scavengeOdds(decision,s.weather);
+ let outcome='empty',msg;
+ const lootRoll=roll(d.seed,p.day*411+d.expeditionCount*107+29);
+ const acquireSupplies=()=>{
+  if(decision==='salvage'){
+   const gained=1+Math.floor(lootRoll*3);s.supply.parts=Math.min(999,s.supply.parts+gained);
+   return `폐자재 회수 성공: 부품 +${gained}.`;
+  }
+  if(lootRoll<.34){
+   const gained=Math.min(decision==='scout'?1:2,Math.max(0,16-s.supply.water));
+   s.supply.water+=gained;return `보급품 발견: 깨끗한 식수 +${gained}.`;
+  }
+  if(lootRoll<.70){
+   const gained=decision==='scout'?1:3;s.supply.food=Math.min(999,s.supply.food+gained);
+   return `보급품 발견: 식량 +${gained}.`;
+  }
+  const gained=decision==='scout'?1:2;
+  s.supply.parts=Math.min(999,s.supply.parts+gained);
+  return `보급품 발견: 수리 부품 +${gained}.`;
+ };
+ if(r<odds.item){
+  if(p.target==='cache'||hasItem(s,p.target)){
+   outcome='supplies';msg=acquireSupplies();
+  }else{
+   s.kit[p.target]=true;outcome='item';
+   msg=`장비 획득: ${ITEM_INFO[p.target].label}. 장비는 영구 보관되며 다음 생존 전략이 달라진다.`;
+  }
+ }else if(r<odds.item+odds.supplies){
+  outcome='supplies';msg=acquireSupplies();
+ }else if(r<odds.item+odds.supplies+odds.injury){
+  const unit=roll(d.seed,p.day*415+d.expeditionCount*31+33);
+  const injury=(decision==='go'?10:decision==='scout'?4:6)+Math.floor(unit*(decision==='go'?17:decision==='scout'?9:11));
+  s.health=Math.max(0,s.health-injury);
+  outcome='injury';msg=`탐색 중 붕괴 잔해에 다쳤다. 건강 -${injury}, 획득 물자 없음.`;
+ }else if(r<odds.item+odds.supplies+odds.injury+odds.sickness){
+  const unit=roll(d.seed,p.day*113+d.expeditionCount*41+41);
+  const sickness=(decision==='go'?17:decision==='scout'?7:11)+Math.floor(unit*(decision==='go'?22:12));
+  s.sickness=Math.min(100,s.sickness+sickness);
+  s.health=Math.max(0,s.health-(decision==='go'?4:2));
+  outcome='sickness';msg=`오염된 폐허에서 감염됐다. 질병 +${sickness}, 건강 감소. 획득 물자 없음.`;
  }else{
-   outcome='empty';msg='탐색 실패: 빈 창고뿐이었다. 아무것도 얻지 못했지만 몸은 무사하다.';
+  outcome='empty';msg='수색했지만 쓸 만한 물자를 얻지 못했다. 시간을 허비한 채 복귀했다.';
  }
  addLog('탐색 결과: '+msg);
- return {good:true,choice:'go',outcome,msg,item:outcome==='item'?p.target:null};
+ return {good:true,choice:decision,outcome,msg,item:outcome==='item'?p.target:null};
 }
 export function applyAcquiredItemMinute(s,day,weather,{addLog=()=>{}}={}){
  const d=s.scavenge,kit=s.kit;

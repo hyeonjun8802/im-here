@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/><meta name="theme-color" content="#101b22"/><title>AFTERDAY | Rooftop Survival</title><link rel="stylesheet" href="./src/style.css"/><link rel="stylesheet" href="./src/eventBoard.css"/><meta name="description" content="폐허 위에서 오늘 하루를 살아남는 3D 생존 다마고치"/><style id="survivor-status-collapse-css">
+<!doctype html><html lang="ko"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/><meta name="theme-color" content="#101b22"/><title>AFTERDAY | Rooftop Survival</title><link rel="stylesheet" href="./src/style.css"/><link rel="stylesheet" href="./src/eventBoard.css"/><link rel="stylesheet" href="./src/premiumHudV1000.css"/><meta name="description" content="폐허 위에서 오늘 하루를 살아남는 3D 생존 다마고치"/><style id="survivor-status-collapse-css">
 /* 캐릭터 상태표 접기/펼치기: 기존 게임 스타일/로직 변경 없음 */
 #survivor-status-toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;padding:0;margin:0;border:0;background:transparent;color:#edf0e6;cursor:pointer;text-align:left;font:inherit;line-height:1.3}
 #survivor-status-toggle strong{font-size:12px;font-weight:700;white-space:nowrap}
@@ -20,7 +20,7 @@
 #restart-game{margin-top:10px;padding:12px 24px;border-radius:8px;border:1px solid #b9a16f;background:#3d3428;color:#faf0de;cursor:pointer}
 @media(max-width:720px){#survival-chapter{bottom:105px;width:88vw;font-size:9px;padding:4px}}
 </style></head><body><div id="app"><canvas id="world"></canvas><div class="cinematic-grade" aria-hidden="true"></div><div id="hud"><header class="topbar"><div id="disaster-forecast" class="disaster-forecast" role="status" aria-live="off" aria-label="재난 예보 · 생존 현황">
-<picture class="disaster-forecast__artwork" aria-hidden="true"><source media="(max-width:720px)" srcset="./assets/ui/hud-square-fade/hud_compact_a_square_fade.svg"/><img class="disaster-forecast__frame" src="./assets/ui/hud-square-fade/hud_compact_b_square_fade.svg" alt=""/></picture>
+<picture class="disaster-forecast__artwork" aria-hidden="true"><source media="(max-width:720px)" srcset="./assets/ui/forecast_hud_mobile_v980.svg"/><img class="disaster-forecast__frame" src="./assets/ui/forecast_hud_desktop_v980.svg" alt=""/></picture>
 <div class="survival-hud-stats" aria-label="생존 상태">
  <div class="survival-hud-date"><strong id="days">DAY 001</strong><span id="day-pace">1일 = 플레이 10분</span></div>
  <div class="survival-hud-vitals">

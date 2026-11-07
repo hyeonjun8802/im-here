@@ -66,3 +66,69 @@
 .afterday-board-companion button{min-height:32px;border:1px solid #d5bea390;background:#53664bbd;color:#f7efd9;border-radius:7px;padding:7px 11px;font:700 11px system-ui,sans-serif;cursor:pointer}
 .afterday-board-companion-decline{background:#595c5ccc!important;border-color:#999c9980!important}
 @media(max-width:720px){.afterday-board-companion button{font-size:10px;padding:6px 8px}}
+
+/* AFTERDAY v11 quests: mandatory choice is a separate, readable dialog.
+ * Alerts retain their original nonblocking display; only quests capture input. */
+.afterday-quest-backdrop[hidden]{display:none!important}
+.afterday-quest-backdrop{
+ position:fixed;inset:0;z-index:41;background:rgba(5,9,14,.77);
+ backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);pointer-events:auto
+}
+.afterday-board.is-choice{
+ position:fixed;top:50%;left:50%;width:min(590px,calc(100vw - 22px));
+ max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;
+ display:flex;flex-direction:column;transform:translate(-50%,-50%);
+ border-color:#e0bd7a;box-shadow:0 0 0 1px #9a7848,0 24px 64px #000d;
+}
+.afterday-board.is-choice.is-open{animation:afterday-choice-arrive .32s ease-out forwards}
+@keyframes afterday-choice-arrive{
+ from{opacity:0;transform:translate(-50%,-47%) scale(.975)}
+ to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+.afterday-board.is-choice .afterday-board-art{flex:0 0 102px;height:102px;min-height:0}
+.afterday-board.is-choice .afterday-board-art::after{
+ background:linear-gradient(0deg,#13191df2,transparent 80%)
+}
+.afterday-board.is-choice .afterday-board-body{padding:13px 18px 17px;gap:7px}
+.afterday-board.is-choice .afterday-board-category::after{
+ content:' · 필수 선택';font-weight:800;color:#ffecc4
+}
+.afterday-board.is-choice .afterday-board-close{display:none!important}
+.afterday-board.is-choice .afterday-board-expedition,
+.afterday-board.is-choice .afterday-board-companion{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;margin-top:10px
+}
+.afterday-board.is-choice .afterday-board-expedition[hidden],
+.afterday-board.is-choice .afterday-board-companion[hidden]{display:none!important}
+.afterday-board.is-choice .afterday-board-expedition button,
+.afterday-board.is-choice .afterday-board-companion button{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ width:100%;min-height:68px;padding:9px 10px;gap:5px;
+ line-height:1.25;text-align:left;white-space:normal;word-break:keep-all;
+ background:linear-gradient(140deg,#4a4031,#262d32);border:1px solid #b99c65a8;
+ box-shadow:inset 0 1px #fff1
+}
+.afterday-board.is-choice button strong{font-size:12px;color:#fff1d7;font-weight:800}
+.afterday-board.is-choice button small{font-size:10px;color:#d9cdb8;font-weight:550}
+.afterday-board.is-choice button:disabled{
+ opacity:.40;filter:grayscale(1);cursor:not-allowed
+}
+.afterday-board.is-choice button:not(:disabled):focus-visible{
+ outline:2px solid #ffe3a4;outline-offset:2px
+}
+@media(max-width:480px){
+ .afterday-board.is-choice{width:calc(100vw - 18px);max-height:calc(100dvh - 18px)}
+ .afterday-board.is-choice .afterday-board-art{flex-basis:68px;height:68px}
+ .afterday-board.is-choice .afterday-board-body{padding:9px 13px 12px;gap:5px}
+ .afterday-board.is-choice .afterday-board-title{font-size:13px;line-height:1.28}
+ .afterday-board.is-choice .afterday-board-description{font-size:10px;line-height:1.4}
+ .afterday-board.is-choice .afterday-board-expedition,
+ .afterday-board.is-choice .afterday-board-companion{grid-template-columns:1fr;gap:5px;margin-top:6px}
+ .afterday-board.is-choice .afterday-board-expedition button,
+ .afterday-board.is-choice .afterday-board-companion button{min-height:45px;padding:6px 9px;gap:2px}
+ .afterday-board.is-choice button strong{font-size:11px}
+ .afterday-board.is-choice button small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .afterday-board.is-choice.is-open{animation:none;opacity:1;transform:translate(-50%,-50%)}
+}

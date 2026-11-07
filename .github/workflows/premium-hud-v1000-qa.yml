@@ -1,0 +1,61 @@
+name: AFTERDAY premium HUD v10.0 real game QA
+on:
+  push:
+    branches:
+      - feature/premium-hud-v1000-integrated-20261107
+    paths:
+      - 'src/main.js'
+      - 'src/premiumHudV1000.*'
+      - 'index.html'
+      - 'public/assets/ui/afterday-premium-v1000/**'
+      - 'tests/premium-hud-v1000.test.mjs'
+      - 'scripts/qa_premium_v1000.mjs'
+      - '.github/workflows/premium-hud-v1000-qa.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/main.js'
+      - 'src/premiumHudV1000.*'
+      - 'index.html'
+      - 'public/assets/ui/afterday-premium-v1000/**'
+      - 'tests/premium-hud-v1000.test.mjs'
+      - 'scripts/qa_premium_v1000.mjs'
+  workflow_dispatch:
+jobs:
+  test-and-real-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install and run all tests
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Install browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start actual game
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-premium-v1000.log 2>&1 &
+          for n in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/afterday-premium-v1000.log
+          exit 1
+      - name: Capture 2560x1440 1280x720 390x844 320x568 actual Three.js game
+        run: node scripts/qa_premium_v1000.mjs
+      - name: Upload screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterday-premium-v1000-real-game-screenshots
+          path: docs/qa/premium-hud-v1000/
+          if-no-files-found: warn
+          retention-days: 14
