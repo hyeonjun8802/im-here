@@ -22,8 +22,8 @@ test('mobile uses compact half-height artwork while preserving the center circul
  const html=read('index.html');
  const svg=read('public/assets/ui/forecast_hud_mobile_v980.svg');
  const css=read('src/style.css');
- assert.ok(html.includes('hud_mobile_high_v1004.png 1000w'));
- assert.ok(html.includes('hud_desktop_high_v1004.png 1700w'));
+ assert.ok(html.includes('hud_compact_mobile_ref_v1006.png'));
+ assert.ok(html.includes('hud_compact_desktop_ref_v1006.png'));
  assert.match(svg,/viewBox="0 0 1000 220"/);
  assert.match(svg,/circle cx="500" cy="107"/);
  assert.match(css,/aspect-ratio:1000 \/ 220/);
