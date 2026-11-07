@@ -38,26 +38,55 @@ export function offerCompanionRescue(s,day){
  c.pending={radioNewsId:id,day,id:`companion:${id}`};
  return c.pending;
 }
+export const COMPANION_DECISIONS=Object.freeze(['invite','aid','trade','decline']);
+export const COMPANION_EXCHANGE_ODDS=Object.freeze({aidParts:.45,tradeParts:.55,tradeMedicine:.20,tradeNothing:.25});
+const function companionRoll(seed,contact,salt){
+ let a=((Number(seed)||1)>>>0)^Math.imul((contact+salt)>>>0,0x9e3779b1);
+ a=Math.imul(a^(a>>>16),0x7feb352d);
+ a=Math.imul(a^(a>>>15),0x846ca68b);
+ return ((a^(a>>>16))>>>0)/4294967296;
+}
 export function resolveCompanionRescue(s,decision,{addLog=()=>{},day=1}={}){
- const c=s.companion;
- if(!c?.pending)return {good:false,msg:'수락할 구조 요청이 없습니다.'};
+ const c=s.companion,p=c?.pending;
+ if(!p)return {good:false,msg:'수락할 구조 요청이 없습니다.'};
  if(s.survivalStatus==='dead')return {good:false,msg:'생존이 종료됐습니다.'};
- if(decision!=='invite'&&decision!=='decline')return {good:false,msg:'잘못된 구조 선택입니다.'};
- // Never create a second hungry survivor out of nothing. Refusal is always
- // allowed; accepting needs at least one real meal and clean water in stock.
- // A failed attempt does not consume the saved offer or reroll the radio.
+ if(!COMPANION_DECISIONS.includes(decision))return {good:false,msg:'잘못된 구조 선택입니다.'};
  if(decision==='invite'&&(s.supply.food<1||s.supply.water<1))
-   return {good:false,msg:'동료를 맞이하려면 식량 1개와 식수 1개를 확보해야 합니다. 합류 요청은 유지됩니다.'};
+  return {good:false,msg:'동료를 맞이하려면 식량 1개와 식수 1개를 확보해야 합니다. 합류 요청은 유지됩니다.'};
+ if(decision==='aid'&&s.supply.water<1)
+  return {good:false,msg:'식수 지원에는 식수 1개가 필요합니다. 구조 요청은 유지됩니다.'};
+ if(decision==='trade'&&s.supply.food<1)
+  return {good:false,msg:'물자 교환에는 식량 1개가 필요합니다. 구조 요청은 유지됩니다.'};
  c.pending=null;
  if(decision==='decline'){
   const msg='구조 요청을 거절했다. 식량과 식수를 보호했지만 다른 생존자는 도시 저편으로 사라졌다.';
   addLog(msg);return {good:true,outcome:'declined',msg};
  }
+ if(decision==='aid'){
+  s.supply.water--;
+  const parts=companionRoll(s.scavenge?.seed,p.radioNewsId,41)<COMPANION_EXCHANGE_ODDS.aidParts;
+  if(parts)s.supply.parts=Math.min(999,s.supply.parts+1);
+  const msg=parts?'식수를 나눠준 생존자가 안전한 폐자재 위치를 알려줬다. 식수 -1, 부품 +1.':
+   '생존자에게 식수 1개를 건넸다. 그는 밤길로 떠났다. 물자 보상은 없었다.';
+  addLog(msg);return {good:true,outcome:parts?'aided_parts':'aided',msg};
+ }
+ if(decision==='trade'){
+  s.supply.food--;
+  const r=companionRoll(s.scavenge?.seed,p.radioNewsId,73);
+  let outcome='traded_empty',msg='식량 1개를 건넸지만 거래할 만한 물건이 없었다.';
+  if(r<COMPANION_EXCHANGE_ODDS.tradeParts){
+   s.supply.parts=Math.min(999,s.supply.parts+2);
+   outcome='traded_parts';msg='식량 1개로 수리 부품 2개를 교환했다.';
+  }else if(r<COMPANION_EXCHANGE_ODDS.tradeParts+COMPANION_EXCHANGE_ODDS.tradeMedicine){
+   s.supply.medicine=Math.min(999,s.supply.medicine+1);
+   outcome='traded_medicine';msg='식량 1개로 응급 치료제 1개를 교환했다.';
+  }
+  addLog(msg);return {good:true,outcome,msg};
+ }
  c.present=true;c.lost=false;c.health=78;c.arrivedDay=day;
  c.foodMinutes=0;c.waterMinutes=0;c.salvageMinutes=0;
  const msg='지원 생존자를 옥상으로 받아들였다. 매 게임 하루 식량·식수 각 1개를 나누는 대신 정수·텃밭 효율이 30% 향상된다. 이 사람은 조작하는 주인공이 아니다.';
- addLog(msg);
- return {good:true,outcome:'joined',msg};
+ addLog(msg);return {good:true,outcome:'joined',msg};
 }
 export const companionWorks=s=>Boolean(s?.companion?.present&&s.companion.health>20);
 export function companionProductionFactor(s){
