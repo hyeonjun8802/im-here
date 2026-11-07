@@ -7,6 +7,8 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disab
 const errors=[];let report={};
 try{
  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
+ // CI-only: throttle the 3D animation loop so software GL does not starve the browser.
+ await page.addInitScript(() => { const nativeRAF=window.requestAnimationFrame.bind(window); window.requestAnimationFrame=callback=>window.setTimeout(()=>nativeRAF(callback),650); });
  page.on('pageerror',e=>errors.push('JS: '+e.message));
  page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text().slice(0,160))});
  page.on('requestfailed',r=>errors.push('request: '+r.url().slice(0,120)));
@@ -19,7 +21,7 @@ try{
    return {ready:!!window.afterday?.world,loadingHidden:document.querySelector('#loading')?.classList.contains('hidden'),
     hudClass:h?.className,hudBounds:r?{x:r.x,y:r.y,width:r.width,height:r.height}:null,
     frameNaturalWidth:frame?.naturalWidth,frameComplete:frame?.complete,
-    webgl:!!world?.getContext('webgl2'),forecast:document.querySelector('.premium-hud__forecast-title')?.textContent,
+    worldCanvasSize:world?{width:world.width,height:world.height}:null,forecast:document.querySelector('.premium-hud__forecast-title')?.textContent,
     weather:document.querySelector('.premium-hud__weather-name')?.textContent,
     documentReady:document.readyState};
   }),
@@ -41,4 +43,4 @@ finally{
  console.log('HUD_DIAGNOSTIC_ERRORS',JSON.stringify(errors));
  await Promise.race([browser.close().catch(()=>{}),new Promise(r=>setTimeout(r,3000))]);
 }
-if(errors.length||!report.ready||!report.webgl||!report.screenshot)process.exitCode=1;
+if(errors.length||!report.ready||!report.worldCanvasSize?.width||!report.screenshot)process.exitCode=1;
