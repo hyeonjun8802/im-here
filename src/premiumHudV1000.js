@@ -25,10 +25,15 @@ export function installPremiumHudV1000(root){
  root.dataset.premiumHudV1000='true';root.classList.add('premium-hud-v1000');
  const art=put(root,'picture','premium-hud__unified-art');
  const source=put(art,'source','');source.media='(max-width:720px)';
- // Approved v10.0.2 squared endcaps: low-glare trim and fade on both sides.
- // Keep all data/overlays tied to the same premium HUD instance.
- source.srcset='/assets/ui/hud-square-fade/hud_compact_a_square_fade.png?v=1003';
- const frame=put(art,'img','premium-hud__frame');frame.src='/assets/ui/hud-square-fade/hud_compact_b_square_fade.png?v=1003';
+ // v1004: the actual user-approved image, not the older synthetic HUD.
+ // Browser selects 500/1000 mobile or 850/1700 desktop artwork by DPR and width.
+ const approved='/assets/ui/hud-approved-v1004/';
+ source.srcset=approved+'hud_mobile_low_v1004.png 500w, '+approved+'hud_mobile_high_v1004.png 1000w';
+ source.sizes='100vw';
+ const frame=put(art,'img','premium-hud__frame');
+ frame.src=approved+'hud_desktop_high_v1004.png';
+ frame.srcset=approved+'hud_desktop_low_v1004.png 850w, '+approved+'hud_desktop_high_v1004.png 1700w';
+ frame.sizes='100vw';
  frame.alt='';frame.decoding='async';frame.setAttribute('aria-hidden','true');
  const currentArt=put(root,'img','premium-hud__current-art');currentArt.alt='';currentArt.decoding='async';
  const timeline=put(root,'div','premium-hud__forecast');
