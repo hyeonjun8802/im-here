@@ -150,7 +150,7 @@ function runSurvivalAction(action){
    if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
    // The camera only celebrates a decision after it has resolved successfully.
    // No extra roll, item grant, damage, or clock alteration.
-   if(action.startsWith('scavenge_')){
+   if(action==='scavenge_go'||action==='scavenge_scout'||action==='scavenge_salvage'||action==='scavenge_stay'){
      const type=result.item||(result.outcome==='injury'||result.outcome==='sickness'?result.outcome:null);
      if(type)world?.playCinematic(type);
      // Tent construction is a visible actor performance. Loot/rewards remain
