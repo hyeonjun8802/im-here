@@ -61,7 +61,7 @@ test('premium frame and every three-stage forecast resource are present',()=>{
   const frame=read('public/assets/ui/forecast_hud_desktop_v980.svg');
   const html=read('index.html');
   assert.match(frame,/AFTERDAY desktop Frostpunk-inspired/);
-  assert.ok(html.includes('hud_desktop_high_v1004.png'));
+  assert.ok(html.includes('hud_compact_desktop_ref_v1006.png'));
   assert.match(html,/<img class="disaster-forecast__icon-layer/);
   assert.doesNotMatch(html,/<use>/);
   const clear=read('public/assets/ui/disasters/clear-current.svg');
