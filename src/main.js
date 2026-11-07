@@ -23,7 +23,7 @@ const save=()=>{
  if(restartInProgress)return true;
  try{
   const real=Date.now();
-  gameClock.tick(real,document.visibilityState==='visible');
+  gameClock.tick(real,document.visibilityState==='visible'&&!eventBoard?.requiresChoice());
   state.gameClockOffsetMs=gameClock.offset(real);
   state.gameClockSavedRealAtMs=real;
   state.clockSchema=3;
@@ -299,7 +299,8 @@ function animation(){
   if(t-lastHUD>700){renderHUD();lastHUD=t}
   if(real-lastSave>15000){save();lastSave=real}
   try{
-   world.update(Math.min(.12,realDt*(questPaused?0:gameClock.speed)),gameNow,state,realDt);
+   if(questPaused)world.update(0,gameNow,state,realDt);
+   else world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state,realDt);
   }catch(e){
    console.error('3D frame error',e);
    $('#error').classList.remove('hidden');
