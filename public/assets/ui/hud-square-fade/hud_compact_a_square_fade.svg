@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="210" viewBox="0 0 1000 210" role="img" aria-label="Square end fantasy HUD, muted copper trim fading towards edges">
+<defs>
+ <linearGradient id="stone" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#294557"/><stop offset=".12" stop-color="#0b2030"/><stop offset=".58" stop-color="#081826"/><stop offset="1" stop-color="#294557"/></linearGradient>
+ <linearGradient id="window" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#06111d"/><stop offset=".5" stop-color="#081725"/><stop offset="1" stop-color="#172b3a"/></linearGradient>
+ <radialGradient id="dial"><stop stop-color="#071524"/><stop offset=".65" stop-color="#0a2335"/><stop offset="1" stop-color="#203848"/></radialGradient>
+ <linearGradient id="trim" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9a8a78" stop-opacity=".60"/><stop offset=".25" stop-color="#3e5764" stop-opacity=".32"/><stop offset=".75" stop-color="#506675" stop-opacity=".35"/><stop offset="1" stop-color="#956b4b" stop-opacity=".47"/></linearGradient>
+ <linearGradient id="sideFade"><stop stop-color="white" stop-opacity="0"/><stop offset=".065" stop-color="white" stop-opacity=".9"/><stop offset=".14" stop-color="white"/><stop offset=".86" stop-color="white"/><stop offset=".935" stop-color="white" stop-opacity=".9"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+ <radialGradient id="ember" cx="50%" cy="100%" r="73%"><stop stop-color="#ffb765" stop-opacity=".84"/><stop offset=".18" stop-color="#ba672e" stop-opacity=".42"/><stop offset=".46" stop-color="#5f3c2e" stop-opacity=".12"/><stop offset="1" stop-color="#0c1e2d" stop-opacity="0"/></radialGradient>
+ <filter id="grain" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".02 .12" numOctaves="2" seed="11"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".055"/></feComponentTransfer></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="2.76"/></filter>
+ <mask id="fade"><rect width="1000" height="210" fill="url(#sideFade)"/></mask>
+</defs>
+<!-- Outer panel has true 90-degree corners. Outer 6.5% of width softly disappears. -->
+<g mask="url(#fade)">
+ <rect x="0" y="73.5" width="1000" height="90.3" fill="url(#stone)"/>
+ <rect x="0" y="73.5" width="1000" height="90.3" fill="#b8d8e4" filter="url(#grain)" opacity=".38"/>
+ <rect x="0" y="74.61" width="1000" height="88.09" fill="none" stroke="url(#trim)" stroke-width="2.65"/>
+ <path d="M0 73.5H1000M0 163.8H1000" fill="none" stroke="#78909a" stroke-opacity=".22" stroke-width="1.27"/>
+</g>
+<!-- Sculptural shoulders and original-style central circular clock/medallion -->
+<path d="M387.19 73.5 Q417.39 60.18 415.61 53.8 Q433.38 23.6 460.91 18.27 L539.09 18.27 Q566.62 23.6 584.39 53.8 Q582.61 60.18 612.81 73.5" fill="#182d3d" stroke="#8a7563" stroke-opacity=".63" stroke-width="1.99"/>
+
+<circle cx="500" cy="107.1" r="94.16" fill="#0b1720" stroke="#4c5761" stroke-width="5.86"/>
+<circle cx="500" cy="107.1" r="87.23" fill="url(#dial)" stroke="#b18b68" stroke-opacity=".66" stroke-width="2.43"/>
+<circle cx="500" cy="107.1" r="79.06" fill="none" stroke="#8b9eac" stroke-opacity=".17" stroke-width="1.49"/>
+<circle cx="500" cy="107.1" r="80.84" fill="url(#ember)"/>
+<ellipse cx="500" cy="182.61" rx="47.08" ry="7.55" fill="#e88c43" opacity=".37" filter="url(#glow)"/>
+<path d="M500 4.95l5.53 14.37l-5.53 -4.42l-5.53 4.42z" fill="#6e7781" stroke="#c7a780" stroke-opacity=".57" stroke-width="0.99"/>
+<g opacity=".82"><rect x="120" y="85.64" width="165" height="10.66" rx="5.33" fill="#06131d" stroke="#6c8590" stroke-opacity=".55" stroke-width="1.11"/><rect x="120" y="110.02" width="165" height="10.66" rx="5.33" fill="#06131d" stroke="#6c8590" stroke-opacity=".55" stroke-width="1.11"/><rect x="120" y="134.4" width="165" height="10.66" rx="5.33" fill="#06131d" stroke="#6c8590" stroke-opacity=".55" stroke-width="1.11"/><rect x="332" y="89.75" width="45" height="26.64" rx="5.33" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.33"/><rect x="384.65" y="89.75" width="45" height="26.64" rx="5.33" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.33"/><rect x="332" y="122.26" width="45" height="26.64" rx="5.33" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.33"/><rect x="384.65" y="122.26" width="45" height="26.64" rx="5.33" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.33"/><path d="M310 82.53V152.96" stroke="#5d7380" stroke-width="1.16" /></g>
+
+</svg>
