@@ -25,15 +25,14 @@ export function installPremiumHudV1000(root){
  root.dataset.premiumHudV1000='true';root.classList.add('premium-hud-v1000');
  const art=put(root,'picture','premium-hud__unified-art');
  const source=put(art,'source','');source.media='(max-width:720px)';
- // v1004: the actual user-approved image, not the older synthetic HUD.
- // Browser selects 500/1000 mobile or 850/1700 desktop artwork by DPR and width.
- const approved='/assets/ui/hud-approved-v1004/';
- source.srcset=approved+'hud_mobile_low_v1004.png 500w, '+approved+'hud_mobile_high_v1004.png 1000w';
- source.sizes='100vw';
+ // v1006: approved v1004 artwork, rebuilt to the four original reference dimensions.
+ // Keep the selected image in the same reference aspect ratio as the original game HUD.
+ const ref='/assets/ui/hud-reference-v1006/';
+ source.srcset=ref+'hud_compact_mobile_ref_v1006.png';
+ source.sizes='calc(100vw - 4px)';
  const frame=put(art,'img','premium-hud__frame');
- frame.src=approved+'hud_desktop_high_v1004.png';
- frame.srcset=approved+'hud_desktop_low_v1004.png 850w, '+approved+'hud_desktop_high_v1004.png 1700w';
- frame.sizes='100vw';
+ frame.src=ref+'hud_compact_desktop_ref_v1006.png';
+ frame.sizes='min(1600px, calc(100vw - 8px))';
  frame.alt='';frame.decoding='async';frame.setAttribute('aria-hidden','true');
  const currentArt=put(root,'img','premium-hud__current-art');currentArt.alt='';currentArt.decoding='async';
  const timeline=put(root,'div','premium-hud__forecast');
