@@ -46,7 +46,7 @@ test('the four expedition outcomes are final, persistent and do not grant free r
    assert.deepEqual(s.supply,original.supply);
   }
   if(decision==='scout')assert.equal(s.supply.water<=original.supply.water,true);
-  if(decision==='salvage')assert.equal(result.item,undefined);
+  if(decision==='salvage')assert.equal(result.item,null);
  }
 });
 test('unaffordable scout must not erase required quest',()=>{
