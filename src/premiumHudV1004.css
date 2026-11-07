@@ -196,3 +196,37 @@
     font-size:clamp(5px,1.45vw,7px)!important;
   }
 }
+
+
+/* v1005: Weather HUD ONLY at half the approved v1004 visual size.
+   Keep its original layout box for percentage-based child coordinates and scale
+   the entire console (artwork, medallion, stats, icons and labels) together.
+   Center the smaller console horizontally, anchored to the screen's top.
+   Other game panels retain their existing sizes. */
+.disaster-forecast.premium-hud-v1000{
+  --weather-hud-visual-scale:.5;
+  transform:scale(var(--weather-hud-visual-scale))!important;
+  transform-origin:center top!important;
+  top:0!important;
+  left:0!important;
+}
+@media(min-width:721px){
+  /* Only move the existing clock controls to follow the smaller weather bar. */
+  .topbar .top-right{
+    top:calc(100vw * 113 / 1700 + 12px + env(safe-area-inset-top))!important;
+  }
+}
+@media(max-width:720px){
+  .disaster-forecast.premium-hud-v1000{
+    transform:scale(var(--weather-hud-visual-scale))!important;
+    transform-origin:center top!important;
+    top:0!important;
+    left:0!important;
+  }
+  .topbar .top-right{
+    top:calc(100vw * 107 / 1000 + 10px + env(safe-area-inset-top))!important;
+  }
+  .warning{
+    top:calc(100vw * 107 / 1000 + 104px + env(safe-area-inset-top))!important;
+  }
+}

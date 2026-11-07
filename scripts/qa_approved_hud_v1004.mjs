@@ -50,7 +50,12 @@ try{
       ticks:[...root.querySelectorAll('.premium-hud__hour')].map(x=>x.textContent),scrollWidth:document.body.scrollWidth};
    });
    const err=[...failures,...broken],R=m.hud;
-   if(Math.abs(R.x)>1||Math.abs(R.y)>2||Math.abs(R.right-w)>1)err.push('HUD not docked at viewport top/edges');
+   const expectedWidth=w*.5, expectedLeft=w*.25;
+   const expectedHeight=(w*(w<=720?214/1000:226/1700))*.5;
+   if(Math.abs(R.x-expectedLeft)>2||Math.abs(R.y)>2||
+      Math.abs(R.right-(expectedLeft+expectedWidth))>2||
+      Math.abs(R.width-expectedWidth)>2||Math.abs(R.height-expectedHeight)>2)
+     err.push('Weather HUD is not uniformly 50% sized, top-docked and centered: '+JSON.stringify(R));
    if(R.height>h*.30||m.scrollWidth>w+2)err.push('HUD/document overflows viewport');
    if(!m.frame.url.includes('/hud-approved-v1004/')||!/hud_(desktop|mobile)_(low|high)_v1004\.png(?:$|[?#])/.test(m.frame.url))err.push('Approved PNG not selected');
    if(m.alpha.center<50||m.alpha.wing>60)err.push('Incorrect raised-wing, lower-medallion silhouette');
