@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const load=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
-test('v980 vector HUD uses native responsive coordinates with no baked labels or shadows',()=>{
+test('v980 vectors remain as references while v1002 square-fade is active',()=>{
  const css=load('src/style.css'),html=load('index.html');
  assert.match(css,/AFTERDAY v9\.8/);
  assert.match(css,/aspect-ratio:1600 \/ 175/);
  assert.match(css,/aspect-ratio:1000 \/ 220/);
- assert.match(html,/forecast_hud_desktop_v980\.svg/);
- assert.match(html,/forecast_hud_mobile_v980\.svg/);
+ assert.match(html,/hud_compact_b_square_fade\.svg\?v=1002/);
+ assert.match(html,/hud_compact_a_square_fade\.svg\?v=1002/);
  assert.match(html,/class="disaster-forecast__time-markers"/);
  for(const tick of ['6H','12H','18H','24H'])assert.ok(html.includes('<span>'+tick+'</span>'));
  for(const [file,vb,cx,cy] of [
