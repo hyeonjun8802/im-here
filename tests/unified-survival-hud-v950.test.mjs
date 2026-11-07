@@ -18,7 +18,7 @@ test('v9.5 authored vector resources are actual separate production-ready assets
 });
 test('HUD includes live three vital bars and 2x2 inventory but no external AFTERDAY logo',()=>{
  const html=read('index.html');
- assert.match(html,/hud_compact_b_square_fade\.png\?v=1003/);
+ assert.match(html,/hud_desktop_high_v1004\.png/);
  for(const id of ['hud-health-val','hud-food-val','hud-water-val','hud-stock-food','hud-stock-water','hud-stock-medicine','hud-stock-parts','days','speed-toggle']){
   assert.match(html,new RegExp('id="'+id+'"'));
  }
