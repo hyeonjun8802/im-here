@@ -5,7 +5,6 @@
 const BASE='/assets/ui/afterday-premium-v1000';
 const TYPES=new Set(['clear','cloud','rain','storm','tornado','heat','cold','dust','wildfire','meteor']);
 const LABELS={clear:'맑음',cloud:'흐림',rain:'폭우',storm:'낙뢰',tornado:'토네이도',heat:'폭염',cold:'한파',dust:'모래폭풍',wildfire:'산불',meteor:'운석'};
-const SEVERE=new Set(['storm','tornado','heat','cold','dust','wildfire','meteor']);
 const HOURS=[0,3,6,12,18,24];
 const image=(group,name)=>`${BASE}/${group}/${name}.png`;
 const put=(parent,tag,className)=>{const el=document.createElement(tag);el.className=className;parent.appendChild(el);return el;};
@@ -30,8 +29,6 @@ export function installPremiumHudV1000(root){
  const frame=put(art,'img','premium-hud__frame');frame.src=image('desktop','compact_complete_hud_frame');
  frame.alt='';frame.decoding='async';frame.setAttribute('aria-hidden','true');
  const currentArt=put(root,'img','premium-hud__current-art');currentArt.alt='';currentArt.decoding='async';
- const label=put(root,'span','premium-hud__weather-name');
- const info=put(root,'button','premium-hud__info');info.type='button';info.textContent='i';info.setAttribute('aria-label','날씨 상세 정보 열기');info.addEventListener('click',()=>document.getElementById('weather-panel-toggle')?.click());
  const timeline=put(root,'div','premium-hud__forecast');
  const title=put(timeline,'span','premium-hud__forecast-title');title.textContent='⊕ 기상 예측 (24h)';
  const rail=put(timeline,'span','premium-hud__forecast-rail');rail.setAttribute('aria-hidden','true');
@@ -50,8 +47,6 @@ export function installPremiumHudV1000(root){
   const nowWeather=TYPES.has(state.weather)?state.weather:'clear';
   if(nowWeather!==current){current=nowWeather;currentArt.src=image('weather',`${current}_medallion_art`);}
   const name=LABELS[current];
-  const labelText=SEVERE.has(current)?`${name} 경보`:`${name} · 현재`;
-  if(label.textContent!==labelText)label.textContent=labelText;
   root.dataset.premiumWeather=current;
   const at=Number(state.majorDisasterAt);
   const remaining=(Number.isFinite(at)&&Number.isFinite(now))?(at-now)/3600000:Infinity;

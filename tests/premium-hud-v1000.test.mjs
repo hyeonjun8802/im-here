@@ -49,3 +49,13 @@ test('animation frame sync does not repaint full DOM',()=>{
  assert.doesNotMatch(src,/syncProgress:draw/);
  assert.doesNotMatch(src,/localStorage\.|state\.weather\s*=/);
 });
+
+test('weather medallion is prominent; obsolete weather caption and i-button are removed',()=>{
+ const src=text('src/premiumHudV1000.js');
+ const css=text('src/premiumHudV1000.css');
+ assert.doesNotMatch(src,/put\(root,'span','premium-hud__weather-name'\)/);
+ assert.doesNotMatch(src,/put\(root,'button','premium-hud__info'\)/);
+ assert.doesNotMatch(css,/\.premium-hud-v1000 \.premium-hud__weather-name\{/);
+ assert.doesNotMatch(css,/\.premium-hud-v1000 \.premium-hud__info\{/);
+ assert.match(css,/\.premium-hud-v1000 \.premium-hud__current-art\{top:9%;width:15\.1%;height:82%\}/);
+});

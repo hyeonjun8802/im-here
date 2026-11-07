@@ -37,9 +37,16 @@ try {
     });
     return {hud:rect(document.querySelector('.premium-hud-v1000')),stats:rect(document.querySelector('.survival-hud-stats')),
        stock:rect(document.querySelector('.survival-hud-stock')),frameNaturalWidth:document.querySelector('.premium-hud__frame')?.naturalWidth,
+       medallion:rect(document.querySelector('.premium-hud__current-art')),
+       weatherNameCount:document.querySelectorAll('.premium-hud__weather-name').length,
+       infoButtonCount:document.querySelectorAll('.premium-hud__info').length,
        texts,issues:texts.filter(t=>t.overOwn||t.overParent).map(t=>({name:t.name,text:t.text,overOwn:t.overOwn,overParent:t.overParent})),
        tiny:texts.filter(t=>t.fontPx<7).map(t=>({name:t.name,fontPx:t.fontPx}))};
    });
+   if(metrics.issues.length)errors.push('Survivor text exceeds allocated slot: '+JSON.stringify(metrics.issues));
+   if(metrics.weatherNameCount||metrics.infoButtonCount)errors.push('Removed weather label/info button still present');
+   if(!metrics.medallion||metrics.medallion.width<metrics.hud.width*(width<=720?.15:.11))errors.push('Current weather medallion is undersized');
+   if(metrics.stock.right>metrics.stats.right+1)errors.push('Resource grid extends beyond status safe area');
    const filename='docs/qa/hud-layout-v1001/'+name+'-'+scenario+'.png';
    await page.screenshot({path:filename,clip:{x:0,y:0,width,height:Math.min(height,Math.max(115,Math.ceil(metrics.hud.bottom+20)))},animations:'disabled'});
    reports.push({name,scenario,width,height,metrics,errors});
@@ -49,4 +56,4 @@ try {
  }
 }finally{await browser.close()}
 fs.writeFileSync('docs/qa/hud-layout-v1001/report.json',JSON.stringify(reports,null,2));
-if(reports.some(r=>r.errors.length))process.exitCode=1;
+if(reports.some(r=>r.errors.length)){console.error('HUD_RESPONSIVE_QA_FAILED',JSON.stringify(reports.filter(r=>r.errors.length).map(r=>({name:r.name,scenario:r.scenario,errors:r.errors}))));process.exitCode=1;}

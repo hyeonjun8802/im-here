@@ -58,7 +58,7 @@
 .premium-hud-v1000 [data-meter="health"] .survival-hud-stat-track>i{background:linear-gradient(90deg,#b82b3c,#e5a38e)!important}
 .premium-hud-v1000 [data-meter="food"] .survival-hud-stat-track>i{background:linear-gradient(90deg,#87913a,#e4df7b)!important}
 .premium-hud-v1000 [data-meter="water"] .survival-hud-stat-track>i{background:linear-gradient(90deg,#226f9f,#b2def4)!important}
-.premium-hud-v1000 .survival-hud-stat strong{width:12%!important;flex:0 0 12%!important;font-size:clamp(7px,.72vw,11px)!important;text-align:center!important;color:#f3ebe3!important}
+.premium-hud-v1000 .survival-hud-stat strong{width:12%!important;flex:0 0 12%!important;font-size:clamp(7px,.72vw,11px)!important;text-align:center!important;white-space:nowrap!important;color:#f3ebe3!important}
 .premium-hud-v1000 .survival-hud-stock{
  position:absolute!important;top:0!important;left:75.7%!important;width:22.3%!important;height:100%!important;
  display:grid!important;grid-template:repeat(2,minmax(0,1fr))/repeat(2,minmax(0,1fr))!important;
@@ -69,21 +69,8 @@
 .premium-hud-v1000 .survival-hud-stock .hud-picto{width:1.4em!important;height:1.4em!important;font-size:clamp(9px,.92vw,14px)!important;margin:0!important}
 .premium-hud-v1000 .survival-hud-stock strong{font-size:clamp(8px,.82vw,13px)!important;color:#fff0d7!important;font-variant-numeric:tabular-nums!important}
 .premium-hud-v1000 .premium-hud__current-art{
- position:absolute;z-index:5;left:50%;top:17%;width:8.7%;height:59%;transform:translateX(-50%);
+ position:absolute;z-index:5;left:50%;top:10%;width:11.3%;height:80%;transform:translateX(-50%);
  object-fit:contain;filter:saturate(1.07) contrast(1.05);pointer-events:none;
-}
-.premium-hud-v1000 .premium-hud__weather-name{
- position:absolute;z-index:6;left:50%;top:67%;transform:translateX(-50%);
- white-space:nowrap;max-width:15%;font-size:clamp(8px,.78vw,13px);font-weight:800;
- color:#ffdcac;text-shadow:0 1px 3px #000,0 0 6px #f0773ca5;
- background:linear-gradient(90deg,transparent,#0d1823cf 20%,#0d1823cf 80%,transparent);
- padding:0 5px;text-align:center;pointer-events:none;
-}
-.premium-hud-v1000 .premium-hud__info{
- position:absolute;z-index:7;left:50%;top:82%;transform:translateX(-50%);
- display:flex;align-items:center;justify-content:center;width:1.8%;height:13%;min-width:12px;
- border:1px solid #cbab88b0;border-radius:20px;color:#f1e5d2;font:700 clamp(8px,.78vw,12px) Georgia,serif;
- background:linear-gradient(#244254cc,#08121adc);pointer-events:auto;cursor:pointer;padding:0;
 }
 .premium-hud-v1000 .premium-hud__forecast{
  position:absolute;z-index:4;left:62.3%;top:34%;width:33.8%;height:44.5%;
@@ -134,18 +121,18 @@
 }
 @media(max-width:720px){
  .disaster-forecast.premium-hud-v1000{width:calc(100vw - 4px)!important;max-width:calc(100vw - 4px)!important;aspect-ratio:1000 / 210!important}
- .premium-hud-v1000 .survival-hud-stats{left:3.6%!important;top:36%!important;width:32.2%!important;height:37%!important}
- .premium-hud-v1000 .survival-hud-vitals{width:70%!important}
- .premium-hud-v1000 .survival-hud-stat{font-size:clamp(5.5px,1.62vw,8px)!important}
- .premium-hud-v1000 .survival-hud-stat-label{width:26%!important;flex-basis:26%!important}
- .premium-hud-v1000 .survival-hud-stat strong{width:12%!important;flex-basis:12%!important;font-size:clamp(5.5px,1.56vw,8px)!important}
- .premium-hud-v1000 .survival-hud-stock{left:81%!important;width:23.5%!important;font-size:clamp(5.5px,1.6vw,8px)!important}
- .premium-hud-v1000 .survival-hud-stock .hud-picto{font-size:clamp(6px,1.7vw,9px)!important}
- .premium-hud-v1000 .survival-hud-stock strong{font-size:clamp(5.5px,1.7vw,8px)!important}
- .premium-hud-v1000 .premium-hud__current-art{top:14%;width:11%;height:60%}
- .premium-hud-v1000 .premium-hud__weather-name{top:66%;max-width:18%;font-size:clamp(6.5px,1.9vw,10px);padding:0 1px}
- .premium-hud-v1000 .premium-hud__info{top:80%;min-width:9px;width:3%;height:12%;font-size:8px}
- .premium-hud-v1000 .premium-hud__forecast{left:59.1%;top:36%;width:36%;height:39%;font-size:clamp(5.5px,1.65vw,8.5px)}
+ .premium-hud-v1000 .survival-hud-stats{left:3.8%!important;top:36%!important;width:34.2%!important;height:37%!important}
+ .premium-hud-v1000 .survival-hud-vitals{width:72.5%!important}
+ .premium-hud-v1000 .survival-hud-stat{font-size:clamp(5.8px,1.67vw,8.2px)!important}
+ .premium-hud-v1000 .survival-hud-stat-label{width:28%!important;flex-basis:28%!important;min-width:0!important}
+ .premium-hud-v1000 .survival-hud-stat strong{width:26%!important;flex:0 0 26%!important;min-width:0!important;font-size:clamp(6px,1.8vw,8.5px)!important;text-align:right!important}
+ .premium-hud-v1000 .survival-hud-stock{left:73.5%!important;width:26.5%!important;font-size:clamp(5.8px,1.6vw,8px)!important;column-gap:0!important;row-gap:0!important}
+ .premium-hud-v1000 .survival-hud-stock>div{flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:0!important;line-height:1!important}
+ .premium-hud-v1000 .survival-hud-stock span{display:flex!important;justify-content:center!important;align-items:center!important;min-width:0!important;min-height:0!important}
+ .premium-hud-v1000 .survival-hud-stock .hud-picto{font-size:clamp(5.2px,1.65vw,8px)!important}
+ .premium-hud-v1000 .survival-hud-stock strong{font-size:clamp(5.4px,1.5vw,7.6px)!important;text-align:center!important;white-space:nowrap!important;line-height:1!important}
+ .premium-hud-v1000 .premium-hud__current-art{top:9%;width:15.1%;height:82%}
+  .premium-hud-v1000 .premium-hud__forecast{left:59.1%;top:36%;width:36%;height:39%;font-size:clamp(5.5px,1.65vw,8.5px)}
  .premium-hud-v1000 .premium-hud__forecast-title{font-size:.95em}
  .premium-hud-v1000 .premium-hud__forecast-status{font-size:.59em;top:-2%}
  .premium-hud-v1000 .premium-hud__hour{font-size:.75em;letter-spacing:-.04em}
