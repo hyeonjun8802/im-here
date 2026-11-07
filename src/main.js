@@ -130,8 +130,17 @@ function renderHUD(){
 }
 function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function runSurvivalAction(action){
+ // Resolve mandatory quests before allowing unrelated survival actions.
+ if(eventBoard?.requiresChoice()){
+   const valid=eventBoard.activeKey==='expedition'
+     ?['scavenge_go','scavenge_scout','scavenge_salvage','scavenge_stay'].includes(action)
+     :eventBoard.activeKey==='companionInvite'
+     ?['companion_invite','companion_aid','companion_trade','companion_decline'].includes(action)
+     :false;
+   if(!valid)return {good:false,msg:'진행 중인 퀘스트를 먼저 선택하세요.'};
+ }
  const result=applyAction(state,action,gameClock.virtualNow);
- if(action.startsWith('scavenge_')||(action.startsWith('companion_')&&result.good))eventBoard?.dismiss();
+ if((action.startsWith('scavenge_')&&result.good)||(action.startsWith('companion_')&&result.good))eventBoard?.dismiss(true);
  if(result.good){
    if(action.startsWith('scavenge_')||action.startsWith('companion_'))world?.syncSurvivalInventory(state);
    if(action==='radio_contact')world?.setAction('radio');
@@ -141,7 +150,7 @@ function runSurvivalAction(action){
    if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
    // The camera only celebrates a decision after it has resolved successfully.
    // No extra roll, item grant, damage, or clock alteration.
-   if(action==='scavenge_go'){
+   if(action.startsWith('scavenge_')){
      const type=result.item||(result.outcome==='injury'||result.outcome==='sickness'?result.outcome:null);
      if(type)world?.playCinematic(type);
      // Tent construction is a visible actor performance. Loot/rewards remain
@@ -282,13 +291,15 @@ function animation(){
  const draw=t=>{
   const realDt=Math.min(Math.max((t-last)/1000,0),.05);last=t;
   const real=Date.now(),foreground=document.visibilityState==='visible';
-  const gameNow=gameClock.tick(real,foreground);
+  const questPaused=Boolean(eventBoard?.requiresChoice());
+  // Pause virtual survival clock, not the user's ability to read or choose.
+  const gameNow=gameClock.tick(real,foreground&&!questPaused);
   if(gameNow-state.lastTickAt>10000)advance(state,gameNow,!foreground);
   disasterForecast.syncProgress(state,gameNow);
   if(t-lastHUD>700){renderHUD();lastHUD=t}
   if(real-lastSave>15000){save();lastSave=real}
   try{
-   world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state,realDt);
+   world.update(Math.min(.12,realDt*(questPaused?0:gameClock.speed)),gameNow,state,realDt);
   }catch(e){
    console.error('3D frame error',e);
    $('#error').classList.remove('hidden');
@@ -333,8 +344,8 @@ async function boot(){try{
   };
   world.life.onActivityChange=(label,activity)=>{const node=$('#activity-label');if(node)node.textContent=label;};
   eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),
-    onExpeditionChoice:choice=>runSurvivalAction(choice==='go'?'scavenge_go':'scavenge_stay'),
-    onCompanionChoice:choice=>runSurvivalAction(choice==='invite'?'companion_invite':'companion_decline'),
+    onExpeditionChoice:choice=>runSurvivalAction('scavenge_'+choice),
+    onCompanionChoice:choice=>runSurvivalAction('companion_'+choice),
     onSecure:()=>runSurvivalAction('secure_storage'),
     onCover:()=>runSurvivalAction('take_cover'),
     onPrepare:()=>runSurvivalAction('secure_supplies')});
