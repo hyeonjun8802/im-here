@@ -64,13 +64,28 @@ jobs:
           cat /tmp/afterday-v940.log
           exit 1
       - name: Capture unified mobile and desktop HUD at three disaster distances
-        run: node scripts/qa_unified_hud_v950.mjs
+        run: |
+          if grep -q 'premiumHudV1004.css' index.html; then
+            echo "::notice::Legacy v950/v960 capture superseded by the approved v1004 browser geometry/screenshot workflow."
+          else
+            node scripts/qa_unified_hud_v950.mjs
+          fi
       - name: Capture actual mobile WebKit layout and nine-icon asset gallery
-        run: node scripts/qa_ios_weather_v960.mjs
+        run: |
+          if grep -q 'premiumHudV1004.css' index.html; then
+            echo "::notice::Legacy v950/v960 capture superseded by the approved v1004 browser geometry/screenshot workflow."
+          else
+            node scripts/qa_ios_weather_v960.mjs
+          fi
       - name: Attempt actual mobile and desktop 3D game screenshots (software WebGL diagnostic)
         id: gpu-visual
         continue-on-error: true
-        run: node scripts/qa_live_weather_v960.mjs
+        run: |
+          if grep -q 'premiumHudV1004.css' index.html; then
+            echo "::notice::Legacy v950/v960 capture superseded by the approved v1004 browser geometry/screenshot workflow."
+          else
+            node scripts/qa_live_weather_v960.mjs
+          fi
       - name: Report unverified software-GPU capture explicitly
         if: steps.gpu-visual.outcome == 'failure'
         run: echo "::warning::Full 3D scene screenshot could not be verified on GitHub's software WebGL runner. Chromium and WebKit real HUD tests run separately and must pass."
