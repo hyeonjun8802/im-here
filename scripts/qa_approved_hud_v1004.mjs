@@ -50,9 +50,13 @@ try{
       ticks:[...root.querySelectorAll('.premium-hud__hour')].map(x=>x.textContent),scrollWidth:document.body.scrollWidth};
    });
    const err=[...failures,...broken],R=m.hud;
-   if(Math.abs(R.x)>1||Math.abs(R.y)>2||Math.abs(R.right-w)>1)err.push('HUD not docked at viewport top/edges');
+   const targetWidth=w<=720?w-4:Math.min(1600,w-8);
+   const targetHeight=targetWidth*(w<=720?210/1000:190/1700);
+   if(Math.abs(R.x-(w-targetWidth)/2)>2||Math.abs(R.y)>2||
+      Math.abs(R.width-targetWidth)>2||Math.abs(R.height-targetHeight)>2)
+     err.push('HUD mismatches original compact size '+JSON.stringify({expected:[targetWidth,targetHeight],actual:R}));
    if(R.height>h*.30||m.scrollWidth>w+2)err.push('HUD/document overflows viewport');
-   if(!m.frame.url.includes('/hud-approved-v1004/')||!/hud_(desktop|mobile)_(low|high)_v1004\.png(?:$|[?#])/.test(m.frame.url))err.push('Approved PNG not selected');
+   if(!m.frame.url.includes('/hud-reference-v1006/')||!/hud_compact_(desktop|mobile)_ref_v1006\.png(?:$|[?#])/.test(m.frame.url))err.push('Reference-dimension PNG not selected');
    if(m.alpha.center<50||m.alpha.wing>60)err.push('Incorrect raised-wing, lower-medallion silhouette');
    if(m.images.some(x=>!x.ok))err.push('Broken actual weather/icon image');
    if(m.ticks.join(',')!=='현재,+03h,+06h,+12h,+18h,+24h')err.push('Forecast ticks missing');

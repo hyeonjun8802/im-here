@@ -60,30 +60,29 @@ test('weather medallion is prominent; obsolete weather caption and i-button are 
  assert.match(css,/\.premium-hud-v1000 \.premium-hud__current-art\{top:9%;width:15\.1%;height:82%\}/);
 });
 
-test('actual user-approved HUD images are loaded in both premium and fallback views',()=>{
+test('approved artwork uses all four original image dimensions, compact variants active',()=>{
  const js=text('src/premiumHudV1000.js');
  const html=text('index.html');
  const css=text('src/premiumHudV1004.css');
- for(const source of [js,html]){
-  for(const name of ['hud_desktop_high_v1004.png','hud_desktop_low_v1004.png','hud_mobile_high_v1004.png','hud_mobile_low_v1004.png'])
-   assert.ok(source.includes(name),name);
+ for(const file of ['hud_compact_desktop_ref_v1006.png','hud_compact_mobile_ref_v1006.png']){
+  assert.ok(js.includes(file),file+' missing in active HUD');
+  assert.ok(html.includes(file),file+' missing in initial fallback');
  }
- assert.match(js,/source\.sizes='100vw'/);
- assert.match(js,/frame\.sizes='100vw'/);
- assert.match(html,/premiumHudV1004\.css/);
- assert.doesNotMatch(js,/source\.srcset=image\('mobile','compact_complete_hud_frame'\)/);
  for(const [name,size] of [
-  ['hud_desktop_high_v1004.png',[1700,226]],
-  ['hud_desktop_low_v1004.png',[850,113]],
-  ['hud_mobile_high_v1004.png',[1000,214]],
-  ['hud_mobile_low_v1004.png',[500,107]]
+  ['hud_compact_desktop_ref_v1006.png',[1700,190]],
+  ['hud_compact_mobile_ref_v1006.png',[1000,210]],
+  ['hud_full_a_ref_v1006.png',[1700,350]],
+  ['hud_full_b_ref_v1006.png',[1700,380]],
  ]){
-  const file='public/assets/ui/hud-approved-v1004/'+name;
+  const file='public/assets/ui/hud-reference-v1006/'+name;
   assert.deepEqual(pngSize(file),size);
-  assert.equal(read(file)[25],6,'PNG must contain an alpha channel: '+name);
+  assert.equal(read(file)[25],6,'RGBA alpha required: '+file);
  }
- assert.match(css,/position:fixed!important/);
- assert.match(css,/top:0!important/);
- assert.match(css,/aspect-ratio:var\(--approved-hud-aspect\)!important/);
- assert.match(css,/left:8%!important;top:27\.5%!important/);
+ assert.match(css,/--approved-hud-aspect:1700 \/ 190/);
+ assert.match(css,/--approved-hud-aspect:1000 \/ 210/);
+ assert.match(css,/width:min\(1600px,calc\(100vw - 8px\)\)!important/);
+ assert.match(css,/width:calc\(100vw - 4px\)!important/);
+ assert.match(css,/transform:translateX\(-50%\)!important/);
+ assert.match(html,/premiumHudV1004\.css/);
+ assert.doesNotMatch(js,/hud_desktop_high_v1004\.png/);
 });

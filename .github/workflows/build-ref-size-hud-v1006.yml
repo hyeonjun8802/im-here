@@ -1,0 +1,30 @@
+name: Render original-dimension v1006 HUD references
+on:
+  push:
+    branches: [fix/weather-hud-original-reference-geometry-20261108]
+    paths:
+      - 'scripts/generate_ref_size_hud_v1006.py'
+      - '.github/workflows/build-ref-size-hud-v1006.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install Pillow==11.3.0
+      - run: python scripts/generate_ref_size_hud_v1006.py
+      - name: Commit exact-dimension PNGs to feature branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/ui/hud-reference-v1006/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(weather): 4 approved PNGs at original supplied dimensions"
+            git push origin HEAD:fix/weather-hud-original-reference-geometry-20261108
+          fi
