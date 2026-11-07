@@ -7,8 +7,8 @@ test('v980 vectors remain as references while v1002 square-fade is active',()=>{
  assert.match(css,/AFTERDAY v9\.8/);
  assert.match(css,/aspect-ratio:1600 \/ 175/);
  assert.match(css,/aspect-ratio:1000 \/ 220/);
- assert.match(html,/hud_compact_b_square_fade\.png\?v=1003/);
- assert.match(html,/hud_compact_a_square_fade\.png\?v=1003/);
+ assert.match(html,/hud_desktop_high_v1004\.png/);
+ assert.match(html,/hud_mobile_high_v1004\.png/);
  assert.match(html,/class="disaster-forecast__time-markers"/);
  for(const tick of ['6H','12H','18H','24H'])assert.ok(html.includes('<span>'+tick+'</span>'));
  for(const [file,vb,cx,cy] of [
