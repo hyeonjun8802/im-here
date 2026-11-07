@@ -14,7 +14,7 @@ try{
   const page=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:1});
   const errors=[],failed=[];
   page.on('pageerror',e=>errors.push(e.message));
-  page.on('response',r=>{if(r.status()>=400&&r.url().includes('/assets/ui/afterday-premium-v1000'))failed.push(`${r.status()} ${r.url()}`)});
+  page.on('response',r=>{if(r.status()>=400&&(/\/assets\/ui\/(afterday-premium-v1000|hud-square-fade)\//.test(r.url())))failed.push(`${r.status()} ${r.url()}`)});
   await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
   try{
    await page.waitForFunction(()=>window.afterday?.world && window.afterday?.state && document.querySelector('#loading')?.classList.contains('hidden'),null,{timeout:25000});
@@ -32,7 +32,7 @@ try{
    const gl=cnv&&(cnv.getContext('webgl2')||cnv.getContext('webgl'));
    return {hud:rect(root),canvas:rect(cnv),webglContextPresent:!!gl,worldReady:!!window.afterday?.world,
      resourceIconLoads:fetched,images:imgs.map(x=>({src:x.src.slice(0,130),ok:x.complete&&x.naturalWidth>0})),
-     frameNaturalWidth:frame?.naturalWidth,
+     frameNaturalWidth:frame?.naturalWidth,frameUrl:frame?.currentSrc||frame?.src,
      currentWeatherText:document.querySelector('.premium-hud__weather-name')?.textContent,
      forecastLabels:[...document.querySelectorAll('.premium-hud__hour')].map(x=>x.textContent),
      bodyScrollWidth:document.body.scrollWidth};
@@ -41,6 +41,8 @@ try{
   if(!metrics.hud)errors.push('Premium HUD missing');
   if(metrics.hud&&(metrics.hud.x < -1||metrics.hud.right>w+1||metrics.hud.height>h*.21))errors.push('HUD does not fit the screen');
   if(metrics.frameNaturalWidth!==(w<=720?1000:1700))errors.push('Wrong responsive frame art selected');
+  if(!metrics.frameUrl?.includes(w<=720?'hud_compact_a_square_fade.png?v=1003':'hud_compact_b_square_fade.png?v=1003'))errors.push('Approved PNG image was not selected');
+  if(metrics.hud&&Math.abs(metrics.hud.y)>12)errors.push('HUD top does not touch viewport top');
   if(metrics.images.some(x=>!x.ok)||metrics.resourceIconLoads.some(x=>!x))errors.push('Missing HUD image asset');
   if(metrics.forecastLabels.join(',')!=='현재,+03h,+06h,+12h,+18h,+24h')errors.push('Forecast timeline ticks invalid');
   if(failed.length)errors.push(...failed);
