@@ -60,20 +60,20 @@ test('weather medallion is prominent; obsolete weather caption and i-button are 
  assert.match(css,/\.premium-hud-v1000 \.premium-hud__current-art\{top:9%;width:15\.1%;height:82%\}/);
 });
 
-test('active premium and fallback HUD both use the new low-glare square-fade art',()=>{
+test('active premium and fallback HUD use low-glare square-fade PNGs',()=>{
  const js=text('src/premiumHudV1000.js');
- const index=text('index.html');
- for(const src of [js,index]){
-  assert.match(src,/hud_compact_a_square_fade\.svg\?v=1002/);
-  assert.match(src,/hud_compact_b_square_fade\.svg\?v=1002/);
+ const html=text('index.html');
+ for(const source of [js,html]){
+  assert.match(source,/hud_compact_a_square_fade\.png\?v=1003/);
+  assert.match(source,/hud_compact_b_square_fade\.png\?v=1003/);
  }
  assert.doesNotMatch(js,/source\.srcset=image\('mobile','compact_complete_hud_frame'\)/);
  assert.doesNotMatch(js,/frame\.src=image\('desktop','compact_complete_hud_frame'\)/);
- for(const variant of ['compact_a','compact_b','full_a','full_b']){
-  const path=`public/assets/ui/hud-square-fade/hud_${variant}_square_fade.svg`;
-  const svg=text(path);
-  assert.match(svg,/<svg\s/);
-  assert.match(svg,/<\/svg>/);
-  assert.match(svg,/sideFade/);
+ for(const [name,size] of [['compact_a',[1000,210]],['compact_b',[1700,190]],['full_a',[1700,350]],['full_b',[1700,380]]]){
+  assert.deepEqual(pngSize('public/assets/ui/hud-square-fade/hud_'+name+'_square_fade.png'),size);
  }
+ const css=text('src/premiumHudV1000.css');
+ assert.match(css,/position:fixed!important/);
+ assert.match(css,/top:0!important/);
+ assert.match(css,/width:100vw!important/);
 });

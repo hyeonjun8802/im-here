@@ -27,8 +27,8 @@ export function installPremiumHudV1000(root){
  const source=put(art,'source','');source.media='(max-width:720px)';
  // Approved v10.0.2 squared endcaps: low-glare trim and fade on both sides.
  // Keep all data/overlays tied to the same premium HUD instance.
- source.srcset='/assets/ui/hud-square-fade/hud_compact_a_square_fade.svg?v=1002';
- const frame=put(art,'img','premium-hud__frame');frame.src='/assets/ui/hud-square-fade/hud_compact_b_square_fade.svg?v=1002';
+ source.srcset='/assets/ui/hud-square-fade/hud_compact_a_square_fade.png?v=1003';
+ const frame=put(art,'img','premium-hud__frame');frame.src='/assets/ui/hud-square-fade/hud_compact_b_square_fade.png?v=1003';
  frame.alt='';frame.decoding='async';frame.setAttribute('aria-hidden','true');
  const currentArt=put(root,'img','premium-hud__current-art');currentArt.alt='';currentArt.decoding='async';
  const timeline=put(root,'div','premium-hud__forecast');
