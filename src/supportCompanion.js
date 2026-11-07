@@ -40,7 +40,7 @@ export function offerCompanionRescue(s,day){
 }
 export const COMPANION_DECISIONS=Object.freeze(['invite','aid','trade','decline']);
 export const COMPANION_EXCHANGE_ODDS=Object.freeze({aidParts:.45,tradeParts:.55,tradeMedicine:.20,tradeNothing:.25});
-const function companionRoll(seed,contact,salt){
+function companionRoll(seed,contact,salt){
  let a=((Number(seed)||1)>>>0)^Math.imul((contact+salt)>>>0,0x9e3779b1);
  a=Math.imul(a^(a>>>16),0x7feb352d);
  a=Math.imul(a^(a>>>15),0x846ca68b);
