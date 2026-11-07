@@ -52,7 +52,7 @@ try{
    const err=[...failures,...broken],R=m.hud;
    if(Math.abs(R.x)>1||Math.abs(R.y)>2||Math.abs(R.right-w)>1)err.push('HUD not docked at viewport top/edges');
    if(R.height>h*.30||m.scrollWidth>w+2)err.push('HUD/document overflows viewport');
-   if(!m.frame.url.includes('/hud-approved-v1004/')||![500,850,1000,1700].includes(m.frame.width))err.push('Approved PNG not selected');
+   if(!m.frame.url.includes('/hud-approved-v1004/')||!/hud_(desktop|mobile)_(low|high)_v1004\.png(?:$|[?#])/.test(m.frame.url))err.push('Approved PNG not selected');
    if(m.alpha.center<50||m.alpha.wing>60)err.push('Incorrect raised-wing, lower-medallion silhouette');
    if(m.images.some(x=>!x.ok))err.push('Broken actual weather/icon image');
    if(m.ticks.join(',')!=='현재,+03h,+06h,+12h,+18h,+24h')err.push('Forecast ticks missing');
@@ -61,7 +61,7 @@ try{
    if(m.current.x<R.x+R.width*.38||m.current.right>R.x+R.width*.62)err.push('Current weather icon overflows medallion');
    for(const x of m.texts){
     const a=x.glyph,b=x.parent;if(!a||!b)continue;
-    if(a.x<b.x-1||a.right>b.right+1||a.y<b.y-1||a.bottom>b.bottom+1)err.push('Text escapes region: '+x.value);
+    if(a.x<b.x-1||a.right>b.right+1||a.y<b.y-1||a.bottom>b.bottom+1)err.push('Text escapes region: '+x.value+' [glyph='+JSON.stringify(a)+', region='+JSON.stringify(b)+']');
    }
    if(w<=720&&m.title.bottom>m.status.y+1)err.push('Mobile forecast title/status collision');
    const clip=Math.min(h,Math.max(115,Math.ceil(R.bottom+30)));
