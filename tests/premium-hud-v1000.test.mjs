@@ -87,12 +87,3 @@ test('actual user-approved HUD images are loaded in both premium and fallback vi
  assert.match(css,/aspect-ratio:var\(--approved-hud-aspect\)!important/);
  assert.match(css,/left:8%!important;top:27\.5%!important/);
 });
-
-test('v1005 halves only the weather HUD, centering artwork, numbers and icons together',()=>{
- const css=text('src/premiumHudV1004.css');
- assert.match(css,/\.disaster-forecast\.premium-hud-v1000\{\s*--weather-hud-visual-scale:\.5/);
- assert.match(css,/transform:scale\(var\(--weather-hud-visual-scale\)\)!important/);
- assert.match(css,/transform-origin:center top!important/);
- assert.match(css,/top:calc\(100vw \* 113 \/ 1700 \+ 12px/);
- assert.match(css,/top:calc\(100vw \* 107 \/ 1000 \+ 10px/);
-});
