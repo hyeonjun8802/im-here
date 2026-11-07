@@ -1,0 +1,198 @@
+/* AFTERDAY HUD v10.0.4 — only presentation geometry; simulation stays untouched.
+   Exact user-approved panel silhouette: raised wing bottoms, circular middle lower.
+   The real weather and inventory remain live DOM nodes above PNG artwork. */
+.disaster-forecast.premium-hud-v1000{
+  --approved-hud-aspect:1700 / 226;
+  position:fixed!important;
+  inset:0 auto auto 0!important;
+  top:0!important;left:0!important;
+  width:100vw!important;max-width:100vw!important;
+  height:auto!important;aspect-ratio:var(--approved-hud-aspect)!important;
+  transform:none!important;margin:0!important;
+  overflow:visible!important;box-sizing:border-box!important;
+  filter:drop-shadow(0 3px 7px rgba(2,8,13,.48))!important;
+  isolation:isolate;pointer-events:none;
+}
+.premium-hud-v1000>.premium-hud__unified-art,
+.premium-hud-v1000 .premium-hud__frame{
+  display:block!important;position:absolute;inset:0;
+  width:100%!important;height:100%!important;
+  object-fit:fill!important;margin:0!important;
+}
+.premium-hud-v1000 .survival-hud-stats{
+  position:absolute!important;z-index:4!important;
+  box-sizing:border-box!important;
+  left:8%!important;top:27.5%!important;
+  width:29%!important;height:39%!important;
+}
+.premium-hud-v1000 .survival-hud-vitals{
+  width:65%!important;height:100%!important;min-width:0!important;
+}
+.premium-hud-v1000 .survival-hud-stat{
+  min-height:0!important;height:30%!important;
+  font-size:clamp(8px,.83vw,13px)!important;line-height:1!important;
+}
+.premium-hud-v1000 .survival-hud-stat-label{
+  min-width:0!important;width:24%!important;flex:0 0 24%!important;
+  overflow:hidden!important;text-overflow:clip!important;
+}
+.premium-hud-v1000 .survival-hud-stat-track{
+  min-width:0!important;overflow:hidden!important;
+}
+.premium-hud-v1000 .survival-hud-stat strong{
+  min-width:0!important;width:15%!important;flex:0 0 15%!important;
+  font-size:clamp(8px,.77vw,12px)!important;
+  text-align:right!important;white-space:nowrap!important;
+}
+.premium-hud-v1000 .survival-hud-stock{
+  left:72%!important;width:23.7%!important;
+  top:0!important;height:100%!important;
+  min-width:0!important;min-height:0!important;overflow:hidden!important;
+}
+.premium-hud-v1000 .survival-hud-stock>div{
+  min-width:0!important;min-height:0!important;
+  overflow:hidden!important;box-sizing:border-box!important;
+}
+.premium-hud-v1000 .survival-hud-stock strong{
+  display:block!important;min-width:0!important;max-width:100%!important;
+  font-variant-numeric:tabular-nums;
+}
+.premium-hud-v1000 .premium-hud__current-art{
+  left:50%!important;top:11%!important;
+  width:11.4%!important;height:79%!important;
+  transform:translateX(-50%)!important;object-fit:contain!important;
+}
+.premium-hud-v1000 .premium-hud__forecast{
+  box-sizing:border-box!important;
+  left:62%!important;top:28%!important;
+  width:34.5%!important;height:40%!important;
+  font-size:clamp(8px,.79vw,13px)!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-title{
+  top:0!important;font-size:1em!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-status{
+  top:1%!important;max-width:46%!important;text-align:right;
+  overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:.72em!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-rail,
+.premium-hud-v1000 .premium-hud__dot{top:64%!important}
+.premium-hud-v1000 .premium-hud__hour{
+  top:74%!important;white-space:nowrap!important;
+}
+.premium-hud-v1000 .premium-hud__future-icon{
+  top:13%!important;height:45%!important;
+}
+.premium-hud-v1000 .premium-hud__future-halo{
+  top:9%!important;height:53%!important;
+}
+@media(min-width:721px){
+  .topbar .top-right{
+    top:calc(100vw * 226 / 1700 + 12px + env(safe-area-inset-top))!important;
+  }
+}
+@media(max-width:720px){
+  .disaster-forecast.premium-hud-v1000{
+    --approved-hud-aspect:1000 / 214;
+    top:0!important;left:0!important;
+    width:100vw!important;max-width:100vw!important;
+    aspect-ratio:var(--approved-hud-aspect)!important;
+  }
+  .premium-hud-v1000 .survival-hud-stats{
+    left:7.4%!important;top:27%!important;width:29.5%!important;height:40%!important;
+  }
+  .premium-hud-v1000 .survival-hud-vitals{
+    width:66%!important;height:100%!important;
+  }
+  .premium-hud-v1000 .survival-hud-stat{
+    font-size:clamp(5.5px,1.7vw,8px)!important;white-space:nowrap!important;
+  }
+  .premium-hud-v1000 .survival-hud-stat-label{
+    width:28%!important;flex:0 0 28%!important;
+  }
+  .premium-hud-v1000 .survival-hud-stat strong{
+    width:24%!important;flex:0 0 24%!important;
+    font-size:clamp(5.6px,1.5vw,7.8px)!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock{
+    left:71.8%!important;width:25.3%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock>div{
+    flex-direction:column!important;gap:0!important;
+    align-items:center!important;justify-content:center!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock .hud-picto{
+    width:1em!important;height:1em!important;
+    font-size:clamp(5px,1.7vw,8px)!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock strong{
+    font-size:clamp(5.2px,1.55vw,7.5px)!important;
+    line-height:1!important;transform:scaleX(.93);
+  }
+  .premium-hud-v1000 .premium-hud__current-art{
+    top:9%!important;width:17.8%!important;height:82%!important;
+  }
+  .premium-hud-v1000 .premium-hud__forecast{
+    left:62%!important;top:29%!important;
+    width:35%!important;height:41%!important;
+    font-size:clamp(6px,1.95vw,8.2px)!important;
+  }
+  .premium-hud-v1000 .premium-hud__forecast-title{
+    top:-3%!important;font-size:.86em!important;
+  }
+  .premium-hud-v1000 .premium-hud__forecast-status{
+    top:30%!important;right:0!important;font-size:.68em!important;
+    max-width:100%!important;
+  }
+  .premium-hud-v1000 .premium-hud__hour{
+    font-size:clamp(4.9px,1.45vw,6.8px)!important;letter-spacing:-.045em;
+  }
+  .premium-hud-v1000 .premium-hud__dot{width:3px!important;height:3px!important}
+  .premium-hud-v1000 .premium-hud__forecast-rail{height:1px!important}
+  .topbar .top-right{
+    top:calc(100vw * 214 / 1000 + 10px + env(safe-area-inset-top))!important;
+    right:10px!important;
+  }
+  .warning{
+    top:calc(100vw * 214 / 1000 + 104px + env(safe-area-inset-top))!important;
+  }
+}
+
+
+/* v1004.1: prevent short-wing supply digits and header glyphs from escaping.
+   All edits are scoped to the HUD and leave live weather/simulation unchanged. */
+.premium-hud-v1000 .survival-hud-stock>div{
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+  gap:0!important;line-height:1!important;overflow:hidden!important;
+}
+.premium-hud-v1000 .survival-hud-stock strong{
+  line-height:1!important;font-size:clamp(7px,.72vw,11px)!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-title{
+  top:10%!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-status{
+  top:10%!important;
+}
+@media(min-width:721px) and (max-width:900px){
+  .premium-hud-v1000 .survival-hud-stock strong{
+    font-size:7px!important;line-height:1!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock .hud-picto{
+    font-size:9px!important;
+  }
+}
+@media(max-width:720px){
+  .premium-hud-v1000 .premium-hud__forecast-title{
+    top:10%!important;
+  }
+  .premium-hud-v1000 .premium-hud__forecast-status{
+    top:42%!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock strong{
+    font-size:clamp(5px,1.45vw,7px)!important;
+  }
+}
