@@ -35,11 +35,13 @@ test('one HUD engine is used; original simulation and state references preserved
  assert.match(main,/disasterForecast\.syncProgress\(state,gameNow\)/);
  assert.match(text('index.html'),/premiumHudV1000\.css/);
 });
-test('forecast event moves continuously from +24h LEFT to current RIGHT',()=>{
+test('forecast event moves continuously from +24h RIGHT to current LEFT',()=>{
+ assert.match(text('src/premiumHudV1000.js'),/const HOURS=\[0,3,6,12,18,24\]/);
  const t=[24,18,12,6,3,0].map(premiumForecastX);
- for(let i=1;i<t.length;i++)assert.ok(t[i]>t[i-1]);
- assert.ok(Math.abs(premiumForecastX(6)-58.3333333333)<.01);
- assert.ok(Math.abs(premiumForecastX(0)-91.6666666667)<.01);
+ for(let i=1;i<t.length;i++)assert.ok(t[i]<t[i-1]);
+ assert.ok(Math.abs(premiumForecastX(24)-91.6666666667)<.01);
+ assert.ok(Math.abs(premiumForecastX(6)-41.6666666667)<.01);
+ assert.ok(Math.abs(premiumForecastX(0)-8.3333333333)<.01);
 });
 test('animation frame sync does not repaint full DOM',()=>{
  const src=text('src/premiumHudV1000.js');

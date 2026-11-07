@@ -6,17 +6,17 @@ const BASE='/assets/ui/afterday-premium-v1000';
 const TYPES=new Set(['clear','cloud','rain','storm','tornado','heat','cold','dust','wildfire','meteor']);
 const LABELS={clear:'맑음',cloud:'흐림',rain:'폭우',storm:'낙뢰',tornado:'토네이도',heat:'폭염',cold:'한파',dust:'모래폭풍',wildfire:'산불',meteor:'운석'};
 const SEVERE=new Set(['storm','tornado','heat','cold','dust','wildfire','meteor']);
-const HOURS=[24,18,12,6,3,0];
+const HOURS=[0,3,6,12,18,24];
 const image=(group,name)=>`${BASE}/${group}/${name}.png`;
 const put=(parent,tag,className)=>{const el=document.createElement(tag);el.className=className;parent.appendChild(el);return el;};
 const clamp=(v,low,high)=>Math.max(low,Math.min(high,v));
-/** Linear between actual labeled checkpoints; no false 6->3 hour spacing. */
+/** Earlier events move from the +24h RIGHT edge to the current LEFT edge. */
 export function premiumForecastX(hours){
- if(!Number.isFinite(hours))return 100/12;
+ if(!Number.isFinite(hours))return 100*11/12;
  const h=clamp(hours,0,24);
  for(let i=0;i<HOURS.length-1;i++){
   const a=HOURS[i],b=HOURS[i+1];
-  if(h<=a&&h>=b)return 100/12+(i+(a-h)/(a-b))*100/6;
+  if(h>=a&&h<=b)return 100/12+(i+(h-a)/(b-a))*100/6;
  }
  return 100*11/12;
 }

@@ -42,7 +42,7 @@ try{
   if(metrics.hud&&(metrics.hud.x < -1||metrics.hud.right>w+1||metrics.hud.height>h*.21))errors.push('HUD does not fit the screen');
   if(metrics.frameNaturalWidth!==(w<=720?1000:1700))errors.push('Wrong responsive frame art selected');
   if(metrics.images.some(x=>!x.ok)||metrics.resourceIconLoads.some(x=>!x))errors.push('Missing HUD image asset');
-  if(metrics.forecastLabels.join(',')!=='+24h,+18h,+12h,+06h,+03h,현재')errors.push('Forecast timeline ticks invalid');
+  if(metrics.forecastLabels.join(',')!=='현재,+03h,+06h,+12h,+18h,+24h')errors.push('Forecast timeline ticks invalid');
   if(failed.length)errors.push(...failed);
   // Always save diagnostics before screenshots. Heavy software WebGL can stall
   // Playwright's animation stability check on GitHub-hosted runners.
