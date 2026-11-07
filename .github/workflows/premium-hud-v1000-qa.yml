@@ -2,12 +2,14 @@ name: AFTERDAY premium HUD v10.0 real game QA
 on:
   push:
     branches:
+      - main
       - feature/premium-hud-v1000-integrated-20261107
     paths:
       - 'src/main.js'
       - 'src/premiumHudV1000.*'
       - 'index.html'
       - 'public/assets/ui/afterday-premium-v1000/**'
+      - 'public/assets/ui/hud-square-fade/**'
       - 'tests/premium-hud-v1000.test.mjs'
       - 'scripts/qa_premium_v1000.mjs'
       - '.github/workflows/premium-hud-v1000-qa.yml'
@@ -18,6 +20,7 @@ on:
       - 'src/premiumHudV1000.*'
       - 'index.html'
       - 'public/assets/ui/afterday-premium-v1000/**'
+      - 'public/assets/ui/hud-square-fade/**'
       - 'tests/premium-hud-v1000.test.mjs'
       - 'scripts/qa_premium_v1000.mjs'
   workflow_dispatch:
