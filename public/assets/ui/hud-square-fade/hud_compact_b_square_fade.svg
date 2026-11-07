@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="190" viewBox="0 0 1700 190" role="img" aria-label="Square end fantasy HUD, muted copper trim fading towards edges">
+<defs>
+ <linearGradient id="stone" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#294557"/><stop offset=".12" stop-color="#0b2030"/><stop offset=".58" stop-color="#081826"/><stop offset="1" stop-color="#294557"/></linearGradient>
+ <linearGradient id="window" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#06111d"/><stop offset=".5" stop-color="#081725"/><stop offset="1" stop-color="#172b3a"/></linearGradient>
+ <radialGradient id="dial"><stop stop-color="#071524"/><stop offset=".65" stop-color="#0a2335"/><stop offset="1" stop-color="#203848"/></radialGradient>
+ <linearGradient id="trim" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9a8a78" stop-opacity=".60"/><stop offset=".25" stop-color="#3e5764" stop-opacity=".32"/><stop offset=".75" stop-color="#506675" stop-opacity=".35"/><stop offset="1" stop-color="#956b4b" stop-opacity=".47"/></linearGradient>
+ <linearGradient id="sideFade"><stop stop-color="white" stop-opacity="0"/><stop offset=".065" stop-color="white" stop-opacity=".9"/><stop offset=".14" stop-color="white"/><stop offset=".86" stop-color="white"/><stop offset=".935" stop-color="white" stop-opacity=".9"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient>
+ <radialGradient id="ember" cx="50%" cy="100%" r="73%"><stop stop-color="#ffb765" stop-opacity=".84"/><stop offset=".18" stop-color="#ba672e" stop-opacity=".42"/><stop offset=".46" stop-color="#5f3c2e" stop-opacity=".12"/><stop offset="1" stop-color="#0c1e2d" stop-opacity="0"/></radialGradient>
+ <filter id="grain" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".02 .12" numOctaves="2" seed="11"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".055"/></feComponentTransfer></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="2.5"/></filter>
+ <mask id="fade"><rect width="1700" height="190" fill="url(#sideFade)"/></mask>
+</defs>
+<!-- Outer panel has true 90-degree corners. Outer 6.5% of width softly disappears. -->
+<g mask="url(#fade)">
+ <rect x="0" y="66.5" width="1700" height="81.7" fill="url(#stone)"/>
+ <rect x="0" y="66.5" width="1700" height="81.7" fill="#b8d8e4" filter="url(#grain)" opacity=".38"/>
+ <rect x="0" y="67.5" width="1700" height="79.7" fill="none" stroke="url(#trim)" stroke-width="2.4"/>
+ <path d="M0 66.5H1700M0 148.2H1700" fill="none" stroke="#78909a" stroke-opacity=".22" stroke-width="1.15"/>
+</g>
+<!-- Sculptural shoulders and original-style central circular clock/medallion -->
+<path d="M755.41 66.5 Q780.73 55.33 779.24 52.21 Q794.14 26.89 817.23 22.42 L882.77 22.42 Q905.86 26.89 920.76 52.21 Q919.27 55.33 944.59 66.5" fill="#182d3d" stroke="#8a7563" stroke-opacity=".63" stroke-width="1.8"/>
+<path d="M802.33 48.49 l-10.43 -24.58 14.9 -8.94 20.11 22.34 M897.67 48.49 l10.43 -24.58 -14.9 -8.94 -20.11 22.34" fill="#273b4a" stroke="#6b6a5e" stroke-width="1.3"/>
+<circle cx="850" cy="96.9" r="78.95" fill="#0b1720" stroke="#4c5761" stroke-width="5.3"/>
+<circle cx="850" cy="96.9" r="73.14" fill="url(#dial)" stroke="#b18b68" stroke-opacity=".66" stroke-width="2.2"/>
+<circle cx="850" cy="96.9" r="66.29" fill="none" stroke="#8b9eac" stroke-opacity=".17" stroke-width="1.35"/>
+<circle cx="850" cy="96.9" r="67.78" fill="url(#ember)"/>
+<ellipse cx="850" cy="160.21" rx="39.47" ry="6.33" fill="#e88c43" opacity=".37" filter="url(#glow)"/>
+<path d="M850 11.25l5 13l-5 -4l-5 4z" fill="#6e7781" stroke="#c7a780" stroke-opacity=".57" stroke-width="0.9"/>
+<g opacity=".82"><rect x="204" y="77.48" width="280.5" height="9.64" rx="4.82" fill="#06131d" stroke="#6c8590" stroke-opacity=".55" stroke-width="1"/><rect x="204" y="99.54" width="280.5" height="9.64" rx="4.82" fill="#06131d" stroke="#6c8590" stroke-opacity=".55" stroke-width="1"/><rect x="204" y="121.6" width="280.5" height="9.64" rx="4.82" fill="#06131d" stroke="#6c8590" stroke-opacity=".55" stroke-width="1"/><rect x="564.4" y="81.21" width="76.5" height="24.1" rx="4.82" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.2"/><rect x="653.9" y="81.21" width="76.5" height="24.1" rx="4.82" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.2"/><rect x="564.4" y="110.62" width="76.5" height="24.1" rx="4.82" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.2"/><rect x="653.9" y="110.62" width="76.5" height="24.1" rx="4.82" fill="url(#window)" stroke="#8196a0" stroke-opacity=".58" stroke-width="1.2"/><path d="M527 74.67V138.4" stroke="#5d7380" stroke-width="1.05" /></g>
+<path d="M939.38 107.35H1572.5" stroke="#7792a0" stroke-opacity=".38" stroke-width="0.9"/>
+</svg>
