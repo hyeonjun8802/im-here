@@ -159,3 +159,40 @@
     top:calc(100vw * 214 / 1000 + 104px + env(safe-area-inset-top))!important;
   }
 }
+
+
+/* v1004.1: prevent short-wing supply digits and header glyphs from escaping.
+   All edits are scoped to the HUD and leave live weather/simulation unchanged. */
+.premium-hud-v1000 .survival-hud-stock>div{
+  display:flex!important;flex-direction:column!important;
+  align-items:center!important;justify-content:center!important;
+  gap:0!important;line-height:1!important;overflow:hidden!important;
+}
+.premium-hud-v1000 .survival-hud-stock strong{
+  line-height:1!important;font-size:clamp(7px,.72vw,11px)!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-title{
+  top:10%!important;
+}
+.premium-hud-v1000 .premium-hud__forecast-status{
+  top:10%!important;
+}
+@media(min-width:721px) and (max-width:900px){
+  .premium-hud-v1000 .survival-hud-stock strong{
+    font-size:7px!important;line-height:1!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock .hud-picto{
+    font-size:9px!important;
+  }
+}
+@media(max-width:720px){
+  .premium-hud-v1000 .premium-hud__forecast-title{
+    top:10%!important;
+  }
+  .premium-hud-v1000 .premium-hud__forecast-status{
+    top:42%!important;
+  }
+  .premium-hud-v1000 .survival-hud-stock strong{
+    font-size:clamp(5px,1.45vw,7px)!important;
+  }
+}
