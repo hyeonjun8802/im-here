@@ -17,7 +17,7 @@ try{
   page.on('response',r=>{if(r.status()>=400&&r.url().includes('/assets/ui/afterday-premium-v1000'))failed.push(`${r.status()} ${r.url()}`)});
   await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:30000});
   try{
-   await page.waitForFunction(()=>window.afterday?.world && window.afterday?.state && document.querySelector('#loading')?.classList.contains('hidden'),null,{timeout:60000});
+   await page.waitForFunction(()=>window.afterday?.world && window.afterday?.state && document.querySelector('#loading')?.classList.contains('hidden'),null,{timeout:25000});
    await page.waitForFunction(()=>document.querySelector('.premium-hud-v1000')?.dataset.premiumHudV1000==='true',null,{timeout:10000});
   }catch(e){errors.push('World/HUD initialization timeout: '+e.message)}
   const metrics=await page.evaluate(async()=>{
@@ -44,8 +44,21 @@ try{
   if(metrics.images.some(x=>!x.ok)||metrics.resourceIconLoads.some(x=>!x))errors.push('Missing HUD image asset');
   if(metrics.forecastLabels.join(',')!=='+24h,+18h,+12h,+06h,+03h,현재')errors.push('Forecast timeline ticks invalid');
   if(failed.length)errors.push(...failed);
-  await page.screenshot({path:path.join(OUT,`${label}.png`),fullPage:true,animations:'disabled'});
+  // Always save diagnostics before screenshots. Heavy software WebGL can stall
+  // Playwright's animation stability check on GitHub-hosted runners.
   reports.push({label,viewport:[w,h],metrics,errors});
+  fs.writeFileSync(path.join(OUT,'report.json'),JSON.stringify({status:gameErrors.length?'FAIL':'IN_PROGRESS',reports,gameErrors},null,2));
+  console.log('LIVE_METRICS',label,JSON.stringify({worldReady:metrics.worldReady,webglContextPresent:metrics.webglContextPresent,frameNaturalWidth:metrics.frameNaturalWidth,images:metrics.images.length,failedImages:metrics.images.filter(x=>!x.ok),hud:metrics.hud,errors}));
+  try{
+    const cdp=await page.context().newCDPSession(page);
+    const shot=await Promise.race([
+      cdp.send('Page.captureScreenshot',{format:'jpeg',quality:86,captureBeyondViewport:false,fromSurface:true}),
+      new Promise((_,reject)=>setTimeout(()=>reject(Error('CDP screenshot timed out')),18000))
+    ]);
+    fs.writeFileSync(path.join(OUT,`${label}.jpg`),Buffer.from(shot.data,'base64'));
+  }catch(e){errors.push('Actual game screenshot failure: '+e.message)}
+  // Re-evaluate errors after the capture; an incomplete screenshot never passes QA.
+  if(errors.length)console.error('HUD_QA_ERRORS',label,JSON.stringify(errors));
   await page.close();
   if(errors.length)gameErrors.push(...errors.map(e=>`${label}: ${e}`));
  }
