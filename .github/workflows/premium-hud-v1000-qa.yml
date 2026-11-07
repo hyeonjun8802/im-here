@@ -1,4 +1,4 @@
-name: AFTERDAY premium HUD v10.0 real game QA
+name: AFTERDAY approved HUD v1004 browser geometry QA
 on:
   push:
     branches:
@@ -7,22 +7,24 @@ on:
     paths:
       - 'src/main.js'
       - 'src/premiumHudV1000.*'
+      - 'src/premiumHudV1004.css'
       - 'index.html'
       - 'public/assets/ui/afterday-premium-v1000/**'
-      - 'public/assets/ui/hud-square-fade/**'
+      - 'public/assets/ui/hud-approved-v1004/**'
       - 'tests/premium-hud-v1000.test.mjs'
-      - 'scripts/qa_premium_v1000.mjs'
+      - 'scripts/qa_approved_hud_v1004.mjs'
       - '.github/workflows/premium-hud-v1000-qa.yml'
   pull_request:
     branches: [main]
     paths:
       - 'src/main.js'
       - 'src/premiumHudV1000.*'
+      - 'src/premiumHudV1004.css'
       - 'index.html'
       - 'public/assets/ui/afterday-premium-v1000/**'
-      - 'public/assets/ui/hud-square-fade/**'
+      - 'public/assets/ui/hud-approved-v1004/**'
       - 'tests/premium-hud-v1000.test.mjs'
-      - 'scripts/qa_premium_v1000.mjs'
+      - 'scripts/qa_approved_hud_v1004.mjs'
   workflow_dispatch:
 jobs:
   test-and-real-browser:
@@ -52,13 +54,13 @@ jobs:
           done
           cat /tmp/afterday-premium-v1000.log
           exit 1
-      - name: Capture 2560x1440 1280x720 390x844 320x568 actual Three.js game
-        run: node scripts/qa_premium_v1000.mjs
+      - name: Capture PC, tablet and mobile in Chromium; validate text/icon bounds
+        run: node scripts/qa_approved_hud_v1004.mjs
       - name: Upload screenshots and metrics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: afterday-premium-v1000-real-game-screenshots
-          path: docs/qa/premium-hud-v1000/
+          name: afterday-approved-hud-v1004-browser-screenshots
+          path: docs/qa/approved-hud-v1004/
           if-no-files-found: warn
           retention-days: 14
