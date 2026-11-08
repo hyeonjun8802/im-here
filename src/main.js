@@ -65,6 +65,7 @@ const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],[
 function renderHUD(){
  const t=gameClock.virtualNow,day=getDay(state.startedAt,t),dead=state.survivalStatus==='dead';
  $('#days').textContent='DAY '+String(day).padStart(3,'0');$('#clock').textContent=wallClock(t);
+  const dayChip=$('#survival-day-chip'); if(dayChip)dayChip.textContent='생존 '+day+'일차';
  disasterForecast.sync(state,t);
  $('#days').title='실제 플레이 10분마다 게임 하루가 지나갑니다 (기본 1×)';
  $('#day-pace').textContent='1일 = 플레이 10분';
