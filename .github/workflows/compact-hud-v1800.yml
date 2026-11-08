@@ -1,0 +1,40 @@
+name: Compact equipment and lower action icon visual QA
+on:
+  push:
+    branches: [fix/compact-survival-kit-action-icons-20261109]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  responsive-hud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Full regression suite and Vite production build
+        run: npm run build
+      - name: Install Chromium and Safari WebKit
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Start game UI
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-v18.log 2>&1 &
+          for n in $(seq 1 60); do if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/afterday-v18.log
+          exit 1
+      - name: Inspect icon Y positioning and compact kit at ten screen/browser combinations
+        run: node scripts/qa_compact_hud_v1800.mjs
+      - name: Upload 10 screenshots and pixel metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compact-hud-v1800-10-screens
+          path: docs/qa/compact-hud-v1800/
+          if-no-files-found: warn
+          retention-days: 14
