@@ -1,6 +1,7 @@
 import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
 import {installPremiumHudV1000} from './premiumHudV1000.js';
+import {installCommonUiAssetsV3} from './commonUiAssetsV3.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
@@ -18,6 +19,8 @@ const state=sanitize(saved,gameClock.virtualNow);
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
 const disasterForecast=installPremiumHudV1000($('#disaster-forecast'));
+// Load the approved extracted 48-sprite kit; keep the legacy artwork until it is ready.
+void installCommonUiAssetsV3();
 let restartInProgress=false;
 const save=()=>{
  if(restartInProgress)return true;
