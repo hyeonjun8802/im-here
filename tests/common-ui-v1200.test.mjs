@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 const read=(p)=>readFileSync(new URL('../'+p,import.meta.url));
 const html=read('index.html').toString();
 const main=read('src/main.js').toString();
-const css=read('src/commonUiAssetsV3.css').toString();
+const css=['src/commonUiAssetsV3.css','src/commonUiLayoutV31.css','src/hudAlignmentV1300.css'].map(p=>read(p).toString()).join('\n');
 const js=read('src/commonUiAssetsV3.js').toString();
 const atlas=read('public/assets/ui/apocalypse-v3/spritesheet.webp');
 const manifest=JSON.parse(read('public/assets/ui/apocalypse-v3/spritesheet.json').toString());
