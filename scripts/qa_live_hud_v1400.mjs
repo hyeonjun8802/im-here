@@ -67,11 +67,11 @@ try{
    const painted=await page.evaluate(()=>window.afterday.world.renderer.domElement.toDataURL('image/png').split(',')[1]);
    if(!painted||painted.length<18000)throw new Error('WebGL frame pixels not available for capture');
    fs.writeFileSync(out+'/world-'+name+'.png',Buffer.from(painted,'base64'));
-   try{
-     await page.screenshot({path:out+'/'+name+'.png',animations:'disabled',timeout:18000});
-   }catch(error){
-     console.log('LIVE_HUD_COMPOSITE_CAPTURE_SKIPPED '+name+' '+String(error).slice(0,150));
-   }
+   // The real rendered WebGL framebuffer is saved above as a PNG.
+   // HUD-only full-page screenshots are independently captured in the
+   // multi-engine layout audit. Avoid a second full-window software-GPU
+   // compositor pass here; it can deadlock headless CI despite valid 3D.
+   console.log('LIVE_HUD_RAW_WEBGL_FRAME_SAVED '+name+' bytes='+Math.floor(painted.length*3/4));
    if(bad.length)issues.push(row);
   }catch(e){
    issues.push({name,error:String(e)});
