@@ -1,0 +1,44 @@
+name: Premium survival equipment HUD visual verification
+on:
+  push:
+    branches: [fix/premium-equipment-hud-v1600-20261109]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  premium-layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Full regression suite and production Vite build
+        run: npm run build
+      - name: Browser engines
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Serve real production UI layout and 48-sprite atlas
+        run: |
+          npm run dev -- --host 127.0.0.1 >/tmp/premium-qa.log 2>&1 &
+          for n in $(seq 1 60); do if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/premium-qa.log
+          exit 1
+      - name: Test dense Day-10 equipment and popup at five screen sizes in two browser engines
+        run: node scripts/qa_premium_equipment_v1600.mjs
+      - name: Verify genuine WebGL game boot on mobile and desktop
+        run: node scripts/qa_live_hud_v1400.mjs
+      - name: Upload 20 screens and layout metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-equipment-10-sizes-closed-open
+          path: |
+            docs/qa/premium-equipment-v1600/
+            docs/qa/live-hud-v1400/
+          if-no-files-found: warn
+          retention-days: 14

@@ -2,6 +2,7 @@ import { AfterWorld } from './world.js';
 import { AfterdayEventBoard } from './eventBoard.js';
 import {installPremiumHudV1000} from './premiumHudV1000.js';
 import {installCommonUiAssetsV3} from './commonUiAssetsV3.js';
+import {installPremiumEquipmentHudV1600} from './premiumEquipmentHudV1600.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
@@ -21,6 +22,7 @@ advance(state,gameClock.virtualNow,true);
 const disasterForecast=installPremiumHudV1000($('#disaster-forecast'));
 // Load the approved extracted 48-sprite kit; keep the legacy artwork until it is ready.
 void installCommonUiAssetsV3();
+installPremiumEquipmentHudV1600();
 let restartInProgress=false;
 const save=()=>{
  if(restartInProgress)return true;
@@ -89,19 +91,30 @@ function renderHUD(){
  $('#expedition-toggle').hidden=!open||dead;
  const waiting=state.companion?.pending;
  $('#companion-toggle').hidden=!waiting||dead;
- $('#companion-status').textContent=state.companion?.present
-   ?'🤝 지원 생존자 동행 · 건강 '+Math.round(state.companion.health)+'% · 식량/식수 매일 -1 · 정수/재배 +30%'
-   : waiting?'📡 다른 생존자의 구조 요청 · 받아들일지 선택하세요'
-   : state.companion?.lost?'🕯 함께하던 생존자는 캠프를 떠났습니다'
-   :'🏙 주변 생존자 신호를 기다리는 중';
+ const companionLong=state.companion?.present
+   ?'지원 생존자 동행 · 건강 '+Math.round(state.companion.health)+'% · 식량/식수 매일 -1 · 정수/재배 +30%'
+   :waiting?'다른 생존자의 구조 요청 · 받아들일지 선택하세요'
+   :state.companion?.lost?'함께하던 생존자는 캠프를 떠났습니다':'주변 생존자 신호를 기다리는 중';
+ $('#companion-status').textContent=state.companion?.present?
+   '생존자 동행 · 건강 '+Math.round(state.companion.health)+'%':
+   waiting?'생존자 구조 요청 대기':state.companion?.lost?'동행 생존자 이탈':'생존자 신호 대기';
+ $('#companion-status').title=companionLong;
  $('#radio-contact').hidden=!state.kit.radio||dead;
  const owned=ITEM_IDS.filter(id=>state.kit?.[id]);
- $('#inventory-items').textContent=owned.length?
-   owned.map(id=>ITEM_INFO[id].icon+' '+ITEM_INFO[id].label).join(' · '):
-   '아직 생존 장비가 없습니다 · 탐색으로 획득';
+ const kitLabels={tent:'텐트',purifier:'정수기',seeds:'재배 씨앗',radio:'무전기'};
+ const inventoryNode=$('#inventory-items');
+ inventoryNode.textContent=owned.length?
+   '보유 '+owned.length+'종 · '+owned.map(id=>kitLabels[id]||ITEM_INFO[id].label).join(' · '):
+   '장비 없음 · 탐색으로 확보';
+ inventoryNode.title=owned.length?
+   owned.map(id=>ITEM_INFO[id].label+' · '+ITEM_INFO[id].description).join(' / '):
+   '탐색을 통해 장비를 획득할 수 있습니다';
+ inventoryNode.setAttribute('aria-label',inventoryNode.title);
  $('#life-panel-intro').textContent=state.kit?.tent?'매일 23시~07시에 야전 텐트 안에서 잠듭니다. 비·한파·황사와 연기를 피하며 회복할 수 있습니다.':'매일 23시~07시에 노출된 시멘트 바닥에서 잠듭니다. 비·한파·황사·연기에 병들 수 있습니다. 텐트를 찾아야 합니다.';
  $('#sleep-arrangement').textContent=state.kit?.tent?
-   '⛺ 텐트에서 수면 · 회복력 강화':'🧱 콘크리트에서 수면 · 감염·체력 위험';
+   '텐트 수면 · 회복 강화':'노출 수면 · 감염 위험';
+ $('#sleep-arrangement').title=state.kit?.tent?
+   '텐트에서 수면 · 회복력 강화':'콘크리트에서 수면 · 감염 및 체력 위험';
  $('#radio-contact').title=state.kit?.radio?'오늘 무전으로 구조 신호를 요청합니다':'무전기를 찾아야 합니다';
  $('#repair-tank').hidden=state.facilities.tank>=80||dead;
  $('#weather-brief').textContent=WEATHER_KO[state.weather]+' · '+({heat:'37°C',clear:'21°C',rain:'17°C',storm:'16°C',tornado:'18°C',cloud:'19°C',cold:'−5°C',dust:'29°C',wildfire:'43°C'}[state.weather]);

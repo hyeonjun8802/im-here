@@ -444,3 +444,180 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
    max-height:calc(100% - 10px)!important;
  }
 }
+
+
+/* AFTERDAY v16.0 — premium composition, source 461x308 equipment artwork.
+ * One original embedded emergency button only. Optional actions use a
+ * disclosure menu ABOVE the frame, not a second button in the source art.
+ * Keep these as final overrides in the existing alignment stylesheet. */
+body.afterday-real-ui-v3 #hud .survival-kit {
+ width:clamp(315px,31vw,406px)!important;
+ max-width:calc(100vw - 24px)!important;
+ min-height:0!important;height:auto!important;
+ aspect-ratio:461 / 308!important;
+ box-sizing:border-box!important;
+ padding:clamp(61px,5.7vw,77px) clamp(20px,2vw,27px) clamp(49px,5vw,64px)!important;
+ gap:5px!important;
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ justify-content:flex-start!important;
+ overflow:visible!important;
+ isolation:isolate!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
+ top:calc(17.2% - .6em)!important;
+ left:8.5%!important;right:53%!important;
+ font-size:clamp(11px,1.05vw,14px)!important;
+ font-weight:800!important;line-height:1.15!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ color:#e7c69e!important;
+}
+body.afterday-real-ui-v3 #hud #inventory-items{
+ display:-webkit-box!important;-webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;
+ max-height:2.56em!important;
+ overflow:hidden!important;
+ white-space:normal!important;word-break:keep-all!important;overflow-wrap:break-word!important;
+ margin:0!important;line-height:1.28!important;
+ font-size:clamp(11px,1vw,13px)!important;
+ color:#f0e8d8!important;font-weight:750!important;
+}
+body.afterday-real-ui-v3 #hud #sleep-arrangement,
+body.afterday-real-ui-v3 #hud #companion-status{
+ display:block!important;flex:0 0 auto!important;
+ margin:0!important;max-width:100%!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ font-size:clamp(10px,.87vw,12px)!important;
+ font-weight:550!important;line-height:1.2!important;
+ color:#b6c4bd!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ position:absolute!important;top:81.17%!important;bottom:auto!important;
+ left:11%!important;width:78%!important;height:clamp(29px,3vw,37px)!important;min-height:0!important;
+ padding:0 8px!important;transform:translateY(-50%)!important;
+ font-size:clamp(11px,1vw,14px)!important;line-height:1.1!important;
+ z-index:2!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit > .premium-equipment-disclosure{
+ position:absolute!important;top:9.5%!important;right:6.2%!important;
+ display:flex!important;justify-content:center!important;align-items:center!important;
+ min-height:25px!important;min-width:47px!important;
+ padding:2px 8px!important;margin:0!important;
+ border:1px solid #b99a719c!important;border-radius:3px!important;
+ background:linear-gradient(#394044,#131d24)!important;
+ color:#e3c69f!important;font-size:11px!important;font-weight:800!important;
+ line-height:1!important;white-space:nowrap!important;
+ box-shadow:inset 0 1px #e9d5ba30,0 3px 8px #0009!important;
+ z-index:5!important;pointer-events:auto!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit > .premium-equipment-disclosure[hidden]{display:none!important}
+body.afterday-real-ui-v3 #hud .survival-kit > .premium-equipment-disclosure[aria-expanded="true"]{border-color:#f2cb8d!important}
+body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-controls{
+ position:absolute!important;top:auto!important;bottom:calc(100% + 8px)!important;
+ left:4%!important;right:4%!important;width:auto!important;
+ display:none!important;flex-direction:column!important;flex-wrap:nowrap!important;
+ align-items:stretch!important;gap:5px!important;
+ padding:10px!important;margin:0!important;
+ background:linear-gradient(155deg,#263238f8,#0c171df9)!important;
+ border:1px solid #c59d6b!important;border-radius:4px!important;
+ box-shadow:0 15px 32px #000c,inset 0 1px #decaa830!important;
+ max-height:40vh!important;overflow-y:auto!important;overflow-x:hidden!important;
+ z-index:6!important;pointer-events:auto!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > .survival-kit-controls{display:flex!important}
+body.afterday-real-ui-v3 #hud .survival-kit-controls > button:not([hidden]){
+ display:flex!important;width:100%!important;flex:0 0 auto!important;
+ justify-content:center!important;align-items:center!important;
+ min-height:32px!important;max-height:none!important;
+ padding:6px 8px!important;font-size:11px!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-controls > button[hidden]{display:none!important}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > img.afterday-v3-action-icon,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+ width:clamp(23px,2.45vw,30px)!important;height:clamp(23px,2.45vw,30px)!important;
+ max-width:calc(100% - 11px)!important;max-height:calc(100% - 11px)!important;
+ filter:saturate(.66) drop-shadow(0 1px 2px #000b)!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-kit{
+  width:clamp(226px,70vw,290px)!important;
+  max-width:calc(100vw - 24px)!important;
+  left:10px!important;
+  bottom:calc(max(75px,(100vw - 8px) * 172 / 1148 + 19px) + env(safe-area-inset-bottom))!important;
+  height:auto!important;min-height:0!important;aspect-ratio:461 / 308!important;
+  padding:clamp(52px,15vw,68px) clamp(15px,4.4vw,20px) clamp(40px,11.4vw,49px)!important;
+  gap:3px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
+  top:calc(17.2% - .60em)!important;left:8.5%!important;right:55%!important;
+  font-size:clamp(10px,2.7vw,12px)!important;
+ }
+ body.afterday-real-ui-v3 #hud #inventory-items{
+  font-size:clamp(10.8px,2.9vw,12px)!important;
+  line-height:1.2!important;max-height:2.4em!important;
+ }
+ body.afterday-real-ui-v3 #hud #sleep-arrangement,
+ body.afterday-real-ui-v3 #hud #companion-status{
+  font-size:clamp(9px,2.4vw,10px)!important;
+  line-height:1.16!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action{
+  top:81.17%!important;bottom:auto!important;
+  height:clamp(27px,8vw,33px)!important;
+  font-size:clamp(10px,2.65vw,12px)!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit > .premium-equipment-disclosure{
+  top:8.7%!important;right:6.2%!important;
+  min-height:23px!important;min-width:43px!important;
+  font-size:10px!important;padding:2px 6px!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > img.afterday-v3-action-icon,
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+  width:clamp(18px,5.1vw,23px)!important;height:clamp(18px,5.1vw,23px)!important;
+  max-width:calc(100% - 11px)!important;max-height:calc(100% - 12px)!important;
+ }
+}
+@media(max-width:360px){
+ body.afterday-real-ui-v3 #hud .survival-kit{width:clamp(222px,73vw,254px)!important}
+}
+@media(max-width:720px) and (max-height:600px){
+ body.afterday-real-ui-v3 #hud .survival-kit{
+  width:clamp(200px,57vw,234px)!important;
+  padding:36px 13px 37px!important;
+ }
+}
+
+
+/* The legacy v13 \`:has(> .survival-kit-action)\` selector has more specificity
+ * than ordinary .survival-kit. Explicitly override that same selector here,
+ * or Safari/Chromium keep the old 11.45vw top padding and the text invades
+ * the metal title tab on 320px and 390px devices. */
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+  padding-top:clamp(52px,15vw,68px)!important;
+  padding-right:clamp(15px,4.4vw,20px)!important;
+  padding-bottom:clamp(40px,11.4vw,49px)!important;
+  padding-left:clamp(15px,4.4vw,20px)!important;
+ }
+}
+/* Last source-safe polish: unlocked actions are real menu rows, not a copy of
+ * the baked gold emergency button; the native frame must never show two wells. */
+body.afterday-real-ui-v3 #hud .survival-kit-controls > .premium-equipment-menu-title{
+ display:block!important;
+ color:#d6b993!important;
+ font-size:10px!important;font-weight:800!important;
+ line-height:1.4!important;letter-spacing:.09em!important;
+ border-bottom:1px solid rgba(183,145,93,.36)!important;
+ padding:0 3px 6px!important;
+ margin:0 0 2px!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-controls > button:not([hidden]){
+ background-image:none!important;
+ background:linear-gradient(180deg,rgba(84,92,91,.5),rgba(25,35,42,.95))!important;
+ border:1px solid rgba(178,148,110,.62)!important;
+ border-left:2px solid #c99b5b!important;
+ border-radius:2px!important;
+ box-shadow:inset 0 1px rgba(235,218,191,.10)!important;
+ color:#ebdcc5!important;
+}
