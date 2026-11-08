@@ -1,11 +1,14 @@
 /* Real production DOM, CSS and original atlas; only 3D boot is bypassed on CI.
    Reports actual Chromium bounds for mobile, tablet, and desktop. */
-import {chromium} from 'playwright';
+import {chromium,webkit} from 'playwright';
 import fs from 'node:fs';
 const out='docs/qa/hud-visual-20261108';fs.mkdirSync(out,{recursive:true});
-const variants=[['phone-320',320,690],['phone-390',390,844],['phone-430',430,932],['tablet-768',768,1024],['desktop-1280',1280,800],['desktop-1920',1920,1080]];
+fs.copyFileSync('public/assets/ui/apocalypse-v3/spritesheet.webp',out+'/atlas.webp');
+fs.copyFileSync('public/assets/ui/apocalypse-v3/spritesheet.json',out+'/atlas.json');
+const variants=[['phone-320',320,568],['phone-390-safari',390,668],['phone-390',390,844],['phone-430',430,732],['tablet-768',768,1024],['desktop-1280',1280,800],['desktop-1920',1920,1080]];
 const report=[];
-const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--use-gl=angle','--use-angle=swiftshader']});
+const engine=process.env.QA_BROWSER==='webkit'?'webkit':'chromium';
+const browser=await (engine==='webkit'?webkit:chromium).launch({headless:true,args:engine==='chromium'?['--no-sandbox','--disable-dev-shm-usage']:[]});
 try{
  for(const [name,w,h] of variants){
   const page=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:1,isMobile:w<720,hasTouch:w<720});
@@ -24,6 +27,45 @@ try{
    document.head.append(sty);
   });
   await page.waitForFunction(()=>document.querySelector('.afterday-v3-action-icon')?.complete&&document.querySelector('.premium-hud__current-art')?.naturalWidth>0,null,{timeout:20000});
+  if(name==='phone-390-safari'||name==='desktop-1280'){
+    const audit=await page.evaluate(()=>{
+      const selectors={
+       frame:'#hud .survival-kit',header:'#hud .survival-kit > small:first-child',
+       content:'#inventory-items',action:'#survival-kit-action',
+       nav:'#hud .actionbar',slot:'#hud .actionbar #drink',
+       center:'.premium-hud__current-art',forecast:'.premium-hud__forecast',
+       stats:'.survival-hud-stats',stock:'.survival-hud-stock',clock:'#clock'
+      };
+      const props=['top','left','right','bottom','width','height','min-height','padding','padding-top','padding-bottom','transform','grid-template-columns','background-size','object-position','font-size','position','display'];
+      const log={};
+      for(const [label,selector] of Object.entries(selectors)){
+        const el=document.querySelector(selector);
+        if(!el)continue;
+        const rules=[];
+        function scan(owner,list,media){
+          for(const r of Array.from(list)){
+            if(r.type===CSSRule.MEDIA_RULE){
+              if(matchMedia(r.conditionText).matches)scan(owner,r.cssRules,r.conditionText);
+            }else if(r.type===CSSRule.STYLE_RULE){
+              let yes=false;try{yes=el.matches(r.selectorText)}catch{}
+              if(!yes)continue;
+              const d={};
+              for(const p of props)if(r.style.getPropertyValue(p))d[p]=r.style.getPropertyValue(p)+(r.style.getPropertyPriority(p)==='important'?' !important':'');
+              if(Object.keys(d).length)rules.push({css:owner.split('/').pop(),media,selector:r.selectorText,decl:d});
+            }
+          }
+        }
+        for(const sh of document.styleSheets){
+          let rs;try{rs=sh.cssRules}catch{continue}
+          scan(sh.href||'inline',rs,'all');
+        }
+        const computed=getComputedStyle(el);
+        log[label]={computed:Object.fromEntries(props.map(p=>[p,computed.getPropertyValue(p)])),rules};
+      }
+      return log;
+    });
+    fs.writeFileSync(out+'/css-audit-'+engine+'-'+name+'.json',JSON.stringify(audit,null,2));
+  }
   const metrics=await page.evaluate(()=>{
    const sel=q=>document.querySelector(q),r=e=>{if(!e)return null;const x=e.getBoundingClientRect();return {x:+x.x.toFixed(2),y:+x.y.toFixed(2),right:+x.right.toFixed(2),bottom:+x.bottom.toFixed(2),w:+x.width.toFixed(2),h:+x.height.toFixed(2)}};
    const kit=sel('.survival-kit'),nav=sel('.actionbar'),hud=sel('.premium-hud-v1000');
@@ -64,9 +106,40 @@ try{
   if(metrics.slots.some(s=>s.offset!==null&&Math.abs(s.offset)>3))problems.push('action icon box center mismatch');
   if(metrics.slots.some(s=>s.visualOffset!==null&&Math.abs(s.visualOffset)>3))problems.push('action icon optical center mismatch');
   if(metrics.weather&&metrics.hud&&Math.abs((metrics.weather.x+metrics.weather.w/2)-(metrics.hud.x+metrics.hud.w/2))>2)problems.push('weather dial off center');
-  const file=out+'/'+name+'.png';
+  // Measure against the ORIGINAL sprite pixel coordinates, not the HTML box alone.
+  // Native frame: equipment_panel 461x308, bottom_action_bar_full 1148x172.
+  if(k&&f.title?.r){
+   const center=(f.title.r.y+f.title.r.bottom)/2;
+   const sourceCenter=k.y+k.h*53/308;
+   if(Math.abs(center-sourceCenter)>3.2)problems.push('equipment raised header ink vs art center '+(center-sourceCenter).toFixed(2));
+  }
+  if(k&&f.inventory?.r){
+   const sourceContentTop=k.y+k.h*90/308;
+   if(f.inventory.r.y<sourceContentTop-2)problems.push('equipment text overlaps ORIGINAL header tab');
+  }
+  if(k&&f.action?.r){
+   const center=(f.action.r.y+f.action.r.bottom)/2;
+   const sourceCenter=k.y+k.h*250/308;
+   if(Math.abs(center-sourceCenter)>3.2)problems.push('explore label off ORIGINAL button well '+(center-sourceCenter).toFixed(2));
+  }
+  const sourceSlotCenters=[110,230,350,468,586,706,826,943,1062];
+  if(metrics.nav){
+   if(metrics.nav.x<-1||metrics.nav.right>metrics.viewport.w+1)problems.push('bottom action rail overflows viewport');
+   if(Math.abs(metrics.nav.h-(metrics.nav.w*172/1148))>2.5)problems.push('bar does not preserve ORIGINAL 1148x172 artwork aspect');
+  }
+  if(metrics.slots.length===9){
+   for(let i=0;i<9;i++){
+    const slot=metrics.slots[i],target=metrics.nav.x+metrics.nav.w*(sourceSlotCenters[i]/1148);
+    const actual=slot.rect.x+slot.rect.w/2;
+    if(Math.abs(actual-target)>2.8)problems.push('slot '+i+' misses ORIGINAL metal image center '+(actual-target).toFixed(2)+'px');
+   }
+  }else if(!metrics.nav||metrics.slots.length<9)problems.push('expected nine visible original art slots');
+  // All live top-HUD data must fit the original metal safe wings.
+  if(metrics.forecast&&metrics.hud&&metrics.forecast.right>metrics.hud.right)problems.push('forecast escapes original wing');
+
+  const file=out+'/'+engine+'-'+name+'.png';
   await page.screenshot({path:file,fullPage:false,animations:'disabled'});
-  if(name==='phone-390'){
+  if(name==='phone-390-safari'){
    await page.evaluate(()=>{
     const panel=document.createElement('div');
     panel.id='qa-icon-gallery';
@@ -82,14 +155,14 @@ try{
     }
     document.body.append(panel);
    });
-   await page.screenshot({path:out+'/icon-gallery.png',fullPage:false,animations:'disabled'});
+   await page.screenshot({path:out+'/icon-gallery-'+engine+'.png',fullPage:false,animations:'disabled'});
    await page.evaluate(()=>document.querySelector('#qa-icon-gallery')?.remove());
   }
-  report.push({name,metrics,problems,pageErrors:errs});
-  console.log('LAYOUT_QA',JSON.stringify({name,kit:metrics.kit,content:metrics.children,nav:metrics.nav,slotOffsets:metrics.slots.map(x=>({id:x.id,offset:x.offset,visualOffset:x.visualOffset})),weather:metrics.weather,clock:metrics.clock,problems,pageErrors:errs}));
+  report.push({engine,name,metrics,problems,pageErrors:errs});
+  console.log('LAYOUT_QA',JSON.stringify({engine,name,kit:metrics.kit,content:metrics.children,nav:metrics.nav,slotOffsets:metrics.slots.map(x=>({id:x.id,offset:x.offset,visualOffset:x.visualOffset})),weather:metrics.weather,clock:metrics.clock,problems,pageErrors:errs}));
   await page.close();
  }
 }finally{await browser.close()}
-fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));
+fs.writeFileSync(out+'/report-'+engine+'.json',JSON.stringify(report,null,2));
 console.log('LAYOUT_SUMMARY',JSON.stringify(report.map(x=>({name:x.name,problems:x.problems}))));
 if(process.env.STRICT_HUD_QA==='1'&&report.some(r=>r.problems.length||r.pageErrors.length))process.exitCode=1;

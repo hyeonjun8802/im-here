@@ -54,6 +54,18 @@ function centeredIconFromAtlas(image,frames,name) {
     minX=Math.min(minX,x);minY=Math.min(minY,y);
     maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
   }
+  // Original atlas includes stray disconnected source artifacts in 4 sprites.
+  // These are verified native 64x64 crop bounds of the main glyph only.
+  // Do not change original sprite files or touch any other icon resources.
+  const cleanSource = {
+    icon_food:[21,13,42,54],
+    icon_tools:[27,16,48,51],
+    icon_radio:[20,14,45,43],
+    icon_supply:[20,14,45,47]
+  }[name];
+  if(cleanSource){
+    [minX,minY,maxX,maxY]=cleanSource;
+  }
   if(maxX<minX||maxY<minY)return image.src;
   const dst=document.createElement('canvas');dst.width=64;dst.height=64;
   const dc=dst.getContext('2d',{alpha:true});

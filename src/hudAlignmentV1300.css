@@ -1,4 +1,4 @@
-/* AFTERDAY responsive HUD alignment v13.0.
+/* AFTERDAY responsive HUD alignment v13.1, atlas-coordinate audit 2026-11-08.
  * Only display geometry; existing 48-sprite original atlas, WebGL and game actions remain intact.
  * Loaded after commonUiLayoutV31.css for deterministic cascade priority. */
 
@@ -13,7 +13,7 @@ body.afterday-real-ui-v3 #hud .survival-day-chip{
 }
 body.afterday-real-ui-v3 #hud .top-right #clock{
  height:47px!important;min-height:47px!important;
- font-size:clamp(20px,1.8vw,26px)!important;
+ font-size:clamp(18px,1.5vw,23px)!important;
  font-weight:800!important;letter-spacing:.015em!important;font-variant-numeric:tabular-nums!important;
 }
 body.afterday-real-ui-v3 #hud .top-right #speed-toggle{
@@ -95,12 +95,12 @@ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__future-halo{top:13%!im
 body.afterday-real-ui-v3 #hud .survival-kit{
  width:min(352px,40vw)!important;max-width:min(352px,40vw)!important;
  min-height:227px!important;height:auto!important;
- padding:52px 24px 62px!important;box-sizing:border-box!important;
+ padding:70px 24px 62px!important;box-sizing:border-box!important;
  display:flex!important;flex-direction:column!important;align-items:stretch!important;
  gap:7px!important;overflow:hidden!important;
 }
 body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
- position:absolute!important;top:15px!important;left:31px!important;right:14px!important;
+ position:absolute!important;top:32px!important;left:31px!important;right:51%!important;
  width:auto!important;margin:0!important;padding:0!important;
  font-size:clamp(11px,1vw,13px)!important;letter-spacing:0!important;
  line-height:1.2!important;white-space:nowrap!important;
@@ -120,7 +120,7 @@ body.afterday-real-ui-v3 #hud #companion-status{
  font-size:clamp(10px,.82vw,12px)!important;line-height:1.35!important;
 }
 body.afterday-real-ui-v3 #hud .survival-kit-action{
- bottom:7%!important;left:11%!important;width:78%!important;
+ bottom:11.5%!important;left:11%!important;width:78%!important;
  height:33px!important;min-height:33px!important;
  font-size:clamp(11px,1vw,14px)!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
@@ -130,7 +130,8 @@ body.afterday-real-ui-v3 #hud .survival-kit-action{
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions){
  display:grid!important;grid-template-columns:repeat(9,minmax(0,1fr))!important;
  grid-template-rows:minmax(0,1fr)!important;
- gap:0!important;align-items:stretch!important;padding:7px 3.1% 7px 4%!important;
+ gap:0!important;align-items:stretch!important;
+ padding:7px calc(min(1040px,100vw - 10px) * .023) 7px calc(min(1040px,100vw - 10px) * .045)!important;
 }
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button,
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot{
@@ -159,7 +160,7 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   height:30px!important;min-height:30px!important;font-size:clamp(10px,2.7vw,12px)!important;
  }
  body.afterday-real-ui-v3 #hud .top-right #clock{
-  height:39px!important;min-height:39px!important;font-size:clamp(17px,4.6vw,20px)!important;
+  height:39px!important;min-height:39px!important;font-size:clamp(15px,4vw,18px)!important;
   letter-spacing:.005em!important;
  }
  body.afterday-real-ui-v3 #hud .top-right #speed-toggle{
@@ -221,10 +222,10 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   bottom:calc(max(76px,(100vw - 8px) * 172 / 1148 + 18px) + env(safe-area-inset-bottom))!important;
   width:min(57vw,225px)!important;max-width:min(57vw,225px)!important;
   min-height:clamp(167px,49vw,193px)!important;height:auto!important;
-  padding:44px 16px 51px!important;gap:5px!important;overflow:hidden!important;
+  padding:clamp(52px,15.2vw,61px) 16px 51px!important;gap:5px!important;overflow:hidden!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
-  top:17px!important;left:20px!important;right:9px!important;
+  top:clamp(23px,7vw,29px)!important;left:20px!important;right:51%!important;
   font-size:clamp(8.5px,2.4vw,10.5px)!important;line-height:1.15!important;
  }
  body.afterday-real-ui-v3 #hud #inventory-items{
@@ -237,13 +238,17 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit-action{
-  bottom:6%!important;height:29px!important;min-height:29px!important;
+  bottom:11.5%!important;height:29px!important;min-height:29px!important;
   font-size:clamp(9px,2.36vw,11px)!important;
  }
  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions){
   width:calc(100vw - 8px)!important;max-width:calc(100vw - 8px)!important;
-  min-height:60px!important;aspect-ratio:1148 / 172!important;
-  padding:5px 3.1% 5px 4%!important;gap:0!important;
+  min-width:0!important;
+  /* WebKit otherwise transfers min-height:60px through aspect-ratio
+   * and FORCES a 400.45px-wide bar on 320/390px Safari viewports. */
+  height:auto!important;min-height:0!important;aspect-ratio:1148 / 172!important;
+  box-sizing:border-box!important;
+  padding:5px calc((100vw - 8px) * .023) 5px calc((100vw - 8px) * .045)!important;gap:0!important;
  }
  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button,
  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot{
@@ -288,14 +293,14 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
  * area even on the first survival day. */
 @media(max-width:720px){
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
-  padding-top:44px!important;
+  padding-top:clamp(52px,15.2vw,61px)!important;
   padding-right:16px!important;
   padding-left:16px!important;
   padding-bottom:51px!important;
   min-height:clamp(167px,49vw,193px)!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) > small:first-child{
-  top:17px!important;
+  top:clamp(23px,7vw,29px)!important;
   margin:0!important;
   padding:0!important;
   min-height:0!important;
@@ -318,3 +323,12 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.nee
  background:linear-gradient(180deg,rgba(220,143,54,.07),rgba(160,90,33,.05))!important;
  box-shadow:none!important;border:0!important;border-radius:0!important;
 }
+
+/* SOURCE PIXEL ANCHORS (confirmed original atlas 2048x1139):
+ * equipment_panel 461x308: header 22..84y, content after 90y,
+ * emergency action well 224..276y (center 250px = 81.2% panel height).
+ * bottom_action_bar_full 1148x172: 9 visual centers x
+ * 110,230,350,468,586,706,826,943,1062. The unequal outer rails
+ * require 4.5% LEFT and 2.3% RIGHT padding OF THE ART WIDTH,
+ * not the parent viewport. Text is intentionally secondary to the game.
+ */

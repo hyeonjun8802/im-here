@@ -19,7 +19,7 @@ test('top status and weather icons align on both desktop and mobile',()=>{
 test('equipment text wraps with header and explore button separated',()=>{
  assert.match(css,/#hud \.survival-kit > small:first-child\s*\{[\s\S]*?position:absolute!important/);
  assert.match(css,/#hud #sleep-arrangement,[\s\S]*?#hud #companion-status\s*\{[\s\S]*?white-space:normal!important/);
- assert.match(css,/padding:44px 16px 51px!important/);
+ assert.ok(css.includes('padding:clamp(52px,15.2vw,61px) 16px 51px!important'));
  assert.match(css,/min-height:clamp\(167px,49vw,193px\)/);
 });
 test('nine original sprite slots keep centered live controls',()=>{
@@ -28,22 +28,40 @@ test('nine original sprite slots keep centered live controls',()=>{
  assert.match(css,/object-fit:contain!important;object-position:center!important/);
  assert.doesNotMatch(css,/actionbar button::before\s*\{/);
  assert.match(css,/actionbar\.v3-has-extra-actions/);
- for(const w of [320,360,375,390,414,430,600,720,1024,1440]){
-  const left=w*.04,right=w*.031,pitch=(w-left-right)/9;
-  const centers=Array.from({length:9},(_,i)=>left+(i+.5)*pitch);
-  assert.ok(centers[0]>0&&centers[8]<w,'slot centers '+w);
-  for(let i=1;i<9;i++)assert.ok(Math.abs((centers[i]-centers[i-1])-pitch)<1e-6);
+ const source=[110,230,350,468,586,706,826,943,1062];
+ for(const vw of [320,360,375,390,414,430,600,720,768,1024,1280,1920]){
+  const barWidth=Math.min(1040,vw-(vw<=720?8:10));
+  const left=barWidth*.045,right=barWidth*.023,pitch=(barWidth-left-right)/9;
+  for(let i=0;i<9;i++){
+   const cssCenter=left+(i+.5)*pitch;
+   const artCenter=barWidth*source[i]/1148;
+   assert.ok(Math.abs(cssCenter-artCenter)<3, 'center must match ORIGINAL sprite cell '+i+' at '+vw+'px; offset '+(cssCenter-artCenter));
+  }
  }
 });
 test('clock is smaller and all gameplay actions remain accessible',()=>{
- assert.match(css,/font-size:clamp\(20px,1\.8vw,26px\)/);
- assert.match(css,/font-size:clamp\(17px,4\.6vw,20px\)/);
+ assert.match(css,/font-size:clamp\(18px,1\.5vw,23px\)/);
+ assert.match(css,/font-size:clamp\(15px,4vw,18px\)/);
  for(const id of ['clock','speed-toggle','survival-kit-action','drink','eat','repair','rest','medicine','explore','life-panel-toggle','weather-panel-toggle'])assert.ok(html.includes('id="'+id+'"'),id);
 });
 
 test('mobile header cannot revert to old collapsed 13px padding',()=>{
  const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
  assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
- assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:44px!important/);
+ assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(52px,15\.2vw,61px\)!important/);
  assert.match(orig,/centeredIconFromAtlas/);
+});
+
+test('original extracted frame coordinates are explicit and mobile artwork controls correct glyph bounds',()=>{
+ assert.match(css,/equipment_panel 461x308/);
+ assert.match(css,/110,230,350,468,586,706,826,943,1062/);
+ assert.match(css,/bottom:11\.5%!important/);
+ assert.match(orig,/icon_tools:\[27,16,48,51\]/);
+ assert.match(orig,/icon_radio:\[20,14,45,43\]/);
+});
+
+test('iOS WebKit action rail does not grow to 400px from transferred minimum height',()=>{
+ assert.match(css,/WebKit otherwise transfers min-height:60px through aspect-ratio/);
+ assert.match(css,/height:auto!important;min-height:0!important;aspect-ratio:1148 \/ 172!important/);
+ assert.match(css,/width:calc\(100vw - 8px\)!important;max-width:calc\(100vw - 8px\)!important/);
 });
