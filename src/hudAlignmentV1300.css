@@ -389,3 +389,58 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not
   font-size:clamp(19px,5.2vw,23px)!important;
  }
 }
+
+
+/* v14 authoritative art-safe layout. These targets belong to the original
+ * top_hud_full (1647x300) and bottom_action_bar_full (1148x172) assets.
+ * No additional metal frames or duplicate geometry layers are introduced. */
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stats{
+ left:5%!important;width:37%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-vitals{
+ width:57%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{
+ left:61%!important;width:33%!important;
+}
+/* Source circle has 11% transparent margins on all sides. Scaling the
+ * image box to 17% recovers a 13% painted circle within the metal opening. */
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__current-art{
+ left:50%!important;top:4%!important;width:17%!important;height:92%!important;
+ object-fit:contain!important;object-position:center!important;
+ transform:translateX(-50%)!important;
+}
+/* Complete vector glyphs have a safe internal 64x64 viewBox. */
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button[data-v3-sprite] > span{
+ display:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > img.afterday-v3-action-icon,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+ display:block!important;
+ position:absolute!important;left:50%!important;top:50%!important;
+ transform:translate(-50%,-50%)!important;
+ width:clamp(25px,3.4vw,39px)!important;
+ height:clamp(25px,3.4vw,39px)!important;
+ max-width:calc(100% - 10px)!important;
+ max-height:calc(100% - 10px)!important;
+ margin:0!important;padding:0!important;
+ object-fit:contain!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stats{
+   left:4.9%!important;width:37%!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-vitals{
+   width:57%!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{
+   left:61%!important;width:33%!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > img.afterday-v3-action-icon,
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+   width:clamp(20px,6.1vw,26px)!important;
+   height:clamp(20px,6.1vw,26px)!important;
+   max-width:calc(100% - 8px)!important;
+   max-height:calc(100% - 10px)!important;
+ }
+}

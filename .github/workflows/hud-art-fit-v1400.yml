@@ -1,0 +1,46 @@
+name: HUD visual art-fit and sprite integrity audit
+on:
+  push:
+    branches: [fix/hud-actual-art-fit-20261108]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  art-fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Full gameplay regressions and production build
+        run: npm run build
+      - name: Install real Chromium and Safari WebKit
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Start current game UI
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/uiqa.log 2>&1 &
+          for i in $(seq 1 60); do if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/uiqa.log
+          exit 1
+      - name: Capture alpha bounds, actual DOM and screenshots
+        run: node scripts/qa_hud_art_fit_v1400.mjs
+        env:
+          QA_BROWSER: chromium,webkit
+          QA_STRICT_ART_FIT: '1'
+      - name: Verify real WebGL game and the corrected HUD on mobile and PC
+        run: node scripts/qa_live_hud_v1400.mjs
+      - name: Upload verified 10 screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: art-fit-v1400-audit
+          path: |
+            docs/qa/hud-art-fit-v1400/
+            docs/qa/live-hud-v1400/
+          retention-days: 14

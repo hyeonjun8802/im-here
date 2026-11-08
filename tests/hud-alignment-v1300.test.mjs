@@ -49,15 +49,16 @@ test('mobile header cannot revert to old collapsed 13px padding',()=>{
  const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
  assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
  assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(36px,11\.45vw,49px\)!important/);
- assert.match(orig,/centeredIconFromAtlas/);
+ assert.match(orig,/completeHudGlyph/);
 });
 
 test('original extracted frame coordinates are explicit and mobile artwork controls correct glyph bounds',()=>{
  assert.match(css,/equipment_panel 461x308/);
  assert.match(css,/110,230,350,468,586,706,826,943,1062/);
  assert.match(css,/bottom:calc\(18\.83% - 14\.5px\)!important/);
- assert.match(orig,/icon_tools:\[27,16,48,51\]/);
- assert.match(orig,/icon_radio:\[20,14,45,43\]/);
+ assert.match(orig,/repair:'icon_tools'/);
+ assert.match(orig,/explore:'icon_radio'/);
+ assert.match(orig,/icon.src=completeHudGlyph\(id\)/);
 });
 
 test('iOS WebKit action rail does not grow to 400px from transferred minimum height',()=>{

@@ -7,18 +7,12 @@ const atlas=JSON.parse(read('public/assets/ui/apocalypse-v3/spritesheet.json'));
 const js=read('src/commonUiAssetsV3.js');
 const css=read('src/commonUiLayoutV31.css');
 
-test('sixth metal slot uses original neutral source pixels, not baked orange selected border',()=>{
- const sourceBar=atlas.frames.bottom_action_bar_full;
- assert.equal(sourceBar.w,1148);
- assert.equal(sourceBar.h,172);
- const sixth={sourceX:399,targetX:637,width:124,height:sourceBar.h};
- for(const key of ['sourceX','targetX','width','height'])assert.ok(sixth[key]>=0,key);
- assert.ok(sixth.targetX+sixth.width<=sourceBar.w);
- assert.ok(sixth.sourceX+sixth.width<=sourceBar.w);
- assert.ok(sixth.targetX>=sourceBar.w*5/9-3);
- assert.ok(sixth.targetX<sourceBar.w*6/9);
- assert.match(js,/sixthSlot=\{sourceX:399,targetX:637,width:124,height:sourceBar\.h\}/);
- assert.match(js,/barCtx\.drawImage\(\s*image,sourceBar\.x\+sixthSlot\.sourceX,sourceBar\.y,[\s\S]*?sixthSlot\.targetX,0,sixthSlot\.width,sixthSlot\.height/);
+test('only the fifth preselected source tile is restored, sixth is untouched',()=>{
+ const bar=atlas.frames.bottom_action_bar_full;
+ assert.deepEqual([bar.w,bar.h],[1148,172]);
+ assert.match(js,/sourceBar\.x\+407,sourceBar\.y\+29,118,128/);
+ assert.match(js,/527,29,118,128/);
+ assert.doesNotMatch(js,/sixthSlot/);
  assert.match(js,/--afterday-v3-bottom_action_bar_neutral/);
 });
 
