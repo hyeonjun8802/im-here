@@ -1,0 +1,41 @@
+name: Verify one source metal frame per navigation slot
+on:
+  push:
+    branches: [fix/remove-duplicate-action-slot-frame-20261109]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  single-layer-hud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install declared dependencies
+        run: npm ci
+      - name: Full regression tests and Vite production build
+        run: npm run build
+      - name: Browser setup
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Start production DOM with original atlas assets
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-single-frame.log 2>&1 &
+          for n in $(seq 1 60); do if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/afterday-single-frame.log
+          exit 1
+      - name: Verify Chrome and Safari, 6 screen sizes, normal and emergency states
+        run: node scripts/qa_actionbar_single_layer_v1700.mjs
+      - name: Save evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: one-metal-frame-12-screens
+          path: docs/qa/actionbar-single-layer-v1700/
+          retention-days: 14
+          if-no-files-found: warn
