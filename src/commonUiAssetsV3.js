@@ -66,7 +66,7 @@ export function installCommonUiAssetsV3() {
     [
       'bottom_action_bar_full','equipment_panel','center_warning_banner',
       'wide_panel_01','wide_panel_02','time_controls_panel',
-      'small_button_01','square_slot_selected','alert_amber'
+      'small_button_01','equipment_action_button','square_slot_selected','alert_amber'
     ].forEach(name=>setAsset(name,crop));
 
     const actionIcons={
