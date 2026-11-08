@@ -1,0 +1,45 @@
+name: Responsive survival HUD browser QA (mobile and desktop)
+on:
+  push:
+    branches: [fix/hud-visual-qa-20261108, main]
+    paths:
+      - 'src/hudAlignmentV1300.css'
+      - 'src/hudAlignmentV1301.css'
+      - 'src/commonUiAssetsV3.js'
+      - 'index.html'
+      - 'scripts/qa_hud_visual_20261108.mjs'
+      - '.github/workflows/hud-visual-20261108.yml'
+  workflow_dispatch:
+jobs:
+  chrome-hud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Browser setup
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start actual UI
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-hud-qa.log 2>&1 &
+          for n in $(seq 1 60); do if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/afterday-hud-qa.log
+          exit 1
+      - name: Verify actual DOM and original sprite layout in 6 viewports
+        run: node scripts/qa_hud_visual_20261108.mjs
+        env:
+          STRICT_HUD_QA: '0'
+      - name: Upload original UI screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: afterday-hud-real-browser-6-viewports
+          path: docs/qa/hud-visual-20261108/
+          retention-days: 14
+          if-no-files-found: error

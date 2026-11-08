@@ -1,0 +1,63 @@
+/* Real production DOM, CSS and original atlas; only 3D boot is bypassed on CI.
+   Reports actual Chromium bounds for mobile, tablet, and desktop. */
+import {chromium} from 'playwright';
+import fs from 'node:fs';
+const out='docs/qa/hud-visual-20261108';fs.mkdirSync(out,{recursive:true});
+const variants=[['phone-320',320,690],['phone-390',390,844],['phone-430',430,932],['tablet-768',768,1024],['desktop-1280',1280,800],['desktop-1920',1920,1080]];
+const report=[];
+const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--use-gl=angle','--use-angle=swiftshader']});
+try{
+ for(const [name,w,h] of variants){
+  const page=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:1,isMobile:w<720,hasTouch:w<720});
+  const errs=[];page.on('pageerror',e=>errs.push(e.message));
+  await page.route('**/src/main.js*',route=>route.fulfill({status:200,contentType:'text/javascript',body:'// WebGL scene disabled for reproducible actual DOM HUD QA'}));
+  await page.goto('http://127.0.0.1:5173/',{waitUntil:'domcontentloaded',timeout:45000});
+  await page.evaluate(async()=>{
+   document.querySelector('#loading')?.remove();
+   const {installPremiumHudV1000}=await import('/src/premiumHudV1000.js');
+   const {installCommonUiAssetsV3}=await import('/src/commonUiAssetsV3.js');
+   const now=Date.now();
+   installPremiumHudV1000(document.querySelector('#disaster-forecast')).sync({weather:'clear',majorDisasterType:'storm',majorDisasterAt:now+18*3600000},now);
+   await installCommonUiAssetsV3();
+   const sty=document.createElement('style');
+   sty.textContent='#world{background:radial-gradient(ellipse at center,#263f4b,#121c27 70%)}#loading{display:none!important}.event-log{display:none!important}';
+   document.head.append(sty);
+  });
+  await page.waitForFunction(()=>document.querySelector('.afterday-v3-action-icon')?.complete&&document.querySelector('.premium-hud__current-art')?.naturalWidth>0,null,{timeout:20000});
+  const metrics=await page.evaluate(()=>{
+   const sel=q=>document.querySelector(q),r=e=>{if(!e)return null;const x=e.getBoundingClientRect();return {x:+x.x.toFixed(2),y:+x.y.toFixed(2),right:+x.right.toFixed(2),bottom:+x.bottom.toFixed(2),w:+x.width.toFixed(2),h:+x.height.toFixed(2)}};
+   const kit=sel('.survival-kit'),nav=sel('.actionbar'),hud=sel('.premium-hud-v1000');
+   const fields={title:sel('.survival-kit > small:first-child'),inventory:sel('#inventory-items'),sleep:sel('#sleep-arrangement'),companion:sel('#companion-status'),action:sel('#survival-kit-action')};
+   const children={};for(const [k,e] of Object.entries(fields))children[k]={r:r(e),text:e?.textContent,style:e?{position:getComputedStyle(e).position,whiteSpace:getComputedStyle(e).whiteSpace,font:getComputedStyle(e).fontSize}:null};
+   const slots=[...nav.children].filter(e=>!(e.hidden||getComputedStyle(e).display==='none')).map(e=>{
+    const icon=e.querySelector(':scope > img')||e.querySelector(':scope > span');
+    const a=r(e),b=r(icon);
+    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
+   });
+   return {viewport:{w:innerWidth,h:innerHeight},atlas:document.documentElement.dataset.commonUiVersion,
+   kit:r(kit),children,nav:r(nav),slots,
+   weather:r(sel('.premium-hud__current-art')),forecast:r(sel('.premium-hud__forecast')),forecastIcon:r(sel('.premium-hud__future-icon')),
+   hud:r(hud),stats:r(sel('.survival-hud-stats')),stock:r(sel('.survival-hud-stock')),clock:r(sel('#clock')),
+   frameImage:getComputedStyle(kit).backgroundImage.slice(0,55)};
+  });
+  let problems=[];
+  const k=metrics.kit, f=metrics.children;
+  if(!k||!metrics.nav||metrics.atlas!=='v3')problems.push('atlas/panel/nav not present');
+  if(k&&f.title?.r&&f.inventory?.r&&f.title.r.bottom>f.inventory.r.y-2)problems.push('title hits inventory');
+  if(k&&f.action?.r&&f.companion?.r&&f.companion.r.bottom>f.action.r.y-3)problems.push('text hits explore');
+  for(const key of ['inventory','sleep','companion']){
+   const p=f[key]?.r;
+   if(k&&p&&(p.x<k.x+9||p.right>k.right-9||p.y<k.y+26||p.bottom>k.bottom-24))problems.push(key+' out of panel');
+  }
+  if(metrics.slots.some(s=>s.offset!==null&&Math.abs(s.offset)>3))problems.push('action icon center mismatch');
+  if(metrics.weather&&metrics.hud&&Math.abs((metrics.weather.x+metrics.weather.w/2)-(metrics.hud.x+metrics.hud.w/2))>2)problems.push('weather dial off center');
+  const file=out+'/'+name+'.png';
+  await page.screenshot({path:file,fullPage:false,animations:'disabled'});
+  report.push({name,metrics,problems,pageErrors:errs});
+  console.log('LAYOUT_QA',JSON.stringify({name,kit:metrics.kit,content:metrics.children,nav:metrics.nav,slotOffsets:metrics.slots.map(x=>({id:x.id,offset:x.offset})),weather:metrics.weather,clock:metrics.clock,problems,pageErrors:errs}));
+  await page.close();
+ }
+}finally{await browser.close()}
+fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));
+console.log('LAYOUT_SUMMARY',JSON.stringify(report.map(x=>({name:x.name,problems:x.problems}))));
+if(process.env.STRICT_HUD_QA==='1'&&report.some(r=>r.problems.length||r.pageErrors.length))process.exitCode=1;
