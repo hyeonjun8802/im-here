@@ -27,3 +27,9 @@ test('source circle fill and stock safe region are defined in one last-loaded la
  assert.match(css,/premium-hud__current-art\{\s*left:50%!important;top:4%!important;width:17%!important;height:92%!important/);
  assert.match(css,/button\[data-v3-sprite\] > span\{\s*display:none!important/);
 });
+
+test('metal frame neutralizer never overpaints the untouched sixth source slot',()=>{
+ assert.match(loader,/sourceBar.x\+407,sourceBar.y\+29,118,128/);
+ assert.doesNotMatch(loader,/sixthSlot|sourceBar.x\+sixthSlot/);
+ assert.match(loader,/bottom_action_bar_neutral/);
+});
