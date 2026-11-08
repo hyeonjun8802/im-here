@@ -466,12 +466,47 @@ body.afterday-real-ui-v3 #hud .event-log{
 
 /* A blank pre-authored equipment button should not appear when gameplay
    has not unlocked any equipment action; both appearances use real v3 sprites. */
-body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]))){
+body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]),.survival-kit-action)){
  background-image:var(--afterday-v3-wide_panel_01)!important;
  padding:17px 19px!important;
 }
 @media(max-width:720px){
  body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]))){
   padding:13px 12px!important;
+ }
+}
+
+/* Preserve the separately-added v12.2 working explore button while matching
+   the original extraction. This reuses the existing click handler. */
+body.afterday-real-ui-v3 #hud .survival-time-frame{
+ width:100%;display:flex;flex-direction:column;align-items:stretch;gap:3px;
+}
+body.afterday-real-ui-v3 #hud .survival-kit:has(.survival-kit-action){
+ padding-bottom:57px!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-action{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ position:absolute!important;bottom:7%!important;left:11%!important;
+ width:78%!important;height:34px!important;min-height:30px!important;
+ padding:5px!important;
+ background:var(--afterday-v3-equipment_action_button) center/100% 100% no-repeat!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ color:#ffe7bd!important;
+ font-size:clamp(10px,.98vw,13px)!important;
+ font-weight:800!important;white-space:nowrap!important;
+ text-shadow:0 1px 3px #000!important;
+ pointer-events:auto!important;cursor:pointer!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-action:focus-visible{
+ outline:2px solid #ffd19a;outline-offset:2px;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-time-frame{gap:2px}
+ body.afterday-real-ui-v3 #hud .survival-kit:has(.survival-kit-action){
+  padding-bottom:42px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit-action{
+  height:29px!important;min-height:27px!important;
+  font-size:clamp(8px,2.05vw,10px)!important;
  }
 }
