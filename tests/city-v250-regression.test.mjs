@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {statSync,readFileSync} from 'node:fs';
-import * as THREE from '../dist/vendor/three/build/three.module.js';
+import * as THREE from '../public/vendor/three/build/three.module.js';
 import {planDistantCity} from '../src/spatialLayout.js';
 import {contractCitySlot,settleContractedCity} from '../src/cityContraction.js';
 import {makeCityInfill} from '../src/cityInfillPlanV150.js';

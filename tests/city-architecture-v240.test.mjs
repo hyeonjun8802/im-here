@@ -42,7 +42,7 @@ test('premium facade actually has correctly-proportioned windows, not 20 compres
 });
 
 test('true instanced balconies/rails/drains/window equipment and parapets render below rooftop',async()=>{
- const three=pathToFileURL('dist/vendor/three/build/three.module.js').href;
+ const three=pathToFileURL('public/vendor/three/build/three.module.js').href;
  const geoCode=fs.readFileSync('src/ruinedBuildingGeometry.js','utf8').replace("from 'three'",`from '${three}'`);
  const geoURL='data:text/javascript,'+encodeURIComponent(geoCode).replaceAll("'",'%27');
  const composition=pathToFileURL('src/cityComposition.js').href;
