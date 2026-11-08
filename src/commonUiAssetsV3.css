@@ -44,28 +44,23 @@ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat strong{
  width:16%!important;flex:0 0 16%!important;
  font-size:clamp(8px,.85vw,13px)!important;
 }
-body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{
- left:73%!important;width:25%!important;height:100%!important;
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{width:25%!important;height:100%!important;
 }
-body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock>div{
- display:flex!important;flex-direction:column!important;
- align-items:center!important;justify-content:center!important;
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock>div{flex-direction:column!important;
  min-height:0!important;gap:0!important;
 }
 body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong{
  font-size:clamp(8px,.82vw,13px)!important;
 }
 body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__current-art{
- left:50%!important;top:14%!important;
  width:13.6%!important;height:70%!important;
- transform:translateX(-50%)!important;
  border-radius:50%;
  object-fit:cover!important;
 }
 /* Weather forecast is real live text over the right panel, not burned in. */
 body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast{
- left:61.6%!important;top:28%!important;
- width:34.3%!important;height:43%!important;
+ left:61.6%!important;
+ width:34.3%!important;
  font-size:clamp(9px,.98vw,16px)!important;
 }
 body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-title,
@@ -180,8 +175,6 @@ body.afterday-real-ui-v3 #hud .survival-kit{
  bottom:calc(clamp(130px,16vw + 15px,185px) + env(safe-area-inset-bottom))!important;
  width:min(320px,42vw)!important;
  max-width:min(320px,42vw)!important;
- min-height:0!important;
- display:flex!important;
  padding:32px 24px 30px!important;gap:4px!important;
  border:none!important;border-radius:0!important;clip-path:none!important;
  box-shadow:none!important;backdrop-filter:none!important;
@@ -199,8 +192,7 @@ body.afterday-real-ui-v3 #hud .survival-kit small{
  padding:0!important;border:0!important;letter-spacing:0!important;
 }
 body.afterday-real-ui-v3 #hud #inventory-items{
- font-size:clamp(11px,.96vw,13px)!important;
- line-height:1.4!important;color:#f9efdc;
+ font-size:clamp(11px,.96vw,13px)!important;color:#f9efdc;
 }
 body.afterday-real-ui-v3 #hud #sleep-arrangement,
 body.afterday-real-ui-v3 #hud #companion-status{
@@ -223,20 +215,15 @@ body.afterday-real-ui-v3 #hud .actionbar{
  transform:translateX(-50%)!important;
  width:min(1040px,calc(100vw - 12px))!important;
  max-width:calc(100vw - 12px)!important;
- height:auto!important;
- min-height:0!important;
- aspect-ratio:1148 / 172!important;
  padding:8px 17px!important;
- gap:0!important;
  box-sizing:border-box!important;
  display:flex!important;flex-wrap:nowrap!important;
- justify-content:space-between!important;align-items:stretch!important;
+ justify-content:space-between!important;
  border:0!important;border-radius:0!important;clip-path:none!important;
  box-shadow:none!important;backdrop-filter:none!important;
  background-color:transparent!important;
  background-image:var(--afterday-v3-bottom_action_bar_full)!important;
  background-repeat:no-repeat!important;
- background-size:100% 100%!important;
  background-position:center!important;
  filter:drop-shadow(0 5px 8px #000b);
  z-index:25!important;
@@ -267,7 +254,6 @@ body.afterday-real-ui-v3 #hud .actionbar button.needs-attention{
 body.afterday-real-ui-v3 #hud .actionbar button#explore::before,
 body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before{
  content:"";display:block;position:absolute;inset:1px -1px;z-index:-1;
- background:var(--afterday-v3-square_slot_selected) center / 100% 100% no-repeat!important;
  filter:drop-shadow(0 0 4px #ff9b31);
  pointer-events:none;
 }
@@ -338,19 +324,17 @@ body.afterday-real-ui-v3 #hud .event-log{
   top:12%!important;width:14.2%!important;height:73%!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast{
-  left:61.7%!important;top:29%!important;width:34%!important;height:44%!important;
+  left:61.7%!important;width:34%!important;height:44%!important;
   font-size:clamp(6.4px,1.75vw,9.5px)!important;
  }
- body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-title{
-  top:0!important;font-size:.93em!important;
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-title{font-size:.93em!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-status{
   top:30%!important;font-size:.7em!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-rail,
  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__dot{top:65%!important;}
- body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__hour{
-  top:78%!important;font-size:clamp(5.5px,1.48vw,7px)!important;
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__hour{font-size:clamp(5.5px,1.48vw,7px)!important;
  }
  body.afterday-real-ui-v3 .topbar .top-right{
   width:clamp(112px,33vw,147px)!important;
@@ -388,13 +372,10 @@ body.afterday-real-ui-v3 #hud .event-log{
   font-size:clamp(10px,2.52vw,12px)!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit{
-  left:7px!important;
   bottom:calc(75px + env(safe-area-inset-bottom))!important;
   width:min(51vw,211px)!important;
   max-width:min(51vw,211px)!important;
-  min-height:0!important;
   padding:24px 13px 21px!important;
-  gap:3px!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit small{font-size:clamp(8px,2.2vw,10px)!important;}
  body.afterday-real-ui-v3 #hud #inventory-items{font-size:clamp(8.5px,2.2vw,10.5px)!important;}
@@ -409,8 +390,6 @@ body.afterday-real-ui-v3 #hud .event-log{
  }
  body.afterday-real-ui-v3 #hud .actionbar{
   bottom:calc(7px + env(safe-area-inset-bottom))!important;
-  width:calc(100vw - 8px)!important;
-  max-width:calc(100vw - 8px)!important;
   aspect-ratio:1148 / 195!important; /* breathing room for two-line Korean labels */
   min-height:61px!important;
   padding:7px 9px!important;
@@ -485,15 +464,11 @@ body.afterday-real-ui-v3 #hud .survival-kit:has(.survival-kit-action){
  padding-bottom:57px!important;
 }
 body.afterday-real-ui-v3 #hud .survival-kit-action{
- display:flex!important;align-items:center!important;justify-content:center!important;
- position:absolute!important;bottom:7%!important;left:11%!important;
- width:78%!important;height:34px!important;min-height:30px!important;
+ position:absolute!important;height:34px!important;min-height:30px!important;
  padding:5px!important;
- background:var(--afterday-v3-equipment_action_button) center/100% 100% no-repeat!important;
- border:0!important;border-radius:0!important;box-shadow:none!important;
+ background:var(--afterday-v3-equipment_action_button) center/100% 100% no-repeat!important;border-radius:0!important;box-shadow:none!important;
  color:#ffe7bd!important;
  font-size:clamp(10px,.98vw,13px)!important;
- font-weight:800!important;white-space:nowrap!important;
  text-shadow:0 1px 3px #000!important;
  pointer-events:auto!important;cursor:pointer!important;
 }
@@ -506,7 +481,6 @@ body.afterday-real-ui-v3 #hud .survival-kit-action:focus-visible{
   padding-bottom:42px!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit-action{
-  height:29px!important;min-height:27px!important;
   font-size:clamp(8px,2.05vw,10px)!important;
  }
 }

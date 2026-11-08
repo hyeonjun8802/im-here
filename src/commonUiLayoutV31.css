@@ -103,12 +103,10 @@ body.afterday-real-ui-v3 #hud .top-right #weather-effect{
 /* Original circular weather center stays at exactly 50%.
    Place future event label ABOVE the cursor, never on top of it. */
 body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__current-art{
-  left:50%!important;transform:translateX(-50%)!important;
 }
 body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-status{
   top:2%!important;right:1%!important;
-  max-width:40%!important;overflow:hidden!important;
-  text-overflow:ellipsis!important;white-space:nowrap!important;
+  max-width:40%!important;white-space:nowrap!important;
 }
 
 /* Equipment source is 461x308. Leave vertical room for the real header
@@ -117,12 +115,8 @@ body.afterday-real-ui-v3 #hud .survival-kit{
   width:min(365px,37vw)!important;
   max-width:min(365px,37vw)!important;
   min-height:210px!important;
-  height:auto!important;
   padding:43px 27px 61px!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
   gap:6px!important;
-  align-items:stretch!important;
 }
 body.afterday-real-ui-v3 #hud .survival-kit small{
   line-height:1.25!important;
@@ -140,8 +134,6 @@ body.afterday-real-ui-v3 #hud #companion-status {
   text-overflow:ellipsis;
 }
 body.afterday-real-ui-v3 #hud .survival-kit-action {
-  left:11%!important;
-  width:78%!important;
   bottom:7%!important;
   height:32px!important;
   min-height:0!important;
@@ -151,9 +143,6 @@ body.afterday-real-ui-v3 #hud .survival-kit-action {
   border:0!important;
   font-weight:800!important;
   text-align:center!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
   white-space:nowrap!important;
   z-index:2;
 }
@@ -256,10 +245,6 @@ body.afterday-real-ui-v3 #hud .actionbar button:focus-visible{
   outline-offset:-1px!important;
 }
 body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions {
-  display:flex!important;
-  flex-wrap:nowrap!important;
-  justify-content:flex-start!important;
-  overflow-x:auto!important;
   overscroll-behavior-x:contain;
   scroll-snap-type:x proximity;
   background-image:none!important;
@@ -279,7 +264,6 @@ body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
 @media(max-width:720px){
   body.afterday-real-ui-v3 #hud .topbar .top-right{
     top:calc((100vw - 4px) * 300 / 1647 + 10px + env(safe-area-inset-top))!important;
-    right:8px!important;
     width:clamp(116px,31.5vw,148px)!important;
     max-width:40vw!important;
     gap:3px!important;
@@ -304,12 +288,10 @@ body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
   body.afterday-real-ui-v3 #hud .top-right #weather-effect{
     display:none!important;
   }
-  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-status{
-    top:0!important;max-width:35%!important;
+  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-status{max-width:35%!important;
     font-size:.67em!important;
   }
   body.afterday-real-ui-v3 #hud .survival-kit{
-    left:7px!important;
     bottom:calc(max(76px, (100vw - 8px) * 172 / 1148 + 18px) + env(safe-area-inset-bottom))!important;
     width:min(54vw,225px)!important;
     max-width:min(54vw,225px)!important;
@@ -333,9 +315,6 @@ body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
     text-overflow:ellipsis!important;
   }
   body.afterday-real-ui-v3 #hud .survival-kit-action{
-    bottom:6%!important;
-    height:27px!important;
-    min-height:27px!important;
     font-size:clamp(9px,2.35vw,11px)!important;
   }
   body.afterday-real-ui-v3 #hud .actionbar{
@@ -407,7 +386,6 @@ body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before {
     padding:0!important;
     align-items:center!important;
     justify-content:center!important;
-    overflow:hidden!important;
   }
   body.afterday-real-ui-v3 #hud .actionbar button > .afterday-v3-action-icon,
   body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-standby-slot > img {
@@ -421,17 +399,14 @@ body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before {
   }
   /* Non-sprite glyphs (moon and music) stay fully centered. */
   body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span {
-    display:grid!important;
     width:27px!important;
     height:27px!important;
     flex:0 0 27px!important;
-    place-items:center!important;
     line-height:1!important;
     font-size:clamp(18px,5vw,23px)!important;
     margin:0 auto!important;
   }
   body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-standby-slot > span {
-    display:none!important;
   }
 }
 
@@ -475,7 +450,6 @@ body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before {
  }
  /* The upper equipment data is independent of the bottom action rail. */
  body.afterday-real-ui-v3 #hud .survival-kit{
-   padding-top:30px!important;
    gap:4px!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit small{
@@ -484,8 +458,6 @@ body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before {
  body.afterday-real-ui-v3 #hud #inventory-items{
    display:block!important;
    overflow-wrap:anywhere!important;
-   word-break:keep-all!important;
-   line-height:1.28!important;
  }
 }
 
