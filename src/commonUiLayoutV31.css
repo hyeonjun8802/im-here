@@ -788,11 +788,16 @@ body.afterday-real-ui-v3 #hud .survival-kit{
    medallion move; the approved top metal frame, forecast, and its hit areas
    retain their existing layout and aspect ratio. */
 @media(max-width:720px){
-  /* The right forecast frame reaches ~10px from the capture edge, while the
-     floating 48px button visually ended ~60 screenshot pixels too early.
-     Shift the button group right ~30 CSS px without changing button size. */
+  /* Pin the 48px button to the same 8px right inset as the metal forecast.
+     The older align-self:center on a much wider rail caused the visible gap. */
   body.afterday-real-ui-v3 #hud .topbar .top-right{
-    transform:translateX(30px)!important;
+    right:8px!important;
+    transform:none!important;
+  }
+  /* An older v3 rule sets align-self:center on the button even though the
+     top-right rail is right-aligned. Pin the BUTTON, not just its container. */
+  body.afterday-real-ui-v3 #hud .topbar .top-right #speed-toggle{
+    align-self:flex-end!important;
   }
   /* Shift only the current weather artwork slightly toward the round
      opening's optical center; do not move the brass frame or timeline. */
