@@ -9,7 +9,8 @@ const main=read('src/main.js');
 
 test('iPhone bottom-of-forecast speed button aligns right without resizing it',()=>{
  assert.match(css,/v3\.6 precision HUD alignment/);
- assert.match(css,/@media\(max-width:720px\)\s*\{[\s\S]*?body\.afterday-real-ui-v3 #hud \.topbar \.top-right\s*\{\s*transform:translateX\(30px\)!important;/);
+ assert.match(css,/@media\(max-width:720px\)\s*\{[\s\S]*?body\.afterday-real-ui-v3 #hud \.topbar \.top-right\s*\{\s*right:8px!important;\s*transform:none!important;/);
+ assert.match(css,/body\.afterday-real-ui-v3 #hud \.topbar \.top-right #speed-toggle\s*\{\s*align-self:flex-end!important;/);
  assert.match(css,/\.topbar \.top-right #speed-toggle\{\s*width:48px!important;/);
  assert.match(html,/id="speed-toggle"/);
  assert.match(main,/speedButton\.addEventListener\('click'/);
