@@ -81,23 +81,13 @@ export function installCommonUiAssetsV3() {
     if(barCtx) {
       barCtx.drawImage(image,sourceBar.x,sourceBar.y,sourceBar.w,sourceBar.h,
         0,0,sourceBar.w,sourceBar.h);
-      // Cover the pre-selected fifth tile's orange interior without touching
-      // the original outer steel rail; restore its metallic neutral frame.
-      // Exact metal source pixels, not a synthetic dark rectangle:
-      // duplicate the adjacent undecorated slot over authored slot five.
-      barCtx.drawImage(image,sourceBar.x+399,sourceBar.y+27,122,129,
-        526,27,122,129);
-      // iPhone reference inspection: a SECOND baked orange active outline
-      // remains over the SIXTH cell, from x≈637..761 (source 1148px bar).
-      // Earlier patches only neutralized cell five. Restore the sixth cell
-      // from a clean neighboring metal slot, including its top/bottom edges.
-      // This uses the ORIGINAL atlas pixels; it adds no CSS-painted frame.
-      const sixthSlot={sourceX:399,targetX:637,width:124,height:sourceBar.h};
-      barCtx.drawImage(
-        image,sourceBar.x+sixthSlot.sourceX,sourceBar.y,
-        sixthSlot.width,sixthSlot.height,
-        sixthSlot.targetX,0,sixthSlot.width,sixthSlot.height
-      );
+      // Source image contains ONE preselected fifth slot; sixth is already
+      // neutral. The old patch copied another cell over the ENTIRE sixth
+      // column including both metal rails, leaving a rectangular ghost.
+      // Restore only the fifth slot's selected interior using a normal fourth
+      // slot from the ORIGINAL atlas. All nine rail edges stay untouched.
+      barCtx.drawImage(image,sourceBar.x+407,sourceBar.y+29,118,128,
+        527,29,118,128);
       document.documentElement.style.setProperty(
         '--afterday-v3-bottom_action_bar_neutral',
         'url("'+neutralBar.toDataURL('image/png')+'")');
