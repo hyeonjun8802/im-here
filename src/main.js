@@ -290,6 +290,62 @@ function bindEvents(){
   }
  });
 }
+// iOS Safari may revoke WebGL shaders when its GPU context resets.
+// Preserve the saved survival state and recover at most once per 90 seconds.
+const GPU_RETRY_STAMP='afterday_gpu_retry_stamp_v1';
+const GPU_SAFE_KEY='afterday_gpu_safe_mode_v1';
+let gpuContextLost=false;
+let gpuRecoveryTimer=null;
+function showGpuNotice(message,manual=false){
+ const node=$('#error');
+ if(!node)return;
+ node.classList.remove('hidden');
+ node.replaceChildren(document.createTextNode(message));
+ if(manual){
+  const button=document.createElement('button');
+  button.type='button';
+  button.textContent='3D 화면 다시 불러오기';
+  button.style.cssText='display:block;margin:16px auto 0;padding:10px 16px;border:1px solid #d1a76d;background:#493625;color:#fff3dc;border-radius:5px;font-weight:700';
+  button.addEventListener('click',()=>{
+   try{sessionStorage.removeItem(GPU_RETRY_STAMP);sessionStorage.setItem(GPU_SAFE_KEY,'1');}catch{}
+   save();
+   location.reload();
+  },{once:true});
+  node.append(button);
+ }
+}
+function scheduleGpuRecovery(reason){
+ if(gpuRecoveryTimer)return;
+ let recent=false;
+ try{
+  const last=Number(sessionStorage.getItem(GPU_RETRY_STAMP)||0);
+  recent=last>0&&Date.now()-last<90000;
+  sessionStorage.setItem(GPU_SAFE_KEY,'1');
+  if(!recent)sessionStorage.setItem(GPU_RETRY_STAMP,String(Date.now()));
+ }catch{}
+ if(recent){
+  showGpuNotice('3D 렌더링 장치가 복구되지 않았습니다. 생존 기록은 저장되어 있습니다.',true);
+  return;
+ }
+ showGpuNotice('3D 렌더링 연결이 끊겨 안전 모드로 복구합니다. 생존 기록은 유지됩니다.');
+ save();
+ gpuRecoveryTimer=setTimeout(()=>{
+  gpuRecoveryTimer=null;
+  location.reload();
+ },1600);
+}
+const worldCanvas=$('#world');
+worldCanvas.addEventListener('webglcontextlost',event=>{
+ event.preventDefault();
+ gpuContextLost=true;
+ scheduleGpuRecovery('webglcontextlost');
+});
+worldCanvas.addEventListener('webglcontextrestored',()=>{
+ gpuContextLost=false;
+ if(gpuRecoveryTimer){clearTimeout(gpuRecoveryTimer);gpuRecoveryTimer=null;}
+ const error=$('#error');
+ if(error?.textContent?.includes('3D 렌더링'))error.classList.add('hidden');
+});
 function animation(){
  let last=performance.now(),lastHUD=0,lastSave=Date.now();
  const draw=t=>{
@@ -302,14 +358,24 @@ function animation(){
   disasterForecast.syncProgress(state,gameNow);
   if(t-lastHUD>700){renderHUD();lastHUD=t}
   if(real-lastSave>15000){save();lastSave=real}
-  try{
-   if(questPaused)world.update(0,gameNow,state,realDt);
-   else world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state,realDt);
-  }catch(e){
-   console.error('3D frame error',e);
-   $('#error').classList.remove('hidden');
-   $('#error').textContent='렌더링 오류: '+e.message;
-   return;
+  // Avoid compiling shaders into a revoked GPU context.
+  if(!gpuContextLost && foreground){
+   try{
+    if(questPaused)world.update(0,gameNow,state,realDt);
+    else world.update(Math.min(.12,realDt*gameClock.speed),gameNow,state,realDt);
+   }catch(e){
+    console.error('3D frame error',e);
+    const message=String(e?.message||e);
+    const lost=Boolean(world?.renderer?.getContext?.()?.isContextLost?.());
+    if(lost||/WebGLShader|shaderSource|context lost|createShader/i.test(message)){
+     gpuContextLost=true;
+     scheduleGpuRecovery(message);
+    }else{
+     $('#error').classList.remove('hidden');
+     $('#error').textContent='렌더링 오류: '+message;
+     return;
+    }
+   }
   }
   requestAnimationFrame(draw);
  };
