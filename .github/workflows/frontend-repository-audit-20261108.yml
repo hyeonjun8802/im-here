@@ -1,0 +1,29 @@
+name: Frontend repository deep audit
+on:
+  push:
+    branches: [maintenance/frontend-audit-prune-20261108]
+    paths:
+      - 'scripts/audit_frontend_20261108.mjs'
+      - '.github/workflows/frontend-repository-audit-20261108.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Audit actual repository sources and tracked assets
+        run: node scripts/audit_frontend_20261108.mjs
+      - name: Publish audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-repository-audit
+          path: reports/maintenance/frontend-audit-20261108.json
+          retention-days: 14
