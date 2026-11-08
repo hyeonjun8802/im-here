@@ -1,0 +1,512 @@
+/* AFTERDAY ORIGINAL EXTRACTED UI v3 — never imitate this with CSS borders.
+   Each frame below comes from the 48-sprite transparent resource sheet.
+   The real gameplay DOM, clicks, weather timeline and saved survival day stay live. */
+body.afterday-real-ui-v3 #hud {
+ --actual-v3-caption:#f4e8d1;
+ --actual-v3-copper:#efac62;
+}
+
+/* 1. Art source exactly covers its own ratio. Round weather opening stays centered. */
+body.afterday-real-ui-v3 .disaster-forecast.premium-hud-v1000 {
+ --approved-hud-aspect:1647 / 300!important;
+ position:fixed!important;
+ left:50%!important;top:0!important;
+ width:min(1450px,calc(100vw - 6px))!important;
+ max-width:calc(100vw - 6px)!important;
+ height:auto!important;
+ aspect-ratio:1647 / 300!important;
+ transform:translateX(-50%)!important;
+ transform-origin:center top!important;
+ background:none!important;border:none!important;
+ filter:drop-shadow(0 3px 7px #0008)!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__unified-art,
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__frame {
+ inset:0!important;
+ width:100%!important;height:100%!important;
+ object-fit:fill!important;display:block!important;
+}
+/* The PNG left wing spans 2-41%; 2x2 inventory is at its right. */
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stats{
+ left:5.0%!important;top:28.4%!important;
+ width:39.6%!important;height:44%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-vitals{
+ width:70%!important;height:100%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat{
+ height:30.5%!important;font-size:clamp(9px,.87vw,15px)!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat-label{
+ width:27%!important;flex:0 0 27%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat strong{
+ width:16%!important;flex:0 0 16%!important;
+ font-size:clamp(8px,.85vw,13px)!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{
+ left:73%!important;width:25%!important;height:100%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock>div{
+ display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;
+ min-height:0!important;gap:0!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong{
+ font-size:clamp(8px,.82vw,13px)!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__current-art{
+ left:50%!important;top:14%!important;
+ width:13.6%!important;height:70%!important;
+ transform:translateX(-50%)!important;
+ border-radius:50%;
+ object-fit:cover!important;
+}
+/* Weather forecast is real live text over the right panel, not burned in. */
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast{
+ left:61.6%!important;top:28%!important;
+ width:34.3%!important;height:43%!important;
+ font-size:clamp(9px,.98vw,16px)!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-title,
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-status{
+ top:3%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-rail,
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__dot{
+ top:68%!important;
+}
+body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__hour{
+ top:79%!important;
+}
+
+/* 2. Right info: compact anchors rather than giant stacked CSS boxes. */
+body.afterday-real-ui-v3 .topbar .top-right{
+ position:fixed!important;
+ top:calc(min(1450px,100vw - 6px) * 300 / 1647 + 7px + env(safe-area-inset-top))!important;
+ right:max(10px,calc((100vw - 1450px) / 2 + 12px))!important;
+ left:auto!important;
+ width:clamp(142px,15.5vw,188px)!important;
+ display:flex!important;flex-direction:column!important;
+ gap:4px!important;align-items:stretch!important;
+ padding:0!important;margin:0!important;
+ background:none!important;border:none!important;
+ box-shadow:none!important;filter:none!important;
+ text-align:center!important;
+ pointer-events:none;
+ z-index:15!important;
+}
+body.afterday-real-ui-v3 .topbar .top-right>*{pointer-events:auto;}
+body.afterday-real-ui-v3 #survival-day-chip,
+body.afterday-real-ui-v3 .top-right #clock,
+body.afterday-real-ui-v3 .top-right #weather-brief,
+body.afterday-real-ui-v3 .top-right #speed-toggle{
+ box-sizing:border-box!important;
+ width:100%!important;margin:0!important;
+ border:none!important;box-shadow:none!important;
+ background-color:transparent!important;
+ background-repeat:no-repeat!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ border-radius:0!important;clip-path:none!important;
+ color:#faf0de!important;text-shadow:0 2px 3px #000!important;
+}
+body.afterday-real-ui-v3 #survival-day-chip{
+ background-image:var(--afterday-v3-wide_panel_01)!important;
+ min-height:30px!important;
+ padding:6px 7px!important;
+ font-size:clamp(12px,1.22vw,17px)!important;
+ line-height:1.15!important;justify-content:center;
+}
+body.afterday-real-ui-v3 #survival-day-chip::before{
+ content:'▦';font-size:.9em;margin-right:3px;color:#e1b276;
+}
+body.afterday-real-ui-v3 .top-right #clock{
+ background-image:var(--afterday-v3-wide_panel_02)!important;
+ font-size:clamp(30px,3.2vw,45px)!important;
+ min-height:52px!important;line-height:1.14!important;
+ padding:6px 5px!important;
+ font-variant-numeric:tabular-nums;
+}
+body.afterday-real-ui-v3 .top-right #speed-toggle{
+ background-image:var(--afterday-v3-small_button_01)!important;
+ height:40px!important;min-height:40px!important;
+ width:94%!important;align-self:center!important;
+ font-size:clamp(14px,1.4vw,19px)!important;
+ font-weight:800!important;padding:6px!important;
+}
+body.afterday-real-ui-v3 .top-right #speed-toggle[aria-pressed="true"]{
+ filter:brightness(1.22)!important;
+}
+body.afterday-real-ui-v3 .top-right #weather-brief{
+ background-image:var(--afterday-v3-wide_panel_02)!important;
+ min-height:26px!important;
+ font-size:clamp(10px,.95vw,13px)!important;
+ line-height:1.3!important;padding:5px!important;
+}
+body.afterday-real-ui-v3 .top-right #weather-effect{
+ max-width:100%;padding:2px 0!important;
+ font-size:10px!important;line-height:1.3!important;
+ color:#ffe3ae!important;background:rgba(9,16,22,.68)!important;
+ text-align:center!important;
+}
+
+/* 3. Exact blank metal art: warning ribbon, equipment, buttons, alerts. */
+body.afterday-real-ui-v3 #hud .warning{
+ position:fixed!important;
+ top:calc(min(1450px,100vw - 6px) * 300 / 1647 + 200px + env(safe-area-inset-top))!important;
+ left:50%!important;transform:translateX(-50%)!important;
+ width:min(560px,calc(100vw - 24px))!important;
+ max-width:calc(100vw - 24px)!important;
+ min-width:0!important;min-height:52px!important;
+ box-sizing:border-box!important;
+ display:flex!important;align-items:center;justify-content:center;
+ padding:10px 34px!important;
+ border:none!important;border-radius:0!important;
+ clip-path:none!important;box-shadow:none!important;backdrop-filter:none!important;
+ background-color:transparent!important;
+ background-image:var(--afterday-v3-center_warning_banner)!important;
+ background-size:100% 100%!important;background-position:center!important;
+ background-repeat:no-repeat!important;
+ font-size:clamp(11px,1.12vw,15px)!important;line-height:1.35!important;
+ font-weight:800!important;text-align:center!important;
+ text-shadow:0 2px 3px #000!important;color:#ffe6c2!important;
+ pointer-events:none!important;z-index:14!important;
+}
+body.afterday-real-ui-v3 #hud .warning.hidden{display:none!important;}
+body.afterday-real-ui-v3 #hud .survival-kit{
+ position:absolute!important;
+ left:15px!important;
+ bottom:calc(clamp(130px,16vw + 15px,185px) + env(safe-area-inset-bottom))!important;
+ width:min(320px,42vw)!important;
+ max-width:min(320px,42vw)!important;
+ min-height:0!important;
+ display:flex!important;
+ padding:32px 24px 30px!important;gap:4px!important;
+ border:none!important;border-radius:0!important;clip-path:none!important;
+ box-shadow:none!important;backdrop-filter:none!important;
+ background-color:transparent!important;
+ background-image:var(--afterday-v3-equipment_panel)!important;
+ background-size:100% 100%!important;
+ background-position:center!important;background-repeat:no-repeat!important;
+ filter:drop-shadow(0 5px 12px #0009);
+ color:var(--actual-v3-caption)!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit::before{content:none!important;}
+body.afterday-real-ui-v3 #hud .survival-kit small{
+ font-size:clamp(10px,1vw,13px)!important;
+ color:#f1c484!important;
+ padding:0!important;border:0!important;letter-spacing:0!important;
+}
+body.afterday-real-ui-v3 #hud #inventory-items{
+ font-size:clamp(11px,.96vw,13px)!important;
+ line-height:1.4!important;color:#f9efdc;
+}
+body.afterday-real-ui-v3 #hud #sleep-arrangement,
+body.afterday-real-ui-v3 #hud #companion-status{
+ font-size:clamp(9px,.8vw,12px)!important;
+ line-height:1.4!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-controls button{
+ background-image:var(--afterday-v3-small_button_01)!important;
+ background-size:100% 100%!important;background-color:transparent!important;
+ border:0!important;border-radius:0!important;
+ box-shadow:none!important;min-height:35px!important;
+ color:#ffebc8!important;
+}
+
+/* 4. Real nine-slot bottom resource, with LIVE buttons on top. */
+body.afterday-real-ui-v3 #hud .actionbar{
+ position:fixed!important;
+ left:50%!important;right:auto!important;
+ bottom:calc(8px + env(safe-area-inset-bottom))!important;
+ transform:translateX(-50%)!important;
+ width:min(1040px,calc(100vw - 12px))!important;
+ max-width:calc(100vw - 12px)!important;
+ height:auto!important;
+ min-height:0!important;
+ aspect-ratio:1148 / 172!important;
+ padding:8px 17px!important;
+ gap:0!important;
+ box-sizing:border-box!important;
+ display:flex!important;flex-wrap:nowrap!important;
+ justify-content:space-between!important;align-items:stretch!important;
+ border:0!important;border-radius:0!important;clip-path:none!important;
+ box-shadow:none!important;backdrop-filter:none!important;
+ background-color:transparent!important;
+ background-image:var(--afterday-v3-bottom_action_bar_full)!important;
+ background-repeat:no-repeat!important;
+ background-size:100% 100%!important;
+ background-position:center!important;
+ filter:drop-shadow(0 5px 8px #000b);
+ z-index:25!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar::before,
+body.afterday-real-ui-v3 #hud .actionbar::after{content:none!important;}
+body.afterday-real-ui-v3 #hud .actionbar button{
+ position:relative;
+ flex:1 1 0!important;
+ width:0!important;min-width:0!important;
+ height:auto!important;min-height:0!important;
+ padding:4px 1px!important;margin:0!important;
+ gap:2px!important;overflow:visible!important;
+ align-items:center!important;justify-content:center!important;
+ font-size:clamp(10px,1vw,14px)!important;
+ line-height:1.1!important;
+ font-weight:800!important;letter-spacing:-.02em!important;
+ color:#f7ecd9!important;text-shadow:0 1px 2px #000!important;
+ background:none!important;border:0!important;
+ border-radius:0!important;clip-path:none!important;
+ box-shadow:none!important;
+ transition:filter .12s;
+}
+body.afterday-real-ui-v3 #hud .actionbar button.secondary,
+body.afterday-real-ui-v3 #hud .actionbar button.needs-attention{
+ border:0!important;background:transparent!important;box-shadow:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar button#explore::before,
+body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before{
+ content:"";display:block;position:absolute;inset:1px -1px;z-index:-1;
+ background:var(--afterday-v3-square_slot_selected) center / 100% 100% no-repeat!important;
+ filter:drop-shadow(0 0 4px #ff9b31);
+ pointer-events:none;
+}
+body.afterday-real-ui-v3 #hud .actionbar button:focus-visible{
+ outline:2px solid #ffc17b!important;outline-offset:-3px;
+}
+body.afterday-real-ui-v3 #hud .actionbar button:hover{filter:brightness(1.27)}
+body.afterday-real-ui-v3 #hud .actionbar button:active{transform:scale(.98)!important}
+body.afterday-real-ui-v3 #hud .actionbar button>span{
+ color:#e7ba81!important;
+ width:26px;height:25px;flex:0 0 25px;
+ display:grid;place-items:center;
+ font-size:clamp(15px,1.6vw,23px)!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar button[data-v3-sprite]>span{display:none!important;}
+body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-action-icon{
+ display:block!important;object-fit:contain!important;
+ width:clamp(21px,2.8vw,40px)!important;
+ height:clamp(21px,2.8vw,40px)!important;
+ flex:0 0 auto;
+ margin:0 auto;
+ filter:drop-shadow(0 2px 2px #0009);
+}
+/* Shared popup treatment preserves existing controls and their listeners. */
+body.afterday-real-ui-v3 #hud .weather-panel,
+body.afterday-real-ui-v3 #hud .life-panel,
+body.afterday-real-ui-v3 #hud .game-over-card {
+ background-color:#101b23ed!important;
+ border:1px solid #6c7a85!important;
+ border-radius:3px!important;
+ box-shadow:0 0 0 2px #0a1014 inset,0 10px 30px #000b!important;
+}
+body.afterday-real-ui-v3 #hud .panel-head{border-color:#c69b5c63!important;}
+body.afterday-real-ui-v3 #hud .event-log{
+ border:1px solid #b39062a6!important;
+ border-radius:4px!important;
+ background:#0c1820e6!important;
+}
+/* Mobile: avoid the oversized time rail and overlapping warning shown in QA. */
+@media(max-width:720px){
+ body.afterday-real-ui-v3 .disaster-forecast.premium-hud-v1000{
+  --approved-hud-aspect:1647 / 300!important;
+  top:0!important;width:calc(100vw - 4px)!important;
+  max-width:calc(100vw - 4px)!important;
+  aspect-ratio:1647 / 300!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stats{
+  left:4.7%!important;top:29%!important;width:39%!important;height:43%!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-vitals{width:70%!important;}
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat{
+  font-size:clamp(6.0px,1.62vw,9px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat-label{
+  width:30%!important;flex:0 0 30%!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat strong{
+  width:24%!important;flex:0 0 24%!important;
+  font-size:clamp(6px,1.57vw,8.7px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{
+  left:74%!important;width:25%!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong{
+  font-size:clamp(5.4px,1.45vw,7.7px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__current-art{
+  top:12%!important;width:14.2%!important;height:73%!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast{
+  left:61.7%!important;top:29%!important;width:34%!important;height:44%!important;
+  font-size:clamp(6.4px,1.75vw,9.5px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-title{
+  top:0!important;font-size:.93em!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-status{
+  top:30%!important;font-size:.7em!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast-rail,
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__dot{top:65%!important;}
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__hour{
+  top:78%!important;font-size:clamp(5.5px,1.48vw,7px)!important;
+ }
+ body.afterday-real-ui-v3 .topbar .top-right{
+  width:clamp(112px,33vw,147px)!important;
+  right:8px!important;
+  top:calc((100vw - 4px) * 300 / 1647 + 8px + env(safe-area-inset-top))!important;
+  gap:2px!important;
+ }
+ body.afterday-real-ui-v3 #survival-day-chip{
+  min-height:25px!important;
+  font-size:clamp(11px,3vw,14px)!important;
+  padding:4px 3px!important;
+ }
+ body.afterday-real-ui-v3 .top-right #clock{
+  min-height:37px!important;
+  font-size:clamp(24px,6.7vw,33px)!important;
+  padding:3px!important;
+ }
+ body.afterday-real-ui-v3 .top-right #speed-toggle{
+  min-height:31px!important;height:31px!important;
+  font-size:clamp(13px,3.5vw,17px)!important;
+  padding:3px!important;
+ }
+ body.afterday-real-ui-v3 .top-right #weather-brief{
+  min-height:23px!important;
+  font-size:clamp(9px,2.35vw,11px)!important;
+  padding:4px 3px!important;
+ }
+ body.afterday-real-ui-v3 .top-right #weather-effect{
+  display:none!important; /* still updated live; show its text in accessible title if needed */
+ }
+ body.afterday-real-ui-v3 #hud .warning{
+  top:calc((100vw - 4px) * 300 / 1647 + 167px + env(safe-area-inset-top))!important;
+  width:calc(100vw - 22px)!important;min-height:39px!important;
+  padding:9px 24px!important;
+  font-size:clamp(10px,2.52vw,12px)!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit{
+  left:7px!important;
+  bottom:calc(75px + env(safe-area-inset-bottom))!important;
+  width:min(51vw,211px)!important;
+  max-width:min(51vw,211px)!important;
+  min-height:0!important;
+  padding:24px 13px 21px!important;
+  gap:3px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit small{font-size:clamp(8px,2.2vw,10px)!important;}
+ body.afterday-real-ui-v3 #hud #inventory-items{font-size:clamp(8.5px,2.2vw,10.5px)!important;}
+ body.afterday-real-ui-v3 #hud #sleep-arrangement,
+ body.afterday-real-ui-v3 #hud #companion-status{
+  font-size:clamp(7.5px,1.85vw,9.5px)!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit-controls button{
+  min-height:26px!important;
+  font-size:clamp(8px,2.0vw,10px)!important;
+  padding:4px 3px!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar{
+  bottom:calc(7px + env(safe-area-inset-bottom))!important;
+  width:calc(100vw - 8px)!important;
+  max-width:calc(100vw - 8px)!important;
+  aspect-ratio:1148 / 195!important; /* breathing room for two-line Korean labels */
+  min-height:61px!important;
+  padding:7px 9px!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar button{
+  font-size:clamp(7.1px,1.9vw,9px)!important;
+  letter-spacing:-.035em!important;
+  padding:3px 1px!important;
+  gap:1px!important;
+  min-height:0!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-action-icon{
+  width:clamp(17px,4.4vw,22px)!important;
+  height:clamp(17px,4.4vw,22px)!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar button>span{
+  font-size:clamp(15px,3.9vw,19px)!important;
+  width:22px;height:22px;flex:0 0 22px;
+ }
+ body.afterday-real-ui-v3 #hud .event-log{
+  bottom:calc(79px + env(safe-area-inset-bottom))!important;
+  font-size:9px!important;
+ }
+ body.afterday-real-ui-v3 #hud .weather-panel,
+ body.afterday-real-ui-v3 #hud .life-panel{
+  bottom:calc(76px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(max-width:360px){
+ body.afterday-real-ui-v3 #hud .actionbar button{
+  font-size:7px!important;letter-spacing:-.06em!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit{max-width:50vw!important;}
+}
+@media(prefers-reduced-motion:reduce){
+ body.afterday-real-ui-v3 #hud .actionbar button{transition:none!important}
+}
+
+/* QA clearance: 414px-720px and desktop must not place equipment over the bar. */
+@media(min-width:401px) and (max-width:720px) {
+ body.afterday-real-ui-v3 #hud .survival-kit {
+  bottom:calc(18vw + 22px + env(safe-area-inset-bottom))!important;
+ }
+ body.afterday-real-ui-v3 #hud .event-log {
+  bottom:calc(18vw + 30px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(min-width:721px) {
+ body.afterday-real-ui-v3 #hud .event-log {
+  bottom:calc(clamp(135px,16vw + 20px,192px) + env(safe-area-inset-bottom))!important;
+ }
+}
+
+/* A blank pre-authored equipment button should not appear when gameplay
+   has not unlocked any equipment action; both appearances use real v3 sprites. */
+body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]),.survival-kit-action)){
+ background-image:var(--afterday-v3-wide_panel_01)!important;
+ padding:17px 19px!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]))){
+  padding:13px 12px!important;
+ }
+}
+
+/* Preserve the separately-added v12.2 working explore button while matching
+   the original extraction. This reuses the existing click handler. */
+body.afterday-real-ui-v3 #hud .survival-time-frame{
+ width:100%;display:flex;flex-direction:column;align-items:stretch;gap:3px;
+}
+body.afterday-real-ui-v3 #hud .survival-kit:has(.survival-kit-action){
+ padding-bottom:57px!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-action{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ position:absolute!important;bottom:7%!important;left:11%!important;
+ width:78%!important;height:34px!important;min-height:30px!important;
+ padding:5px!important;
+ background:var(--afterday-v3-equipment_action_button) center/100% 100% no-repeat!important;
+ border:0!important;border-radius:0!important;box-shadow:none!important;
+ color:#ffe7bd!important;
+ font-size:clamp(10px,.98vw,13px)!important;
+ font-weight:800!important;white-space:nowrap!important;
+ text-shadow:0 1px 3px #000!important;
+ pointer-events:auto!important;cursor:pointer!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit-action:focus-visible{
+ outline:2px solid #ffd19a;outline-offset:2px;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-time-frame{gap:2px}
+ body.afterday-real-ui-v3 #hud .survival-kit:has(.survival-kit-action){
+  padding-bottom:42px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit-action{
+  height:29px!important;min-height:27px!important;
+  font-size:clamp(8px,2.05vw,10px)!important;
+ }
+}
