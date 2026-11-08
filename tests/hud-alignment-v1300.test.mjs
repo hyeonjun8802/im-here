@@ -49,7 +49,7 @@ test('mobile header cannot revert to old collapsed 13px padding',()=>{
  const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
  assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
  assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(36px,11\.45vw,49px\)!important/);
- assert.match(orig,/centeredIconFromAtlas/);
+ assert.match(orig,/completeHudGlyph/);
 });
 
 test('original extracted frame coordinates are explicit and mobile artwork controls correct glyph bounds',()=>{

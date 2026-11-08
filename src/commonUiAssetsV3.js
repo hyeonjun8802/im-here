@@ -1,5 +1,6 @@
 /* AFTERDAY common UI v3: use the ORIGINAL extracted 48-piece atlas.
    Visual assets only. No mutations to game simulation, state, events or saves. */
+import {completeHudGlyph} from './hudActionGlyphsV1400.js';
 const BASE = '/assets/ui/apocalypse-v3/';
 const cache = new Map();
 let pending;
@@ -34,46 +35,6 @@ function makeCrops(image, frames) {
     cache.set(name,src);
     return src;
   };
-}
-/* Optical centering: the atlas sprites are 64px squares but their visible
- * pixels are not centered equally. Keep the original pixel colors and shape,
- * trim transparent padding only, and add symmetrical transparent margins. */
-function centeredIconFromAtlas(image,frames,name) {
-  const key='optical:'+name;
-  if(cache.has(key))return cache.get(key);
-  const f=frames[name];
-  if(!f||f.w<1||f.h<1)throw new Error('Missing original icon '+name);
-  const c=document.createElement('canvas');c.width=f.w;c.height=f.h;
-  const cx=c.getContext('2d',{willReadFrequently:true});
-  cx.drawImage(image,f.x,f.y,f.w,f.h,0,0,f.w,f.h);
-  const rgba=cx.getImageData(0,0,f.w,f.h).data;
-  let minX=f.w,minY=f.h,maxX=-1,maxY=-1;
-  for(let y=0;y<f.h;y++)for(let x=0;x<f.w;x++){
-    const a=rgba[(y*f.w+x)*4+3];
-    if(a<32)continue;
-    minX=Math.min(minX,x);minY=Math.min(minY,y);
-    maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
-  }
-  // Original atlas includes stray disconnected source artifacts in 4 sprites.
-  // These are verified native 64x64 crop bounds of the main glyph only.
-  // Do not change original sprite files or touch any other icon resources.
-  const cleanSource = {
-    icon_food:[21,13,42,54],
-    icon_tools:[27,16,48,51],
-    icon_radio:[20,14,45,43],
-    icon_supply:[20,14,45,47]
-  }[name];
-  if(cleanSource){
-    [minX,minY,maxX,maxY]=cleanSource;
-  }
-  if(maxX<minX||maxY<minY)return image.src;
-  const dst=document.createElement('canvas');dst.width=64;dst.height=64;
-  const dc=dst.getContext('2d',{alpha:true});
-  const bw=maxX-minX+1,bh=maxY-minY+1;
-  const scale=Math.min(50/bw,50/bh);
-  const sw=bw*scale,sh=bh*scale;
-  dc.drawImage(c,minX,minY,bw,bh,(64-sw)/2,(64-sh)/2,sw,sh);
-  const value=dst.toDataURL('image/png');cache.set(key,value);return value;
 }
 function setAsset(name, crop) {
   document.documentElement.style.setProperty('--afterday-v3-'+name,
@@ -143,19 +104,24 @@ export function installCommonUiAssetsV3() {
     }
 
 
+    // Every original action frame remains in the same location.
+    // The source atlas's ICON crops include chopped halves (notably cloud,
+    // hammer and crate) so a complete, centered drawable replaces only them.
     const actionIcons={
       drink:'icon_water',eat:'icon_food',repair:'icon_tools',
-      medicine:'icon_medical',explore:'icon_radio',
+      rest:'icon_moon',medicine:'icon_medical',explore:'icon_radio',
       'take-cover':'icon_tent','secure-supplies':'icon_supply',
       'collect-water':'icon_water','repair-tank':'icon_tools',
-      'weather-panel-toggle':'icon_cloud'
+      'life-panel-toggle':'icon_music','weather-panel-toggle':'icon_cloud'
     };
     for(const [id,sprite] of Object.entries(actionIcons)){
       const button=document.getElementById(id);
       if(!button || button.querySelector('.afterday-v3-action-icon'))continue;
+      // Preserve the spoken accessible name before hiding bare visual text.
+      if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',button.textContent.trim());
       const icon=document.createElement('img');
       icon.className='afterday-v3-action-icon';
-      icon.src=centeredIconFromAtlas(image,manifest.frames,sprite);
+      icon.src=completeHudGlyph(id);
       icon.alt='';icon.setAttribute('aria-hidden','true');
       icon.width=30;icon.height=30;icon.decoding='async';
       button.prepend(icon);
@@ -173,7 +139,7 @@ export function installCommonUiAssetsV3() {
       reserve.className='afterday-v3-standby-slot';
       reserve.setAttribute('aria-hidden','true');
       const reserveIcon=document.createElement('img');
-      reserveIcon.src=centeredIconFromAtlas(image,manifest.frames,'icon_tools');
+      reserveIcon.src=completeHudGlyph('reserve');
       reserveIcon.alt='';
       reserveIcon.decoding='async';
       const reserveText=document.createElement('span');
