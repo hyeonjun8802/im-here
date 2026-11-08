@@ -488,3 +488,39 @@ body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before {
    line-height:1.28!important;
  }
 }
+
+/* v3.3 emergency action overflow: if weather reveals a tenth/eleventh
+   action, do not remove every metal frame. Use the extracted source slots
+   for a horizontally scrollable emergency row, preserving live buttons. */
+body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions{
+ display:flex!important;
+ flex-wrap:nowrap!important;
+ justify-content:flex-start!important;
+ gap:1px!important;
+ padding:5px 9px!important;
+ background:var(--afterday-v3-bottom_action_bar_neutral,var(--afterday-v3-bottom_action_bar_full)) center/100% 100% no-repeat!important;
+ border:0!important;
+ background-color:#121a21!important;
+ overflow-x:auto!important;
+ overflow-y:hidden!important;
+ scrollbar-width:none;
+ -webkit-overflow-scrolling:touch;
+}
+body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions::-webkit-scrollbar{
+ display:none;
+}
+body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
+ flex:0 0 clamp(41px,9.4vw,89px)!important;
+ width:clamp(41px,9.4vw,89px)!important;
+ background:var(--afterday-v3-square_slot_01) center/100% 100% no-repeat!important;
+ box-shadow:none!important;
+ border-radius:0!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button#explore,
+body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button.needs-attention{
+ background:var(--afterday-v3-square_slot_selected) center/100% 100% no-repeat!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button::before{
+ content:none!important;
+ display:none!important;
+}
