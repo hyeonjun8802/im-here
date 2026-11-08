@@ -345,6 +345,11 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button,
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot{
  position:relative!important;
 }
+/* Desktop sprite cells retain interactive labels for accessibility, but visual
+ * text is entirely in the centered icon. Original raw text caused overlap. */
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button{
+ font-size:0!important;line-height:0!important;
+}
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > .afterday-v3-action-icon,
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img,
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span{
@@ -354,14 +359,14 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not
 }
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > .afterday-v3-action-icon,
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
- width:clamp(24px,2.5vw,32px)!important;height:clamp(24px,2.5vw,32px)!important;
+ width:clamp(28px,3vw,40px)!important;height:clamp(28px,3vw,40px)!important;
  max-width:calc(100% - 8px)!important;max-height:calc(100% - 8px)!important;
 }
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span{
  display:grid!important;place-items:center!important;
- width:clamp(22px,2.1vw,27px)!important;
- height:clamp(22px,2.1vw,27px)!important;
- font-size:clamp(20px,1.9vw,25px)!important;
+ width:clamp(27px,2.6vw,34px)!important;
+ height:clamp(27px,2.6vw,34px)!important;
+ font-size:clamp(24px,2.3vw,31px)!important;
 }
 @media(max-width:720px){
  body.afterday-real-ui-v3 #hud .top-right .survival-time-frame{gap:2px!important}
