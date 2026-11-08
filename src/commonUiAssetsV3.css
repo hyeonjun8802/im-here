@@ -251,7 +251,7 @@ body.afterday-real-ui-v3 #hud .actionbar button{
  padding:4px 1px!important;margin:0!important;
  gap:2px!important;overflow:visible!important;
  align-items:center!important;justify-content:center!important;
- font-size:clamp(8px,.9vw,13px)!important;
+ font-size:clamp(10px,1vw,14px)!important;
  line-height:1.1!important;
  font-weight:800!important;letter-spacing:-.02em!important;
  color:#f7ecd9!important;text-shadow:0 1px 2px #000!important;
@@ -285,8 +285,8 @@ body.afterday-real-ui-v3 #hud .actionbar button>span{
 body.afterday-real-ui-v3 #hud .actionbar button[data-v3-sprite]>span{display:none!important;}
 body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-action-icon{
  display:block!important;object-fit:contain!important;
- width:clamp(19px,2.5vw,33px)!important;
- height:clamp(19px,2.5vw,33px)!important;
+ width:clamp(21px,2.8vw,40px)!important;
+ height:clamp(21px,2.8vw,40px)!important;
  flex:0 0 auto;
  margin:0 auto;
  filter:drop-shadow(0 2px 2px #0009);
@@ -461,5 +461,17 @@ body.afterday-real-ui-v3 #hud .event-log{
 @media(min-width:721px) {
  body.afterday-real-ui-v3 #hud .event-log {
   bottom:calc(clamp(135px,16vw + 20px,192px) + env(safe-area-inset-bottom))!important;
+ }
+}
+
+/* A blank pre-authored equipment button should not appear when gameplay
+   has not unlocked any equipment action; both appearances use real v3 sprites. */
+body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]))){
+ background-image:var(--afterday-v3-wide_panel_01)!important;
+ padding:17px 19px!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]))){
+  padding:13px 12px!important;
  }
 }
