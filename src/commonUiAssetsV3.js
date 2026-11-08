@@ -66,8 +66,32 @@ export function installCommonUiAssetsV3() {
     [
       'bottom_action_bar_full','equipment_panel','center_warning_banner',
       'wide_panel_01','wide_panel_02','time_controls_panel',
-      'small_button_01','equipment_action_button','square_slot_selected','alert_amber'
+      'small_button_01','equipment_action_button','square_slot_01','square_slot_selected','alert_amber'
     ].forEach(name=>setAsset(name,crop));
+
+    // The authored bar has a glowing slot hardcoded at position 5.
+    // Neutralize ONLY that slot using the original unselected source sprite.
+    // A selected glow is then drawn by CSS at the actual action position.
+    const sourceBar=manifest.frames.bottom_action_bar_full;
+    const blankSlot=manifest.frames.square_slot_01;
+    const neutralBar=document.createElement('canvas');
+    neutralBar.width=sourceBar.w;
+    neutralBar.height=sourceBar.h;
+    const barCtx=neutralBar.getContext('2d',{alpha:true});
+    if(barCtx) {
+      barCtx.drawImage(image,sourceBar.x,sourceBar.y,sourceBar.w,sourceBar.h,
+        0,0,sourceBar.w,sourceBar.h);
+      // Cover the pre-selected fifth tile's orange interior without touching
+      // the original outer steel rail; restore its metallic neutral frame.
+      barCtx.fillStyle='#101820';
+      barCtx.fillRect(523,42,131,101);
+      barCtx.drawImage(image,blankSlot.x,blankSlot.y,blankSlot.w,blankSlot.h,
+        520,25,139,134);
+      document.documentElement.style.setProperty(
+        '--afterday-v3-bottom_action_bar_neutral',
+        'url("'+neutralBar.toDataURL('image/png')+'")');
+    }
+
 
     const actionIcons={
       drink:'icon_water',eat:'icon_food',repair:'icon_tools',
@@ -87,6 +111,45 @@ export function installCommonUiAssetsV3() {
       button.prepend(icon);
       button.dataset.v3Sprite=sprite;
     }
+
+    // The fixed artwork has 9 slots. Ordinary play starts with 8 actions
+    // because tank repair is locked. A disabled visual reserve preserves
+    // alignment without triggering an unavailable game action.
+    const actionbar=document.querySelector('#hud .actionbar');
+    if(actionbar && !actionbar.querySelector('.afterday-v3-standby-slot')) {
+      const repairTank=document.getElementById('repair-tank');
+      const lifeButton=document.getElementById('life-panel-toggle');
+      const reserve=document.createElement('span');
+      reserve.className='afterday-v3-standby-slot';
+      reserve.setAttribute('aria-hidden','true');
+      const reserveIcon=document.createElement('img');
+      reserveIcon.src=crop('icon_tools');
+      reserveIcon.alt='';
+      reserveIcon.decoding='async';
+      const reserveText=document.createElement('span');
+      reserveText.textContent='물탱크 수리';
+      reserve.append(reserveIcon,reserveText);
+      actionbar.insertBefore(reserve,lifeButton||null);
+      const syncSlots=()=>{
+        const specialIds=['take-cover','secure-supplies','collect-water','repair-tank'];
+        const specialActive=specialIds.some(id=>{
+          const el=document.getElementById(id);
+          return Boolean(el && !el.hidden);
+        });
+        reserve.hidden=specialActive;
+        const visible=Array.from(actionbar.querySelectorAll(':scope > button'))
+          .filter(el=>!el.hidden).length + (reserve.hidden?0:1);
+        actionbar.classList.toggle('v3-has-extra-actions',visible>9);
+        actionbar.dataset.visibleSlots=String(visible);
+        actionbar.dataset.reserveSlot=String(!reserve.hidden);
+      };
+      const visibilityObserver=new MutationObserver(syncSlots);
+      visibilityObserver.observe(actionbar,{
+        subtree:true,attributes:true,attributeFilter:['hidden']
+      });
+      syncSlots();
+    }
+
     // Keep original interaction nodes and event listeners in place.
     document.body.classList.add('afterday-real-ui-v3');
     document.documentElement.dataset.commonUiVersion='v3';
