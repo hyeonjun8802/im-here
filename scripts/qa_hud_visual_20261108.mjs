@@ -3,6 +3,8 @@
 import {chromium} from 'playwright';
 import fs from 'node:fs';
 const out='docs/qa/hud-visual-20261108';fs.mkdirSync(out,{recursive:true});
+fs.copyFileSync('public/assets/ui/apocalypse-v3/spritesheet.webp',out+'/atlas.webp');
+fs.copyFileSync('public/assets/ui/apocalypse-v3/spritesheet.json',out+'/atlas.json');
 const variants=[['phone-320',320,690],['phone-390',390,844],['phone-430',430,932],['tablet-768',768,1024],['desktop-1280',1280,800],['desktop-1920',1920,1080]];
 const report=[];
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-webgl','--use-gl=angle','--use-angle=swiftshader']});
@@ -24,6 +26,45 @@ try{
    document.head.append(sty);
   });
   await page.waitForFunction(()=>document.querySelector('.afterday-v3-action-icon')?.complete&&document.querySelector('.premium-hud__current-art')?.naturalWidth>0,null,{timeout:20000});
+  if(name==='phone-390'||name==='desktop-1280'){
+    const audit=await page.evaluate(()=>{
+      const selectors={
+       frame:'#hud .survival-kit',header:'#hud .survival-kit > small:first-child',
+       content:'#inventory-items',action:'#survival-kit-action',
+       nav:'#hud .actionbar',slot:'#hud .actionbar #drink',
+       center:'.premium-hud__current-art',forecast:'.premium-hud__forecast',
+       stats:'.survival-hud-stats',stock:'.survival-hud-stock',clock:'#clock'
+      };
+      const props=['top','left','right','bottom','width','height','min-height','padding','padding-top','padding-bottom','transform','grid-template-columns','background-size','object-position','font-size','position','display'];
+      const log={};
+      for(const [label,selector] of Object.entries(selectors)){
+        const el=document.querySelector(selector);
+        if(!el)continue;
+        const rules=[];
+        function scan(owner,list,media){
+          for(const r of Array.from(list)){
+            if(r.type===CSSRule.MEDIA_RULE){
+              if(matchMedia(r.conditionText).matches)scan(owner,r.cssRules,r.conditionText);
+            }else if(r.type===CSSRule.STYLE_RULE){
+              let yes=false;try{yes=el.matches(r.selectorText)}catch{}
+              if(!yes)continue;
+              const d={};
+              for(const p of props)if(r.style.getPropertyValue(p))d[p]=r.style.getPropertyValue(p)+(r.style.getPropertyPriority(p)==='important'?' !important':'');
+              if(Object.keys(d).length)rules.push({css:owner.split('/').pop(),media,selector:r.selectorText,decl:d});
+            }
+          }
+        }
+        for(const sh of document.styleSheets){
+          let rs;try{rs=sh.cssRules}catch{continue}
+          scan(sh.href||'inline',rs,'all');
+        }
+        const computed=getComputedStyle(el);
+        log[label]={computed:Object.fromEntries(props.map(p=>[p,computed.getPropertyValue(p)])),rules};
+      }
+      return log;
+    });
+    fs.writeFileSync(out+'/css-audit-'+name+'.json',JSON.stringify(audit,null,2));
+  }
   const metrics=await page.evaluate(()=>{
    const sel=q=>document.querySelector(q),r=e=>{if(!e)return null;const x=e.getBoundingClientRect();return {x:+x.x.toFixed(2),y:+x.y.toFixed(2),right:+x.right.toFixed(2),bottom:+x.bottom.toFixed(2),w:+x.width.toFixed(2),h:+x.height.toFixed(2)}};
    const kit=sel('.survival-kit'),nav=sel('.actionbar'),hud=sel('.premium-hud-v1000');
