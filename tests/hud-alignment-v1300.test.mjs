@@ -79,3 +79,7 @@ test('desktop sprite controls hide old raw menu text beneath centered icons',()=
  assert.match(css,/actionbar:not\(\.v3-has-extra-actions\) > button\{\s*font-size:0!important;line-height:0!important/);
  assert.match(css,/width:clamp\(28px,3vw,40px\)!important/);
 });
+
+test('inactive tank repair reserve is icon-only on desktop as well as mobile',()=>{
+ assert.match(css,/actionbar:not\(\.v3-has-extra-actions\) > \.afterday-v3-standby-slot > span\{\s*display:none!important/);
+});
