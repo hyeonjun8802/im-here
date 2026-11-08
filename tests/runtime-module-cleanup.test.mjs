@@ -21,3 +21,14 @@ test('the live main and character entries remain wired to the approved game',()=
 test('legacy forecast behavior is tested via fixture, not shipped in the live src tree',()=>{
   assert.equal(existsSync(new URL('../tests/fixtures/disasterForecastV800.js',import.meta.url)),true);
 });
+
+test('package scripts only reference existing files, excluding valid glob patterns',()=>{
+ const config=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+ for(const [name,command] of Object.entries(config.scripts)){
+  for(const match of command.matchAll(/(?:node|python3)\s+(?:--test\s+)?((?:scripts|tests)\/[^\s"'&]+)/g)){
+   const path=match[1];
+   if(path.includes('*'))continue;
+   assert.ok(existsSync(new URL('../'+path,import.meta.url)),name+' points to missing '+path);
+  }
+ }
+});
