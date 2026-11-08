@@ -782,3 +782,22 @@ body.afterday-real-ui-v3 #hud .survival-kit{
     font-size:clamp(9px,2.25vw,11px)!important;
   }
 }
+
+/* v3.6 precision HUD alignment — calibrated to the 710px-wide iPhone capture.
+   Only the floating speed control and the weather image inside the fixed
+   medallion move; the approved top metal frame, forecast, and its hit areas
+   retain their existing layout and aspect ratio. */
+@media(max-width:720px){
+  /* The right forecast frame reaches ~10px from the capture edge, while the
+     floating 48px button visually ended ~60 screenshot pixels too early.
+     Shift the button group right ~30 CSS px without changing button size. */
+  body.afterday-real-ui-v3 #hud .topbar .top-right{
+    transform:translateX(30px)!important;
+  }
+  /* Shift only the current weather artwork slightly toward the round
+     opening's optical center; do not move the brass frame or timeline. */
+  body.afterday-real-ui-v3 .disaster-forecast.premium-hud-v1000 .premium-hud__current-art{
+    left:calc(50% + 3px)!important;
+    transform:translateX(-50%)!important;
+  }
+}
