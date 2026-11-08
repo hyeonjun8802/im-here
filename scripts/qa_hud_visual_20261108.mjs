@@ -32,7 +32,19 @@ try{
    const slots=[...nav.children].filter(e=>!(e.hidden||getComputedStyle(e).display==='none')).map(e=>{
     const icon=e.querySelector(':scope > img')||e.querySelector(':scope > span');
     const a=r(e),b=r(icon);
-    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
+    let visualOffset=null;
+    if(icon?.tagName==='IMG'&&icon.complete&&icon.naturalWidth){
+      const can=document.createElement('canvas');can.width=icon.naturalWidth;can.height=icon.naturalHeight;
+      const cx=can.getContext('2d',{willReadFrequently:true});cx.drawImage(icon,0,0);
+      const data=cx.getImageData(0,0,can.width,can.height).data;
+      let l=can.width,t=can.height,rr=-1,bb=-1;
+      for(let yy=0;yy<can.height;yy++)for(let xx=0;xx<can.width;xx++){
+        if(data[(yy*can.width+xx)*4+3]<32)continue;
+        l=Math.min(l,xx);rr=Math.max(rr,xx);t=Math.min(t,yy);bb=Math.max(bb,yy);
+      }
+      if(rr>=l)visualOffset=+((b.x+(l+rr+1)/2*b.w/can.width)-(a.x+a.w/2)).toFixed(2);
+    }
+    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,visualOffset,iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
    });
    return {viewport:{w:innerWidth,h:innerHeight},atlas:document.documentElement.dataset.commonUiVersion,
    kit:r(kit),children,nav:r(nav),slots,
@@ -49,12 +61,13 @@ try{
    const p=f[key]?.r;
    if(k&&p&&(p.x<k.x+9||p.right>k.right-9||p.y<k.y+26||p.bottom>k.bottom-24))problems.push(key+' out of panel');
   }
-  if(metrics.slots.some(s=>s.offset!==null&&Math.abs(s.offset)>3))problems.push('action icon center mismatch');
+  if(metrics.slots.some(s=>s.offset!==null&&Math.abs(s.offset)>3))problems.push('action icon box center mismatch');
+  if(metrics.slots.some(s=>s.visualOffset!==null&&Math.abs(s.visualOffset)>3))problems.push('action icon optical center mismatch');
   if(metrics.weather&&metrics.hud&&Math.abs((metrics.weather.x+metrics.weather.w/2)-(metrics.hud.x+metrics.hud.w/2))>2)problems.push('weather dial off center');
   const file=out+'/'+name+'.png';
   await page.screenshot({path:file,fullPage:false,animations:'disabled'});
   report.push({name,metrics,problems,pageErrors:errs});
-  console.log('LAYOUT_QA',JSON.stringify({name,kit:metrics.kit,content:metrics.children,nav:metrics.nav,slotOffsets:metrics.slots.map(x=>({id:x.id,offset:x.offset})),weather:metrics.weather,clock:metrics.clock,problems,pageErrors:errs}));
+  console.log('LAYOUT_QA',JSON.stringify({name,kit:metrics.kit,content:metrics.children,nav:metrics.nav,slotOffsets:metrics.slots.map(x=>({id:x.id,offset:x.offset,visualOffset:x.visualOffset})),weather:metrics.weather,clock:metrics.clock,problems,pageErrors:errs}));
   await page.close();
  }
 }finally{await browser.close()}

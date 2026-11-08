@@ -34,7 +34,7 @@ jobs:
       - name: Verify actual DOM and original sprite layout in 6 viewports
         run: node scripts/qa_hud_visual_20261108.mjs
         env:
-          STRICT_HUD_QA: '0'
+          STRICT_HUD_QA: '1'
       - name: Upload original UI screenshots and metrics
         if: always()
         uses: actions/upload-artifact@v4

@@ -35,6 +35,34 @@ function makeCrops(image, frames) {
     return src;
   };
 }
+/* Optical centering: the atlas sprites are 64px squares but their visible
+ * pixels are not centered equally. Keep the original pixel colors and shape,
+ * trim transparent padding only, and add symmetrical transparent margins. */
+function centeredIconFromAtlas(image,frames,name) {
+  const key='optical:'+name;
+  if(cache.has(key))return cache.get(key);
+  const f=frames[name];
+  if(!f||f.w<1||f.h<1)throw new Error('Missing original icon '+name);
+  const c=document.createElement('canvas');c.width=f.w;c.height=f.h;
+  const cx=c.getContext('2d',{willReadFrequently:true});
+  cx.drawImage(image,f.x,f.y,f.w,f.h,0,0,f.w,f.h);
+  const rgba=cx.getImageData(0,0,f.w,f.h).data;
+  let minX=f.w,minY=f.h,maxX=-1,maxY=-1;
+  for(let y=0;y<f.h;y++)for(let x=0;x<f.w;x++){
+    const a=rgba[(y*f.w+x)*4+3];
+    if(a<32)continue;
+    minX=Math.min(minX,x);minY=Math.min(minY,y);
+    maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
+  }
+  if(maxX<minX||maxY<minY)return image.src;
+  const dst=document.createElement('canvas');dst.width=64;dst.height=64;
+  const dc=dst.getContext('2d',{alpha:true});
+  const bw=maxX-minX+1,bh=maxY-minY+1;
+  const scale=Math.min(50/bw,50/bh);
+  const sw=bw*scale,sh=bh*scale;
+  dc.drawImage(c,minX,minY,bw,bh,(64-sw)/2,(64-sh)/2,sw,sh);
+  const value=dst.toDataURL('image/png');cache.set(key,value);return value;
+}
 function setAsset(name, crop) {
   document.documentElement.style.setProperty('--afterday-v3-'+name,
     'url("'+crop(name)+'")');
@@ -115,7 +143,7 @@ export function installCommonUiAssetsV3() {
       if(!button || button.querySelector('.afterday-v3-action-icon'))continue;
       const icon=document.createElement('img');
       icon.className='afterday-v3-action-icon';
-      icon.src=crop(sprite);
+      icon.src=centeredIconFromAtlas(image,manifest.frames,sprite);
       icon.alt='';icon.setAttribute('aria-hidden','true');
       icon.width=30;icon.height=30;icon.decoding='async';
       button.prepend(icon);
@@ -133,7 +161,7 @@ export function installCommonUiAssetsV3() {
       reserve.className='afterday-v3-standby-slot';
       reserve.setAttribute('aria-hidden','true');
       const reserveIcon=document.createElement('img');
-      reserveIcon.src=crop('icon_tools');
+      reserveIcon.src=centeredIconFromAtlas(image,manifest.frames,'icon_tools');
       reserveIcon.alt='';
       reserveIcon.decoding='async';
       const reserveText=document.createElement('span');
