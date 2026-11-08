@@ -1,0 +1,205 @@
+/* AFTERDAY v12.2 – actual extracted transparent game artwork, not CSS imitation.
+ * Game business logic, save format, weather source and existing v1006 forecast remain unchanged.
+ * Art comes from the approved v3 common UI sheet, cropped and centered with 14px alpha margins. */
+#hud {
+  --apocalypse-art-root:"/assets/ui/apocalypse-common-v3";
+}
+/* The warning is a real empty warning-banner image; message remains live HTML. */
+#hud .warning {
+  border:0!important;
+  border-radius:0!important;
+  clip-path:none!important;
+  background:transparent url('/assets/ui/apocalypse-common-v3/warning_frame.webp') center/100% 100% no-repeat!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  text-shadow:0 2px 3px #000,0 0 3px #000!important;
+  display:flex;align-items:center;justify-content:center;
+  width:min(700px,calc(100vw - 22px))!important;
+  min-height:60px;
+  padding:12px 32px!important;
+  line-height:1.4;
+}
+#hud .warning.hidden {display:none!important}
+@media(max-width:720px){
+  /* Use the exact 9-piece artwork as a single raster resource.
+   * Every action remains a real keyboard/finger-operable HTML button. */
+  #hud .actionbar {
+    display:grid!important;
+    grid-template-columns:repeat(9,minmax(0,1fr))!important;
+    grid-template-rows:1fr!important;
+    align-items:stretch!important;
+    gap:0!important;
+    width:calc(100vw - 8px)!important;
+    left:4px!important;
+    right:4px!important;
+    bottom:calc(6px + env(safe-area-inset-bottom))!important;
+    height:58px!important;
+    min-height:58px!important;
+    padding:8px 9px!important;
+    border:0!important;
+    border-radius:0!important;
+    clip-path:none!important;
+    box-shadow:none!important;
+    background:transparent url('/assets/ui/apocalypse-common-v3/actionbar_frame.webp') center/100% 100% no-repeat!important;
+    backdrop-filter:none!important;
+  }
+  #hud .actionbar::before,#hud .actionbar::after{display:none!important}
+  #hud .actionbar button {
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:1px solid transparent!important;
+    border-radius:3px!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    min-width:0!important;
+    min-height:40px!important;
+    height:40px!important;
+    padding:0 1px!important;
+    margin:0!important;
+    gap:1px!important;
+    font-size:clamp(6.5px,1.8vw,9px)!important;
+    line-height:1.08!important;
+    color:#f5efe1!important;
+    word-break:keep-all!important;
+    white-space:normal!important;
+    text-shadow:0 1px 2px #000;
+  }
+  #hud .actionbar button[hidden]{display:none!important}
+  #hud .actionbar button >span{
+    width:auto!important;height:auto!important;
+    flex:0 0 auto!important;
+    display:block!important;
+    font-size:clamp(13px,3.3vw,17px)!important;
+    line-height:1!important;
+    color:#eec48d!important;
+  }
+  #hud .actionbar #drink{grid-column:1}
+  #hud .actionbar #eat{grid-column:2}
+  #hud .actionbar #repair{grid-column:3}
+  #hud .actionbar #rest{grid-column:4}
+  #hud .actionbar #medicine{grid-column:5}
+  #hud .actionbar #explore{grid-column:6}
+  #hud .actionbar #repair-tank{grid-column:7}
+  #hud .actionbar #life-panel-toggle{grid-column:8}
+  #hud .actionbar #weather-panel-toggle{grid-column:9}
+  #hud .actionbar button.needs-attention,
+  #hud .actionbar button[aria-pressed=true] {
+    border:1px solid #ffb359!important;
+    background:linear-gradient(180deg,#c6771c2b,#e68e1d34)!important;
+    box-shadow:0 0 5px #fca62ca6, inset 0 0 8px #ed7e1b67!important;
+  }
+  #hud .actionbar button:hover {filter:brightness(1.14)!important;transform:none!important}
+  #hud .actionbar button:focus-visible {
+    outline:1px solid #ffd28a!important;
+    outline-offset:0!important;
+  }
+  /* Rare emergency actions can add extra slots.
+   * In that situation keep all actions visible and interactive rather than
+   * forcing a 10th button into a nine-slot raster strip. */
+  #hud .actionbar:has(#take-cover:not([hidden])),
+  #hud .actionbar:has(#secure-supplies:not([hidden])),
+  #hud .actionbar:has(#collect-water:not([hidden])){
+    display:flex!important;flex-wrap:wrap!important;
+    height:auto!important;min-height:58px!important;
+    padding:7px 10px!important;
+    background:linear-gradient(180deg,#2b3943ec,#0b141bef)!important;
+    border:2px solid #747f86!important;
+    border-radius:6px!important;
+  }
+  #hud .actionbar:has(#take-cover:not([hidden])) button,
+  #hud .actionbar:has(#secure-supplies:not([hidden])) button,
+  #hud .actionbar:has(#collect-water:not([hidden])) button {
+    flex:1 1 10%!important;
+    background:linear-gradient(160deg,#1b2a32,#0a1119)!important;
+    border:1px solid #667681!important;
+  }
+  /* Original equipment panel: title integrated into the protruding metal tab,
+   * body remains real dynamic state; the lower inset is a real explore control. */
+  #hud .survival-kit {
+    left:7px!important;
+    bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    width:min(176px,47vw)!important;
+    max-width:min(176px,47vw)!important;
+    min-height:130px!important;
+    padding:30px 13px 39px!important;
+    border:0!important;
+    border-radius:0!important;
+    clip-path:none!important;
+    gap:3px!important;
+    background:transparent url('/assets/ui/apocalypse-common-v3/inventory_frame.webp') center/100% 100% no-repeat!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    color:#f7f0e4;
+    filter:drop-shadow(0 5px 8px #000a);
+  }
+  #hud .survival-kit::before {display:none!important}
+  #hud .survival-kit small:first-child {
+    position:absolute!important;
+    top:13px!important;
+    left:15px!important;
+    right:14px!important;
+    margin:0!important;
+    padding:0!important;
+    width:auto!important;
+    max-width:none!important;
+    border:0!important;
+    border-radius:0!important;
+    clip-path:none!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    min-height:0!important;
+    font-size:clamp(8px,2.15vw,11px)!important;
+    line-height:1.15!important;
+    letter-spacing:0!important;
+    color:#ffdfa0!important;
+    text-align:left;
+  }
+  #hud .survival-kit small:first-child::before{display:none!important}
+  #hud #inventory-items {
+    font-size:clamp(8px,2.22vw,10px)!important;
+    line-height:1.25!important;
+    max-width:100%;
+  }
+  #hud #sleep-arrangement,#hud #companion-status {
+    font-size:clamp(7px,1.96vw,9px)!important;
+    line-height:1.25!important;
+    max-width:100%;
+  }
+  #hud .survival-kit-controls:not(:has(button:not([hidden]))){display:none!important}
+  #hud .survival-kit-controls button{
+    font-size:8px!important;
+    min-height:22px!important;
+    padding:2px 4px!important;
+  }
+  #hud .survival-kit-action {
+    position:absolute;left:11%;bottom:8%;width:78%;height:17%;
+    display:flex;align-items:center;justify-content:center;
+    padding:0!important;
+    border:0!important;
+    border-radius:4px!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:#ffe5bc!important;
+    font-size:clamp(8px,2.1vw,10px)!important;
+    font-weight:800!important;
+    white-space:nowrap;
+    text-shadow:0 1px 3px #000;
+    pointer-events:auto;
+    cursor:pointer;
+  }
+  #hud .survival-kit-action:hover {filter:brightness(1.3)}
+  #hud .warning {
+    top:calc((100vw - 4px) * 210 / 1000 + 132px + env(safe-area-inset-top))!important;
+    width:min(440px,calc(100vw - 20px))!important;
+    max-width:calc(100vw - 20px)!important;
+    min-height:49px!important;
+    padding:11px 20px!important;
+    font-size:clamp(10px,2.75vw,12px)!important;
+    text-wrap:balance;
+  }
+  #hud .event-log{bottom:calc(75px + env(safe-area-inset-bottom))!important}
+}
+@media(min-width:721px){
+  #hud .survival-kit-action{display:none}
+}
