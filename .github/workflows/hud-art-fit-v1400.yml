@@ -33,10 +33,14 @@ jobs:
         env:
           QA_BROWSER: chromium,webkit
           QA_STRICT_ART_FIT: '1'
+      - name: Verify real WebGL game and the corrected HUD on mobile and PC
+        run: node scripts/qa_live_hud_v1400.mjs
       - name: Upload verified 10 screenshots and metrics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: art-fit-v1400-audit
-          path: docs/qa/hud-art-fit-v1400/
+          path: |
+            docs/qa/hud-art-fit-v1400/
+            docs/qa/live-hud-v1400/
           retention-days: 14
