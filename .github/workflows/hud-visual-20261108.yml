@@ -21,6 +21,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Validate all gameplay and HUD regression tests
+        run: npm test
       - name: Browser setup
         run: |
           npm install --no-save playwright
