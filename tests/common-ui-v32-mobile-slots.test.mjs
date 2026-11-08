@@ -9,8 +9,9 @@ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 test('bottom bar uses the original nine-slot sheet without nine extra metal borders',()=>{
   assert.match(css,/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/);
   assert.match(css,/--afterday-v3-bottom_action_bar_neutral/);
-  assert.match(css,/actionbar button::before,[\s\S]*?afterday-v3-standby-slot::before\s*\{\s*content:none!important;\s*display:none!important;/);
-  assert.match(css,/actionbar button#explore::before,[\s\S]*?actionbar button\.needs-attention::before\s*\{[\s\S]*?square_slot_selected/);
+  assert.match(css,/actionbar > button::before,[\s\S]*?afterday-v3-standby-slot::after\s*\{\s*content:none!important;/);
+  assert.doesNotMatch(css,/background(?:-image)?:var\(--afterday-v3-square_slot_(?:01|selected)\)/);
+  assert.match(css,/\.actionbar > button,[\s\S]*?\.actionbar > \.afterday-v3-standby-slot\{\s*background:none!important;/);
 });
 
 test('compact mobile icon-only cells remain centered, text remains in DOM for accessibility',()=>{

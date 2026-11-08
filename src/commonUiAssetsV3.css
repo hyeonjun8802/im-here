@@ -251,12 +251,7 @@ body.afterday-real-ui-v3 #hud .actionbar button.secondary,
 body.afterday-real-ui-v3 #hud .actionbar button.needs-attention{
  border:0!important;background:transparent!important;box-shadow:none!important;
 }
-body.afterday-real-ui-v3 #hud .actionbar button#explore::before,
-body.afterday-real-ui-v3 #hud .actionbar button.needs-attention::before{
- content:"";display:block;position:absolute;inset:1px -1px;z-index:-1;
- filter:drop-shadow(0 0 4px #ff9b31);
- pointer-events:none;
-}
+/* No button pseudo-metal: the nine source cells are in the bar background. */
 body.afterday-real-ui-v3 #hud .actionbar button:focus-visible{
  outline:2px solid #ffc17b!important;outline-offset:-3px;
 }

@@ -320,7 +320,7 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.nee
 }
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button#explore,
 body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.needs-attention{
- background:linear-gradient(180deg,rgba(220,143,54,.07),rgba(160,90,33,.05))!important;
+ background:transparent!important;
  box-shadow:none!important;border:0!important;border-radius:0!important;
 }
 
@@ -620,4 +620,33 @@ body.afterday-real-ui-v3 #hud .survival-kit-controls > button:not([hidden]){
  border-radius:2px!important;
  box-shadow:inset 0 1px rgba(235,218,191,.10)!important;
  color:#ebdcc5!important;
+}
+
+/* v17 single-layer bottom navigation. Each source slot border is painted
+ * exactly once by the actionbar background (1148x172), never by a button. */
+body.afterday-real-ui-v3 #hud .actionbar > button,
+body.afterday-real-ui-v3 #hud .actionbar > .afterday-v3-standby-slot{
+ background:none!important;
+ background-image:none!important;
+ border:0!important;
+ border-radius:0!important;
+ box-shadow:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar > button::before,
+body.afterday-real-ui-v3 #hud .actionbar > button::after,
+body.afterday-real-ui-v3 #hud .actionbar > .afterday-v3-standby-slot::before,
+body.afterday-real-ui-v3 #hud .actionbar > .afterday-v3-standby-slot::after{
+ content:none!important;
+ display:none!important;
+ background:none!important;
+ background-image:none!important;
+ box-shadow:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar > button:focus-visible{
+ outline:2px solid #eac493!important;
+ outline-offset:-3px!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar > button.needs-attention > img,
+body.afterday-real-ui-v3 #hud .actionbar > button#explore > img{
+ filter:brightness(1.08) drop-shadow(0 0 2px rgba(232,173,96,.3))!important;
 }

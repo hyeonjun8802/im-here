@@ -20,7 +20,7 @@ test('mobile selection cannot create an overlay extending above approved source 
  assert.match(css,/v3\.4 source-aligned phone finish/);
  assert.match(css,/\.actionbar\{\s*isolation:isolate!important;\s*overflow:hidden!important;/);
  assert.match(css,/\.actionbar:not\(\.v3-has-extra-actions\) #explore::before,[\s\S]*?content:none!important;\s*display:none!important;/);
- assert.match(css,/\.actionbar:not\(\.v3-has-extra-actions\) #explore,[\s\S]*?box-shadow:inset 0 0 0 1px rgba\(232,165,92,\.22\)!important;/);
+ assert.match(css,/\.actionbar:not\(\.v3-has-extra-actions\) #explore,[\s\S]*?box-shadow:none!important;/);
  assert.match(css,/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/);
 });
 
