@@ -243,7 +243,11 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
  }
  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions){
   width:calc(100vw - 8px)!important;max-width:calc(100vw - 8px)!important;
-  min-height:60px!important;aspect-ratio:1148 / 172!important;
+  min-width:0!important;
+  /* WebKit otherwise transfers min-height:60px through aspect-ratio
+   * and FORCES a 400.45px-wide bar on 320/390px Safari viewports. */
+  height:auto!important;min-height:0!important;aspect-ratio:1148 / 172!important;
+  box-sizing:border-box!important;
   padding:5px calc((100vw - 8px) * .023) 5px calc((100vw - 8px) * .045)!important;gap:0!important;
  }
  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button,

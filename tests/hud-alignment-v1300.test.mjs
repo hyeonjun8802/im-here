@@ -59,3 +59,9 @@ test('original extracted frame coordinates are explicit and mobile artwork contr
  assert.match(orig,/icon_tools:\[27,16,48,51\]/);
  assert.match(orig,/icon_radio:\[20,14,45,43\]/);
 });
+
+test('iOS WebKit action rail does not grow to 400px from transferred minimum height',()=>{
+ assert.match(css,/WebKit otherwise transfers min-height:60px through aspect-ratio/);
+ assert.match(css,/height:auto!important;min-height:0!important;aspect-ratio:1148 \/ 172!important/);
+ assert.match(css,/width:calc\(100vw - 8px\)!important;max-width:calc\(100vw - 8px\)!important/);
+});

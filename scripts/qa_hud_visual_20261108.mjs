@@ -123,6 +123,10 @@ try{
    if(Math.abs(center-sourceCenter)>3.2)problems.push('explore label off ORIGINAL button well '+(center-sourceCenter).toFixed(2));
   }
   const sourceSlotCenters=[110,230,350,468,586,706,826,943,1062];
+  if(metrics.nav){
+   if(metrics.nav.x<-1||metrics.nav.right>metrics.viewport.w+1)problems.push('bottom action rail overflows viewport');
+   if(Math.abs(metrics.nav.h-(metrics.nav.w*172/1148))>2.5)problems.push('bar does not preserve ORIGINAL 1148x172 artwork aspect');
+  }
   if(metrics.slots.length===9){
    for(let i=0;i<9;i++){
     const slot=metrics.slots[i],target=metrics.nav.x+metrics.nav.w*(sourceSlotCenters[i]/1148);
