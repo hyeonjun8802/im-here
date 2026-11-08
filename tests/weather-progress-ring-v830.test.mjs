@@ -2,13 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
-import {currentWeatherProgress,forecastPresentation} from '../src/disasterForecastV800.js';
+import {currentWeatherProgress,forecastPresentation} from './fixtures/disasterForecastV800.js';
 import {defaults,advance} from '../src/simulation.js';
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('v8.3 weather progress code is syntax-valid',()=>{
-  for(const file of ['src/disasterForecastV800.js','src/main.js']){
+  for(const file of ['tests/fixtures/disasterForecastV800.js','src/main.js']){
     const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
     assert.equal(r.status,0,r.stderr||r.stdout);
   }
@@ -31,7 +31,7 @@ test('cloudy weather has a quiet current medallion instead of an empty center',(
 });
 
 test('v9.4 observatory replaces circular stages with a dynamic linear bar',()=>{
-  const html=read('index.html'),css=read('src/style.css'),src=read('src/disasterForecastV800.js');
+  const html=read('index.html'),css=read('src/style.css'),src=read('tests/fixtures/disasterForecastV800.js');
   const frame=read('public/assets/ui/forecast_hud_frame_v950.svg');
   assert.match(html,/disaster-forecast__bar-fill/);
   assert.match(html,/disaster-forecast__bar-cursor/);
@@ -81,7 +81,7 @@ test('v9.2 every coherent weather interval starts progress from zero',()=>{
 });
 
 test('v8.5 HUD progress has no private timer cache that can drift from simulation',()=>{
-  const src=read('src/disasterForecastV800.js');
+  const src=read('tests/fixtures/disasterForecastV800.js');
   assert.doesNotMatch(src,/progressCycleStart|progressCycleEnd|progressWeather/);
   assert.match(src,/currentWeatherProgress\(state,now\)/);
 });

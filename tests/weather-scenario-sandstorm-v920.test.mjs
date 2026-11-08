@@ -5,7 +5,7 @@ import {spawnSync} from 'node:child_process';
 import {GameClock,GAME_CLOCK_RATE,GAME_DAY_REAL_MS} from '../src/gameClock.js';
 import {defaults,advance,majorDisasterTypeFor,MAJOR_DISASTERS,DAY_MS,sanitize} from '../src/simulation.js';
 import {chooseScenarioWeather,preludeWeather,weatherDurationMs,WEATHER_TRANSITIONS,DISASTER_ARCS,disasterGapMsAfter} from '../src/weatherScenarioV920.js';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation} from './fixtures/disasterForecastV800.js';
 import {premiumDisasterBudget} from '../src/premiumDisasterVfxV810.js';
 
 const read=file=>fs.readFileSync(new URL('../'+file,import.meta.url),'utf8');

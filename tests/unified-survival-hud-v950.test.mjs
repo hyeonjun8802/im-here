@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation} from './fixtures/disasterForecastV800.js';
 import {defaults,sanitize} from '../src/simulation.js';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 test('v9.5 authored vector resources are actual separate production-ready assets',()=>{
@@ -52,7 +52,7 @@ test('one fixed-size disaster emblem moves strictly left toward centered current
   assert.equal(p[i].opacity,p[0].opacity);
  }
  assert.equal(p[0].scale,1);
- const src=read('src/disasterForecastV800.js');
+ const src=read('tests/fixtures/disasterForecastV800.js');
  assert.match(src,/this\.future\.set\(p\.futureType,'current',p\.visible\)/);
  assert.match(src,/--forecast-x/);
  const css=read('src/style.css');

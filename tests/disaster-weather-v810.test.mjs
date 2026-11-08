@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {WEATHER,WEATHER_KO,MAJOR_DISASTERS,majorDisasterTypeFor,defaults,advance,DAY_MS} from '../src/simulation.js';
 import {visualTargets} from '../src/weatherDirector.js';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation} from './fixtures/disasterForecastV800.js';
 import {describeWeatherEconomy} from '../src/weatherEconomy.js';
 import {premiumDisasterBudget} from '../src/premiumDisasterVfxV810.js';
 

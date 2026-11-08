@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation} from './fixtures/disasterForecastV800.js';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('nine unique premium meteorological illustrations share an optically aligned 120x120 canvas',()=>{
@@ -14,7 +14,7 @@ test('nine unique premium meteorological illustrations share an optically aligne
   assert.ok(svg.length>2000,type);
   assert.match(svg,/<\/svg>\s*$/,type);
  }
- const source=read('src/disasterForecastV800.js');
+ const source=read('tests/fixtures/disasterForecastV800.js');
  assert.match(source,/ICON_ROOT='\/assets\/ui\/weather-premium'/);
  assert.match(source,/function iconSrc\(type,stage\)\{return \x60\$\{ICON_ROOT\}\/\$\{type\}\.svg\x60;\}/);
 });

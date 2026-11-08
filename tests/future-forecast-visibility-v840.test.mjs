@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {DAY_MS} from '../src/simulation.js';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation} from './fixtures/disasterForecastV800.js';
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
 test('v8.4 forecast visibility code is syntax-valid',()=>{
-  for(const file of ['src/disasterForecastV800.js','src/main.js']){
+  for(const file of ['tests/fixtures/disasterForecastV800.js','src/main.js']){
     const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8'});
     assert.equal(r.status,0,r.stderr||r.stdout);
   }
@@ -38,13 +38,13 @@ test('only one future emblem remains and no circular forecast sockets are render
 });
 
 test('single forecast resource crossfades from far to eve before entering current',()=>{
-  const src=read('src/disasterForecastV800.js');
+  const src=read('tests/fixtures/disasterForecastV800.js');
   assert.match(src,/const stage=hoursLeft<=12\?'eve':'far'/);
   assert.match(src,/this\.future\.set\(p\.futureType,'current',p\.visible\)/);
   assert.match(src,/movingForecastX/);
 });
 
 test('forecast visibility patch remains HUD-only and does not alter simulation state',()=>{
-  const src=read('src/disasterForecastV800.js');
+  const src=read('tests/fixtures/disasterForecastV800.js');
   assert.doesNotMatch(src,/localStorage|SAVE_KEY|health\s*=|water\s*=|food\s*=|facilities\s*=/);
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {GameClock,GAME_CLOCK_RATE,GAME_SPEEDS} from '../src/gameClock.js';
-import {forecastPresentation} from '../src/disasterForecastV800.js';
+import {forecastPresentation} from './fixtures/disasterForecastV800.js';
 
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 
@@ -28,7 +28,7 @@ test('speed HUD advertises the 32x and 50x test intervals',()=>{
 test('forecast keeps four empty frame checkpoints but renders only one moving icon',()=>{
   const css=read('src/style.css');
   const html=read('index.html');
-  const src=read('src/disasterForecastV800.js');
+  const src=read('tests/fixtures/disasterForecastV800.js');
   assert.match(css,/\.disaster-forecast__future\{[\s\S]*?z-index:8/);
   assert.equal((html.match(/class="disaster-forecast__future"/g)||[]).length,1);
   assert.doesNotMatch(html,/disaster-forecast__trail-icon/);
@@ -37,7 +37,7 @@ test('forecast keeps four empty frame checkpoints but renders only one moving ic
 });
 
 test('forecast icon stays the same size while traveling left toward the central dial',()=>{
-  const src=read('src/disasterForecastV800.js');
+  const src=read('tests/fixtures/disasterForecastV800.js');
   assert.match(src,/const scale=1;/);
   assert.match(src,/const opacity=1;/);
   assert.match(src,/this\.future\.set\(p\.futureType,'current',p\.visible\)/);

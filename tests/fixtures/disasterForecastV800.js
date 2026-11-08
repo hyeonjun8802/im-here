@@ -1,4 +1,4 @@
-import {DAY_MS,MAJOR_DISASTER_LEAD_MS,WEATHER_KO} from './simulation.js';
+import {DAY_MS,MAJOR_DISASTER_LEAD_MS,WEATHER_KO} from '../../src/simulation.js';
 
 const ICON_ROOT='/assets/ui/weather-premium';
 const DISASTER_ICON={
