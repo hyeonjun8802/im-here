@@ -154,7 +154,7 @@ body.afterday-real-ui-v3 .top-right #weather-effect{
 /* 3. Exact blank metal art: warning ribbon, equipment, buttons, alerts. */
 body.afterday-real-ui-v3 #hud .warning{
  position:fixed!important;
- top:calc(min(1450px,100vw - 6px) * 300 / 1647 + 136px + env(safe-area-inset-top))!important;
+ top:calc(min(1450px,100vw - 6px) * 300 / 1647 + 200px + env(safe-area-inset-top))!important;
  left:50%!important;transform:translateX(-50%)!important;
  width:min(560px,calc(100vw - 24px))!important;
  max-width:calc(100vw - 24px)!important;
@@ -177,7 +177,7 @@ body.afterday-real-ui-v3 #hud .warning.hidden{display:none!important;}
 body.afterday-real-ui-v3 #hud .survival-kit{
  position:absolute!important;
  left:15px!important;
- bottom:calc(110px + env(safe-area-inset-bottom))!important;
+ bottom:calc(clamp(130px,16vw + 15px,185px) + env(safe-area-inset-bottom))!important;
  width:min(320px,42vw)!important;
  max-width:min(320px,42vw)!important;
  min-height:0!important;
@@ -447,4 +447,19 @@ body.afterday-real-ui-v3 #hud .event-log{
 }
 @media(prefers-reduced-motion:reduce){
  body.afterday-real-ui-v3 #hud .actionbar button{transition:none!important}
+}
+
+/* QA clearance: 414px-720px and desktop must not place equipment over the bar. */
+@media(min-width:401px) and (max-width:720px) {
+ body.afterday-real-ui-v3 #hud .survival-kit {
+  bottom:calc(18vw + 22px + env(safe-area-inset-bottom))!important;
+ }
+ body.afterday-real-ui-v3 #hud .event-log {
+  bottom:calc(18vw + 30px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(min-width:721px) {
+ body.afterday-real-ui-v3 #hud .event-log {
+  bottom:calc(clamp(135px,16vw + 20px,192px) + env(safe-area-inset-bottom))!important;
+ }
 }
