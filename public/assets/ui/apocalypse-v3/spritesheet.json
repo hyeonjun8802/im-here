@@ -1,0 +1,537 @@
+{
+  "image": "spritesheet.png",
+  "size": {
+    "w": 2048,
+    "h": 1139
+  },
+  "frames": {
+    "equipment_panel": {
+      "x": 9,
+      "y": 9,
+      "w": 461,
+      "h": 308,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "panel"
+    },
+    "top_weather_ring": {
+      "x": 479,
+      "y": 9,
+      "w": 311,
+      "h": 300,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "ring"
+    },
+    "time_controls_panel": {
+      "x": 799,
+      "y": 9,
+      "w": 365,
+      "h": 182,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "panel"
+    },
+    "ring_gold": {
+      "x": 1173,
+      "y": 9,
+      "w": 170,
+      "h": 162,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "ring"
+    },
+    "ring_silver": {
+      "x": 1352,
+      "y": 9,
+      "w": 159,
+      "h": 162,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "ring"
+    },
+    "square_slot_selected": {
+      "x": 1520,
+      "y": 9,
+      "w": 163,
+      "h": 151,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "slot"
+    },
+    "square_slot_04": {
+      "x": 1692,
+      "y": 9,
+      "w": 162,
+      "h": 148,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "slot"
+    },
+    "square_slot_05": {
+      "x": 1863,
+      "y": 9,
+      "w": 162,
+      "h": 148,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "slot"
+    },
+    "top_hud_full": {
+      "x": 9,
+      "y": 326,
+      "w": 1647,
+      "h": 300,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "header"
+    },
+    "square_slot_02": {
+      "x": 1665,
+      "y": 326,
+      "w": 161,
+      "h": 147,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "slot"
+    },
+    "square_slot_01": {
+      "x": 1835,
+      "y": 326,
+      "w": 159,
+      "h": 147,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "slot"
+    },
+    "bottom_action_bar_full": {
+      "x": 9,
+      "y": 635,
+      "w": 1148,
+      "h": 172,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "actionbar"
+    },
+    "wide_panel_01": {
+      "x": 1166,
+      "y": 635,
+      "w": 341,
+      "h": 135,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "panel"
+    },
+    "wide_panel_02": {
+      "x": 1516,
+      "y": 635,
+      "w": 300,
+      "h": 135,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "panel"
+    },
+    "dashed_slot": {
+      "x": 1825,
+      "y": 635,
+      "w": 123,
+      "h": 133,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "slot"
+    },
+    "icon_cloud": {
+      "x": 1957,
+      "y": 635,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "caution_panel": {
+      "x": 9,
+      "y": 816,
+      "w": 275,
+      "h": 126,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "panel"
+    },
+    "small_button_02": {
+      "x": 293,
+      "y": 816,
+      "w": 140,
+      "h": 121,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "button"
+    },
+    "small_button_01": {
+      "x": 442,
+      "y": 816,
+      "w": 135,
+      "h": 121,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "button"
+    },
+    "center_warning_banner": {
+      "x": 586,
+      "y": 816,
+      "w": 768,
+      "h": 117,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "alert"
+    },
+    "small_button_03": {
+      "x": 1363,
+      "y": 816,
+      "w": 131,
+      "h": 117,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "button"
+    },
+    "counter_slot_04": {
+      "x": 1503,
+      "y": 816,
+      "w": 114,
+      "h": 115,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "counter"
+    },
+    "counter_slot_01": {
+      "x": 1626,
+      "y": 816,
+      "w": 113,
+      "h": 115,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "counter"
+    },
+    "counter_slot_02": {
+      "x": 1748,
+      "y": 816,
+      "w": 113,
+      "h": 115,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "counter"
+    },
+    "counter_slot_03": {
+      "x": 1870,
+      "y": 816,
+      "w": 113,
+      "h": 115,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "counter"
+    },
+    "tab_selected": {
+      "x": 9,
+      "y": 951,
+      "w": 201,
+      "h": 88,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "tab"
+    },
+    "tab_default_middle": {
+      "x": 219,
+      "y": 951,
+      "w": 197,
+      "h": 87,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "tab"
+    },
+    "alert_amber": {
+      "x": 425,
+      "y": 951,
+      "w": 439,
+      "h": 86,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "alert"
+    },
+    "tab_default_left": {
+      "x": 873,
+      "y": 951,
+      "w": 200,
+      "h": 86,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "tab"
+    },
+    "tab_default_right": {
+      "x": 1082,
+      "y": 951,
+      "w": 200,
+      "h": 85,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "tab"
+    },
+    "alert_red": {
+      "x": 1291,
+      "y": 951,
+      "w": 439,
+      "h": 84,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "alert"
+    },
+    "icon_fast_forward": {
+      "x": 1739,
+      "y": 951,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_food": {
+      "x": 1812,
+      "y": 951,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_health": {
+      "x": 1885,
+      "y": 951,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_medical": {
+      "x": 1958,
+      "y": 951,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "alert_green": {
+      "x": 9,
+      "y": 1048,
+      "w": 439,
+      "h": 82,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "alert"
+    },
+    "equipment_action_button": {
+      "x": 457,
+      "y": 1048,
+      "w": 385,
+      "h": 79,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "button"
+    },
+    "icon_pause": {
+      "x": 851,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_play": {
+      "x": 924,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_radio": {
+      "x": 997,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_rain": {
+      "x": 1070,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_snow": {
+      "x": 1143,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_sun": {
+      "x": 1216,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_supply": {
+      "x": 1289,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_tent": {
+      "x": 1362,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_thunder": {
+      "x": 1435,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_tools": {
+      "x": 1508,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    },
+    "icon_water": {
+      "x": 1581,
+      "y": 1048,
+      "w": 64,
+      "h": 64,
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "type": "icon"
+    }
+  }
+}
