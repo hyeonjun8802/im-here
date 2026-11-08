@@ -21,7 +21,11 @@ for(const [engine,driver] of engines){
     await page.goto('http://127.0.0.1:5173/',{waitUntil:'domcontentloaded',timeout:45000});
     await page.evaluate(async()=>{
      document.querySelector('#loading')?.remove();
+     const {installPremiumHudV1000}=await import('/src/premiumHudV1000.js');
      const {installCommonUiAssetsV3}=await import('/src/commonUiAssetsV3.js');
+     const now=Date.now();
+     installPremiumHudV1000(document.querySelector('#disaster-forecast'))
+       .sync({weather:'clear',majorDisasterType:'storm',majorDisasterAt:now+18*3600000},now);
      await installCommonUiAssetsV3();
      const style=document.createElement('style');
      style.textContent='#world{background:radial-gradient(circle at center,#253a3c,#151d26)}.event-log{display:none!important}';
