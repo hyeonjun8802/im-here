@@ -86,7 +86,7 @@ try{
       }
       if(rr>=l)visualOffset=+((b.x+(l+rr+1)/2*b.w/can.width)-(a.x+a.w/2)).toFixed(2);
     }
-    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,visualOffset,buttonFont:e.tagName==='BUTTON'?parseFloat(getComputedStyle(e).fontSize):null,iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
+    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,visualOffset,buttonFont:e.tagName==='BUTTON'?parseFloat(getComputedStyle(e).fontSize):null,reserveCaptionVisible:e.classList.contains('afterday-v3-standby-slot')&&getComputedStyle(e.querySelector(':scope > span')).display!=='none',iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
    });
    return {viewport:{w:innerWidth,h:innerHeight},atlas:document.documentElement.dataset.commonUiVersion,
    kit:r(kit),children,nav:r(nav),slots,
@@ -104,6 +104,7 @@ try{
    if(k&&p&&(p.x<k.x+9||p.right>k.right-9||p.y<k.y+26||p.bottom>k.bottom-24))problems.push(key+' out of panel');
   }
   if(metrics.viewport.w>720&&metrics.slots.some(slot=>slot.buttonFont!==null&&slot.buttonFont>0.1))problems.push('desktop raw Korean caption overlays icon');
+  if(metrics.slots.some(slot=>slot.reserveCaptionVisible))problems.push('inactive repair label overlays reserve icon');
   if(metrics.slots.some(s=>s.offset!==null&&Math.abs(s.offset)>3))problems.push('action icon box center mismatch');
   if(metrics.slots.some(s=>s.visualOffset!==null&&Math.abs(s.visualOffset)>3))problems.push('action icon optical center mismatch');
   if(metrics.weather&&metrics.hud&&Math.abs((metrics.weather.x+metrics.weather.w/2)-(metrics.hud.x+metrics.hud.w/2))>2)problems.push('weather dial off center');
