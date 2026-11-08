@@ -100,7 +100,7 @@ body.afterday-real-ui-v3 #hud .survival-kit{
  gap:7px!important;overflow:hidden!important;
 }
 body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
- position:absolute!important;top:32px!important;left:31px!important;right:51%!important;
+ position:absolute!important;top:calc(17.2% - .6em)!important;left:31px!important;right:51%!important;
  width:auto!important;margin:0!important;padding:0!important;
  font-size:clamp(11px,1vw,13px)!important;letter-spacing:0!important;
  line-height:1.2!important;white-space:nowrap!important;
@@ -222,11 +222,11 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   bottom:calc(max(76px,(100vw - 8px) * 172 / 1148 + 18px) + env(safe-area-inset-bottom))!important;
   width:min(57vw,225px)!important;max-width:min(57vw,225px)!important;
   min-height:0!important;height:auto!important;aspect-ratio:461 / 308!important;
-  padding:clamp(34px,10.8vw,46px) 14px clamp(34px,10vw,42px)!important;
+  padding:clamp(36px,11.45vw,49px) 14px clamp(34px,10vw,42px)!important;
   gap:clamp(2px,.65vw,3px)!important;overflow:hidden!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
-  top:clamp(18px,5.45vw,24px)!important;left:20px!important;right:51%!important;
+  top:calc(17.2% - .575em)!important;left:20px!important;right:51%!important;
   font-size:clamp(8.5px,2.4vw,10.5px)!important;line-height:1.15!important;
  }
  body.afterday-real-ui-v3 #hud #inventory-items{
@@ -294,7 +294,7 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
  * area even on the first survival day. */
 @media(max-width:720px){
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
-  padding-top:clamp(34px,10.8vw,46px)!important;
+  padding-top:clamp(36px,11.45vw,49px)!important;
   padding-right:14px!important;
   padding-left:14px!important;
   padding-bottom:clamp(34px,10vw,42px)!important;
@@ -302,7 +302,7 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   aspect-ratio:461 / 308!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) > small:first-child{
-  top:clamp(18px,5.45vw,24px)!important;
+  top:calc(17.2% - .575em)!important;
   margin:0!important;
   padding:0!important;
   min-height:0!important;
