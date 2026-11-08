@@ -20,7 +20,7 @@ test('equipment text wraps with header and explore button separated',()=>{
  assert.match(css,/#hud \.survival-kit > small:first-child\s*\{[\s\S]*?position:absolute!important/);
  assert.match(css,/#hud #sleep-arrangement,[\s\S]*?#hud #companion-status\s*\{[\s\S]*?white-space:normal!important/);
  assert.ok(css.includes('padding:clamp(34px,10.8vw,46px) 14px clamp(34px,10vw,42px)!important'));
- assert.match(css,/min-height:clamp\(167px,49vw,193px\)/);
+ assert.match(css,/min-height:0!important;height:auto!important;aspect-ratio:461 \/ 308!important/);
 });
 test('nine original sprite slots keep centered live controls',()=>{
  assert.match(css,/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/);
@@ -48,14 +48,14 @@ test('clock is smaller and all gameplay actions remain accessible',()=>{
 test('mobile header cannot revert to old collapsed 13px padding',()=>{
  const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
  assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
- assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(52px,15\.2vw,61px\)!important/);
+ assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(34px,10\.8vw,46px\)!important/);
  assert.match(orig,/centeredIconFromAtlas/);
 });
 
 test('original extracted frame coordinates are explicit and mobile artwork controls correct glyph bounds',()=>{
  assert.match(css,/equipment_panel 461x308/);
  assert.match(css,/110,230,350,468,586,706,826,943,1062/);
- assert.match(css,/bottom:11\.5%!important/);
+ assert.match(css,/bottom:calc\(18\.83% - 14\.5px\)!important/);
  assert.match(orig,/icon_tools:\[27,16,48,51\]/);
  assert.match(orig,/icon_radio:\[20,14,45,43\]/);
 });
