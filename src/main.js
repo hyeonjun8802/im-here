@@ -186,7 +186,7 @@ function runSurvivalAction(action){
 function bindEvents(){
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
-  speedButton.textContent=gameClock.speed===1?'▶ 1×':`⏩ ${gameClock.speed}×`;
+  speedButton.textContent=`${gameClock.speed}×`;
   speedButton.setAttribute('aria-label',`게임 속도 ${gameClock.speed}배 · 게임 하루당 플레이 ${(GAME_DAY_REAL_MS/60000/gameClock.speed).toFixed(2)}분. 클릭하면 배속 변경`);
   speedButton.setAttribute('aria-pressed',String(gameClock.speed!==1));
   speedButton.title='게임 1일: 1× 10분 · 2× 5분 · 4× 2.5분 · 8× 75초 · 16× 37.5초 · 32× 18.75초 · 50× 12초 (테스트)';
