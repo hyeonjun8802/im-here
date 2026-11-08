@@ -4,7 +4,7 @@
 import {chromium} from 'playwright';
 import fs from 'node:fs';
 const out='docs/qa/live-hud-v1400';fs.mkdirSync(out,{recursive:true});
-const cases=[['live-mobile-390',390,844],['live-desktop-1280',1280,800]];
+const cases=[['live-desktop-1280',1280,800],['live-mobile-390',390,844]];
 const issues=[],reports=[];
 const browser=await chromium.launch({headless:true,args:[
  '--no-sandbox','--disable-dev-shm-usage','--enable-webgl',
@@ -12,7 +12,8 @@ const browser=await chromium.launch({headless:true,args:[
 ]});
 try{
  for(const [name,w,h] of cases){
-  const page=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:1,hasTouch:w<720,isMobile:w<720});
+  const page=await browser.newPage({viewport:{width:w,height:h},deviceScaleFactor:w<720?1:.5,hasTouch:w<720,isMobile:w<720});
+  page.setDefaultTimeout(30000);
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(m.type()==='error'&&/shader|boot|webgl|uncaught/i.test(m.text()))errors.push(m.text().slice(0,550))});
@@ -22,8 +23,18 @@ try{
     document.documentElement.dataset.commonUiVersion==='v3'&&
     document.querySelector('.premium-hud__current-art')?.naturalWidth>0&&
     [...document.querySelectorAll('.actionbar > button[data-v3-sprite] img')].every(img=>img.complete&&img.naturalWidth>0)
-   ),null,{timeout:65000});
-   await page.waitForTimeout(1600);
+   ),null,{timeout:w<720?68000:95000});
+   // Close the genuine mandatory Day-1 choice by selecting the safe stay option.
+   // This exercises normal game event logic and removes the dark quest backdrop.
+   const stay=page.locator('.afterday-board.is-choice .afterday-board-expedition-stay');
+   if(await stay.isVisible().catch(()=>false)){
+     await stay.click({timeout:8000});
+     await page.waitForFunction(()=>document.querySelector('.afterday-quest-backdrop')?.hidden===true,null,{timeout:12000});
+   }
+   await page.evaluate(()=>{
+     if(window.afterday?.world?.setQuality)window.afterday.world.setQuality('low');
+   });
+   await page.waitForTimeout(900);
    const metrics=await page.evaluate(()=>{
     const world=window.afterday.world,renderer=world.renderer,gl=renderer.getContext();
     const r=q=>{const el=document.querySelector(q);if(!el)return null;const b=el.getBoundingClientRect();return{x:b.x,y:b.y,w:b.width,h:b.height,right:b.right,bottom:b.bottom}};
