@@ -306,3 +306,15 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   position:static!important;
  }
 }
+
+/* Selected action must not paint a second full square frame on top of the
+ * already complete nine-cell metal atlas. Restore subtle interior-only glow. */
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button#explore::before,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.needs-attention::before{
+ content:none!important;display:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button#explore,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.needs-attention{
+ background:linear-gradient(180deg,rgba(220,143,54,.07),rgba(160,90,33,.05))!important;
+ box-shadow:none!important;border:0!important;border-radius:0!important;
+}
