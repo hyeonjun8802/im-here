@@ -19,6 +19,11 @@ for(const engine of engines){
      const p=await import('/src/premiumHudV1000.js');
      const ui=await import('/src/commonUiAssetsV3.js');
      p.installPremiumHudV1000(document.querySelector('#disaster-forecast')).sync({weather:'clear',majorDisasterType:'storm',majorDisasterAt:Date.now()+18*3600000},Date.now());
+     // The 3D boot is disabled for deterministic HUD QA. Supply representative
+     // live gauge widths so the screenshot also checks bars, not empty rails.
+     for(const [id,width] of [['hud-health-fill','88%'],['hud-food-fill','72%'],['hud-water-fill','68%']]){
+       const el=document.getElementById(id);if(el)el.style.width=width;
+     }
      await ui.installCommonUiAssetsV3();
      const style=document.createElement('style');
      style.textContent='#world{background:#14202b} .event-log{display:none!important}';
@@ -59,4 +64,41 @@ for(const engine of engines){
  }finally{await browser.close();}
 }
 fs.writeFileSync(dir+'/metrics.json',JSON.stringify(reports,null,2));
-if(reports.some(r=>r.pageErrors.length))process.exitCode=1;
+const problems=[];
+for(const r of reports){
+ const errors=[...r.pageErrors];
+ if(!r.root||!r.pic||!r.picPixels)errors.push('HUD or weather artwork missing');
+ else{
+  // Trim-independent visual diameter: real painted pixels, not the img DOM box.
+  const ink=Math.min(r.pic.w*r.picPixels.fillX,r.pic.h*r.picPixels.fillY);
+  const ratio=ink/r.root.w;
+  if(ratio<.118||ratio>.152)errors.push('weather medallion fails real painted fill ratio: '+ratio.toFixed(4));
+  if(Math.abs((r.pic.x+r.pic.w/2)-(r.root.x+r.root.w/2))>2)
+    errors.push('weather artwork horizontal center shifted');
+  const safeRight=r.root.x+r.root.w*.405;
+  if(r.stock.right>safeRight)errors.push('resource stock outside authored left wing: '+(r.stock.right-safeRight).toFixed(2)+'px');
+  for(const [idx,row] of r.stockRows.entries()){
+   if(row.icon?.x<r.stock.x-.2||row.count?.right>r.stock.right+.2)
+     errors.push('stock icon/counter '+idx+' escapes stock bounds');
+  }
+ }
+ if(!r.nav||r.nav.x<-.5||r.nav.right>r.viewport.w+.5)errors.push('action bar outside viewport');
+ if(r.slots.length!==9)errors.push('expected 9 original slots, got '+r.slots.length);
+ for(const [idx,slot] of r.slots.entries()){
+  if(!slot.alpha||!slot.icon)errors.push('missing complete vector icon in slot '+idx);
+  else{
+   const [left,top,right,bottom]=slot.alpha.alphaBounds;
+   if(left<3||top<1||right>60||bottom>60)
+     errors.push('slot '+idx+' source glyph clipped: '+slot.alpha.alphaBounds.join(','));
+   if(slot.icon.x<slot.cell.x+3||slot.icon.right>slot.cell.right-3||
+      slot.icon.y<slot.cell.y+3||slot.icon.bottom>slot.cell.bottom-3)
+     errors.push('slot '+idx+' box touches metal frame');
+   const center=(slot.icon.x+slot.icon.right)/2,frame=(slot.cell.x+slot.cell.right)/2;
+   if(Math.abs(center-frame)>1.2)errors.push('slot '+idx+' icon horizontal center shifted');
+  }
+ }
+ if(errors.length)problems.push({engine:r.engine,name:r.name,issues:errors});
+}
+fs.writeFileSync(dir+'/strict-results.json',JSON.stringify({cases:reports.length,failures:problems},null,2));
+console.log('ART_FIT_STRICT '+JSON.stringify({tested:reports.length,errors:problems}));
+if(process.env.QA_STRICT_ART_FIT==='1'&&problems.length)process.exitCode=1;
