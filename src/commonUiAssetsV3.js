@@ -86,6 +86,17 @@ export function installCommonUiAssetsV3() {
       // duplicate the adjacent undecorated slot over authored slot five.
       barCtx.drawImage(image,sourceBar.x+399,sourceBar.y+27,122,129,
         526,27,122,129);
+      // iPhone reference inspection: a SECOND baked orange active outline
+      // remains over the SIXTH cell, from x≈637..761 (source 1148px bar).
+      // Earlier patches only neutralized cell five. Restore the sixth cell
+      // from a clean neighboring metal slot, including its top/bottom edges.
+      // This uses the ORIGINAL atlas pixels; it adds no CSS-painted frame.
+      const sixthSlot={sourceX:399,targetX:637,width:124,height:sourceBar.h};
+      barCtx.drawImage(
+        image,sourceBar.x+sixthSlot.sourceX,sourceBar.y,
+        sixthSlot.width,sixthSlot.height,
+        sixthSlot.targetX,0,sixthSlot.width,sixthSlot.height
+      );
       document.documentElement.style.setProperty(
         '--afterday-v3-bottom_action_bar_neutral',
         'url("'+neutralBar.toDataURL('image/png')+'")');
