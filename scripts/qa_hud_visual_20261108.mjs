@@ -66,6 +66,25 @@ try{
   if(metrics.weather&&metrics.hud&&Math.abs((metrics.weather.x+metrics.weather.w/2)-(metrics.hud.x+metrics.hud.w/2))>2)problems.push('weather dial off center');
   const file=out+'/'+name+'.png';
   await page.screenshot({path:file,fullPage:false,animations:'disabled'});
+  if(name==='phone-390'){
+   await page.evaluate(()=>{
+    const panel=document.createElement('div');
+    panel.id='qa-icon-gallery';
+    panel.style.cssText='position:fixed;z-index:1500;top:235px;left:0;right:0;background:#131a21;padding:9px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px;pointer-events:none';
+    for(const id of ['drink','eat','repair','medicine','explore','weather-panel-toggle']){
+      const img=document.querySelector('#'+id+' > img');
+      if(!img)continue;
+      const cell=document.createElement('div');
+      cell.style.cssText='display:flex;flex-direction:column;align-items:center;color:white;font:12px sans-serif';
+      const clone=img.cloneNode(true);clone.style.cssText='height:75px;width:75px;object-fit:contain;background:#242d38';
+      const lbl=document.createElement('span');lbl.textContent=id;
+      cell.append(clone,lbl);panel.append(cell);
+    }
+    document.body.append(panel);
+   });
+   await page.screenshot({path:out+'/icon-gallery.png',fullPage:false,animations:'disabled'});
+   await page.evaluate(()=>document.querySelector('#qa-icon-gallery')?.remove());
+  }
   report.push({name,metrics,problems,pageErrors:errs});
   console.log('LAYOUT_QA',JSON.stringify({name,kit:metrics.kit,content:metrics.children,nav:metrics.nav,slotOffsets:metrics.slots.map(x=>({id:x.id,offset:x.offset,visualOffset:x.visualOffset})),weather:metrics.weather,clock:metrics.clock,problems,pageErrors:errs}));
   await page.close();
