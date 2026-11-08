@@ -1,4 +1,4 @@
-/* AFTERDAY responsive HUD alignment v13.1, atlas-coordinate audit 2026-11-08.
+/* AFTERDAY responsive HUD alignment v13.2, real-image design polish 2026-11-08.
  * Only display geometry; existing 48-sprite original atlas, WebGL and game actions remain intact.
  * Loaded after commonUiLayoutV31.css for deterministic cascade priority. */
 
@@ -94,7 +94,7 @@ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__future-halo{top:13%!im
  * inventory/sleep/signal status to wrap without clipping or ellipsis. */
 body.afterday-real-ui-v3 #hud .survival-kit{
  width:min(352px,40vw)!important;max-width:min(352px,40vw)!important;
- min-height:227px!important;height:auto!important;
+ min-height:0!important;height:auto!important;aspect-ratio:461 / 308!important;
  padding:70px 24px 62px!important;box-sizing:border-box!important;
  display:flex!important;flex-direction:column!important;align-items:stretch!important;
  gap:7px!important;overflow:hidden!important;
@@ -120,7 +120,7 @@ body.afterday-real-ui-v3 #hud #companion-status{
  font-size:clamp(10px,.82vw,12px)!important;line-height:1.35!important;
 }
 body.afterday-real-ui-v3 #hud .survival-kit-action{
- bottom:11.5%!important;left:11%!important;width:78%!important;
+ bottom:calc(18.83% - 16.5px)!important;left:11%!important;width:78%!important;
  height:33px!important;min-height:33px!important;
  font-size:clamp(11px,1vw,14px)!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
@@ -153,26 +153,26 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
 @media(max-width:720px){
  body.afterday-real-ui-v3 #hud .topbar .top-right{
   top:calc((100vw - 4px) * 300 / 1647 + 8px + env(safe-area-inset-top))!important;
-  right:8px!important;width:clamp(110px,31vw,140px)!important;
-  max-width:40vw!important;gap:3px!important;
+  right:8px!important;width:clamp(101px,28.4vw,126px)!important;
+  max-width:36vw!important;gap:2px!important;
  }
  body.afterday-real-ui-v3 #hud .survival-day-chip{
-  height:30px!important;min-height:30px!important;font-size:clamp(10px,2.7vw,12px)!important;
+  height:29px!important;min-height:29px!important;font-size:clamp(10px,2.7vw,12px)!important;
  }
  body.afterday-real-ui-v3 #hud .top-right #clock{
-  height:39px!important;min-height:39px!important;font-size:clamp(15px,4vw,18px)!important;
+  height:35px!important;min-height:35px!important;font-size:clamp(15px,4vw,18px)!important;
   letter-spacing:.005em!important;
  }
  body.afterday-real-ui-v3 #hud .top-right #speed-toggle{
-  height:36px!important;min-height:36px!important;font-size:clamp(12px,3.3vw,15px)!important;
+  height:34px!important;min-height:34px!important;font-size:clamp(12px,3.1vw,14px)!important;
  }
  body.afterday-real-ui-v3 #hud .top-right #weather-brief{
-  height:29px!important;min-height:29px!important;font-size:clamp(9px,2.6vw,11px)!important;
+  height:28px!important;min-height:28px!important;font-size:clamp(9px,2.6vw,11px)!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stats{
   left:4.4%!important;top:28.5%!important;width:39.2%!important;height:44%!important;
  }
- body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-vitals{width:69%!important}
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-vitals{width:60%!important}
  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat{
   font-size:clamp(5.8px,1.71vw,8.4px)!important;height:30.5%!important;
  }
@@ -186,15 +186,15 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
  body.afterday-real-ui-v3 .premium-hud-v1000 .hud-picto{
   width:1em!important;height:1em!important;margin:0!important;
  }
- body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{left:72.6%!important;width:26.5%!important}
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock{left:63%!important;width:36.5%!important}
  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock>div{
   flex-direction:row!important;gap:1px!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto{
-  width:1em!important;height:1em!important;font-size:clamp(5.2px,1.58vw,7.5px)!important;
+  width:1em!important;height:1em!important;font-size:clamp(6px,1.82vw,8.5px)!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong{
-  font-size:clamp(5.2px,1.45vw,7.2px)!important;
+  font-size:clamp(6.5px,1.78vw,8.5px)!important;
  }
  body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__current-art{
   left:50%!important;top:14%!important;width:13.1%!important;height:70%!important;
@@ -221,11 +221,12 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   left:7px!important;
   bottom:calc(max(76px,(100vw - 8px) * 172 / 1148 + 18px) + env(safe-area-inset-bottom))!important;
   width:min(57vw,225px)!important;max-width:min(57vw,225px)!important;
-  min-height:clamp(167px,49vw,193px)!important;height:auto!important;
-  padding:clamp(52px,15.2vw,61px) 16px 51px!important;gap:5px!important;overflow:hidden!important;
+  min-height:0!important;height:auto!important;aspect-ratio:461 / 308!important;
+  padding:clamp(34px,10.8vw,46px) 14px clamp(34px,10vw,42px)!important;
+  gap:clamp(2px,.65vw,3px)!important;overflow:hidden!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
-  top:clamp(23px,7vw,29px)!important;left:20px!important;right:51%!important;
+  top:clamp(18px,5.45vw,24px)!important;left:20px!important;right:51%!important;
   font-size:clamp(8.5px,2.4vw,10.5px)!important;line-height:1.15!important;
  }
  body.afterday-real-ui-v3 #hud #inventory-items{
@@ -238,7 +239,7 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit-action{
-  bottom:11.5%!important;height:29px!important;min-height:29px!important;
+  bottom:calc(18.83% - 14.5px)!important;height:29px!important;min-height:29px!important;
   font-size:clamp(9px,2.36vw,11px)!important;
  }
  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions){
@@ -258,15 +259,15 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
  }
  body.afterday-real-ui-v3 #hud .actionbar button > .afterday-v3-action-icon,
  body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-standby-slot > img{
-  width:clamp(19px,5.2vw,27px)!important;height:clamp(19px,5.2vw,27px)!important;
+  width:clamp(20px,6.1vw,26px)!important;height:clamp(20px,6.1vw,26px)!important;
   max-width:calc(100% - 5px)!important;max-height:calc(100% - 7px)!important;
   flex:0 0 auto!important;align-self:center!important;margin:auto!important;
   left:0!important;top:0!important;transform:none!important;
  }
  body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   display:grid!important;place-items:center!important;
-  width:25px!important;height:25px!important;flex:0 0 25px!important;
-  font-size:clamp(18px,4.6vw,22px)!important;
+  width:clamp(20px,5.8vw,26px)!important;height:clamp(20px,5.8vw,26px)!important;flex:0 0 auto!important;
+  font-size:clamp(19px,5.2vw,23px)!important;
   margin:auto!important;left:0!important;top:0!important;
  }
  body.afterday-real-ui-v3 #hud .actionbar .afterday-v3-standby-slot > span{display:none!important}
@@ -293,14 +294,15 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
  * area even on the first survival day. */
 @media(max-width:720px){
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
-  padding-top:clamp(52px,15.2vw,61px)!important;
-  padding-right:16px!important;
-  padding-left:16px!important;
-  padding-bottom:51px!important;
-  min-height:clamp(167px,49vw,193px)!important;
+  padding-top:clamp(34px,10.8vw,46px)!important;
+  padding-right:14px!important;
+  padding-left:14px!important;
+  padding-bottom:clamp(34px,10vw,42px)!important;
+  min-height:0!important;
+  aspect-ratio:461 / 308!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) > small:first-child{
-  top:clamp(23px,7vw,29px)!important;
+  top:clamp(18px,5.45vw,24px)!important;
   margin:0!important;
   padding:0!important;
   min-height:0!important;
@@ -332,3 +334,47 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.nee
  * require 4.5% LEFT and 2.3% RIGHT padding OF THE ART WIDTH,
  * not the parent viewport. Text is intentionally secondary to the game.
  */
+
+
+/* VISUAL ALIGNMENT v13.2
+ * 1. The 461x308 equipment source MUST preserve its real aspect ratio.
+ * 2. The slot image centers are fixed in the 1148x172 source artwork.
+ * 3. Normalize sprite glyphs + live emoji glyphs vertically in BOTH layouts.
+ * The original 48-sprite skins and gameplay event targets are unchanged. */
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot{
+ position:relative!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > .afterday-v3-action-icon,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span{
+ position:absolute!important;left:50%!important;top:50%!important;
+ transform:translate(-50%,-50%)!important;
+ margin:0!important;align-self:auto!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > .afterday-v3-action-icon,
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+ width:clamp(24px,2.5vw,32px)!important;height:clamp(24px,2.5vw,32px)!important;
+ max-width:calc(100% - 8px)!important;max-height:calc(100% - 8px)!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span{
+ display:grid!important;place-items:center!important;
+ width:clamp(22px,2.1vw,27px)!important;
+ height:clamp(22px,2.1vw,27px)!important;
+ font-size:clamp(20px,1.9vw,25px)!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .top-right .survival-time-frame{gap:2px!important}
+ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+  height:auto!important;min-height:0!important;aspect-ratio:461 / 308!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > .afterday-v3-action-icon,
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+  width:clamp(20px,6.1vw,26px)!important;height:clamp(20px,6.1vw,26px)!important;
+  max-width:calc(100% - 6px)!important;max-height:calc(100% - 8px)!important;
+ }
+ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span{
+  width:clamp(20px,5.8vw,26px)!important;height:clamp(20px,5.8vw,26px)!important;
+  font-size:clamp(19px,5.2vw,23px)!important;
+ }
+}

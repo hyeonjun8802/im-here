@@ -19,7 +19,7 @@ test('top status and weather icons align on both desktop and mobile',()=>{
 test('equipment text wraps with header and explore button separated',()=>{
  assert.match(css,/#hud \.survival-kit > small:first-child\s*\{[\s\S]*?position:absolute!important/);
  assert.match(css,/#hud #sleep-arrangement,[\s\S]*?#hud #companion-status\s*\{[\s\S]*?white-space:normal!important/);
- assert.ok(css.includes('padding:clamp(52px,15.2vw,61px) 16px 51px!important'));
+ assert.ok(css.includes('padding:clamp(34px,10.8vw,46px) 14px clamp(34px,10vw,42px)!important'));
  assert.match(css,/min-height:clamp\(167px,49vw,193px\)/);
 });
 test('nine original sprite slots keep centered live controls',()=>{
@@ -64,4 +64,13 @@ test('iOS WebKit action rail does not grow to 400px from transferred minimum hei
  assert.match(css,/WebKit otherwise transfers min-height:60px through aspect-ratio/);
  assert.match(css,/height:auto!important;min-height:0!important;aspect-ratio:1148 \/ 172!important/);
  assert.match(css,/width:calc\(100vw - 8px\)!important;max-width:calc\(100vw - 8px\)!important/);
+});
+
+test('source frame proportions and icon ink centers are aligned in both PC and phone',()=>{
+ assert.match(css,/aspect-ratio:461 \/ 308!important/);
+ assert.match(css,/top:clamp\(18px,5\.45vw,24px\)!important/);
+ assert.match(css,/survival-hud-stock\{left:63%!important;width:36\.5%!important\}/);
+ assert.match(css,/transform:translate\(-50%,-50%\)!important/);
+ assert.match(css,/max-height:calc\(100% - 8px\)!important/);
+ assert.match(css,/width:clamp\(101px,28\.4vw,126px\)!important/);
 });
