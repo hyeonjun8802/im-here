@@ -353,7 +353,7 @@ function animation(){
   const real=Date.now(),foreground=document.visibilityState==='visible';
   const questPaused=Boolean(eventBoard?.requiresChoice());
   // Pause virtual survival clock, not the user's ability to read or choose.
-  const gameNow=gameClock.tick(real,foreground&&!questPaused);
+  const gameNow=gameClock.tick(real,foreground&&!questPaused&&!gpuContextLost);
   if(gameNow-state.lastTickAt>10000)advance(state,gameNow,!foreground);
   disasterForecast.syncProgress(state,gameNow);
   if(t-lastHUD>700){renderHUD();lastHUD=t}
