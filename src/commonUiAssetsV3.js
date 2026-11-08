@@ -136,7 +136,7 @@ export function installCommonUiAssetsV3() {
           const el=document.getElementById(id);
           return Boolean(el && !el.hidden);
         });
-        reserve.hidden=specialActive;
+        if(reserve.hidden!==specialActive)reserve.hidden=specialActive;
         const visible=Array.from(actionbar.querySelectorAll(':scope > button'))
           .filter(el=>!el.hidden).length + (reserve.hidden?0:1);
         actionbar.classList.toggle('v3-has-extra-actions',visible>9);
