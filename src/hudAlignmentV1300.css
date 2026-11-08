@@ -336,6 +336,14 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button.nee
  */
 
 
+/* Reserve (locked tank repair) is NOT a tenth label.
+ * Keep its neutral wrench as a centered placeholder without PC text overlay. */
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > span{
+ display:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
+ opacity:.5!important;
+}
 /* VISUAL ALIGNMENT v13.2
  * 1. The 461x308 equipment source MUST preserve its real aspect ratio.
  * 2. The slot image centers are fixed in the 1148x172 source artwork.
