@@ -32,7 +32,7 @@ test('WebGL context loss is recoverable, saves state, does not loop infinitely',
 test('mobile selected action glow stays inside the single original metal rail',()=>{
  assert.match(css,/v3\.3 mobile rail/);
  assert.match(css,/actionbar button#explore::before,[\s\S]*?actionbar button\.needs-attention::before\s*\{\s*content:none!important;\s*display:none!important;/);
- assert.match(css,/actionbar button#explore,[\s\S]*?actionbar button\.needs-attention\s*\{[\s\S]*?inset 0 0 0 1px/);
+ assert.match(css,/actionbar button#explore,[\s\S]*?actionbar button\.needs-attention\s*\{[\s\S]*?box-shadow:none!important/);
  assert.match(css,/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/);
  assert.match(atlas,/bottom_action_bar_full/);
  for(const w of [320,355,375,390,414,430,720]){
@@ -45,6 +45,6 @@ test('disaster overflow bar keeps the actual extracted slot images',()=>{
  assert.match(css,/v3\.3 emergency action overflow/);
  assert.match(css,/\.actionbar\.v3-has-extra-actions\{/);
  assert.match(css,/overflow-x:auto!important/);
- assert.match(css,/--afterday-v3-square_slot_01/);
- assert.match(css,/--afterday-v3-square_slot_selected/);
+ assert.match(css,/background:var\(--afterday-v3-bottom_action_bar_neutral/);
+ assert.doesNotMatch(css,/background(?:-image)?:var\(--afterday-v3-square_slot_(?:01|selected)\)/);
 });
