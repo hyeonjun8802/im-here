@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import * as fs from 'node:fs';
+const {readFileSync}=fs;
 const read=p=>readFileSync(new URL('../'+p,import.meta.url));
 const html=read('index.html').toString();
 const css=read('src/commonUiAssetsV3.css').toString();
@@ -26,9 +27,10 @@ test('production loads one original atlas based theme, not stacked temporary ski
  assert.match(js,/equipment_panel/);
  assert.match(js,/center_warning_banner/);
 });
-test('legacy three extracted resource files are still preserved as history',()=>{
- for(const n of ['actionbar_frame.webp','warning_frame.webp','inventory_frame.webp']){
-  const b=read('public/assets/ui/apocalypse-common-v3/'+n);
-  assert.equal(b.toString('ascii',0,4),'RIFF');
- }
+test('unused v12 raster skin has been removed; only active original 48-frame atlas is served',()=>{
+ const {existsSync}=fs;
+ for(const n of ['actionbar_frame.webp','warning_frame.webp','inventory_frame.webp'])
+  assert.equal(existsSync(new URL('../public/assets/ui/apocalypse-common-v3/'+n,import.meta.url)),false,n);
+ const webp=read('public/assets/ui/apocalypse-v3/spritesheet.webp');
+ assert.equal(webp.toString('ascii',0,4),'RIFF');
 });
