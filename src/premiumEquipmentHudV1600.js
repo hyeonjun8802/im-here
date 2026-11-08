@@ -14,6 +14,10 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.hidden=true;
  actions.id='equipment-actions-menu';
  actions.setAttribute('aria-label','추가 장비 기능');
+ const menuHeading=root.createElement('strong');
+ menuHeading.className='premium-equipment-menu-title';
+ menuHeading.textContent='장비 기능';
+ actions.prepend(menuHeading);
  kit.insertBefore(toggle,actions);
  const close=()=>{
   kit.classList.remove('premium-equipment-open');
