@@ -260,3 +260,15 @@
   white-space:nowrap!important;
  }
 }
+
+
+/* v1007 mobile-only alignment:
+   Shift the ONE existing left-side HUD content group toward the flat endcap.
+   Text, three vital bars and the 2x2 inventory icons move together without
+   changing their internal proportions, stacking or numeric font sizes.
+   This must not affect the centered weather medallion or desktop layout. */
+@media(max-width:720px){
+ .disaster-forecast.premium-hud-v1000 .survival-hud-stats{
+  left:5.4%!important; /* was 7.4%; ~6px leftward at 320px screen */
+ }
+}
