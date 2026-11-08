@@ -44,7 +44,7 @@ try{
     const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(frame,0,0);
     const alpha=(x,y)=>ctx.getImageData(Math.floor(x*canvas.width),Math.floor(y*canvas.height),1,1).data[3];
     return {hud:rect(root),frame:{url:frame.currentSrc,width:frame.naturalWidth,height:frame.naturalHeight},alpha:{center:alpha(.5,.85),wing:alpha(.15,.85)},
-      stats:rect(root.querySelector('.survival-hud-stats')),forecast:rect(root.querySelector('.premium-hud__forecast')),current:rect(root.querySelector('.premium-hud__current-art')),
+      stats:rect(root.querySelector('.survival-hud-stats')),vitals:rect(root.querySelector('.survival-hud-vitals')),track:rect(root.querySelector('.survival-hud-stat-track')),inventory:rect(root.querySelector('.survival-hud-stock')),forecast:rect(root.querySelector('.premium-hud__forecast')),current:rect(root.querySelector('.premium-hud__current-art')),
       title:rect(root.querySelector('.premium-hud__forecast-title')),status:rect(root.querySelector('.premium-hud__forecast-status')),texts,
       images:[...root.querySelectorAll('img')].filter(x=>x.src).map(x=>({src:x.currentSrc||x.src,ok:x.complete&&x.naturalWidth>0})),
       ticks:[...root.querySelectorAll('.premium-hud__hour')].map(x=>x.textContent),scrollWidth:document.body.scrollWidth};
@@ -61,6 +61,17 @@ try{
    if(m.images.some(x=>!x.ok))err.push('Broken actual weather/icon image');
    if(m.ticks.join(',')!=='현재,+03h,+06h,+12h,+18h,+24h')err.push('Forecast ticks missing');
    if(m.stats.right>R.x+R.width*.41||m.stats.bottom>R.y+R.height*.76)err.push('Stats overflows slim wing');
+   // Anchor the whole vital panel: moving its parent also moves bars and all four inventory icons.
+   // Baseline v1006 mobile used 7.4%; new target is 5.4% of the HUD width.
+   const desiredStatsX=R.x+R.width*(w<=720?.054:.08);
+   if(Math.abs(m.stats.x-desiredStatsX)>1.25)
+      err.push('Vital group position mismatch: '+JSON.stringify({actual:m.stats.x,expected:desiredStatsX}));
+   if(m.track.x<m.stats.x-1||m.track.right>m.vitals.right+1)
+      err.push('Vital bar escapes left group');
+   if(m.inventory.x<m.vitals.right-2||m.inventory.right>m.stats.right+1)
+      err.push('Inventory icons collide with bars or leave left group');
+   if(w<=720 && m.stats.right>=m.current.x-5)
+      err.push('Mobile inventory collides with central medallion');
    if(m.forecast.x<R.x+R.width*.60||m.forecast.right>R.right+1||m.forecast.bottom>R.y+R.height*.77)err.push('Forecast overflows wing');
    if(m.current.x<R.x+R.width*.38||m.current.right>R.x+R.width*.62)err.push('Current weather icon overflows medallion');
    for(const x of m.texts){
