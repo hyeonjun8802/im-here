@@ -95,6 +95,6 @@ test('mandatory prompt has four options, dialog backdrop, no timeout, and reload
  assert.match(src,/openPendingExpedition\(state\)/);
  assert.match(src,/openPendingCompanion\(state\)/);
  assert.match(css,/\.afterday-quest-backdrop/);
- assert.match(main,/gameClock\.tick\(real,foreground&&!questPaused\)/);
+ assert.match(main,/gameClock\.tick\(real,foreground&&!questPaused&&!gpuContextLost\)/);
  assert.match(main,/onExpeditionChoice:choice=>runSurvivalAction\('scavenge_'\+choice\)/);
 });
