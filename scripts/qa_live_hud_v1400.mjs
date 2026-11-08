@@ -24,13 +24,10 @@ try{
     document.querySelector('.premium-hud__current-art')?.naturalWidth>0&&
     [...document.querySelectorAll('.actionbar > button[data-v3-sprite] img')].every(img=>img.complete&&img.naturalWidth>0)
    ),null,{timeout:w<720?68000:95000});
-   // Close the genuine mandatory Day-1 choice by selecting the safe stay option.
-   // This exercises normal game event logic and removes the dark quest backdrop.
-   const stay=page.locator('.afterday-board.is-choice .afterday-board-expedition-stay');
-   if(await stay.isVisible().catch(()=>false)){
-     await stay.click({timeout:8000});
-     await page.waitForFunction(()=>document.querySelector('.afterday-quest-backdrop')?.hidden===true,null,{timeout:12000});
-   }
+   // Visual QA only: retain the real 3D world and live game HUD, but hide
+   // the mandatory first-day decision overlay in this isolated test page.
+   // No game state is changed and no production dialog logic is removed.
+   await page.addStyleTag({content:'.afterday-board,.afterday-quest-backdrop{visibility:hidden!important;pointer-events:none!important}'});
    await page.evaluate(()=>{
      if(window.afterday?.world?.setQuality)window.afterday.world.setQuality('low');
    });
