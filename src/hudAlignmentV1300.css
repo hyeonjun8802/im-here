@@ -588,6 +588,19 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
  }
 }
 
+
+/* The legacy v13 \`:has(> .survival-kit-action)\` selector has more specificity
+ * than ordinary .survival-kit. Explicitly override that same selector here,
+ * or Safari/Chromium keep the old 11.45vw top padding and the text invades
+ * the metal title tab on 320px and 390px devices. */
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+  padding-top:clamp(52px,15vw,68px)!important;
+  padding-right:clamp(15px,4.4vw,20px)!important;
+  padding-bottom:clamp(40px,11.4vw,49px)!important;
+  padding-left:clamp(15px,4.4vw,20px)!important;
+ }
+}
 /* Last source-safe polish: unlocked actions are real menu rows, not a copy of
  * the baked gold emergency button; the native frame must never show two wells. */
 body.afterday-real-ui-v3 #hud .survival-kit-controls > .premium-equipment-menu-title{
