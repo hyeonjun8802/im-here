@@ -14,6 +14,19 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.hidden=true;
  actions.id='equipment-actions-menu';
  actions.setAttribute('aria-label','추가 장비 기능');
+ // Keep IDs and listeners, replace informal emoji captions with art-consistent
+ // Korean UI copy; the original full label remains in aria-label and title.
+ const compactActionNames={
+  'radio-contact':'무전 교신 · 구조 요청',
+  'expedition-toggle':'탐색 계획 확인',
+  'companion-toggle':'생존자 구조 선택'
+ };
+ for(const button of actions.querySelectorAll('button')){
+  if(!compactActionNames[button.id])continue;
+  const full=button.textContent.trim();
+  if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',full);
+  button.textContent=compactActionNames[button.id];
+ }
  const menuHeading=root.createElement('strong');
  menuHeading.className='premium-equipment-menu-title';
  menuHeading.textContent='장비 기능';
