@@ -19,7 +19,7 @@ test('top status and weather icons align on both desktop and mobile',()=>{
 test('equipment text wraps with header and explore button separated',()=>{
  assert.match(css,/#hud \.survival-kit > small:first-child\s*\{[\s\S]*?position:absolute!important/);
  assert.match(css,/#hud #sleep-arrangement,[\s\S]*?#hud #companion-status\s*\{[\s\S]*?white-space:normal!important/);
- assert.match(css,/padding:44px 16px 51px!important/);
+ assert.match(css,/padding:clamp(52px,15.2vw,61px) 16px 51px!important/);
  assert.match(css,/min-height:clamp\(167px,49vw,193px\)/);
 });
 test('nine original sprite slots keep centered live controls',()=>{
@@ -36,14 +36,22 @@ test('nine original sprite slots keep centered live controls',()=>{
  }
 });
 test('clock is smaller and all gameplay actions remain accessible',()=>{
- assert.match(css,/font-size:clamp\(20px,1\.8vw,26px\)/);
- assert.match(css,/font-size:clamp\(17px,4\.6vw,20px\)/);
+ assert.match(css,/font-size:clamp\(18px,1\.5vw,23px\)/);
+ assert.match(css,/font-size:clamp\(15px,4vw,18px\)/);
  for(const id of ['clock','speed-toggle','survival-kit-action','drink','eat','repair','rest','medicine','explore','life-panel-toggle','weather-panel-toggle'])assert.ok(html.includes('id="'+id+'"'),id);
 });
 
 test('mobile header cannot revert to old collapsed 13px padding',()=>{
  const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
  assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
- assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:44px!important/);
+ assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(52px,15\.2vw,61px\)!important/);
  assert.match(orig,/centeredIconFromAtlas/);
+});
+
+test('original extracted frame coordinates are explicit and mobile artwork controls correct glyph bounds',()=>{
+ assert.match(css,/equipment_panel 461x308/);
+ assert.match(css,/110,230,350,468,586,706,826,943,1062/);
+ assert.match(css,/bottom:11\.5%!important/);
+ assert.match(orig,/icon_tools:\[27,16,48,51\]/);
+ assert.match(orig,/icon_radio:\[20,14,45,43\]/);
 });
