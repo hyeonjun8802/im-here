@@ -471,7 +471,7 @@ body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls butt
  padding:17px 19px!important;
 }
 @media(max-width:720px){
- body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]))){
+ body.afterday-real-ui-v3 #hud .survival-kit:not(:has(.survival-kit-controls button:not([hidden]), .survival-kit-action)){
   padding:13px 12px!important;
  }
 }

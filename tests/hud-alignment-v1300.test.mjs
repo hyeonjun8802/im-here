@@ -19,7 +19,7 @@ test('top status and weather icons align on both desktop and mobile',()=>{
 test('equipment text wraps with header and explore button separated',()=>{
  assert.match(css,/#hud \.survival-kit > small:first-child\s*\{[\s\S]*?position:absolute!important/);
  assert.match(css,/#hud #sleep-arrangement,[\s\S]*?#hud #companion-status\s*\{[\s\S]*?white-space:normal!important/);
- assert.match(css,/padding:39px 16px 51px!important/);
+ assert.match(css,/padding:44px 16px 51px!important/);
  assert.match(css,/min-height:clamp\(167px,49vw,193px\)/);
 });
 test('nine original sprite slots keep centered live controls',()=>{
@@ -36,7 +36,14 @@ test('nine original sprite slots keep centered live controls',()=>{
  }
 });
 test('clock is smaller and all gameplay actions remain accessible',()=>{
- assert.match(css,/font-size:clamp\(23px,2\.1vw,30px\)/);
- assert.match(css,/font-size:clamp\(19px,5\.3vw,23px\)/);
+ assert.match(css,/font-size:clamp\(20px,1\.8vw,26px\)/);
+ assert.match(css,/font-size:clamp\(17px,4\.6vw,20px\)/);
  for(const id of ['clock','speed-toggle','survival-kit-action','drink','eat','repair','rest','medicine','explore','life-panel-toggle','weather-panel-toggle'])assert.ok(html.includes('id="'+id+'"'),id);
+});
+
+test('mobile header cannot revert to old collapsed 13px padding',()=>{
+ const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
+ assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
+ assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:44px!important/);
+ assert.match(orig,/centeredIconFromAtlas/);
 });
