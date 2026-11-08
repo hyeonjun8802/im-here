@@ -24,7 +24,7 @@ test('actual transparent WebP assets are bundled at the game public path',()=>{
  }
 });
 
-test('no extra action replaces the game's original decision handlers',()=>{
+test("no extra action replaces the game\'s original decision handlers",()=>{
  assert.match(html,/commonUiV1202\.css/);
  assert.match(html,/id="survival-kit-action"/);
  assert.match(html,/explore\?\.click\(\)/);
