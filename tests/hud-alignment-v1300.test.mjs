@@ -74,3 +74,8 @@ test('source frame proportions and icon ink centers are aligned in both PC and p
  assert.match(css,/max-height:calc\(100% - 8px\)!important/);
  assert.match(css,/width:clamp\(101px,28\.4vw,126px\)!important/);
 });
+
+test('desktop sprite controls hide old raw menu text beneath centered icons',()=>{
+ assert.match(css,/actionbar:not\(\.v3-has-extra-actions\) > button\{\s*font-size:0!important;line-height:0!important/);
+ assert.match(css,/width:clamp\(28px,3vw,40px\)!important/);
+});
