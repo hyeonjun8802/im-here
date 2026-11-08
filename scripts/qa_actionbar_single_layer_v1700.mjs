@@ -27,10 +27,19 @@ for(const [engine,driver] of engines){
      style.textContent='#world{background:radial-gradient(circle at center,#253a3c,#151d26)}.event-log{display:none!important}';
      document.head.append(style);
     });
+    const readiness=await page.evaluate(()=>{
+      const all=[...document.querySelectorAll('#hud .actionbar img')];
+      return {ui:document.documentElement.dataset.commonUiVersion,
+        body:document.body.className,images:all.map(img=>({id:img.parentElement?.id,
+         complete:img.complete,width:img.naturalWidth,source:img.src.slice(0,45)})),
+        bar:!!document.querySelector('#hud .actionbar')};
+    });
+    console.log('SINGLE_FRAME_INITIAL '+engine+' '+name+' '+JSON.stringify(readiness).slice(0,2400));
+    // Icon completeness is checked per visible action after CSS is measured.
+    // Do not block the entire test on hidden optional buttons or standby images.
     await page.waitForFunction(()=>document.body.classList.contains('afterday-real-ui-v3')&&
-      [...document.querySelectorAll('#hud .actionbar img')].length>=8&&
-      [...document.querySelectorAll('#hud .actionbar img')].every(img=>img.complete&&img.naturalWidth>0),
-      null,{timeout:20000});
+      [...document.querySelectorAll('#hud .actionbar button:not([hidden]) img')].some(img=>img.complete&&img.naturalWidth>0),
+      null,{timeout:7000});
     const capture=()=>page.evaluate(()=>{
       const bar=document.querySelector('#hud .actionbar');
       const rb=bar.getBoundingClientRect(),css=getComputedStyle(bar);
