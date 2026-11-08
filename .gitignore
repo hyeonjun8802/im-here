@@ -1,0 +1,8 @@
+# Generated files: reproducible from package-lock and Vite sources
+node_modules/
+dist/
+.vite/
+.vercel/
+reports/maintenance/
+.DS_Store
+*.log

@@ -7,7 +7,7 @@ import {planDistantCity,SPATIAL_LAYOUT} from '../src/spatialLayout.js';
 import {contractCitySlot} from '../src/cityContraction.js';
 import {CITY_COMPOSITION} from '../src/cityComposition.js';
 
-const three=pathToFileURL('dist/vendor/three/build/three.module.js').href;
+const three=pathToFileURL('public/vendor/three/build/three.module.js').href;
 const code=fs.readFileSync('src/ruinedBuildingGeometry.js','utf8').replace("from 'three'",`from '${three}'`);
 const {createFracturedTowerGeometry,fracturedRoofHeightAt}=await import('data:text/javascript,'+encodeURIComponent(code));
 const random=n=>{const p=Math.sin(n*127.1+46.4)*43758.5453;return p-Math.floor(p)};

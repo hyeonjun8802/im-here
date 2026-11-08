@@ -1,0 +1,71 @@
+name: Frontend repository cleanup regression QA
+on:
+  push:
+    branches: [maintenance/frontend-audit-prune-20261108]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Restore only declared npm dependencies
+        run: npm ci
+      - name: Remove only byte-for-byte equivalent CSS overrides
+        run: |
+          node scripts/dedupe_active_css_20261108.mjs --apply
+          git diff --check
+      - name: Audit tracked source, CSS and referenced assets
+        run: node scripts/audit_frontend_20261108.mjs
+      - name: Full regression tests and clean build
+        run: npm run build
+      - name: Validate current humanoid rig and geometry
+        run: npm run qa:sf3d
+      - name: Install browser engines for real DOM alignment QA
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium webkit
+      - name: Serve current source
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/afterday-cleanup-qa.log 2>&1 &
+          for i in $(seq 1 60); do if curl -fsS http://127.0.0.1:5173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/afterday-cleanup-qa.log
+          exit 1
+      - name: Chromium HUD regression
+        run: node scripts/qa_hud_visual_20261108.mjs
+        env:
+          QA_BROWSER: chromium
+          STRICT_HUD_QA: '1'
+      - name: Safari WebKit HUD regression
+        run: node scripts/qa_hud_visual_20261108.mjs
+        env:
+          QA_BROWSER: webkit
+          STRICT_HUD_QA: '1'
+      - name: Commit tested CSS simplification into maintenance branch
+        if: success()
+        run: |
+          git add -u -- src/*.css
+          if git diff --cached --quiet; then
+            echo "CSS already normalized; nothing to commit."
+            exit 0
+          fi
+          git config user.name "afterday-ci"
+          git config user.email "afterday-ci@users.noreply.github.com"
+          git commit -m "refactor(css): remove exact duplicate declarations [dedupe-generated]"
+          git push origin HEAD:maintenance/frontend-audit-prune-20261108
+      - name: Upload proof of cleanup and visual parity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-cleanup-audit-and-14-viewports
+          path: |
+            reports/maintenance/frontend-audit-20261108.json
+            docs/qa/hud-visual-20261108/
+          if-no-files-found: warn
+          retention-days: 14

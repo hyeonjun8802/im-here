@@ -60,7 +60,7 @@ test('background city cannot pop-in tall pointy GLBs and street fog does not cro
 });
 
 test('roofline is broad and almost level, not sawtoothed skyscraper spikes',async()=>{
- const three=pathToFileURL('dist/vendor/three/build/three.module.js').href;
+ const three=pathToFileURL('public/vendor/three/build/three.module.js').href;
  const code=fs.readFileSync('src/ruinedBuildingGeometry.js','utf8').replace("from 'three'",`from '${three}'`);
  const {createFracturedTowerGeometry,fracturedRoofHeightAt}=await import('data:text/javascript,'+encodeURIComponent(code));
  for(let i=0;i<4;i++){

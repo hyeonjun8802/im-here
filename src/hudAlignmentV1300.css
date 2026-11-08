@@ -298,8 +298,6 @@ body.afterday-real-ui-v3 #hud .actionbar button:not([data-v3-sprite]) > span{
   padding-right:14px!important;
   padding-left:14px!important;
   padding-bottom:clamp(34px,10vw,42px)!important;
-  min-height:0!important;
-  aspect-ratio:461 / 308!important;
  }
  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) > small:first-child{
   top:calc(17.2% - .575em)!important;
