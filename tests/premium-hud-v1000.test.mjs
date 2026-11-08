@@ -86,3 +86,14 @@ test('approved artwork uses all four original image dimensions, compact variants
  assert.match(html,/premiumHudV1004\.css/);
  assert.doesNotMatch(js,/hud_desktop_high_v1004\.png/);
 });
+
+test('v1007 moves mobile vital labels, bars and supply icons together without touching PC layout',()=>{
+ const css=text('src/premiumHudV1004.css');
+ const section=css.slice(css.indexOf('/* v1007 mobile-only alignment:'));
+ assert.match(section,/@media\(max-width:720px\)/);
+ assert.match(section,/\.disaster-forecast\.premium-hud-v1000 \.survival-hud-stats\{/);
+ assert.match(section,/left:5\.4%!important/);
+ assert.doesNotMatch(section,/\.survival-hud-stat-track\{/);
+ assert.doesNotMatch(section,/\.survival-hud-stock\{/);
+ assert.doesNotMatch(section,/@media\(min-width:721px\)/);
+});
