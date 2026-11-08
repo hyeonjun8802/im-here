@@ -310,7 +310,7 @@ body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
   }
   body.afterday-real-ui-v3 #hud .survival-kit{
     left:7px!important;
-    bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    bottom:calc(max(76px, (100vw - 8px) * 172 / 1148 + 18px) + env(safe-area-inset-bottom))!important;
     width:min(54vw,225px)!important;
     max-width:min(54vw,225px)!important;
     min-height:clamp(140px,37.5vw,169px)!important;
@@ -365,7 +365,7 @@ body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
     font-size:clamp(16px,4vw,20px)!important;
   }
   body.afterday-real-ui-v3 #hud .event-log{
-    bottom:calc(78px + env(safe-area-inset-bottom))!important;
+    bottom:calc(max(78px, (100vw - 8px) * 172 / 1148 + 22px) + env(safe-area-inset-bottom))!important;
   }
 }
 @media(max-width:350px){
