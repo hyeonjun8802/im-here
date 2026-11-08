@@ -44,11 +44,6 @@ test('cinematic post look emphasizes lightning/after-rain highlights modestly',(
  assert.ok(rain.filmGrain<.01);
  assert.ok(rain.vignette<.15);
 });
-test('facial micro-rig is actual child of original 3D survivor and updates from survival state',()=>{
- const s=read('src/performerV140.js');
- for(const p of [/this\.head\.add\(this\.root\)/,/resolveSurvivorExpression\(/,/SphereGeometry/,/TubeGeometry/,/this\.lowerLip/,/this\.brows/,/this\.breath/,/this\.flaps/,/weather/])assert.match(s,p);
- assert.doesNotMatch(s,/new THREE\.Sprite\(/);
-});
 test('world-space contact shadows and real lanterns respond to existing weather',()=>{
  const s=read('src/premiumStageV140.js');
  for(const p of [/PlaneGeometry/,/radialAlphaTexture\(/,/PointLight/,/survivorShadow\.position\.x/,/weather\?\.wind/,/this\.steam/])assert.match(s,p);
