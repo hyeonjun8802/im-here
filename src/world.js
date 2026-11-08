@@ -95,16 +95,25 @@ function seededNoiseTexture(){const c=document.createElement('canvas');c.width=c
 export class AfterWorld {
  constructor(canvas,report=()=>{}){
   this.report=report;this.canvas=canvas;this.scene=new THREE.Scene();this.scene.background=color('#283744');this.scene.fog=new THREE.FogExp2('#929b99',.00116);
-  this.renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance',preserveDrawingBuffer:new URLSearchParams(location.search).has('visualqa')});
+  // A single low-overhead WebGL context is critical on iOS Safari.
+  const mobile=window.innerWidth<800;
+  let gpuSafeMode=false;
+  try{gpuSafeMode=sessionStorage.getItem('afterday_gpu_safe_mode_v1')==='1';}catch{}
+  this.gpuSafeMode=mobile&&gpuSafeMode;
+  this.renderer=new THREE.WebGLRenderer({
+   canvas,antialias:!mobile,alpha:false,
+   powerPreference:mobile?'default':'high-performance',
+   preserveDrawingBuffer:new URLSearchParams(location.search).has('visualqa')
+  });
   // Neutral spherical radiance probe supplies real PBR specular response to GLB
   // metal and wet surfaces; it is NOT a 2D substitution for the 3D game world.
   materialLoader.load('./assets/materials/cinematic/sky_light_probe.jpg',tex=>{
    tex.mapping=THREE.EquirectangularReflectionMapping;tex.colorSpace=THREE.SRGBColorSpace;
    this.scene.environment=tex;this.scene.environmentIntensity=.52;
   },undefined,()=>{});
-  const mobile=window.innerWidth<800;this.isMobile=mobile;this.ROOF_Y=ROOF;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.45:1.8));this.renderer.setSize(window.innerWidth,window.innerHeight,false);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.28;this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  this.isMobile=mobile;this.ROOF_Y=ROOF;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?(this.gpuSafeMode?1:1.15):1.8));this.renderer.setSize(window.innerWidth,window.innerHeight,false);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.28;this.renderer.shadowMap.enabled=!this.gpuSafeMode;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   this.scene.add(new THREE.HemisphereLight('#cfdad5','#55564f',1.48));this.ambient=this.scene.children[this.scene.children.length-1];
-  this.sun=new THREE.DirectionalLight('#ffcf99',3.5);this.sun.castShadow=true;this.sun.shadow.mapSize.set(mobile?1024:3072,mobile?1024:3072);Object.assign(this.sun.shadow.camera,{near:1,far:190,left:-68,right:68,top:68,bottom:-68});this.sun.shadow.bias=-.00018;this.sun.shadow.normalBias=.025;this.sun.position.set(40,65,25);this.sun.target.position.set(0,ROOF,0);this.scene.add(this.sun,this.sun.target);
+  this.sun=new THREE.DirectionalLight('#ffcf99',3.5);this.sun.castShadow=true;this.sun.shadow.mapSize.set(mobile?(this.gpuSafeMode?256:512):3072,mobile?(this.gpuSafeMode?256:512):3072);Object.assign(this.sun.shadow.camera,{near:1,far:190,left:-68,right:68,top:68,bottom:-68});this.sun.shadow.bias=-.00018;this.sun.shadow.normalBias=.025;this.sun.position.set(40,65,25);this.sun.target.position.set(0,ROOF,0);this.scene.add(this.sun,this.sun.target);
   this.fill=new THREE.DirectionalLight('#a3bbcc',.48);this.fill.position.set(-40,28,-38);this.scene.add(this.fill);
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
@@ -566,7 +575,7 @@ export class AfterWorld {
   this.focusLookHeight=view==='portrait'?2.22:1.9;
   this.cityLookHeight=view==='overhead'?2.1:3.3;
  }
- setQuality(value){const low=value==='low'||(value==='auto'&&innerWidth<700);this.renderer.setPixelRatio(Math.min(devicePixelRatio,low?1.15:1.8));this.sun.shadow.mapSize.set(low?1024:4096,low?1024:4096);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.premiumAssetFinish?.setQuality(low);this.cinematicPost?.setQuality(low);this.resize()}
+ setQuality(value){const low=this.gpuSafeMode||value==='low'||(value==='auto'&&innerWidth<700);const mobile=this.isMobile;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?(this.gpuSafeMode?1:low?1:1.2):low?1.15:1.8));const shadowSize=mobile?(this.gpuSafeMode?256:512):low?1024:4096;this.sun.shadow.mapSize.set(shadowSize,shadowSize);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.renderer.shadowMap.enabled=!this.gpuSafeMode;this.premiumAssetFinish?.setQuality(low);this.cinematicPost?.setQuality(low);this.resize()}
  update(dt,now,game,cinematicDt=dt){
   this.syncSurvivalInventory(game);
   // Accelerated 2×/4× also advances physical weather and survivor animation.
