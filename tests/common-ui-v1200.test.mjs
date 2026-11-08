@@ -1,33 +1,55 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import {readFileSync} from 'node:fs';
 
-const html=readFileSync(new URL('../index.html', import.meta.url),'utf8');
-const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
-const css=readFileSync(new URL('../src/commonUiV1200.css',import.meta.url),'utf8');
+const read=(p)=>readFileSync(new URL('../'+p,import.meta.url));
+const html=read('index.html').toString();
+const main=read('src/main.js').toString();
+const css=read('src/commonUiAssetsV3.css').toString();
+const js=read('src/commonUiAssetsV3.js').toString();
+const atlas=read('public/assets/ui/apocalypse-v3/spritesheet.webp');
+const manifest=JSON.parse(read('public/assets/ui/apocalypse-v3/spritesheet.json').toString());
 
-test('v12 common UI is linked after approved v1006 HUD CSS without replacing artwork',()=>{
-  assert.match(html,/commonUiV1200\.css/);
-  assert.ok(html.indexOf('premiumHudV1004.css') < html.indexOf('commonUiV1200.css'));
-  assert.match(html,/hud_compact_mobile_ref_v1006\.png/);
-  assert.match(html,/hud_compact_desktop_ref_v1006\.png/);
-  for(const n of ['#world','disaster-forecast','survival-day-chip','actionbar','survival-kit','warning']) {
-    assert.ok(html.includes(n.replace(/^#/,'')), n+' exists');
-  }
+test('real original UI atlas is committed, decodable WEBP, and indexed',()=>{
+ assert.equal(atlas.subarray(0,4).toString(),'RIFF');
+ assert.equal(atlas.subarray(8,12).toString(),'WEBP');
+ assert.ok(atlas.length>20_000);
+ assert.deepEqual(manifest.size,{w:2048,h:1139});
+ assert.equal(Object.keys(manifest.frames).length,48);
+ for(const [name,f] of Object.entries(manifest.frames)){
+  assert.ok(f.x>=0 && f.y>=0 && f.w>0 && f.h>0,name);
+  assert.ok(f.x+f.w<=2048 && f.y+f.h<=1139,name);
+  assert.deepEqual(f.pivot,[0.5,0.5],name);
+ }
+ for(const name of ['top_hud_full','bottom_action_bar_full','center_warning_banner',
+  'equipment_panel','time_controls_panel','square_slot_selected',
+  'icon_health','icon_food','icon_water','icon_medical','icon_tools'])
+   assert.ok(manifest.frames[name],name);
+ assert.equal(Object.keys(manifest.frames).filter(x=>x.startsWith('icon_')).length,16);
 });
 
-test('survival-day chip reads authoritative game state and refreshes with HUD',()=>{
-  assert.match(main,/dayChip=\$\('#survival-day-chip'\)/);
-  assert.match(main,/dayChip\.textContent='생존 '\+day\+'일차'/);
-  assert.match(main,/\$\('#days'\)\.textContent='DAY '/);
+test('game wires real sprites after weather HUD, preserving live state',()=>{
+ assert.match(html,/commonUiAssetsV3\.css/);
+ assert.doesNotMatch(html,/commonUiV1200\.css/);
+ assert.match(main,/installPremiumHudV1000\(\$\('#disaster-forecast'\)\)/);
+ assert.match(main,/installCommonUiAssetsV3\(\)/);
+ assert.ok(main.indexOf('installPremiumHudV1000(')<main.indexOf('installCommonUiAssetsV3();'));
+ assert.match(main,/dayChip\.textContent='생존 '\+day\+'일차'/);
+ assert.match(js,/crop\('top_hud_full'\)/);
+ assert.match(js,/bottom_action_bar_full/);
+ assert.match(js,/frameCount:48/);
+ assert.match(js,/document\.body\.classList\.add\('afterday-real-ui-v3'\)/);
+ assert.match(js,/fetch\(BASE\+'spritesheet\.json'/);
 });
 
-test('HUD frames preserve live actions and responsive safe areas',()=>{
-  assert.match(css,/\.actionbar button/);
-  assert.match(css,/\.survival-kit/);
-  assert.match(css,/\.warning/);
-  assert.match(css,/@media\(max-width:720px\)/);
-  assert.match(css,/safe-area-inset-bottom/);
-  assert.match(css,/color:#f2e9d8/i);
-  assert.ok(!css.includes('display:none!important}.actionbar'));
+test('v3 aligns actual image frames and buttons without replacing click nodes',()=>{
+ assert.match(css,/aspect-ratio:1647 \/ 300/);
+ assert.match(css,/width:min\(1450px,calc\(100vw - 6px\)\)/);
+ assert.match(css,/aspect-ratio:1148 \/ 172/);
+ assert.match(css,/--afterday-v3-bottom_action_bar_full/);
+ assert.match(css,/--afterday-v3-equipment_panel/);
+ assert.match(css,/--afterday-v3-center_warning_banner/);
+ assert.match(css,/@media\(max-width:720px\)/);
+ assert.match(css,/safe-area-inset-bottom/);
+ assert.doesNotMatch(js,/replaceWith\(/);
 });
