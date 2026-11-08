@@ -16,6 +16,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Full gameplay regressions and production build
+        run: npm run build
       - name: Install real Chromium and Safari WebKit
         run: |
           npm install --no-save playwright
@@ -30,6 +32,7 @@ jobs:
         run: node scripts/qa_hud_art_fit_v1400.mjs
         env:
           QA_BROWSER: chromium,webkit
+          QA_STRICT_ART_FIT: '1'
       - name: Upload verified 10 screenshots and metrics
         if: always()
         uses: actions/upload-artifact@v4
