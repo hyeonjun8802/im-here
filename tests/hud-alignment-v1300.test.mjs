@@ -19,7 +19,7 @@ test('top status and weather icons align on both desktop and mobile',()=>{
 test('equipment text wraps with header and explore button separated',()=>{
  assert.match(css,/#hud \.survival-kit > small:first-child\s*\{[\s\S]*?position:absolute!important/);
  assert.match(css,/#hud #sleep-arrangement,[\s\S]*?#hud #companion-status\s*\{[\s\S]*?white-space:normal!important/);
- assert.ok(css.includes('padding:clamp(34px,10.8vw,46px) 14px clamp(34px,10vw,42px)!important'));
+ assert.ok(css.includes('padding:clamp(36px,11.45vw,49px) 14px clamp(34px,10vw,42px)!important'));
  assert.match(css,/min-height:0!important;height:auto!important;aspect-ratio:461 \/ 308!important/);
 });
 test('nine original sprite slots keep centered live controls',()=>{
@@ -48,7 +48,7 @@ test('clock is smaller and all gameplay actions remain accessible',()=>{
 test('mobile header cannot revert to old collapsed 13px padding',()=>{
  const assetCss=readFileSync(new URL('../src/commonUiAssetsV3.css',import.meta.url),'utf8');
  assert.match(assetCss,/\.survival-kit:not\(:has\(\.survival-kit-controls button:not\(\[hidden\]\), \.survival-kit-action\)\)/);
- assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(34px,10\.8vw,46px\)!important/);
+ assert.match(css,/\.survival-kit:has\(> \.survival-kit-action\)\{[\s\S]*?padding-top:clamp\(36px,11\.45vw,49px\)!important/);
  assert.match(orig,/centeredIconFromAtlas/);
 });
 
@@ -68,7 +68,7 @@ test('iOS WebKit action rail does not grow to 400px from transferred minimum hei
 
 test('source frame proportions and icon ink centers are aligned in both PC and phone',()=>{
  assert.match(css,/aspect-ratio:461 \/ 308!important/);
- assert.match(css,/top:clamp\(18px,5\.45vw,24px\)!important/);
+ assert.ok(css.includes('top:calc(17.2% - .575em)!important'));
  assert.match(css,/survival-hud-stock\{left:63%!important;width:36\.5%!important\}/);
  assert.match(css,/transform:translate\(-50%,-50%\)!important/);
  assert.match(css,/max-height:calc\(100% - 8px\)!important/);
