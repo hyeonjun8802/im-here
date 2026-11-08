@@ -4,8 +4,8 @@
  * these small coherent inline SVGs are intentionally independent of that atlas.
  * Pure icon resources: no HUD state, WebGL, save or input changes.
  */
-const gold='#f7e4c8';
-const dark='#30291f';
+const gold='#e6dac5';
+const dark='#252c30';
 const GLYPHS={
  water:'<path d="M32 7C27 17 15 31 15 40a17 17 0 0 0 34 0C49 31 37 17 32 7Z" fill="url(#gold)" /><path d="M24 39c-1 8 3 13 10 14" fill="none" stroke="#fff2da" stroke-width="3" stroke-linecap="round"/>',
  food:'<path d="M12 10v17c0 7 7 9 9 9v17h6V36c3 0 9-2 9-9V10h-4v15h-4V10h-4v15h-4V10Z" fill="url(#gold)"/><path d="M49 10c-8 9-10 19-10 27h8v16h6V10Z" fill="url(#gold)"/>',
@@ -32,7 +32,7 @@ export function completeHudGlyph(name){
  if(!Object.hasOwn(GLYPHS,kind))throw new Error('Unknown complete HUD glyph: '+name);
  if(cache.has(kind))return cache.get(kind);
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">'+
- '<defs><linearGradient id="gold" x1="0" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="'+gold+'"/><stop offset=".52" stop-color="#efd0a0"/><stop offset="1" stop-color="#bb8750"/></linearGradient></defs>'+
+ '<defs><linearGradient id="gold" x1="0" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="'+gold+'"/><stop offset=".52" stop-color="#b8ad9b"/><stop offset="1" stop-color="#786f63"/></linearGradient></defs>'+
  '<g fill="url(#gold)" stroke="'+dark+'" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">'+GLYPHS[kind]+'</g></svg>';
  const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
  cache.set(kind,url);
