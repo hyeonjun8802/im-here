@@ -6,6 +6,7 @@ on:
       - 'src/hudAlignmentV1300.css'
       - 'src/hudAlignmentV1301.css'
       - 'src/commonUiAssetsV3.js'
+      - 'tests/hud-alignment-v1300.test.mjs'
       - 'index.html'
       - 'scripts/qa_hud_visual_20261108.mjs'
       - '.github/workflows/hud-visual-20261108.yml'
