@@ -86,12 +86,12 @@ try{
       }
       if(rr>=l)visualOffset=+((b.x+(l+rr+1)/2*b.w/can.width)-(a.x+a.w/2)).toFixed(2);
     }
-    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,visualOffset,iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
+    return {id:e.id||e.className,rect:a,icon:b,offset:b?+((b.x+b.w/2)-(a.x+a.w/2)).toFixed(2):null,visualOffset,buttonFont:e.tagName==='BUTTON'?parseFloat(getComputedStyle(e).fontSize):null,reserveCaptionVisible:e.classList.contains('afterday-v3-standby-slot')&&getComputedStyle(e.querySelector(':scope > span')).display!=='none',iconType:icon?.nodeName,src:icon?.getAttribute('src')?.slice(0,35)||null};
    });
    return {viewport:{w:innerWidth,h:innerHeight},atlas:document.documentElement.dataset.commonUiVersion,
    kit:r(kit),children,nav:r(nav),slots,
    weather:r(sel('.premium-hud__current-art')),forecast:r(sel('.premium-hud__forecast')),forecastIcon:r(sel('.premium-hud__future-icon')),
-   hud:r(hud),stats:r(sel('.survival-hud-stats')),stock:r(sel('.survival-hud-stock')),clock:r(sel('#clock')),
+   hud:r(hud),stats:r(sel('.survival-hud-stats')),vitals:r(sel('.survival-hud-vitals')),stock:r(sel('.survival-hud-stock')),clock:r(sel('#clock')),topRight:r(sel('.top-right')),
    frameImage:getComputedStyle(kit).backgroundImage.slice(0,55)};
   });
   let problems=[];
@@ -103,9 +103,34 @@ try{
    const p=f[key]?.r;
    if(k&&p&&(p.x<k.x+9||p.right>k.right-9||p.y<k.y+26||p.bottom>k.bottom-24))problems.push(key+' out of panel');
   }
+  if(metrics.viewport.w>720&&metrics.slots.some(slot=>slot.buttonFont!==null&&slot.buttonFont>0.1))problems.push('desktop raw Korean caption overlays icon');
+  if(metrics.slots.some(slot=>slot.reserveCaptionVisible))problems.push('inactive repair label overlays reserve icon');
   if(metrics.slots.some(s=>s.offset!==null&&Math.abs(s.offset)>3))problems.push('action icon box center mismatch');
   if(metrics.slots.some(s=>s.visualOffset!==null&&Math.abs(s.visualOffset)>3))problems.push('action icon optical center mismatch');
   if(metrics.weather&&metrics.hud&&Math.abs((metrics.weather.x+metrics.weather.w/2)-(metrics.hud.x+metrics.hud.w/2))>2)problems.push('weather dial off center');
+  // Validate design proportions rather than only text box non-intersection.
+  // Source art contains transparent margin, but rendered frame geometry must
+  // keep the original 461/308 composition on mobile and desktop.
+  if(metrics.kit){
+   const frameRatio=metrics.kit.w/metrics.kit.h;
+   if(Math.abs(frameRatio-461/308)>.07)problems.push('equipment frame stretched beyond source ratio '+frameRatio.toFixed(3));
+  }
+  if(metrics.nav){
+   const mids=metrics.slots.map(slot=>slot.icon?(slot.icon.y+slot.icon.h/2):(slot.rect.y+slot.rect.h/2));
+   for(const [i,cy] of mids.entries()){
+     const ideal=metrics.nav.y+metrics.nav.h/2;
+     if(Math.abs(cy-ideal)>3.2)problems.push('action glyph '+i+' vertically uncentered '+(cy-ideal).toFixed(1));
+   }
+  }
+  if(metrics.viewport.w<=720){
+   // Right 4-piece metal stack must stay secondary to the world, not fill a
+   // quarter of the screen. Measured through the real outer box.
+   const box=metrics.topRight;
+   if(box&&box.w>metrics.viewport.w*.34)problems.push('time widget too wide');
+   if(box&&box.h>142)problems.push('time widget too tall');
+   const stock=metrics.stock,vitals=metrics.vitals;
+   if(stock&&vitals&&(stock.x<vitals.right-1||stock.right>metrics.stats.right+1))problems.push('resource badges collide with survival bars');
+  }
   // Measure against the ORIGINAL sprite pixel coordinates, not the HTML box alone.
   // Native frame: equipment_panel 461x308, bottom_action_bar_full 1148x172.
   if(k&&f.title?.r){

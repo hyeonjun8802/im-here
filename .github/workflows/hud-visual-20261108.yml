@@ -1,7 +1,7 @@
 name: Responsive survival HUD browser QA (mobile and desktop)
 on:
   push:
-    branches: [fix/hud-visual-qa-20261108, fix/hud-source-coordinate-audit-20261108, main]
+    branches: [fix/hud-visual-qa-20261108, fix/hud-source-coordinate-audit-20261108, fix/mobile-hud-visual-polish-20261108, main]
     paths:
       - 'src/hudAlignmentV1300.css'
       - 'src/hudAlignmentV1301.css'
