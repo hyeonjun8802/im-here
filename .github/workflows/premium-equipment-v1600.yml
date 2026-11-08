@@ -30,11 +30,15 @@ jobs:
           exit 1
       - name: Test dense Day-10 equipment and popup at five screen sizes in two browser engines
         run: node scripts/qa_premium_equipment_v1600.mjs
+      - name: Verify genuine WebGL game boot on mobile and desktop
+        run: node scripts/qa_live_hud_v1400.mjs
       - name: Upload 20 screens and layout metrics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: premium-equipment-10-sizes-closed-open
-          path: docs/qa/premium-equipment-v1600/
+          path: |
+            docs/qa/premium-equipment-v1600/
+            docs/qa/live-hud-v1400/
           if-no-files-found: warn
           retention-days: 14
