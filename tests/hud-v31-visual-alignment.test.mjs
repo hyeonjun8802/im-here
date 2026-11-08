@@ -31,8 +31,8 @@ test('survival clock, day and speed use complete, nine-sliced panels',()=>{
 test('nine pre-rendered button slots match nine live or passive children',()=>{
  assert.match(css,/grid-template-columns:repeat\(9,minmax\(0,1fr\)\)/);
  assert.match(css,/--afterday-v3-bottom_action_bar_neutral/);
- assert.match(js,/sourceBar\.x\+399/);
- assert.match(js,/526,27,122,129/);
+ assert.match(js,/sourceBar\.x\+407,sourceBar\.y\+29,118,128/);
+ assert.match(js,/527,29,118,128/);
  assert.match(js,/className='afterday-v3-standby-slot'/);
  assert.match(js,/reserve\.textContent='물탱크 수리'|reserveText\.textContent='물탱크 수리'/);
  assert.match(js,/reserve\.hidden!==specialActive/);
