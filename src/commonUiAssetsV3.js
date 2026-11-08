@@ -73,7 +73,6 @@ export function installCommonUiAssetsV3() {
     // Neutralize ONLY that slot using the original unselected source sprite.
     // A selected glow is then drawn by CSS at the actual action position.
     const sourceBar=manifest.frames.bottom_action_bar_full;
-    const blankSlot=manifest.frames.square_slot_01;
     const neutralBar=document.createElement('canvas');
     neutralBar.width=sourceBar.w;
     neutralBar.height=sourceBar.h;
@@ -83,10 +82,10 @@ export function installCommonUiAssetsV3() {
         0,0,sourceBar.w,sourceBar.h);
       // Cover the pre-selected fifth tile's orange interior without touching
       // the original outer steel rail; restore its metallic neutral frame.
-      barCtx.fillStyle='#101820';
-      barCtx.fillRect(523,42,131,101);
-      barCtx.drawImage(image,blankSlot.x,blankSlot.y,blankSlot.w,blankSlot.h,
-        520,25,139,134);
+      // Exact metal source pixels, not a synthetic dark rectangle:
+      // duplicate the adjacent undecorated slot over authored slot five.
+      barCtx.drawImage(image,sourceBar.x+399,sourceBar.y+27,122,129,
+        526,27,122,129);
       document.documentElement.style.setProperty(
         '--afterday-v3-bottom_action_bar_neutral',
         'url("'+neutralBar.toDataURL('image/png')+'")');
