@@ -54,6 +54,7 @@ import {HorizonWorldExpansionV210} from './HorizonWorldExpansionV210.js';
 import {NearTornadoVfx,selectStormBuildings,selectVariedStormBuildings} from './nearTornadoVfx.js';
 import {RescueHelicopterVfx} from './rescueHelicopterVfx.js';
 import {SupportSurvivorVfx} from './supportSurvivorVfx.js';
+import {mobile3DQualityProfile,nextMobile3DAutoFactor} from './mobile3DQuality.js';
 
 const ROOF=CITY_COMPOSITION.heroRoofY;
 const clamp=THREE.MathUtils.clamp;
@@ -100,8 +101,17 @@ export class AfterWorld {
   let gpuSafeMode=false;
   try{gpuSafeMode=sessionStorage.getItem('afterday_gpu_safe_mode_v1')==='1';}catch{}
   this.gpuSafeMode=mobile&&gpuSafeMode;
+  this.mobileQuality='auto';this.mobileAdaptiveFactor=1;
+  this.mobilePerfWindowStarted=0;this.mobilePerfFrames=0;this.mobileMeasuredFps=0;
+  this.mobilePerfBootAt=performance.now();
+  const mobileProfile=mobile3DQualityProfile({
+   quality:'auto',devicePixelRatio:window.devicePixelRatio||1,
+   width:innerWidth,height:innerHeight,gpuSafeMode:this.gpuSafeMode
+  });
   this.renderer=new THREE.WebGLRenderer({
-   canvas,antialias:!mobile,alpha:false,
+   // Native MSAA is a one-time WebGL context choice. Normal mobile quality
+   // keeps it enabled, while context-loss GPU safe mode remains recoverable.
+   canvas,antialias:!this.gpuSafeMode,alpha:false,
    powerPreference:mobile?'default':'high-performance',
    preserveDrawingBuffer:new URLSearchParams(location.search).has('visualqa')
   });
@@ -111,9 +121,9 @@ export class AfterWorld {
    tex.mapping=THREE.EquirectangularReflectionMapping;tex.colorSpace=THREE.SRGBColorSpace;
    this.scene.environment=tex;this.scene.environmentIntensity=.52;
   },undefined,()=>{});
-  this.isMobile=mobile;this.ROOF_Y=ROOF;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?(this.gpuSafeMode?1:1.15):1.8));this.renderer.setSize(window.innerWidth,window.innerHeight,false);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.28;this.renderer.shadowMap.enabled=!this.gpuSafeMode;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  this.isMobile=mobile;this.ROOF_Y=ROOF;this.renderer.setPixelRatio(mobile?mobileProfile.pixelRatio:Math.min(devicePixelRatio,1.8));this.renderer.setSize(window.innerWidth,window.innerHeight,false);this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.28;this.renderer.shadowMap.enabled=!this.gpuSafeMode;this.renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   this.scene.add(new THREE.HemisphereLight('#cfdad5','#55564f',1.48));this.ambient=this.scene.children[this.scene.children.length-1];
-  this.sun=new THREE.DirectionalLight('#ffcf99',3.5);this.sun.castShadow=true;this.sun.shadow.mapSize.set(mobile?(this.gpuSafeMode?256:512):3072,mobile?(this.gpuSafeMode?256:512):3072);Object.assign(this.sun.shadow.camera,{near:1,far:190,left:-68,right:68,top:68,bottom:-68});this.sun.shadow.bias=-.00018;this.sun.shadow.normalBias=.025;this.sun.position.set(40,65,25);this.sun.target.position.set(0,ROOF,0);this.scene.add(this.sun,this.sun.target);
+  this.sun=new THREE.DirectionalLight('#ffcf99',3.5);this.sun.castShadow=true;this.sun.shadow.mapSize.set(mobile?mobileProfile.shadowSize:3072,mobile?mobileProfile.shadowSize:3072);Object.assign(this.sun.shadow.camera,{near:1,far:190,left:mobile?-55:-68,right:mobile?55:68,top:mobile?55:68,bottom:mobile?-55:-68});this.sun.shadow.bias=-.00018;this.sun.shadow.normalBias=.025;this.sun.position.set(40,65,25);this.sun.target.position.set(0,ROOF,0);this.scene.add(this.sun,this.sun.target);
   this.fill=new THREE.DirectionalLight('#a3bbcc',.48);this.fill.position.set(-40,28,-38);this.scene.add(this.fill);
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
@@ -575,7 +585,61 @@ export class AfterWorld {
   this.focusLookHeight=view==='portrait'?2.22:1.9;
   this.cityLookHeight=view==='overhead'?2.1:3.3;
  }
- setQuality(value){const low=this.gpuSafeMode||value==='low'||(value==='auto'&&innerWidth<700);const mobile=this.isMobile;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?(this.gpuSafeMode?1:low?1:1.2):low?1.15:1.8));const shadowSize=mobile?(this.gpuSafeMode?256:512):low?1024:4096;this.sun.shadow.mapSize.set(shadowSize,shadowSize);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.renderer.shadowMap.enabled=!this.gpuSafeMode;this.premiumAssetFinish?.setQuality(low);this.cinematicPost?.setQuality(low);this.resize()}
+ setQuality(value){
+  const quality=['auto','low','high'].includes(value)?value:'auto';
+  const mobile=this.isMobile;
+  const low=this.gpuSafeMode||quality==='low'||(!mobile&&quality==='auto'&&innerWidth<700);
+  if(mobile)this.mobileQuality=quality;
+  const profile=mobile?mobile3DQualityProfile({
+   quality,devicePixelRatio:window.devicePixelRatio||1,
+   width:this.canvas.clientWidth||innerWidth,height:this.canvas.clientHeight||innerHeight,
+   gpuSafeMode:this.gpuSafeMode,adaptiveFactor:this.mobileAdaptiveFactor
+  }):null;
+  const ratio=mobile?profile.pixelRatio:Math.min(devicePixelRatio,low?1.15:1.8);
+  if(Math.abs(this.renderer.getPixelRatio()-ratio)>.005)this.renderer.setPixelRatio(ratio);
+  const shadowSize=mobile?profile.shadowSize:low?1024:4096;
+  // Avoid GPU shadow atlas disposal when only the DPR or quality selector
+  // changes between two settings that share the same shadow resolution.
+  if(this.sun.shadow.mapSize.x!==shadowSize){
+   this.sun.shadow.mapSize.set(shadowSize,shadowSize);
+   this.sun.shadow.map?.dispose();
+   this.sun.shadow.map=null;
+  }
+  this.renderer.shadowMap.enabled=!this.gpuSafeMode;
+  this.premiumAssetFinish?.setQuality(low);
+  this.cinematicPost?.setQuality(low);
+  this.resize();
+ }
+ trackMobilePerformance(){
+  if(!this.isMobile||!this.running||this.gpuSafeMode)return;
+  const now=performance.now();
+  if(now-this.mobilePerfBootAt<12000)return; // Wait for WebGL/GLB warmup.
+  if(!this.mobilePerfWindowStarted)this.mobilePerfWindowStarted=now;
+  this.mobilePerfFrames++;
+  const elapsedMs=now-this.mobilePerfWindowStarted;
+  if(elapsedMs<3200)return;
+  this.mobileMeasuredFps=Math.round(this.mobilePerfFrames*1000/Math.max(1,elapsedMs));
+  if(this.mobileQuality==='auto'){
+   const next=nextMobile3DAutoFactor(this.mobileAdaptiveFactor,{
+    fps:this.mobileMeasuredFps,frames:this.mobilePerfFrames,elapsedMs
+   });
+   if(next!==this.mobileAdaptiveFactor){
+    this.mobileAdaptiveFactor=next;
+    this.setQuality('auto');
+   }
+  }
+  this.mobilePerfWindowStarted=now;this.mobilePerfFrames=0;
+ }
+ mobilePerformanceSnapshot(){
+  const ctx=this.renderer.getContext();
+  return {
+   quality:this.mobileQuality,pixelRatio:this.renderer.getPixelRatio(),
+   fps:this.mobileMeasuredFps,shadowSize:this.sun.shadow.mapSize.x,
+   msaa:Boolean(ctx?.getContextAttributes?.()?.antialias),
+   drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
+   gpuSafeMode:this.gpuSafeMode
+  };
+ }
  update(dt,now,game,cinematicDt=dt){
   this.syncSurvivalInventory(game);
   // Accelerated 2×/4× also advances physical weather and survivor animation.
@@ -705,7 +769,11 @@ export class AfterWorld {
   if(this.tarpMesh){const arr=this.tarpMesh.geometry.attributes.position.array,original=this.tarpVerts;
    for(let i=0;i<arr.length;i+=3)arr[i+1]=original[i+1]+Math.sin(t*2+original[i]*.7+original[i+2])*(.055+vw.wind*.20);
    this.tarpMesh.geometry.attributes.position.needsUpdate=true;
-   if(Math.floor(t*10)%8===0)this.tarpMesh.geometry.computeVertexNormals();}
+   const normalBucket=Math.floor(t*10/8);
+   if(normalBucket!==this._lastTarpNormalBucket){
+    this._lastTarpNormalBucket=normalBucket;
+    this.tarpMesh.geometry.computeVertexNormals();
+   }}
   // Local PBR GLB canopy sways in actual wind, retaining its authored UVs and silhouette.
   if(this.heroCanopyMesh&&this.heroCanopyVerts){
    const p=this.heroCanopyMesh.geometry.attributes.position,base=this.heroCanopyVerts;
@@ -714,7 +782,11 @@ export class AfterWorld {
     p.array[i+1]=base[i+1]+Math.sin(t*1.3+x*.42+z*.27)*(0.012+vw.wind*.15);
    }
    p.needsUpdate=true;
-   if(Math.floor(t*8)%5===0)this.heroCanopyMesh.geometry.computeVertexNormals();
+   const normalBucket=Math.floor(t*8/5);
+   if(normalBucket!==this._lastCanopyNormalBucket){
+    this._lastCanopyNormalBucket=normalBucket;
+    this.heroCanopyMesh.geometry.computeVertexNormals();
+   }
   }
   for(let i=0;i<this.flames.length;i++){let f=this.flames[i];f.scale.y=.65+Math.sin(t*9+i*3)*.27;f.rotation.z=Math.sin(t*4+i)*.2;}
   if(this.cameraTransition){
@@ -739,6 +811,7 @@ export class AfterWorld {
   this.celestialSky.update(this.camera,solar,lunar,vw.cloud,vw.storm);
   this.cinematicPost?.updateLook(vw,night,twilight);
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
+  this.trackMobilePerformance();
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
  dispose(){this.premiumDisasterVfx?.dispose();this.eventPerformance?.dispose();this.premiumWetMaterial?.dispose();this.premiumMicroSurface?.dispose();this.ambientCityCollapse?.dispose();this.premiumCollapseAftermath?.dispose();this.premiumNightLighting?.dispose();this.premiumWeatherSurfaces?.dispose();this.premiumLandmarkRuins?.dispose();this.premiumUrbanSilhouette?.dispose();this.premiumFacadeDensity?.dispose();this.premiumCinematicCity?.dispose();this.premiumStreet?.dispose();this.premiumRuinedCity?.dispose();this.premiumAssetFinish?.dispose();this.cinematicMoment?.dispose();this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
