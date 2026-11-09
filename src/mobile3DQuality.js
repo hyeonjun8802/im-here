@@ -23,7 +23,8 @@ export function mobile3DQualityProfile({
  const adapted=quality==='auto'?base*clamp(adaptiveFactor,.92,1):base;
  // Do not punish older phones by scaling below 1.0; reserve GPU-safe mode
  // for genuine WebGL context loss rather than using it as quality policy.
- const pixelRatio=Math.round(clamp(adapted,1,2.15)*100)/100;
+ // Round DOWN: a rounded-up DPR can exceed the pixel budget on tall phones.
+ const pixelRatio=Math.floor(clamp(adapted,1,2.15)*100+1e-8)/100;
  return {pixelRatio,shadowSize,shadowsEnabled:true,antialias:true,
   lowEffects:low,desired,pixelBudget:budget};
 }
