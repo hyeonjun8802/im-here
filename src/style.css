@@ -866,3 +866,10 @@
     font-size:clamp(6.5px,1.8vw,8px);
   }
 }
+
+/* Mobile Retina canvas: avoid filtering the full-screen WebGL surface in
+   Safari's compositor after it was already drawn at native device DPR.
+   Leave desktop's cinematic grade and the actual WebGL tone mapping alone. */
+@media (max-width:799px){
+ #world{filter:none}
+}
