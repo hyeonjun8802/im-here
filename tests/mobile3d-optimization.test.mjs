@@ -52,6 +52,9 @@ test('mobile world preserves 3D scene, safe mode, daily logic and quality API',(
  assert.match(s,/antialias:!this\.gpuSafeMode/);
  assert.match(s,/this\.sun\.shadow\.mapSize\.set\(mobile\?mobileProfile\.shadowSize/);
  assert.match(s,/this\.trackMobilePerformance\(\)/);
+ assert.match(s,/this\.mobileQuality!=='high'/);
+ assert.match(s,/renderAt-this\._lastMobileRenderedAt<1000\/30-1/);
+ assert.match(s,/this\.life\.update\(dt,now,game,preset\)/);
  assert.match(s,/this\.gpuSafeMode=mobile&&gpuSafeMode/);
  assert.match(s,/this\.premiumAssetFinish\?\.setQuality\(low\)/);
  assert.match(s,/this\.life\.update\(dt,now,game,preset\)/);
