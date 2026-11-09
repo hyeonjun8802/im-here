@@ -738,7 +738,7 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
 }
 
 
-/* AFTERDAY v19 desktop-only proportional HUD reduction (2026-11-09).
+/* AFTERDAY v20 desktop-only proportional HUD reduction (2026-11-09).
  * Keep the approved mobile/tablet layout, original art and DOM hit areas.
  * Scale each complete panel rather than resizing its nine painted button cells
  * or repositioning text inside the weather artwork. PC only: fine pointer. */
@@ -746,21 +746,21 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
   /* The metal wings, weather medallion, forecast glyphs, meters and labels
      must always scale together. Source image geometry remains untouched. */
   body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000 {
-    transform:translateX(-50%) scale(.80)!important;
+    transform:translateX(-50%) scale(.60)!important;
     transform-origin:center top!important;
   }
 
   /* The action bar's nine slot centers and clickable buttons scale as a
      single object; keep its existing horizontal-centering translation. */
   body.afterday-real-ui-v3 #hud .actionbar {
-    transform:translateX(-50%) scale(.82)!important;
+    transform:translateX(-50%) scale(.66)!important;
     transform-origin:center bottom!important;
   }
 
   /* Source 461x308 equipment frame and its content, including the baked
      emergency button, stay in sync when reduced. */
   body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) {
-    transform:scale(.88)!important;
+    transform:scale(.72)!important;
     transform-origin:bottom left!important;
   }
 
@@ -768,12 +768,12 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
      new visual bottom instead of the old unscaled desktop artwork height. */
   body.afterday-real-ui-v3 #hud .topbar .survival-quick-info,
   body.afterday-real-ui-v3 #hud .topbar .top-right {
-    top:calc(clamp(105px,9.7vw,154px) + env(safe-area-inset-top))!important;
+    top:calc(min(108px,6.71vw) + 8px + env(safe-area-inset-top))!important;
   }
   body.afterday-real-ui-v3 #hud .topbar .survival-quick-info {
-    left:max(16px,calc((100vw - 1280px)/2 + 12px),calc(10vw + 8px))!important;
+    left:max(calc(20vw + 8px),calc(50vw - 472px))!important;
   }
   body.afterday-real-ui-v3 #hud .topbar .top-right {
-    right:max(16px,calc((100vw - 1280px)/2 + 12px),calc(10vw + 8px))!important;
+    right:max(calc(20vw + 8px),calc(50vw - 472px))!important;
   }
 }
