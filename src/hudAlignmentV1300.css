@@ -736,3 +736,44 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
     padding:37px 12px 33px!important;
   }
 }
+
+
+/* AFTERDAY v19 desktop-only proportional HUD reduction (2026-11-09).
+ * Keep the approved mobile/tablet layout, original art and DOM hit areas.
+ * Scale each complete panel rather than resizing its nine painted button cells
+ * or repositioning text inside the weather artwork. PC only: fine pointer. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine) {
+  /* The metal wings, weather medallion, forecast glyphs, meters and labels
+     must always scale together. Source image geometry remains untouched. */
+  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000 {
+    transform:translateX(-50%) scale(.80)!important;
+    transform-origin:center top!important;
+  }
+
+  /* The action bar's nine slot centers and clickable buttons scale as a
+     single object; keep its existing horizontal-centering translation. */
+  body.afterday-real-ui-v3 #hud .actionbar {
+    transform:translateX(-50%) scale(.82)!important;
+    transform-origin:center bottom!important;
+  }
+
+  /* Source 461x308 equipment frame and its content, including the baked
+     emergency button, stay in sync when reduced. */
+  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) {
+    transform:scale(.88)!important;
+    transform-origin:bottom left!important;
+  }
+
+  /* These two floating indicators are OUTSIDE the top frame, so follow its
+     new visual bottom instead of the old unscaled desktop artwork height. */
+  body.afterday-real-ui-v3 #hud .topbar .survival-quick-info,
+  body.afterday-real-ui-v3 #hud .topbar .top-right {
+    top:calc(clamp(105px,9.7vw,154px) + env(safe-area-inset-top))!important;
+  }
+  body.afterday-real-ui-v3 #hud .topbar .survival-quick-info {
+    left:max(16px,calc((100vw - 1280px)/2 + 12px),calc(10vw + 8px))!important;
+  }
+  body.afterday-real-ui-v3 #hud .topbar .top-right {
+    right:max(16px,calc((100vw - 1280px)/2 + 12px),calc(10vw + 8px))!important;
+  }
+}
