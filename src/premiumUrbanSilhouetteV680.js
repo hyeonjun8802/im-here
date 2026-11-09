@@ -223,6 +223,13 @@ export class PremiumUrbanSilhouetteV680{
   }
 
   update(dt,weather={},night=0,game=null){
+    // Cable positions never animate. On mobile, touch visibility only after
+    // the persisted damage set changes, not on every animation frame.
+    if(this.mobile){
+      const key=(game?.ambientCollapseIds||[]).join(',')+'|'+(game?.tornadoDamagedIds||[]).join(',');
+      if(key===this._damageVisibilityKey)return;
+      this._damageVisibilityKey=key;
+    }
     const blocked=new Set([...(game?.ambientCollapseIds||[]),...(game?.tornadoDamagedIds||[])]);
     for(let i=0;i<this.spans.length;i++){
       const span=this.spans[i];
