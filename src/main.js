@@ -434,6 +434,26 @@ async function boot(){try{
     onCover:()=>runSurvivalAction('take_cover'),
     onPrepare:()=>runSurvivalAction('secure_supplies')});
   window.afterday={state,world,save,renderHUD,eventBoard,gameClock};
+  // Opt-in diagnostic overlay: ?perf=1 reveals the actual WebGL DPR, MSAA
+  // and GPU safe mode on the user's phone. Never affect gameplay or saves.
+  if(world.isMobile&&new URLSearchParams(location.search).has('perf')){
+   const panel=document.createElement('div');
+   panel.id='mobile-webgl-diagnostics';
+   panel.setAttribute('aria-label','모바일 렌더링 진단');
+   panel.style.cssText='position:fixed;right:8px;top:39%;z-index:99998;pointer-events:none;background:rgba(4,11,14,.82);border:1px solid #a2c1c6;border-radius:5px;padding:5px 7px;color:#e8f2eb;font:11px/1.5 monospace;white-space:pre;max-width:45vw';
+   document.body.append(panel);
+   const refresh=()=>{
+    const p=world.mobilePerformanceSnapshot();
+    const w=world.renderer.domElement;
+    panel.textContent='DPR '+p.pixelRatio+' / '+(window.devicePixelRatio||1)+
+     '\\nCanvas '+w.width+'×'+w.height+
+     '\\nAA '+(p.msaa?'ON':'OFF')+' · Shadow '+p.shadowSize+
+     '\\nFPS '+(p.fps||'측정 중')+' / '+(p.targetFps||'제한 없음')+
+     (p.gpuSafeMode?'\\nGPU SAFE MODE':'');
+   };
+   refresh();
+   setInterval(refresh,1200);
+  }
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
