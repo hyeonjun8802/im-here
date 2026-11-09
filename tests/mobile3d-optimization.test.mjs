@@ -106,3 +106,14 @@ test('DPR scale is conservative for large mobile screens but native on iPhone',(
  const poorDevice=mobile3DQualityProfile({devicePixelRatio:1.5,width:390,height:844,quality:'auto'});
  assert.ok(poorDevice.pixelRatio<=1.5);
 });
+
+test('mobile renderer uses native Retina canvas without costly full-screen CSS filtering',()=>{
+ const css=readFileSync('src/style.css','utf8');
+ assert.match(css,/@media \(max-width:799px\)\{[\s\S]*?#world\{filter:none\}/);
+ const assets=readFileSync('src/premiumAssetFinishV620.js','utf8');
+ assert.match(assets,/if\(!this\.world\.isMobile\)\{/);
+ const world=readFileSync('src/world.js','utf8');
+ assert.match(world,/optimizeMobileDistantShadows\(\)/);
+ assert.match(world,/this\.mobileCulledShadowCasters\+\+/);
+ assert.match(world,/afterday_gpu_manual_recovery_attempt_v1/);
+});
