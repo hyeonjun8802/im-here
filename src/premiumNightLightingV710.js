@@ -152,7 +152,19 @@ export class PremiumNightLightingV710{
     this.moon.intensity=(.04+n*.34*moonAbove)*(1-cloud*.56)*(1-storm*.38)+f*.12;
     this.moon.color.set(storm?'#879dad':'#9bb8d0');
 
-    const blocked=new Set([...(game?.ambientCollapseIds||[]),...(game?.tornadoDamagedIds||[])]);
+    // On mobile reuse the damage set until a persisted city-collapse ID changes.
+    // Light flicker, moon position and weather still update every frame.
+    let blocked;
+    if(this.mobile){
+      const key=(game?.ambientCollapseIds||[]).join(',')+'|'+(game?.tornadoDamagedIds||[]).join(',');
+      if(key!==this._blockedLightKey){
+        this._blockedLightKey=key;
+        this._blockedLightIds=new Set([...(game?.ambientCollapseIds||[]),...(game?.tornadoDamagedIds||[])]);
+      }
+      blocked=this._blockedLightIds;
+    }else{
+      blocked=new Set([...(game?.ambientCollapseIds||[]),...(game?.tornadoDamagedIds||[])]);
+    }
     for(let i=0;i<this.locals.length;i++){
       const o=this.locals[i],alive=!blocked.has(o.id);
       const flicker=.94+.06*Math.sin(this.time*(3.1+i*.37)+o.phase)*Math.sin(this.time*7.3+o.phase);
@@ -160,7 +172,10 @@ export class PremiumNightLightingV710{
       o.light.intensity=intensity+(alive?f*1.6:0);
       o.light.distance=18+wet*5;
       o.mat.opacity=alive?(n*.20+tw*.06)*(.75+wet*.62)*(1+f*.40):0;
-      o.pool.visible=alive;
+      // Transparent 0-opacity light pools and 0-intensity local lamps need
+      // not consume GPU passes on mobile daylight. Desktop appearance unchanged.
+      o.pool.visible=alive&&(!this.mobile||o.mat.opacity>.008);
+      if(this.mobile)o.light.visible=alive&&intensity+f*1.6>.008;
     }
 
     for(let i=0;i<this.beams.length;i++){
