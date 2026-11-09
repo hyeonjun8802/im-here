@@ -1,0 +1,27 @@
+name: Tag immutable AFTERDAY v1.0.0 production snapshot
+on:
+  push:
+    branches:
+      - release/tag-v1.0.0-20261109
+permissions:
+  contents: write
+jobs:
+  create-version-tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_SHA: ba0088c8b9d7e8124f2cadb2953fadce4186a619
+    steps:
+      - name: Create tag pointing to verified production commit
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/git/commits/${RELEASE_SHA}" --jq '.sha' | grep -Fx "${RELEASE_SHA}"
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/v1.0.0" >/dev/null 2>&1; then
+            echo "Tag already exists; verifying target instead of overwriting"
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/v1.0.0" -f sha="${RELEASE_SHA}"
+          fi
+          ACTUAL="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/v1.0.0" --jq '.object.sha')"
+          test "${ACTUAL}" = "${RELEASE_SHA}"
+          echo "Verified immutable v1.0.0 points to ${ACTUAL}"
