@@ -54,7 +54,7 @@ import {HorizonWorldExpansionV210} from './HorizonWorldExpansionV210.js';
 import {NearTornadoVfx,selectStormBuildings,selectVariedStormBuildings} from './nearTornadoVfx.js';
 import {RescueHelicopterVfx} from './rescueHelicopterVfx.js';
 import {SupportSurvivorVfx} from './supportSurvivorVfx.js';
-import {mobile3DQualityProfile,nextMobile3DAutoFactor} from './mobile3DQuality.js';
+import {mobile3DQualityProfile,nextMobile3DAutoFactor,shouldRenderMobile3DFrame} from './mobile3DQuality.js';
 
 const ROOF=CITY_COMPOSITION.heroRoofY;
 const clamp=THREE.MathUtils.clamp;
@@ -104,6 +104,7 @@ export class AfterWorld {
   this.mobileQuality='auto';this.mobileAdaptiveFactor=1;
   this.mobilePerfWindowStarted=0;this.mobilePerfFrames=0;this.mobileMeasuredFps=0;
   this.mobilePerfBootAt=performance.now();
+  this._lastMobileRenderAt=0;this.mobileDrawCount=0;
   const mobileProfile=mobile3DQualityProfile({
    quality:'auto',devicePixelRatio:window.devicePixelRatio||1,
    width:innerWidth,height:innerHeight,gpuSafeMode:this.gpuSafeMode
@@ -637,7 +638,8 @@ export class AfterWorld {
    fps:this.mobileMeasuredFps,shadowSize:this.sun.shadow.mapSize.x,
    msaa:Boolean(ctx?.getContextAttributes?.()?.antialias),
    drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
-   gpuSafeMode:this.gpuSafeMode
+   gpuSafeMode:this.gpuSafeMode,renderedFrames:this.mobileDrawCount,
+   targetFps:this.mobileQuality==='high'?null:30
   };
  }
  update(dt,now,game,cinematicDt=dt){
@@ -816,8 +818,19 @@ export class AfterWorld {
   if(this.isMobile&&this.mobileQuality!=='high'&&
      this._lastMobileRenderedAt&&renderAt-this._lastMobileRenderedAt<1000/30-1)return;
   this._lastMobileRenderedAt=renderAt;
-  if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
-  this.trackMobilePerformance();
+  // Keep the full simulation/clock/weather updates on every rAF iteration.
+  // Only skip redundant GPU submissions on small screens; desktop is untouched.
+  const renderNow=performance.now();
+  if(shouldRenderMobile3DFrame({
+   isMobile:this.isMobile,quality:this.mobileQuality,
+   now:renderNow,lastRenderAt:this._lastMobileRenderAt
+  })){
+   if(this.cinematicPost)this.cinematicPost.render();
+   else this.renderer.render(this.scene,this.camera);
+   this._lastMobileRenderAt=renderNow;
+   this.mobileDrawCount++;
+   this.trackMobilePerformance();
+  }
  }
  async start(){try{await this.assets.initPromise;}catch{}this.running=true;this.report('GitHub 3D 리소스 로딩 중…');}
  dispose(){this.premiumDisasterVfx?.dispose();this.eventPerformance?.dispose();this.premiumWetMaterial?.dispose();this.premiumMicroSurface?.dispose();this.ambientCityCollapse?.dispose();this.premiumCollapseAftermath?.dispose();this.premiumNightLighting?.dispose();this.premiumWeatherSurfaces?.dispose();this.premiumLandmarkRuins?.dispose();this.premiumUrbanSilhouette?.dispose();this.premiumFacadeDensity?.dispose();this.premiumCinematicCity?.dispose();this.premiumStreet?.dispose();this.premiumRuinedCity?.dispose();this.premiumAssetFinish?.dispose();this.cinematicMoment?.dispose();this.premiumAtmosphere?.dispose();this.supportSurvivor?.dispose();this.rescueHelicopterVfx?.dispose();this.sleepBedding?.dispose();this.beardedSurvivor?.dispose();this.horizonWorld?.dispose();this.apocalypseSetDressing?.dispose();this.cityAtmosphere?.dispose?.();this.premiumStage?.dispose();this.life?.dispose();this.weatherVfx?.dispose();this.cinematicTornado?.dispose();this.celestialSky?.dispose();this.premiumEnvironment?.dispose();this.botany?.dispose();this.skyCloudTexture?.dispose();this.sky?.geometry.dispose();this.sky?.material.dispose();this.cinematicPost?.dispose();this.renderer.dispose()}
