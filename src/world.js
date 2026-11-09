@@ -810,6 +810,12 @@ export class AfterWorld {
   this.premiumAtmosphere?.update(dt,vw,night,lightningStrength);
   this.celestialSky.update(this.camera,solar,lunar,vw.cloud,vw.storm);
   this.cinematicPost?.updateLook(vw,night,twilight);
+  // Preserve all survival, camera and weather updates above. Only throttle
+  // the expensive WebGL draw on normal mobile quality; high stays uncapped.
+  const renderAt=performance.now();
+  if(this.isMobile&&this.mobileQuality!=='high'&&
+     this._lastMobileRenderedAt&&renderAt-this._lastMobileRenderedAt<1000/30-1)return;
+  this._lastMobileRenderedAt=renderAt;
   if(this.cinematicPost)this.cinematicPost.render();else this.renderer.render(this.scene,this.camera);
   this.trackMobilePerformance();
  }
