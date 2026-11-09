@@ -129,7 +129,26 @@ export class AfterWorld {
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
-  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.premiumRuinedCity=new PremiumRuinedCityV630(this);this.premiumStreet=new PremiumStreetV640(this);this.premiumCinematicCity=new PremiumCinematicCityV650(this);this.premiumFacadeDensity=new PremiumFacadeDensityV670(this);this.premiumUrbanSilhouette=new PremiumUrbanSilhouetteV680(this);this.premiumLandmarkRuins=new PremiumLandmarkRuinsV690(this);this.premiumWeatherSurfaces=new PremiumWeatherSurfacesV700(this);this.premiumNightLighting=new PremiumNightLightingV710(this);this.premiumCollapseAftermath=new PremiumCollapseAftermathV720(this);this.ambientCityCollapse=new AmbientCityCollapseV660(this);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.premiumDisasterVfx=new PremiumDisasterVfxV810(this.scene,ROOF,this.isMobile);this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.premiumAssetFinish=new PremiumAssetFinishV620(this);this.premiumMicroSurface=new PremiumMicroSurfaceV730(this);this.premiumWetMaterial=new PremiumWetMaterialV750(this);this.cinematicPost=new CinematicPostV130(this);this.cinematicMoment=new CinematicMomentV510(this);this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.premiumRuinedCity=new PremiumRuinedCityV630(this);this.premiumStreet=new PremiumStreetV640(this);this.premiumCinematicCity=new PremiumCinematicCityV650(this);this.premiumFacadeDensity=new PremiumFacadeDensityV670(this);this.premiumUrbanSilhouette=new PremiumUrbanSilhouetteV680(this);this.premiumLandmarkRuins=new PremiumLandmarkRuinsV690(this);this.premiumWeatherSurfaces=new PremiumWeatherSurfacesV700(this);this.premiumNightLighting=new PremiumNightLightingV710(this);this.premiumCollapseAftermath=new PremiumCollapseAftermathV720(this);this.ambientCityCollapse=new AmbientCityCollapseV660(this);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.premiumDisasterVfx=new PremiumDisasterVfxV810(this.scene,ROOF,this.isMobile);this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.premiumAssetFinish=new PremiumAssetFinishV620(this);this.premiumMicroSurface=new PremiumMicroSurfaceV730(this);this.premiumWetMaterial=new PremiumWetMaterialV750(this);this.cinematicPost=new CinematicPostV130(this);this.optimizeMobileDistantShadows();this.cinematicMoment=new CinematicMomentV510(this);this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+ }
+ /**
+  * Mobile-only: distant city meshes outside the 1024px hero shadow volume
+  * should still render in full colour, but never enter costly shadow passes.
+  * Does not hide, merge or reduce geometry or affect PC settings.
+  */
+ optimizeMobileDistantShadows(){
+  this.mobileCulledShadowCasters=0;
+  if(!this.isMobile)return;
+  this.scene.updateMatrixWorld(true);
+  const position=new THREE.Vector3();
+  this.scene.traverse(object=>{
+   if(!object.isMesh||!object.castShadow)return;
+   object.getWorldPosition(position);
+   if(Math.hypot(position.x,position.z)>100){
+    object.castShadow=false;
+    this.mobileCulledShadowCasters++;
+   }
+  });
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -638,7 +657,8 @@ export class AfterWorld {
    fps:this.mobileMeasuredFps,shadowSize:this.sun.shadow.mapSize.x,
    msaa:Boolean(ctx?.getContextAttributes?.()?.antialias),
    drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,
-   gpuSafeMode:this.gpuSafeMode,renderedFrames:this.mobileDrawCount,
+   gpuSafeMode:this.gpuSafeMode,culledShadows:this.mobileCulledShadowCasters||0,
+   renderedFrames:this.mobileDrawCount,
    targetFps:this.mobileQuality==='high'?null:30
   };
  }
