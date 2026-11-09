@@ -89,7 +89,7 @@ test('actual key lights and shadows are brighter while weather still controls th
  assert.match(s,/new THREE\.HemisphereLight\('#cfdad5','#55564f',1\.48\)/);
  assert.match(s,/1\.30-night\*\.37-haze\*\.20-vw\.storm\*\.13/);
  assert.match(s,/1\.27\+twilight\*\.06\+night\*\.035-vw\.storm\*\.035/);
- assert.match(s,/mobile\?\(this\.gpuSafeMode\?256:512\):3072/);
+ assert.match(s,/mobile\?mobileProfile\.shadowSize:3072/);
  assert.match(s,/finishImportedGLB\(model,\{mobile:this\.isMobile\}\)/);
  assert.match(s,/finishTexture\(texture,8\)/);
  assert.match(s,/target\.normalScale\.set\(\.38,\.38\)/);
