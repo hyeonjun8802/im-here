@@ -446,10 +446,10 @@ async function boot(){try{
     const p=world.mobilePerformanceSnapshot();
     const w=world.renderer.domElement;
     panel.textContent='DPR '+p.pixelRatio+' / '+(window.devicePixelRatio||1)+
-     '\\nCanvas '+w.width+'×'+w.height+
-     '\\nAA '+(p.msaa?'ON':'OFF')+' · Shadow '+p.shadowSize+
-     '\\nFPS '+(p.fps||'측정 중')+' / '+(p.targetFps||'제한 없음')+
-     (p.gpuSafeMode?'\\nGPU SAFE MODE':'');
+     '\nCanvas '+w.width+'×'+w.height+
+     '\nAA '+(p.msaa?'ON':'OFF')+' · Shadow '+p.shadowSize+
+     '\nFPS '+(p.fps||'측정 중')+' / '+(p.targetFps||'제한 없음')+
+     (p.gpuSafeMode?'\nGPU SAFE MODE':'');
    };
    refresh();
    setInterval(refresh,1200);
