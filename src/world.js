@@ -98,6 +98,19 @@ export class AfterWorld {
   this.report=report;this.canvas=canvas;this.scene=new THREE.Scene();this.scene.background=color('#283744');this.scene.fog=new THREE.FogExp2('#929b99',.00116);
   // A single low-overhead WebGL context is critical on iOS Safari.
   const mobile=window.innerWidth<800;
+  // Explicit one-time recovery for a previously sticky low-DPR safe mode.
+  // Use ?retryGpu=1 when testing: the attempt flag prevents reload loops if
+  // Safari loses the WebGL context and the recovery handler re-enters safe mode.
+  if(mobile&&new URLSearchParams(location.search).get('retryGpu')==='1'){
+   try{
+    const key='afterday_gpu_manual_recovery_attempt_v1';
+    if(sessionStorage.getItem(key)!=='1'){
+     sessionStorage.setItem(key,'1');
+     sessionStorage.removeItem('afterday_gpu_safe_mode_v1');
+     sessionStorage.removeItem('afterday_gpu_retry_stamp_v1');
+    }
+   }catch{}
+  }
   let gpuSafeMode=false;
   try{gpuSafeMode=sessionStorage.getItem('afterday_gpu_safe_mode_v1')==='1';}catch{}
   this.gpuSafeMode=mobile&&gpuSafeMode;
