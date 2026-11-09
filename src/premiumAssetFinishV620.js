@@ -297,8 +297,16 @@ export class PremiumAssetFinishV620{
   setQuality(low){
     if(!this.world.sun)return;
     const mobile=this.world.isMobile||low;
-    this.world.sun.shadow.mapSize.set(mobile?1024:4096,mobile?1024:4096);
-    this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;
+    // The 3D world's mobile quality profile owns the 768/1024 shadow budget.
+    // Do not overwrite that choice or tear down the GPU shadow atlas every
+    // time the mobile render resolution adapts.
+    if(!this.world.isMobile){
+      const shadowSize=low?1024:4096;
+      if(this.world.sun.shadow.mapSize.x!==shadowSize){
+        this.world.sun.shadow.mapSize.set(shadowSize,shadowSize);
+        this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;
+      }
+    }
     for(const l of this.practical)l.castShadow=!mobile&&l===this.practical[0];
   }
 
