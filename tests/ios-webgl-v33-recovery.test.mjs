@@ -8,13 +8,13 @@ const main=read('src/main.js');
 const css=read('src/commonUiLayoutV31.css');
 const atlas=read('src/commonUiAssetsV3.js');
 
-test('mobile Safari renderer avoids full screen MSAA and oversized GPU shadow buffers',()=>{
- assert.match(world,/antialias:!mobile/);
+test('mobile Safari renderer enables antialiasing while bounding shadow buffers',()=>{
+ assert.match(world,/antialias:!this\.gpuSafeMode/);
  assert.match(world,/this\.gpuSafeMode=mobile&&gpuSafeMode/);
- assert.match(world,/mobile\?\(this\.gpuSafeMode\?1:1\.15\):1\.8/);
+ assert.match(world,/mobile\?mobileProfile\.pixelRatio:Math\.min\(devicePixelRatio,1\.8\)/);
  assert.match(world,/this\.renderer\.shadowMap\.enabled=!this\.gpuSafeMode/);
- assert.match(world,/mobile\?\(this\.gpuSafeMode\?256:512\):3072/);
- assert.match(world,/setQuality\(value\).*?gpuSafeMode/);
+ assert.match(world,/mobile\?mobileProfile\.shadowSize:3072/);
+ assert.match(world,/setQuality\(value\)[\s\S]*?gpuSafeMode/);
 });
 test('WebGL context loss is recoverable, saves state, does not loop infinitely',()=>{
  assert.match(main,/webglcontextlost/);
