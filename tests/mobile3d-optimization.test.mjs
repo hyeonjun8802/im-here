@@ -71,3 +71,13 @@ test('mobile 30fps cadence keeps gameplay updates separate from GPU rendering',(
  assert.equal(shouldRenderMobile3DFrame({isMobile:true,quality:'high',now:116,lastRenderAt:101}),true);
  assert.equal(shouldRenderMobile3DFrame({isMobile:false,now:116,lastRenderAt:101}),true);
 });
+
+test('mobile city and lighting cache persisted damage while hiding invisible daytime lights',()=>{
+ const urban=readFileSync('src/premiumUrbanSilhouetteV680.js','utf8');
+ const night=readFileSync('src/premiumNightLightingV710.js','utf8');
+ assert.match(urban,/if\(this\.mobile\)\{/);
+ assert.match(urban,/this\._damageVisibilityKey/);
+ assert.match(night,/this\._blockedLightIds/);
+ assert.match(night,/o\.pool\.visible=alive&&\(!this\.mobile\|\|o\.mat\.opacity>\.008\)/);
+ assert.match(night,/if\(this\.mobile\)o\.light\.visible=/);
+});
