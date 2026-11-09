@@ -55,8 +55,13 @@ try{
   assert.ok(state.shadowSize>=768,JSON.stringify(state));
   assert.ok(state.pixelRatio>=1.18,JSON.stringify(state));
   assert.ok(state.calls>0&&state.triangles>0,JSON.stringify(state));
-  if(quality==='auto')assert.equal(state.shadowSize,1024);
-  if(quality==='high')assert.ok(state.pixelRatio>=1.5);
+  if(quality==='auto'){
+   assert.equal(state.shadowSize,1024);
+   assert.ok(state.pixelRatio>=1.8,'auto DPR should be sharp: '+JSON.stringify(state));
+  }
+  if(quality==='high')assert.ok(state.pixelRatio>=1.95,
+   'retina high DPR must not silently fall back: '+JSON.stringify(state));
+  if(quality==='low')assert.ok(state.pixelRatio>=1.4);
   // Software renderer may report MSAA unavailable; retain visual proof.
   await page.screenshot({path:out+'/'+quality+'-390x844.png',animations:'disabled',
    timeout:110000});
