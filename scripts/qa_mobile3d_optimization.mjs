@@ -29,7 +29,11 @@ try{
  // Dismiss the mandatory DAY 1 decision so screenshots show the actual 3D
  // rooftop and skyline rather than a blurred/full-screen choice dialog.
  const dismiss=page.locator('.afterday-board-expedition-stay');
- if(await dismiss.isVisible())await dismiss.click();
+ if(await dismiss.isVisible()){
+  // Heavy SwiftShader WebGL can keep the button moving in compositor terms.
+  // Trigger its actual DOM click listener without Playwright's stability wait.
+  await dismiss.evaluate(button=>button.click());
+ }
  await page.evaluate(()=>{
   const chapter=document.querySelector('#survival-chapter');
   chapter?.classList.add('is-hidden');
