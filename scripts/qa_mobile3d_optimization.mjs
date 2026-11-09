@@ -26,6 +26,14 @@ try{
  });
  await page.goto(origin+'/?showcase=1&visualqa=1',{waitUntil:'domcontentloaded',timeout:55000});
  await page.waitForFunction(()=>Boolean(window.afterday?.world?.renderer&&window.afterday.world.sun),null,{timeout:85000});
+ // Dismiss the mandatory DAY 1 decision so screenshots show the actual 3D
+ // rooftop and skyline rather than a blurred/full-screen choice dialog.
+ const dismiss=page.locator('.afterday-board-expedition-stay');
+ if(await dismiss.isVisible())await dismiss.click();
+ await page.evaluate(()=>{
+  const chapter=document.querySelector('#survival-chapter');
+  chapter?.classList.add('is-hidden');
+ });
  await page.waitForTimeout(2600);
  for(const quality of ['auto','high','low']){
   await page.evaluate(v=>window.afterday.world.setQuality(v),quality);
