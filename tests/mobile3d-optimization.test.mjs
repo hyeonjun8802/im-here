@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {mobile3DQualityProfile,nextMobile3DAutoFactor} from '../src/mobile3DQuality.js';
+import {mobile3DQualityProfile,nextMobile3DAutoFactor,shouldRenderMobile3DFrame} from '../src/mobile3DQuality.js';
 
 const profile=(quality='auto',rest={})=>mobile3DQualityProfile({
  quality,devicePixelRatio:3,width:390,height:844,...rest
@@ -41,8 +41,8 @@ test('auto adaptation is limited and avoids instant resolution collapses',()=>{
  assert.equal(nextMobile3DAutoFactor(1,{fps:12,frames:40,elapsedMs:1000}),1);
  assert.equal(nextMobile3DAutoFactor(1,{fps:17,frames:70,elapsedMs:3500}),.96);
  assert.equal(nextMobile3DAutoFactor(.88,{fps:5,frames:70,elapsedMs:3500}),.88);
- assert.equal(nextMobile3DAutoFactor(.88,{fps:55,frames:70,elapsedMs:3500}),.91);
- assert.equal(nextMobile3DAutoFactor(.96,{fps:29,frames:70,elapsedMs:3500}),.96);
+ assert.equal(nextMobile3DAutoFactor(.88,{fps:55,frames:70,elapsedMs:3500}),.90);
+ assert.equal(nextMobile3DAutoFactor(.96,{fps:29,frames:70,elapsedMs:3500}),.98);
  assert.ok(profile('auto',{adaptiveFactor:.88}).pixelRatio>=1.18);
 });
 
@@ -52,8 +52,8 @@ test('mobile world preserves 3D scene, safe mode, daily logic and quality API',(
  assert.match(s,/antialias:!this\.gpuSafeMode/);
  assert.match(s,/this\.sun\.shadow\.mapSize\.set\(mobile\?mobileProfile\.shadowSize/);
  assert.match(s,/this\.trackMobilePerformance\(\)/);
- assert.match(s,/this\.mobileQuality!=='high'/);
- assert.match(s,/renderAt-this\._lastMobileRenderedAt<1000\/30-1/);
+ assert.match(s,/shouldRenderMobile3DFrame\(\{/);
+ assert.doesNotMatch(s,/_lastMobileRenderedAt/);
  assert.match(s,/this\.life\.update\(dt,now,game,preset\)/);
  assert.match(s,/this\.gpuSafeMode=mobile&&gpuSafeMode/);
  assert.match(s,/this\.premiumAssetFinish\?\.setQuality\(low\)/);
@@ -62,4 +62,12 @@ test('mobile world preserves 3D scene, safe mode, daily logic and quality API',(
  assert.match(s,/const normalBucket=Math\.floor\(t\*8\/5\)/);
  assert.doesNotMatch(s,/Math\.floor\(t\*10\)%8===0/);
  assert.doesNotMatch(s,/Math\.floor\(t\*8\)%5===0/);
+});
+
+test('mobile 30fps cadence keeps gameplay updates separate from GPU rendering',()=>{
+ assert.equal(shouldRenderMobile3DFrame({isMobile:true,now:101,lastRenderAt:0}),true);
+ assert.equal(shouldRenderMobile3DFrame({isMobile:true,now:116,lastRenderAt:101}),false);
+ assert.equal(shouldRenderMobile3DFrame({isMobile:true,now:135,lastRenderAt:101}),true);
+ assert.equal(shouldRenderMobile3DFrame({isMobile:true,quality:'high',now:116,lastRenderAt:101}),true);
+ assert.equal(shouldRenderMobile3DFrame({isMobile:false,now:116,lastRenderAt:101}),true);
 });
