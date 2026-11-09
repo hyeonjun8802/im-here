@@ -777,3 +777,22 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
     right:max(calc(20vw + 8px),calc(50vw - 472px))!important;
   }
 }
+
+/* AFTERDAY v21 | one consistent left text inset inside the equipment artwork.
+ * Only shift the caption + live status text; keep the metal frame and action
+ * button geometry unchanged on desktop, mobile, and short mobile screens. */
+body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) {
+  padding-left:clamp(26px,2.6vw,34px)!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit > small:first-child {
+  left:clamp(26px,2.6vw,34px)!important;
+  right:48%!important;
+}
+@media(max-width:720px) {
+  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action) {
+    padding-left:clamp(22px,6vw,26px)!important;
+  }
+  body.afterday-real-ui-v3 #hud .survival-kit > small:first-child {
+    left:clamp(22px,6vw,26px)!important;
+  }
+}
