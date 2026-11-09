@@ -12,12 +12,12 @@ test('normal mobile 3D always requests antialiasing, crisp shadows and >1 DPR',(
   const p=profile(quality);
   assert.equal(p.antialias,true,quality);
   assert.equal(p.shadowsEnabled,true,quality);
-  assert.ok(p.pixelRatio>=1.18,JSON.stringify(p));
+  assert.ok(p.pixelRatio>=1.4,JSON.stringify(p));
   assert.ok(p.shadowSize>=768,JSON.stringify(p));
  }
  assert.equal(profile('auto').shadowSize,1024);
- assert.equal(profile('auto').pixelRatio,1.35);
- assert.equal(profile('high').pixelRatio,1.55);
+ assert.equal(profile('auto').pixelRatio,1.85);
+ assert.equal(profile('high').pixelRatio,2.15);
 });
 
 test('render pixels stay bounded on large mobile screen and low DPR screens',()=>{
@@ -25,7 +25,7 @@ test('render pixels stay bounded on large mobile screen and low DPR screens',()=
  const pixels=Math.ceil(820*big.pixelRatio)*Math.ceil(1180*big.pixelRatio);
  assert.ok(pixels<big.pixelBudget+4000,JSON.stringify(big));
  assert.equal(profile('high',{devicePixelRatio:1}).pixelRatio,1);
- assert.ok(profile('auto',{width:430,height:932}).pixelRatio>1.2);
+ assert.ok(profile('auto',{width:430,height:932}).pixelRatio>=1.8);
 });
 
 test('WebGL-loss safety mode remains available and does not jeopardize saves',()=>{
@@ -40,10 +40,10 @@ test('auto adaptation is limited and avoids instant resolution collapses',()=>{
  assert.equal(nextMobile3DAutoFactor(1,{fps:12,frames:5,elapsedMs:3000}),1);
  assert.equal(nextMobile3DAutoFactor(1,{fps:12,frames:40,elapsedMs:1000}),1);
  assert.equal(nextMobile3DAutoFactor(1,{fps:17,frames:70,elapsedMs:3500}),.96);
- assert.equal(nextMobile3DAutoFactor(.88,{fps:5,frames:70,elapsedMs:3500}),.88);
- assert.equal(nextMobile3DAutoFactor(.88,{fps:55,frames:70,elapsedMs:3500}),.90);
+ assert.equal(nextMobile3DAutoFactor(.92,{fps:5,frames:70,elapsedMs:3500}),.92);
+ assert.equal(nextMobile3DAutoFactor(.92,{fps:55,frames:70,elapsedMs:3500}),.94);
  assert.equal(nextMobile3DAutoFactor(.96,{fps:29,frames:70,elapsedMs:3500}),.98);
- assert.ok(profile('auto',{adaptiveFactor:.88}).pixelRatio>=1.18);
+ assert.ok(profile('auto',{adaptiveFactor:.88}).pixelRatio>=1.7);
 });
 
 test('mobile world preserves 3D scene, safe mode, daily logic and quality API',()=>{
@@ -80,4 +80,16 @@ test('mobile city and lighting cache persisted damage while hiding invisible day
  assert.match(night,/this\._blockedLightIds/);
  assert.match(night,/o\.pool\.visible=alive&&\(!this\.mobile\|\|o\.mat\.opacity>\.008\)/);
  assert.match(night,/if\(this\.mobile\)o\.light\.visible=/);
+});
+
+test('retina iPhone canvas sharpness has a guarded minimum without full native DPR',()=>{
+ const phone={devicePixelRatio:3,width:390,height:844};
+ const normal=mobile3DQualityProfile({...phone,quality:'auto'});
+ const adaptive=mobile3DQualityProfile({...phone,quality:'auto',adaptiveFactor:.75});
+ const high=mobile3DQualityProfile({...phone,quality:'high'});
+ assert.equal(normal.pixelRatio,1.85);
+ assert.ok(adaptive.pixelRatio>=1.7);
+ assert.ok(high.pixelRatio>normal.pixelRatio);
+ assert.ok(high.pixelRatio<phone.devicePixelRatio);
+ assert.ok(normal.pixelRatio*normal.pixelRatio>1.8);
 });
