@@ -30,7 +30,22 @@ export function mobile3DQualityProfile({
 export function nextMobile3DAutoFactor(factor,{fps=30,frames=0,elapsedMs=0}={}){
  const now=clamp(factor,.88,1);
  if(frames<24||elapsedMs<3000||!Number.isFinite(fps))return now;
+ // A 30fps mobile render budget means the old >36fps recovery rule can
+ // never fire. A stable 29-30fps restores sharpness without repeated toggles.
  if(fps<23)return Math.round(clamp(now-.04,.88,1)*100)/100;
- if(fps>36)return Math.round(clamp(now+.025,.88,1)*100)/100;
+ if(fps>=29)return Math.round(clamp(now+.02,.88,1)*100)/100;
  return now;
+}
+
+/** Render cadence is independent of gameplay simulation and the save clock.
+ * On a 60Hz phone, auto/low spend the GPU budget at 30 visible frames/s;
+ * explicit high quality can use the device's native refresh cadence.
+ */
+export function shouldRenderMobile3DFrame({
+ isMobile=false,quality='auto',now=0,lastRenderAt=0
+}={}){
+ if(!isMobile||quality==='high'||!lastRenderAt)return true;
+ if(!Number.isFinite(now)||now<lastRenderAt)return true;
+ // 2ms tolerance avoids accidental 20fps cadence from vsync timing jitter.
+ return now-lastRenderAt>=1000/30-2;
 }
