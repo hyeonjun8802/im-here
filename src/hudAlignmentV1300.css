@@ -764,17 +764,24 @@ body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-
     transform-origin:bottom left!important;
   }
 
-  /* These two floating indicators are OUTSIDE the top frame, so follow its
-     new visual bottom instead of the old unscaled desktop artwork height. */
+  /* PC-only: both floating controls share the scaled artwork's 60% width.
+     The metal wings end above the medallion's lowest point (~78% of art height),
+     so clear the WINGS, then inset both ends equally inside the painted frame. */
   body.afterday-real-ui-v3 #hud .topbar .survival-quick-info,
   body.afterday-real-ui-v3 #hud .topbar .top-right {
-    top:calc(min(108px,6.71vw) + 8px + env(safe-area-inset-top))!important;
+    top:calc(min(1450px, 100vw - 6px) * .0852 + 10px + env(safe-area-inset-top))!important;
   }
   body.afterday-real-ui-v3 #hud .topbar .survival-quick-info {
-    left:max(calc(20vw + 8px),calc(50vw - 472px))!important;
+    left:calc(50vw - min(1450px, 100vw - 6px) * .30 + 14px)!important;
   }
   body.afterday-real-ui-v3 #hud .topbar .top-right {
-    right:max(calc(20vw + 8px),calc(50vw - 472px))!important;
+    right:calc(50vw - min(1450px, 100vw - 6px) * .30 + 14px)!important;
+    transform:none!important;
+    align-items:flex-end!important;
+  }
+  body.afterday-real-ui-v3 #hud .topbar .top-right #speed-toggle {
+    align-self:flex-end!important;
+    margin:0!important;
   }
 }
 
