@@ -17,7 +17,8 @@ test('mobile retains the actual city, lived-in roof, survivor and disaster persi
  assert.match(world,/this\.beardedSurvivor=new BeardedSurvivorV190\(this\);/);
  assert.match(world,/this\.cinematicTornado=new NearTornadoVfx\(this\);/);
  assert.match(world,/this\.heroAssetPromise=this\.loadHeroAssets\(\);/);
- assert.match(camp,/if\(world\.isMobile\)\{\s*world\.sleepBedding=installOriginalCot/);
+ assert.match(camp,/const placeCot=\(\)=>\{world\.sleepBedding=installOriginalCot/);
+ assert.match(camp,/if\(world\.isMobile\)\{\s*placeCot\(\);/);
 });
 
 test('mobile skips cosmetic-only city and camp construction, not its buildings',()=>{
@@ -26,8 +27,8 @@ test('mobile skips cosmetic-only city and camp construction, not its buildings',
  assert.match(world,/if\(!this\.isMobile\)this\.botany=new RooftopBotany/);
  assert.match(world,/if\(!this\.isMobile\)upgradeCampFacilities/);
  assert.match(world,/if\(!this\.isMobile\)props\.forEach/);
- assert.match(world,/this\.cityAtmosphere\?\.update/);
- assert.match(world,/this\.groundMist\?\.update/);
+ assert.match(world,/if\(this\.cityAtmosphere\)this\.cityAtmosphere\.update/);
+ assert.match(world,/if\(this\.groundMist\)this\.groundMist\.update/);
  assert.match(world,/if\(this\.cinematicPost\)this\.cinematicPost\.render\(\);else this\.renderer\.render/);
 });
 

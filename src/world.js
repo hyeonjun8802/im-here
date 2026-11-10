@@ -657,7 +657,7 @@ export class AfterWorld {
   this.scene.environmentIntensity=.64-night*.16-haze*.07-dustLevel*.08-wildfireLevel*.06;this.fireLight.intensity=(8.4+night*7.0)*(1-vw.rain*.23)*(1+Math.sin(performance.now()*.017)*.08);
   this.stars.material.opacity=THREE.MathUtils.lerp(this.stars.material.opacity,night*.78*(1-vw.cloud*.9)*(1-vw.storm*.8)*(1-dustLevel*.98)*(1-wildfireLevel*.96),Math.min(1,dt));
   // Clouds now fade naturally inside the unified atmospheric shader.
-  this.cityAtmosphere?.update(dt,vw,night,horizon);this.groundMist?.update(dt,vw,horizon);this.cityInfill?.update(night);
+  if(this.cityAtmosphere)this.cityAtmosphere.update(dt,vw,night,horizon);if(this.groundMist)this.groundMist.update(dt,vw,horizon);this.cityInfill?.update(night);
   if(this.cityMaterialCache){
    for(const mats of this.cityMaterialCache.values()){
     const m=mats[0];m.emissiveIntensity=THREE.MathUtils.damp(m.emissiveIntensity,Math.max(0,night*.95+vw.storm*.25),.65,dt);

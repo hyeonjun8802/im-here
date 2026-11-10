@@ -11,10 +11,11 @@ function lamp(g,x,y,z,scale=1){const o=new THREE.Mesh(new THREE.SphereGeometry(.
 
 export function decorateHeroRooftop(scene,roofHeight,world){
  const group=new THREE.Group();group.name='Survivor camp detail - SINGLE rooftop';scene.add(group);
+ const placeCot=()=>{world.sleepBedding=installOriginalCot(group,roofHeight);};
  // The bed is used by the survival/sleep system. All other set dressing is
  // optional and is not even constructed on mobile.
  if(world.isMobile){
-  world.sleepBedding=installOriginalCot(group,roofHeight);
+  placeCot();
   world.campDetails=group;
   world.campDetailLights=[];
   return group;
@@ -77,7 +78,7 @@ export function decorateHeroRooftop(scene,roofHeight,world){
  boxes.forEach(([x,z],i)=>{const h=.65+rand(i+8)*.68;const c=block(group,[1.5+rand(i+30),h,1.1+rand(i+3)],[x,roofHeight+.3+h/2,z],i%3?palette.wood:palette.warmMetal,rand(i+5)*.6-.3);block(group,[1.4,.08,1],[x,roofHeight+.3+h+.06,z],palette.dark);});
  // One unified inner shelter bed only: permanently present pillow and folded blanket.
  // The previous outer cot location is retired; sleep always targets the inside bed.
- world.sleepBedding=installOriginalCot(group,roofHeight);
+ placeCot();
  // Warm hanging bulbs on wires around the only rooftop's inner parapet.
  const catenaries=[];const anchor=[[-20,-17],[1,-18],[18,-16],[19,8],[17,19],[-4,19],[-19,17]];
  anchor.forEach(([x,z],i)=>{
