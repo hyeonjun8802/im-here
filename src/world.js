@@ -96,7 +96,7 @@ export class AfterWorld {
  constructor(canvas,report=()=>{}){
   this.report=report;this.canvas=canvas;this.scene=new THREE.Scene();this.scene.background=color('#283744');this.scene.fog=new THREE.FogExp2('#929b99',.00116);
   // A single low-overhead WebGL context is critical on iOS Safari.
-  const mobile=window.innerWidth<800;
+  const mobile=window.innerWidth<800 || Boolean(window.matchMedia?.('(hover: none) and (pointer: coarse)')?.matches);
   let gpuSafeMode=false;
   try{gpuSafeMode=sessionStorage.getItem('afterday_gpu_safe_mode_v1')==='1';}catch{}
   this.gpuSafeMode=mobile&&gpuSafeMode;
@@ -622,7 +622,7 @@ export class AfterWorld {
  setCameraView(view='cinematic'){
   // Deliberately interpolate the *existing* 3D camera. Never jump, swap to a
   // portrait image or move the city's actual world-space coordinates.
-  const mobile=window.innerWidth<800;
+  const mobile=this.isMobile;
   this.cinematicMoment?.cancel();
   this.focusSurvivor=view==='survivor'||view==='portrait';
   const target=view==='portrait'?{pitch:1.35,radius:mobile?5.4:4.45}:

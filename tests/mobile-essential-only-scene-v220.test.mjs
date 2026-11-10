@@ -9,6 +9,8 @@ const ruins=read('ApocalypseSetDressingV201.js');
 const horizon=read('HorizonWorldExpansionV210.js');
 
 test('mobile retains the actual city, lived-in roof, survivor and disaster persistence',()=>{
+ assert.ok(world.includes("const mobile=window.innerWidth<800 || Boolean(window.matchMedia?.("));
+ assert.ok(world.includes("const mobile=this.isMobile;"));
  assert.match(world,/this\.createEnvironment\(\);/);
  assert.match(world,/this\.cityInfill=new CityInfillV150\(this\);/);
  assert.match(world,/this\.ambientCityCollapse=new AmbientCityCollapseV660\(this\);/);
