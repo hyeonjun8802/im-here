@@ -53,10 +53,12 @@ export class ApocalypseSetDressingV201{
   this.materials=[];this.meshes=[];this.stats={};
   this.makeForegroundRuins();
   this.makeDistantSkyline();
-  this.makeExposedHighRiseFrames();
-  this.makeStreetStory();
-  this.makeRooftopStory();
-  this.makeSmoke();
+  if(!world.isMobile){
+   this.makeExposedHighRiseFrames();
+   this.makeStreetStory();
+   this.makeRooftopStory();
+   this.makeSmoke();
+  }
  }
  makeForegroundRuins(){
   const w=this.world,count=w.isMobile?24:38,bases=Array.from({length:4},(_,i)=>createFracturedTowerGeometry(i));
@@ -204,8 +206,10 @@ export class ApocalypseSetDressingV201{
    const tex=grimeTexture(v+9),wall=new THREE.MeshStandardMaterial({color:['#777a72','#6a706b','#7b766e','#626b69'][v],map:tex,roughness:.98,metalness:.015}),roof=new THREE.MeshStandardMaterial({color:'#3e4441',roughness:1});
    this.materials.push(wall,roof);this.meshes.push(addInstances(this.group,`Distant fractured high-rise skyline v${v}`,bases[v],[wall,roof],sets[v]));
   }
-  this.meshes.push(addInstances(this.group,'Broken skyline antennas and mast silhouettes',new THREE.CylinderGeometry(.5,.5,1,6),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.84,metalness:.46}),antennas));
-  this.meshes.push(addInstances(this.group,'Collapsed high-rise rooftop debris',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.96}),topDebris));
+  if(!w.isMobile){
+   this.meshes.push(addInstances(this.group,'Broken skyline antennas and mast silhouettes',new THREE.CylinderGeometry(.5,.5,1,6),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.84,metalness:.46}),antennas));
+   this.meshes.push(addInstances(this.group,'Collapsed high-rise rooftop debris',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.96}),topDebris));
+  }
   this.stats.distantHighRises=count;this.stats.skylineDamage=antennas.length+topDebris.length;
  }
  makeSmoke(){

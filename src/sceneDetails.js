@@ -11,6 +11,14 @@ function lamp(g,x,y,z,scale=1){const o=new THREE.Mesh(new THREE.SphereGeometry(.
 
 export function decorateHeroRooftop(scene,roofHeight,world){
  const group=new THREE.Group();group.name='Survivor camp detail - SINGLE rooftop';scene.add(group);
+ // The bed is used by the survival/sleep system. All other set dressing is
+ // optional and is not even constructed on mobile.
+ if(world.isMobile){
+  world.sleepBedding=installOriginalCot(group,roofHeight);
+  world.campDetails=group;
+  world.campDetailLights=[];
+  return group;
+ }
  // Weathered facade ivy: dangling greenery is ATTACHED to the hero building.
  const foliage=new THREE.Group();foliage.name='Climbing vines and reclaimed nature';group.add(foliage);
  // Lanceolate curved leaves instead of low-poly green diamonds; instanced for mobile.

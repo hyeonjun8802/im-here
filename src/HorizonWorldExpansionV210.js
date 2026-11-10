@@ -105,7 +105,10 @@ export class HorizonWorldExpansionV210{
   constructor(world){
     this.world=world;this.group=new THREE.Group();this.group.name='AFTERDAY v2.20 cinematic dense horizon';
     world.scene.add(this.group);this.meshes=[];this.materials=[];this.time=0;
-    this.makeFarCity();this.makeRiver();this.makeBridge();this.makeMountainMass();this.makeDistantInfrastructure();
+    this.makeFarCity();
+    if(!world.isMobile){
+      this.makeRiver();this.makeBridge();this.makeMountainMass();this.makeDistantInfrastructure();
+    }
   }
 
   makeFarCity(){
@@ -152,8 +155,10 @@ export class HorizonWorldExpansionV210{
     this.meshes.push(addInstances(this.group,'Far-city rounded towers',new THREE.CylinderGeometry(.5,.56,1,12),roundMat,rounds));
     this.meshes.push(addInstances(this.group,'Far-city stepped tower tops',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.92,vertexColors:true,fog:true}),setbacks));
     this.meshes.push(addInstances(this.group,'Far skyline rooftop crowns',new THREE.BoxGeometry(1,1,1),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,vertexColors:true}),crowns));
-    this.meshes.push(addInstances(this.group,'Far rooftop water tanks',new THREE.CylinderGeometry(.5,.5,1,10),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.14,vertexColors:true}),tanks));
-    this.meshes.push(addInstances(this.group,'Far skyline antenna masts',new THREE.CylinderGeometry(.5,.5,1,7),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.78,metalness:.48,vertexColors:true}),masts));
+    if(!mobile){
+      this.meshes.push(addInstances(this.group,'Far rooftop water tanks',new THREE.CylinderGeometry(.5,.5,1,10),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.9,metalness:.14,vertexColors:true}),tanks));
+      this.meshes.push(addInstances(this.group,'Far skyline antenna masts',new THREE.CylinderGeometry(.5,.5,1,7),new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.78,metalness:.48,vertexColors:true}),masts));
+    }
     this.farBuildingCount=made;
   }
 

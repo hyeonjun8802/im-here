@@ -118,7 +118,61 @@ export class AfterWorld {
   this.fireLight=new THREE.PointLight('#ffb262',11.5,34,2);this.fireLight.position.set(2,ROOF+2.4,3);this.scene.add(this.fireLight);
   this.camera=new THREE.PerspectiveCamera(mobile?51:46,window.innerWidth/window.innerHeight,.15,1650);this.target=new THREE.Vector3(0,ROOF+3.3,0);this.yaw=.78;this.pitch=mobile?1.26:1.29;this.radius=mobile?84:79;this.minRadius=44;this.maxRadius=SPATIAL_LAYOUT.maxCameraRadius;this.setupControls();
   this.weatherAudio=new WeatherAudio();this.cityBuildings=new Map();this.reducedMotion=Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);this.assets=new RepoAssets();this.models=[];this.props=[];this.effectObjects=[];this.simulatedWeather='clear';this.previewWeather=null;this.previewHour=null;this.wind=0;this.wetness=.12;this.visualWeather=visualTargets('clear');this.last=performance.now();this.running=false;this.clock=new THREE.Clock();
-  this.createEnvironment();this.cityInfill=new CityInfillV150(this);this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);this.premiumRuinedCity=new PremiumRuinedCityV630(this);this.premiumStreet=new PremiumStreetV640(this);this.premiumCinematicCity=new PremiumCinematicCityV650(this);this.premiumFacadeDensity=new PremiumFacadeDensityV670(this);this.premiumUrbanSilhouette=new PremiumUrbanSilhouetteV680(this);this.premiumLandmarkRuins=new PremiumLandmarkRuinsV690(this);this.premiumWeatherSurfaces=new PremiumWeatherSurfacesV700(this);this.premiumNightLighting=new PremiumNightLightingV710(this);this.premiumCollapseAftermath=new PremiumCollapseAftermathV720(this);this.ambientCityCollapse=new AmbientCityCollapseV660(this);this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);this.groundMist=new GroundMist(this.scene,this.isMobile);this.createRoof();this.createRoofProps();this.botany=new RooftopBotany(this);decorateHeroRooftop(this.scene,ROOF,this);upgradeCampFacilities(this);this.createSurvivor();this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);upgradeSurvivorArt(this);upgradeSurvivorFinishingV130(this);this.life=new SurvivorLife(this);this.beardedSurvivor=new BeardedSurvivorV190(this);this.supportSurvivor=new SupportSurvivorVfx(this);this.createWeather();this.premiumDisasterVfx=new PremiumDisasterVfxV810(this.scene,ROOF,this.isMobile);this.createAtmosphericBackdrops();this.celestialSky=new CelestialSky(this.scene,ROOF);this.cinematic=new CinematicStage(this);this.premiumAtmosphere=new PremiumAtmosphereV500(this);this.premiumEnvironment=new PremiumEnvironmentV130(this);this.premiumStage=new PremiumStageV140(this);this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);this.horizonWorld=new HorizonWorldExpansionV210(this);this.premiumAssetFinish=new PremiumAssetFinishV620(this);this.premiumMicroSurface=new PremiumMicroSurfaceV730(this);this.premiumWetMaterial=new PremiumWetMaterialV750(this);this.cinematicPost=new CinematicPostV130(this);this.cinematicMoment=new CinematicMomentV510(this);this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  // Mobile keeps the playable roof, survivor, facilities, city buildings and
+  // persistent disaster state. Skip constructing decorative-only scene layers.
+  this.createEnvironment();
+  this.cityInfill=new CityInfillV150(this);
+  if(!this.isMobile){
+   this.cityReclamation=new CityReclamation(this.scene,this.distantCityPlan,this.cityInfill.plan);
+   this.cityArchitecture=new CityArchitecture(this.scene,this.distantCityPlan,this.cityInfill.plan,this.isMobile);
+   this.premiumRuinedCity=new PremiumRuinedCityV630(this);
+   this.premiumStreet=new PremiumStreetV640(this);
+   this.premiumCinematicCity=new PremiumCinematicCityV650(this);
+   this.premiumFacadeDensity=new PremiumFacadeDensityV670(this);
+   this.premiumUrbanSilhouette=new PremiumUrbanSilhouetteV680(this);
+   this.premiumLandmarkRuins=new PremiumLandmarkRuinsV690(this);
+   this.premiumWeatherSurfaces=new PremiumWeatherSurfacesV700(this);
+   this.premiumNightLighting=new PremiumNightLightingV710(this);
+   this.premiumCollapseAftermath=new PremiumCollapseAftermathV720(this);
+  }
+  this.ambientCityCollapse=new AmbientCityCollapseV660(this);
+  if(!this.isMobile){
+   this.cityAtmosphere=new CityAtmosphere(this.scene,this.isMobile);
+   this.groundMist=new GroundMist(this.scene,this.isMobile);
+  }
+  this.createRoof();
+  this.createRoofProps();
+  if(!this.isMobile)this.botany=new RooftopBotany(this);
+  decorateHeroRooftop(this.scene,ROOF,this);
+  if(!this.isMobile)upgradeCampFacilities(this);
+  this.createSurvivor();
+  this.rescueHelicopterVfx=new RescueHelicopterVfx(this.scene,ROOF);
+  upgradeSurvivorArt(this);
+  upgradeSurvivorFinishingV130(this);
+  this.life=new SurvivorLife(this);
+  this.beardedSurvivor=new BeardedSurvivorV190(this);
+  this.supportSurvivor=new SupportSurvivorVfx(this);
+  this.createWeather();
+  if(!this.isMobile)this.premiumDisasterVfx=new PremiumDisasterVfxV810(this.scene,ROOF,this.isMobile);
+  this.createAtmosphericBackdrops();
+  this.celestialSky=new CelestialSky(this.scene,ROOF);
+  if(!this.isMobile){
+   this.cinematic=new CinematicStage(this);
+   this.premiumAtmosphere=new PremiumAtmosphereV500(this);
+   this.premiumEnvironment=new PremiumEnvironmentV130(this);
+   this.premiumStage=new PremiumStageV140(this);
+  }
+  // These two mobile passes keep only their instanced background BUILDINGS.
+  this.apocalypseSetDressing=new ApocalypseSetDressingV201(this);
+  this.horizonWorld=new HorizonWorldExpansionV210(this);
+  if(!this.isMobile){
+   this.premiumAssetFinish=new PremiumAssetFinishV620(this);
+   this.premiumMicroSurface=new PremiumMicroSurfaceV730(this);
+   this.premiumWetMaterial=new PremiumWetMaterialV750(this);
+   this.cinematicPost=new CinematicPostV130(this);
+  }
+  this.cinematicMoment=new CinematicMomentV510(this);
+  if(!this.isMobile)this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -210,6 +264,7 @@ export class AfterWorld {
   body.scale.set(w,h,w*.82);body.castShadow=false;body.receiveShadow=false;
   g.add(body);
   const near=tier==='near';
+  if(!this.isMobile){
   // Weathered roof equipment/steel and incomplete upper corners.
   const roofHeight=h*.87+.18;
   for(let i=0;i<(near?5:tier==='mid'?3:1);i++){
@@ -227,6 +282,7 @@ export class AfterWorld {
    }
 
   }
+  }
   return g;
  }
  createEnvironment(){
@@ -242,6 +298,7 @@ export class AfterWorld {
   }
   this.createFarMountains();
   // Abandoned streets remain far from the player; these are only scale cues.
+  if(!this.isMobile){
   const debris=mat('#3e4c46');
   for(let i=0;i<32;i++){
     const a=RAND(i+111)*Math.PI*2;
@@ -261,6 +318,7 @@ export class AfterWorld {
     this.assets.instance(ABANDONED_VEHICLES[i%ABANDONED_VEHICLES.length],2.4,{tint:VEHICLE_TINT}).then(mesh=>{
       if(mesh){mesh.rotation.y=roadX?Math.PI/2:0;holder.add(mesh);this.models.push('car');}
     });
+  }
   }
  }
  createFarMountains(){
@@ -383,11 +441,11 @@ export class AfterWorld {
    for(let i=0;i<W;i++)for(let j=0;j<H;j++){const a=i*(H+1)+j,b=a+(H+1);ids.push(a,a+1,b,a+1,b+1,b)}
    roofGeom.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));roofGeom.setIndex(ids);roofGeom.computeVertexNormals();
    const tarpmat=materials.tarp.clone();loadPBR(tarpmat,'tarp_canvas',1.4);this.tarpMaterial=tarpmat;tarpmat.side=THREE.DoubleSide;const roof=new THREE.Mesh(roofGeom,tarpmat);roof.castShadow=true;roof.receiveShadow=true;sh.add(roof);this.tarpMesh=roof;this.tarpVerts=roofGeom.attributes.position.array.slice();
-   for(let s of [-1,1]){for(const z of [-4.7,4.7]){beam(sh,[s*5.8,4.98,z],[s*7.2,.15,z*1.18],.045,materials.rope)}}
+   if(!this.isMobile)for(let s of [-1,1]){for(const z of [-4.7,4.7]){beam(sh,[s*5.8,4.98,z],[s*7.2,.15,z*1.18],.045,materials.rope)}}
    // Inner sleeping pallet is supplied by the GLB; no second white mattress.
-   for(let i=0;i<4;i++)box(sh,[2.3,.4,1.2],[3.5, .55+i*.37,-2.6],i%2?materials.wood:materials.tar);
+   if(!this.isMobile)for(let i=0;i<4;i++)box(sh,[2.3,.4,1.2],[3.5, .55+i*.37,-2.6],i%2?materials.wood:materials.tar);
    // Rope lights & suspended lanterns.
-   for(let i=0;i<8;i++){const x=-5.5+i*1.6;
+   for(let i=0;i<(this.isMobile?0:8);i++){const x=-5.5+i*1.6;
     cyl(sh,.11,.11,.25,[x,4.94+.12*Math.sin(i),-4.5],materials.lamp,8);
     if(i>0)beam(sh,[x-1.6,5.2,-4.5],[x,5.15,-4.5],.018,materials.tar);
    }
@@ -395,14 +453,14 @@ export class AfterWorld {
    this.tank=new THREE.Group();this.tank.position.set(16,ROOF+.18,-13);this.scene.add(this.tank);
    for(let i=0;i<4;i++){const a=i*Math.PI/2;cyl(this.tank,.2,.25,2.3,[Math.sin(a)*2.3,1.2,Math.cos(a)*2.3],materials.rust,8)}
    cyl(this.tank,2.8,2.85,5.8,[0,5.5,0],materials.metal,24);
-   for(let i=0;i<7;i++)cyl(this.tank,2.95,2.95,.1,[0,2.75+i*.85,0],materials.edge,24);
+   for(let i=0;i<(this.isMobile?0:7);i++)cyl(this.tank,2.95,2.95,.1,[0,2.75+i*.85,0],materials.edge,24);
    cyl(this.tank,2.75,2.75,.25,[0,8.5,0],materials.tar,24);
    cyl(this.tank,.28,.28,1.2,[2.9,3.4,.6],materials.rust,9,[0,0,Math.PI/2]);
    cyl(this.tank,.56,.56,.15,[3.5,3.4,.6],materials.rust,12,[0,0,Math.PI/2]);
    box(this.tank,[1.2,1.5,.24],[-2.5,5.8,0],materials.tar);
    // storage & greenhouse + benches
    const store=new THREE.Group();store.position.set(12,ROOF+.2,10);this.scene.add(store);this.storage=store;
-   for(let i=0;i<5;i++){const x=(i%3)*1.45,z=Math.floor(i/3)*2;
+   for(let i=0;i<(this.isMobile?2:5);i++){const x=(i%3)*1.45,z=Math.floor(i/3)*2;
      box(store,[1.3,1.55,1.3],[x, .85,z],i%2?materials.wood:materials.rust);
      box(store,[1.35,.13,1.35],[x,1.71,z],materials.tar);
      for(let k of [-1,1])box(store,[.06,1.1,.08],[x+k*.62,.85,z+.66],materials.metal);
@@ -421,10 +479,10 @@ export class AfterWorld {
    const fireRing=new THREE.Group();fireRing.position.set(2,ROOF+.25,3);this.scene.add(fireRing);
    cyl(fireRing,1.2,1.45,.5,[0,.1,0],materials.concrete,12);
    for(let i=0;i<7;i++){let a=i*Math.PI*2/7;beam(fireRing,[Math.cos(a)*.75,.5,Math.sin(a)*.75],[Math.cos(a+1.4)*.8,.45,Math.sin(a+1.4)*.8],.18,materials.wood)}
-   this.flames=[];for(let i=0;i<5;i++){const fire=cyl(fireRing,.02,.24,1.2,[Math.sin(i*8)*.24,1.1,Math.cos(i*8)*.22],new THREE.MeshStandardMaterial({color:i%2?'#ffcf80':'#f28d36',emissive:'#ef742c',emissiveIntensity:2.2,transparent:true,opacity:.85}),5);this.flames.push(fire)}
+   this.flames=[];for(let i=0;i<(this.isMobile?2:5);i++){const fire=cyl(fireRing,.02,.24,1.2,[Math.sin(i*8)*.24,1.1,Math.cos(i*8)*.22],new THREE.MeshStandardMaterial({color:i%2?'#ffcf80':'#f28d36',emissive:'#ef742c',emissiveIntensity:2.2,transparent:true,opacity:.85}),5);this.flames.push(fire)}
    // place actual GitHub props, safe asynchronous fallbacks already exist in the environment.
    const props=ROOFTOP_PROPS;
-   props.forEach(([n,p,h],i)=>this.assets.instance(n,h,{tint:PROP_TINT,maxFootprint:6.5}).then(o=>{
+   if(!this.isMobile)props.forEach(([n,p,h],i)=>this.assets.instance(n,h,{tint:PROP_TINT,maxFootprint:6.5}).then(o=>{
     if(!o)return;
     // Reject accidentally oversized third-party GLB roofs/floors before adding to scene.
     const importedSize=new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3());
@@ -599,7 +657,7 @@ export class AfterWorld {
   this.scene.environmentIntensity=.64-night*.16-haze*.07-dustLevel*.08-wildfireLevel*.06;this.fireLight.intensity=(8.4+night*7.0)*(1-vw.rain*.23)*(1+Math.sin(performance.now()*.017)*.08);
   this.stars.material.opacity=THREE.MathUtils.lerp(this.stars.material.opacity,night*.78*(1-vw.cloud*.9)*(1-vw.storm*.8)*(1-dustLevel*.98)*(1-wildfireLevel*.96),Math.min(1,dt));
   // Clouds now fade naturally inside the unified atmospheric shader.
-  this.cityAtmosphere.update(dt,vw,night,horizon);this.groundMist.update(dt,vw,horizon);this.cityInfill?.update(night);
+  this.cityAtmosphere?.update(dt,vw,night,horizon);this.groundMist?.update(dt,vw,horizon);this.cityInfill?.update(night);
   if(this.cityMaterialCache){
    for(const mats of this.cityMaterialCache.values()){
     const m=mats[0];m.emissiveIntensity=THREE.MathUtils.damp(m.emissiveIntensity,Math.max(0,night*.95+vw.storm*.25),.65,dt);
