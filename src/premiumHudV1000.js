@@ -57,21 +57,24 @@ export function installPremiumHudV1000(root){
   const at=Number(state.majorDisasterAt);
   const remaining=(Number.isFinite(at)&&Number.isFinite(now))?(at-now)/3600000:Infinity;
   const comingType=TYPES.has(state.majorDisasterType)?state.majorDisasterType:null;
-  const active=Boolean(comingType)&&remaining>0&&remaining<=24;
-  // No invented forecast for intermediate hours: single scheduled event only.
+  const scheduled=Boolean(comingType)&&Number.isFinite(remaining)&&remaining>0;
+  const active=scheduled&&remaining<=24;
+  // One real scheduled event: PC can show it parked at +24h while outside
+  // the 24-hour timeline; it starts traveling only after entering the window.
   timeline.classList.toggle('has-future',active);
+  timeline.classList.toggle('has-scheduled',scheduled);
   timeline.style.setProperty('--premium-event-x',premiumForecastX(remaining).toFixed(4)+'%');
-  if(active){
+  if(scheduled){
    if(coming!==comingType){coming=comingType;future.src=image('weather',`${comingType}_forecast_icon`);}
-   const atHour=HOURS.reduce((best,h)=>Math.abs(remaining-h)<Math.abs(remaining-best)?h:best,HOURS[0]);
-   for(const m of marks.children)m.classList.toggle('is-near',Number(m.dataset.hour)===atHour);
+   const atHour=active?HOURS.reduce((best,h)=>Math.abs(remaining-h)<Math.abs(remaining-best)?h:best,HOURS[0]):null;
+   for(const m of marks.children)m.classList.toggle('is-near',active&&Number(m.dataset.hour)===atHour);
   }else{
    coming='';future.removeAttribute('src');
    for(const m of marks.children)m.classList.remove('is-near');
   }
-  const status=active?`${LABELS[comingType]} ${Math.ceil(remaining*10)/10}h 후`:'예보 대기';
+  const status=active?`${LABELS[comingType]} ${Math.ceil(remaining*10)/10}h 후`:scheduled?`${LABELS[comingType]} 24h 이후`:'예보 대기';
   if(shown!==status){shown=status;forecastStatus.textContent=status;}
-  timeline.title=active?`확정 재난: ${LABELS[comingType]}, ${remaining.toFixed(1)}시간 후`:'24시간 안에 확정된 재난 없음';
+  timeline.title=active?`확정 재난: ${LABELS[comingType]}, ${remaining.toFixed(1)}시간 후`:scheduled?`다음 재난 ${LABELS[comingType]}: 24시간 예보 범위 밖`:'24시간 안에 확정된 재난 없음';
   root.setAttribute('aria-label',`생존 상태와 보유 물자, 현재 날씨 ${name}. 다음 재난 ${status}`);
  }
  // Called every animation frame. Only move the forecast cursor here;

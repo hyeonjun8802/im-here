@@ -803,3 +803,82 @@ body.afterday-real-ui-v3 #hud .survival-kit > small:first-child {
     left:clamp(22px,6vw,26px)!important;
   }
 }
+
+/* AFTERDAY v22 | PC forecast cursor visibility, mobile popup-safe icon centers.
+ * One final platform-scoped authority instead of relying on the v3/v13
+ * normal-vs-overflow selectors with different positioning contexts.
+ * The approved PNG frame, nine painted slots and gameplay actions stay intact. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine) {
+  /* Desktop frame is uniformly scaled to 60%, so the moving glyph needs a
+     larger optical footprint and clear contrast on the forecast rail. */
+  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000
+    .premium-hud__forecast .premium-hud__future-icon {
+    top:7%!important;
+    height:58%!important;
+    z-index:9!important;
+    object-fit:contain!important;
+    filter:brightness(1.25) drop-shadow(0 0 6px #ffd49a)!important;
+  }
+  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000
+    .premium-hud__forecast .premium-hud__future-halo {
+    top:4%!important;
+    height:65%!important;
+    z-index:8!important;
+  }
+  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000
+    .premium-hud__forecast.has-future .premium-hud__future-icon {
+    opacity:1!important;
+  }
+  /* An upcoming event beyond +24h is real, but not yet on the 24h rail:
+     park the glyph at the right edge at reduced opacity, not an invented ETA. */
+  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000
+    .premium-hud__forecast.has-scheduled:not(.has-future) .premium-hud__future-icon {
+    opacity:.82!important;
+  }
+  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000
+    .premium-hud__forecast.has-scheduled:not(.has-future) .premium-hud__future-halo {
+    opacity:.42!important;
+  }
+}
+@media(max-width:720px){
+  /* Extra weather/disaster actions formerly switched the bar to flex and
+     lost the normal nine-slot absolute icon centering. Keep one bar height
+     and identical button/icon coordinates in either layout. */
+  body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions{
+    height:calc((100vw - 8px) * 172 / 1148)!important;
+    min-height:0!important;
+    aspect-ratio:1148 / 172!important;
+    align-items:stretch!important;
+  }
+  body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > button,
+  body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > .afterday-v3-standby-slot{
+    position:relative!important;
+    height:100%!important;
+    min-height:0!important;
+    align-self:stretch!important;
+    padding:0!important;
+    gap:0!important;
+  }
+  body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > button > img.afterday-v3-action-icon,
+  body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > .afterday-v3-standby-slot > img{
+    position:absolute!important;
+    left:50%!important;
+    top:calc(50% + 4px)!important;
+    transform:translate(-50%,-50%)!important;
+    margin:0!important;
+    align-self:auto!important;
+    width:clamp(20px,6.1vw,26px)!important;
+    height:clamp(20px,6.1vw,26px)!important;
+    max-width:calc(100% - 8px)!important;
+    max-height:calc(100% - 8px)!important;
+    object-fit:contain!important;
+  }
+  body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > button:not([data-v3-sprite]) > span{
+    position:absolute!important;
+    left:50%!important;
+    top:calc(50% + 4px)!important;
+    transform:translate(-50%,-50%)!important;
+    margin:0!important;
+    align-self:auto!important;
+  }
+}
