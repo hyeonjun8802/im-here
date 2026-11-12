@@ -41,6 +41,60 @@ function setAsset(name, crop) {
     'url("'+crop(name)+'")');
 }
 
+
+/** Keep the original nine painted slots stable on phones, even when the
+ * weather unlocks extra actions. Move the EXISTING buttons (and their event
+ * listeners) to a separate emergency tray; restore DOM order on desktop.
+ * No game state or action definitions are modified. */
+export function installResponsiveActionSlots(actionbar,reserve,repairTank){
+  const compactQuery=window.matchMedia('(max-width:720px)');
+  const emergencyIds=['take-cover','secure-supplies','collect-water'];
+  const emergency=emergencyIds.map(id=>document.getElementById(id)).filter(Boolean);
+  const tray=document.createElement('div');
+  tray.className='afterday-v3-urgent-actions';
+  tray.setAttribute('role','group');
+  tray.setAttribute('aria-label','날씨 및 재난 긴급 행동');
+  actionbar.insertAdjacentElement('afterend',tray);
+
+  // Comment anchors do not consume grid cells. They preserve button order
+  // across mobile/desktop transitions without cloning or replacing controls.
+  const anchors=emergency.map(button=>{
+    const anchor=document.createComment('emergency '+button.id);
+    actionbar.insertBefore(anchor,button);
+    return {button,anchor};
+  });
+  const compact=()=>compactQuery.matches;
+  const syncSlots=()=>{
+    // The repair-tank action is the regular ninth slot. Only genuine
+    // overflow actions become separate mobile controls.
+    const specialActive=Boolean(repairTank&&!repairTank.hidden) ||
+      (!compact()&&emergency.some(button=>!button.hidden));
+    if(reserve.hidden!==specialActive)reserve.hidden=specialActive;
+    const visible=Array.from(actionbar.querySelectorAll(':scope > button'))
+      .filter(el=>!el.hidden).length + (reserve.hidden?0:1);
+    actionbar.classList.toggle('v3-has-extra-actions',visible>9);
+    actionbar.dataset.visibleSlots=String(visible);
+    actionbar.dataset.reserveSlot=String(!reserve.hidden);
+    tray.classList.toggle('has-urgent',compact()&&emergency.some(button=>!button.hidden));
+  };
+  const placeEmergency=()=>{
+    for(const {button,anchor} of anchors){
+      if(compact())tray.appendChild(button);
+      else anchor.parentNode.insertBefore(button,anchor.nextSibling);
+    }
+    syncSlots();
+  };
+  // Both hosts are watched: mobile emergency buttons are no longer children
+  // of the original bar, but HUD still changes only their hidden attributes.
+  const visibilityObserver=new MutationObserver(syncSlots);
+  const watch={subtree:true,attributes:true,attributeFilter:['hidden']};
+  visibilityObserver.observe(actionbar,watch);
+  visibilityObserver.observe(tray,watch);
+  compactQuery.addEventListener('change',placeEmergency);
+  placeEmergency();
+  return {tray,syncSlots,placeEmergency};
+}
+
 export function installCommonUiAssetsV3() {
   if(pending) return pending;
   pending=(async()=>{
@@ -136,24 +190,7 @@ export function installCommonUiAssetsV3() {
       reserveText.textContent='물탱크 수리';
       reserve.append(reserveIcon,reserveText);
       actionbar.insertBefore(reserve,lifeButton||null);
-      const syncSlots=()=>{
-        const specialIds=['take-cover','secure-supplies','collect-water','repair-tank'];
-        const specialActive=specialIds.some(id=>{
-          const el=document.getElementById(id);
-          return Boolean(el && !el.hidden);
-        });
-        if(reserve.hidden!==specialActive)reserve.hidden=specialActive;
-        const visible=Array.from(actionbar.querySelectorAll(':scope > button'))
-          .filter(el=>!el.hidden).length + (reserve.hidden?0:1);
-        actionbar.classList.toggle('v3-has-extra-actions',visible>9);
-        actionbar.dataset.visibleSlots=String(visible);
-        actionbar.dataset.reserveSlot=String(!reserve.hidden);
-      };
-      const visibilityObserver=new MutationObserver(syncSlots);
-      visibilityObserver.observe(actionbar,{
-        subtree:true,attributes:true,attributeFilter:['hidden']
-      });
-      syncSlots();
+      installResponsiveActionSlots(actionbar,reserve,repairTank);
     }
 
     // Keep original interaction nodes and event listeners in place.

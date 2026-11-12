@@ -888,3 +888,63 @@ body.afterday-real-ui-v3 #hud .survival-kit > small:first-child {
     align-self:auto!important;
   }
 }
+
+/* v23: mobile-only overflow isolation. The source PNG has exactly NINE painted
+ * slots; alert/rain buttons cannot occupy a tenth slot or change the bar's
+ * grid, hit boxes, icon positions, or artwork alignment. */
+body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions {
+  display:none!important;
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions.has-urgent{
+    position:fixed!important;
+    right:10px!important;
+    bottom:calc(6px + (100vw - 8px) * 172 / 1148 + 10px + env(safe-area-inset-bottom))!important;
+    width:clamp(108px,34vw,140px)!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:5px!important;
+    z-index:26!important;
+    pointer-events:auto!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button{
+    position:relative!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    width:100%!important;
+    height:34px!important;
+    min-height:34px!important;
+    box-sizing:border-box!important;
+    padding:5px 8px!important;
+    gap:6px!important;
+    border:1px solid rgba(244,174,91,.77)!important;
+    border-radius:5px!important;
+    background:linear-gradient(180deg,rgba(52,43,34,.96),rgba(17,22,28,.97))!important;
+    box-shadow:0 3px 8px #0009!important;
+    color:#ffebc9!important;
+    font:700 10px/1.1 'Noto Sans KR',system-ui,sans-serif!important;
+    white-space:nowrap!important;
+    cursor:pointer!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button[hidden]{
+    display:none!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button > img.afterday-v3-action-icon{
+    position:static!important;
+    display:block!important;
+    width:19px!important;
+    height:19px!important;
+    max-width:19px!important;
+    max-height:19px!important;
+    flex:0 0 19px!important;
+    transform:none!important;
+    margin:0!important;
+    object-fit:contain!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button > span{
+    display:none!important;
+  }
+}
