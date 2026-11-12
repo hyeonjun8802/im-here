@@ -13,6 +13,7 @@ class Element {
   const classes=new Set();
   this.classList={
    add:name=>classes.add(name),
+   remove:name=>classes.delete(name),
    contains:name=>classes.has(name),
    toggle:(name,enabled)=>{if(enabled)classes.add(name);else classes.delete(name);return !!enabled;}
   };
