@@ -859,6 +859,12 @@ body.afterday-real-ui-v3 #hud .survival-kit > small:first-child {
     padding:0!important;
     gap:0!important;
   }
+  /* Show one sprite, never legacy text that turns visible in flex overflow. */
+  body.afterday-real-ui-v3 #hud .actionbar.v3-has-extra-actions > button{
+    font-size:0!important;
+    line-height:0!important;
+    letter-spacing:0!important;
+  }
   body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > button > img.afterday-v3-action-icon,
   body.afterday-real-ui-v3 #hud .actionbar:is(.v3-has-extra-actions,:not(.v3-has-extra-actions)) > .afterday-v3-standby-slot > img{
     position:absolute!important;

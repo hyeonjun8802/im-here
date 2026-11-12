@@ -69,6 +69,7 @@ test('mobile popup and emergency overflow use the SAME absolute icon center',()=
  assert.match(section,/\.actionbar\.v3-has-extra-actions\s*\{\s*height:calc\(\(100vw - 8px\) \* 172 \/ 1148\)!important/);
  assert.match(section,/\.actionbar:is\(\.v3-has-extra-actions,:not\(\.v3-has-extra-actions\)\) > button > img\.afterday-v3-action-icon/);
  assert.match(section,/position:absolute!important;\s*left:50%!important;\s*top:calc\(50% \+ 4px\)!important;\s*transform:translate\(-50%,-50%\)!important/);
+ assert.match(section,/\.actionbar\.v3-has-extra-actions > button\s*\{\s*font-size:0!important;\s*line-height:0!important/);
  assert.match(section,/button:not\(\[data-v3-sprite\]\) > span/);
  assert.match(source,/new MutationObserver\(syncSlots\)/);
  assert.match(source,/visible>9/);
