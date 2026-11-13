@@ -43,7 +43,7 @@ export function makeScavengeDirector(startedAt=Date.now()){
  return {
    version:1,seed:hash32(Math.floor(startedAt/1000)+94882),
    lastOfferedDay:0,lastResolvedDay:0,expeditionCount:0,
-   pending:null,radioLastDay:0,radioNewsDay:0,radioNewsId:0,radioNewsType:'',
+   pending:null,recoveryTarget:null,radioLastDay:0,radioNewsDay:0,radioNewsId:0,radioNewsType:'',
    farmMinutes:0,lastHarvestDay:0,
    purifierDay:0,purifierProduced:0,filterMinutes:0,
    lastRoutineDay:0
@@ -64,6 +64,7 @@ export function sanitizeScavengeDirector(input,startAt=Date.now()){
       description:String(v.pending.description||'계단실 밖에는 무엇이 남았을까?').slice(0,300),
       target:ITEM_IDS.includes(v.pending.target)?v.pending.target:'cache'}:null;
  d.radioNewsType=['drop','contact','silence'].includes(v.radioNewsType)?v.radioNewsType:'';
+ d.recoveryTarget=ITEM_IDS.includes(v.recoveryTarget)?v.recoveryTarget:null;
  return d;
 }
 export function normalizeKit(input,legacy=false){
@@ -76,6 +77,8 @@ export function normalizeKit(input,legacy=false){
 export function offerRecoveryScavenge(s,day,item){
  const d=s.scavenge;
  if(s.survivalStatus==='dead'||!ITEM_IDS.includes(item)||s.kit[item])return null;
+ // Preserve the objective across a failed/declined expedition. No free reroll.
+ d.recoveryTarget=item;
  // Preserve a previously offered mission when it already targets missing gear.
  if(d.pending){
    if(d.pending.target!=='cache'&&!s.kit[d.pending.target])return d.pending;
@@ -92,12 +95,17 @@ export function offerDailyScavenge(s,day,{force=false}={}){
  if(s.survivalStatus==='dead'||d.pending||day<=d.lastOfferedDay||day<1)return null;
  // Only a *live* player sees a new offer. Missed days aren't auto-looted.
  d.lastOfferedDay=day;
+ // Lost gear gets another chance on subsequent game days, but loot odds,
+ // injury risk and the one-offer-per-day rule are unchanged.
+ const recovery=ITEM_IDS.includes(d.recoveryTarget)&&!s.kit[d.recoveryTarget]
+   ?d.recoveryTarget:null;
+ if(!recovery)d.recoveryTarget=null;
  const probability=day===1?1:day<=5?SCAVENGE_CHANCE.early:
    day<=14?SCAVENGE_CHANCE.mid:SCAVENGE_CHANCE.late;
- if(!force&&roll(d.seed,day*971+12)>=probability)return null;
+ if(!recovery&&!force&&roll(d.seed,day*971+12)>=probability)return null;
  const missing=anyOwn(s);
- const target=missing.length?
-   missing[Math.min(missing.length-1,Math.floor(roll(d.seed,day*937+89)*missing.length))]:'cache';
+ const target=recovery||(missing.length?
+   missing[Math.min(missing.length-1,Math.floor(roll(d.seed,day*937+89)*missing.length))]:'cache');
  const {title,description}=questNarrative(target,day,s.weather);
  d.pending={day,id:`scavenge:${day}:${target}`,title,description,target};
  return d.pending;
@@ -157,6 +165,7 @@ export function resolveScavengeChoice(s,decision,{day,addLog=()=>{}}={}){
    outcome='supplies';msg=acquireSupplies();
   }else{
    s.kit[p.target]=true;outcome='item';
+   if(d.recoveryTarget===p.target)d.recoveryTarget=null;
    msg=`장비 획득: ${ITEM_INFO[p.target].label}. 재난에 잃지 않도록 시설을 관리해야 한다.`;
   }
  }else if(r<odds.item+odds.supplies){
