@@ -83,13 +83,18 @@ test('rain warning adds a separate emergency control but keeps nine painted menu
    assert.equal(reserve.hidden,true);
    assert.equal(bar.dataset.visibleSlots,'9','repair replaces the normal reserve, never an extra slot');
    assert.ok(!bar.classList.contains('v3-has-extra-actions'));
-   // Rotating to desktop restores the original button nodes and their order.
+   // Desktop now uses the SAME overflow tray as mobile: no tenth cell.
    query.matches=false;
    query.listeners[0]();
-   assert.equal(nodes['collect-water'].parentNode,bar);
-   assert.equal(nodes['take-cover'].parentNode,bar);
-   assert.deepEqual(bar.querySelectorAll(':scope > button').map(n=>n.id),ids);
-   assert.ok(!api.tray.classList.contains('has-urgent'));
+   for(const id of urgent)assert.equal(nodes[id].parentNode,api.tray);
+   assert.deepEqual(stable(),initial,'resizing cannot shift desktop action icons');
+   assert.equal(bar.dataset.visibleSlots,'9');
+   assert.ok(!bar.classList.contains('v3-has-extra-actions'));
+   assert.ok(api.tray.classList.contains('has-urgent'),'active disaster buttons remain accessible on desktop');
+   query.matches=true;
+   query.listeners[0]();
+   for(const id of urgent)assert.equal(nodes[id].parentNode,api.tray);
+   assert.equal(bar.dataset.visibleSlots,'9','returning to mobile keeps the same nine slots');
  }finally{
    for(const [k,v] of Object.entries(old)){if(v===undefined)delete globalThis[k];else globalThis[k]=v;}
  }
