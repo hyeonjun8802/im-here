@@ -10,6 +10,7 @@ import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
 import {syncNeonStatusHud} from './neonStatusHud.js';
+import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge} from './autoSurvivalV73.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
@@ -85,6 +86,9 @@ const save=()=>{
 let world;
 let eventBoard=null;
 let autoLifeCamera=true;
+// QA auto-player is deliberately session-only and OFF after every reload.
+let autoSurvivalEnabled=false;
+let lastAutoActionReal=0;
 // One brief chapter caption per in-game day. Regular HUD refreshes must not
 // restart its timeout or leave a permanent black backdrop over the 3D world.
 const CHAPTER_CAPTION_MS=6500;
@@ -307,6 +311,25 @@ function runSurvivalAction(action){
  }
  return result;
 }
+/** Reuse regular action validation, resource costs, cinematics, logs and saves.
+ * Never click/auto-answer a companion rescue or ration decision.
+ * Exactly one auto action per real 1.25s, even at 50x speed.
+ */
+function runAutoSurvival(real,gameNow){
+ if(!autoSurvivalEnabled||restartInProgress||gpuContextLost||
+    document.visibilityState!=='visible'||state.survivalStatus==='dead')return;
+ if(real-lastAutoActionReal<AUTO_ACTION_INTERVAL_MS)return;
+ lastAutoActionReal=real;
+ if(eventBoard?.requiresChoice()&&eventBoard.activeKey!=='expedition'){
+   eventBoard.deferChoice(); // Preserve high-stakes decisions for the player.
+   return;
+ }
+ const action=eventBoard?.requiresChoice()
+   ?selectAutoScavenge(state):planAutoSurvivalAction(state,gameNow);
+ if(!action)return;
+ const result=runSurvivalAction(action);
+ if(!result.good&&eventBoard?.requiresChoice())eventBoard.deferChoice();
+}
 function bindEvents(){
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
@@ -321,6 +344,22 @@ function bindEvents(){
   save();
  });
  updateSpeedLabel();
+ const autoButton=$('#auto-toggle');
+ const updateAutoLabel=()=>{
+   autoButton.textContent=autoSurvivalEnabled?'AUTO ON':'AUTO';
+   autoButton.setAttribute('aria-pressed',String(autoSurvivalEnabled));
+   autoButton.setAttribute('aria-label',autoSurvivalEnabled?
+     '테스트 자동 생존 실행 중. 누르면 중지':'테스트 자동 생존 꺼짐. 누르면 시작');
+   autoButton.title=autoSurvivalEnabled?
+     'AUTO 실행 중 · 필요시 기존 생존/보급/무전 행동 자동 실행 · 동료 선택은 수동':
+     'AUTO 테스트 · 기존 행동 조건과 자원을 지키며 자동 실행 (중요 선택은 수동)';
+ };
+ autoButton.addEventListener('click',()=>{
+   autoSurvivalEnabled=!autoSurvivalEnabled;
+   lastAutoActionReal=0;
+   updateAutoLabel();
+ });
+ updateAutoLabel();
  // Tap the actual 3D canvas (not a dialog/button) to dismiss open overlays.
  // Dragging to rotate the camera must not close panels.
  const canvas=$('#world');
@@ -493,6 +532,9 @@ function animation(){
   // Pause virtual survival clock, not the user's ability to read or choose.
   const gameNow=gameClock.tick(real,foreground&&!questPaused&&!gpuContextLost);
   if(gameNow-state.lastTickAt>10000)advance(state,gameNow,!foreground);
+  // QA-only auto actions use the same buttons' real action path, not a parallel
+  // resource simulation. Do not run when hidden, during a GPU loss or offline.
+  if(foreground&&!gpuContextLost)runAutoSurvival(real,gameNow);
   disasterForecast.syncProgress(state,gameNow);
   if(t-lastHUD>700){renderHUD();lastHUD=t}
   if(real-lastSave>15000){save();lastSave=real}
