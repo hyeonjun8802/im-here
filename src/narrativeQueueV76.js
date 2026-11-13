@@ -6,7 +6,7 @@ export const NARRATIVE_QUEUE_LIMIT=3;
 export const NARRATIVE_GAP_MS=400;
 export class NarrativeQueueV76 {
  constructor(){
-  this.queue=[];this.active=null;this.lastNow=null;this.nextAt=0;this.serial=0;
+  this.queue=[];this.active=null;this.lastNow=null;this.nextAt=0;this.serial=0;this.wasBlocked=false;
  }
  enqueue({text,key,kind='story',priority=1,durationMs=6500}={}){
   const value=String(text||'').trim();
@@ -41,8 +41,10 @@ export class NarrativeQueueV76 {
  tick(now,blocked=false){
   const t=Number(now);
   if(!Number.isFinite(t))return this.active&&!blocked?this.active:null;
-  const delta=this.lastNow===null?0:Math.max(0,Math.min(t-this.lastNow,30000));
+  const delta=this.lastNow===null||this.wasBlocked?0:
+   Math.max(0,Math.min(t-this.lastNow,30000));
   this.lastNow=t;
+  this.wasBlocked=Boolean(blocked);
   if(blocked)return null;
   if(this.active){
    this.active.remainingMs-=delta;
@@ -56,5 +58,5 @@ export class NarrativeQueueV76 {
   }
   return this.active;
  }
- clear(){this.queue.length=0;this.active=null;this.lastNow=null;this.nextAt=0;}
+ clear(){this.queue.length=0;this.active=null;this.lastNow=null;this.nextAt=0;this.wasBlocked=false;}
 }
