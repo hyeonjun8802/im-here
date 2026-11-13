@@ -4,6 +4,7 @@ export function createFreshRestartState(now=Date.now()){
   const fresh=defaults(now);
   fresh.gameClockOffsetMs=0;
   fresh.gameClockSavedRealAtMs=now;
+  fresh.deviceSaveAtMs=now;
   fresh.clockSchema=3;
   fresh.survivalStatus='alive';
   fresh.diedAt=0;
