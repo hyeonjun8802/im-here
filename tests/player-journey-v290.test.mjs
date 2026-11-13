@@ -44,7 +44,8 @@ test('alert choice is dismissible but no implicit item grant or opportunity remo
  assert.doesNotMatch(script,/shown=this\.openPendingExpedition\(state\)\|\|shown/);
  assert.doesNotMatch(script,/shown=this\.openPendingCompanion\(state\)\|\|shown/);
  assert.match(style,/\.afterday-board\.is-choice \.afterday-board-close\{\s*display:grid!important/);
- assert.match(main,/supplyButton\.disabled=dead\|\|\(!open&&!emergency\.ready\)/);
+ assert.match(main,/supplyButton\.disabled=dead/);
+ assert.match(main,/supplyButton\.setAttribute\('aria-disabled',String\(!open&&!emergency\.ready\)\)/);
  assert.match(main,/supplyButton\.dataset\.supplyKind=open\?/);
  assert.match(main,/supplyButton\.dataset\.supplyReady=String\(supplyAvailable\)/);
 });
