@@ -2,7 +2,7 @@ import {scriptedDisasterType,disasterGapMsAfter,chooseScenarioWeather,weatherDur
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
 import {ITEM_INFO,makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,offerRecoveryScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
-import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute} from './supportCompanion.js';
+import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute,offerCompanionRationChoice,resolveCompanionRationChoice,applyCompanionRationAftermath} from './supportCompanion.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
@@ -343,6 +343,7 @@ export function advance(s,now=Date.now(),offline=false){
     const gameDay=getDay(s.startedAt,tickTime);
     const economy=applyWeatherEconomyMinute(s,e,gameDay);
     applyCompanionMinute(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
+    applyCompanionRationAftermath(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     applyAcquiredItemMinute(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     const weatherLedger=s.weatherEconomy;
     if(economy.waterGained&&weatherLedger.benefitNotifiedEpisode!==s.weatherEpisode){
@@ -399,7 +400,11 @@ export function advance(s,now=Date.now(),offline=false){
        tickTime>=s.tornadoStartedAt+60000)resolveTornadoRoofImpact(s,tickTime);
     const day=getDay(s.startedAt,tickTime);
     // An optional expedition appears in live time, NEVER automatically accepted.
-    if(!offline)offerDailyScavenge(s,day);
+    if(!offline){
+      offerDailyScavenge(s,day);
+      if(offerCompanionRationChoice(s,day))
+        addEvent(s,'함께 버틴 세 번째 날, 동료가 식량 배분을 상의하자고 했다. 주변 생존 장비에서 결정할 수 있다.');
+    }
     for(const beat of SURVIVAL_CHAPTERS){
       if(day>=beat.day&&!s.survivalMilestones.includes(beat.day)){
         s.survivalMilestones.push(beat.day);
@@ -432,6 +437,11 @@ export function applyAction(s,action,now=Date.now()){
  if(s.survivalStatus==='dead')return out(false,'생존이 종료됐다. 새 생존을 시작해야 한다.');
  if(['companion_invite','companion_aid','companion_trade','companion_decline'].includes(action)){
    const result=resolveCompanionRescue(s,action.slice('companion_'.length),
+     {day:getDay(s.startedAt,now),addLog:msg=>addEvent(s,msg)});
+   return {good:result.good,msg:result.msg,outcome:result.outcome};
+ }
+ if(['companion_rations_share','companion_rations_conserve'].includes(action)){
+   const result=resolveCompanionRationChoice(s,action.slice('companion_rations_'.length),
      {day:getDay(s.startedAt,now),addLog:msg=>addEvent(s,msg)});
    return {good:result.good,msg:result.msg,outcome:result.outcome};
  }
