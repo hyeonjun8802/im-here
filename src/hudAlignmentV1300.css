@@ -949,13 +949,38 @@ body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions {
   }
 }
 
-/* v24 | phone equipment pane: keep the single original 461x308 resource,
- * text, badge, popup trigger and exploration button together. Transform the
- * entire panel instead of competing with the many legacy width/padding rules. */
+/* v26 | restore readable phone equipment size while preserving the
+ * original metal frame, inset controls and bottom-left anchor. The earlier
+ * .52 overall transform made text illegible on Safari. */
 @media(max-width:720px){
   body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
-    transform:scale(.52)!important;
+    transform:scale(.72)!important;
     transform-origin:bottom left!important;
+  }
+  body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
+    font-size:14px!important;
+    line-height:1.1!important;
+    right:36%!important;
+    text-overflow:clip!important;
+  }
+  body.afterday-real-ui-v3 #hud #inventory-items{
+    font-size:13.5px!important;
+    line-height:1.18!important;
+    max-height:2.36em!important;
+    color:#fff3df!important;
+  }
+  body.afterday-real-ui-v3 #hud #sleep-arrangement,
+  body.afterday-real-ui-v3 #hud #companion-status{
+    font-size:12px!important;
+    line-height:1.15!important;
+    color:#d9e4da!important;
+  }
+  body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action{
+    font-size:13px!important;
+    font-weight:800!important;
+  }
+  body.afterday-real-ui-v3 #hud .survival-kit > .premium-equipment-disclosure{
+    font-size:11px!important;
   }
 }
 /* AFTERDAY v25 | pending supply opportunity, bottom explore/chest slot.
