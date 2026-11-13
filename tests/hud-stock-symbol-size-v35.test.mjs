@@ -9,7 +9,7 @@ const patch=css.slice(css.indexOf(marker));
 
 test('top resource icons use dedicated responsive sizes without resizing numbers or HUD art',()=>{
   assert.ok(patch.startsWith(marker));
-  assert.match(patch,/\.survival-hud-stock \.hud-picto\s*\{[\s\S]*?width:clamp\(18px,1\.45vw,22px\)!important;/);
+  assert.match(patch,/\.survival-hud-stock \.hud-picto\s*\{[\s\S]*?width:clamp\(22px,1\.75vw,28px\)!important;/);
   assert.match(patch,/@media \(min-width:721px\) and \(max-width:1023px\)\s*\{/);
   assert.match(patch,/width:clamp\(13px,1\.7vw,18px\)!important;/);
   assert.match(patch,/@media \(max-width:720px\)\s*\{/);

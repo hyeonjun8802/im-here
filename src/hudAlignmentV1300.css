@@ -1177,8 +1177,8 @@ body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
  * Existing 2x2 cells, stock counters, header frame and weather stay unchanged.
  * Use responsive icon boxes instead of inheriting the tiny counter's 1em. */
 body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
-  width:clamp(18px,1.45vw,22px)!important;
-  height:clamp(18px,1.45vw,22px)!important;
+  width:clamp(22px,1.75vw,28px)!important;
+  height:clamp(22px,1.75vw,28px)!important;
   min-width:0!important;
   min-height:0!important;
   flex:0 0 auto!important;
