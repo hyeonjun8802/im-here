@@ -3,18 +3,24 @@
  * with a public PUBLISHABLE key and ownership-protected RLS, never service_role.
  * LocalStorage remains authoritative when offline or Auth is not enabled.
  */
-export const SUPABASE_GAME_URL='https://nxltvnwszhdqnhbxbkpa.supabase.co';
-export const SUPABASE_GAME_PUBLISHABLE_KEY='sb_publishable_PWmSX_do8bsEhw3ilbYHAQ_00kAanDc';
+// Configure a dedicated, RLS-secured GAME project with Vercel's public Vite
+// environment variables. The previous shared business project had unrelated
+// public tables without RLS, so its URL/key must not ship in the game.
+export const SUPABASE_GAME_URL=import.meta.env?.VITE_AFTERDAY_SUPABASE_URL||'';
+export const SUPABASE_GAME_PUBLISHABLE_KEY=import.meta.env?.VITE_AFTERDAY_SUPABASE_PUBLISHABLE_KEY||'';
 export const ANON_SESSION_STORAGE_KEY='AFTERDAY_DEVICE_ANON_SESSION_V1';
 const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class DeviceCloudSave {
- constructor({storage=globalThis.localStorage,fetcher=globalThis.fetch,timeoutMs=3500}={}){
+ constructor({storage=globalThis.localStorage,fetcher=globalThis.fetch,timeoutMs=3500,
+  url=SUPABASE_GAME_URL,publishableKey=SUPABASE_GAME_PUBLISHABLE_KEY}={}){
   this.storage=storage;
   this.fetcher=fetcher;
   this.timeoutMs=timeoutMs;
-  this.disabled=false;
-  this.status='local';
+  this.url=typeof url==='string'?url.replace(/\/$/,''):'';
+  this.publishableKey=publishableKey||'';
+  this.disabled=!(this.url&&this.publishableKey);
+  this.status=this.disabled?'setup-required':'local';
   this.lastErrorCode=null;
   this.onStatusChange=null;
   this.queue=Promise.resolve();
@@ -30,11 +36,11 @@ export class DeviceCloudSave {
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),this.timeoutMs);
   try{
-   const headers={apikey:SUPABASE_GAME_PUBLISHABLE_KEY};
+   const headers={apikey:this.publishableKey};
    if(token)headers.Authorization='Bearer '+token;
    if(body!==undefined)headers['Content-Type']='application/json';
    if(prefer)headers.Prefer=prefer;
-   const response=await this.fetcher(SUPABASE_GAME_URL+path,{
+   const response=await this.fetcher(this.url+path,{
     method,headers,signal:controller.signal,
     ...(body===undefined?{}:{body:JSON.stringify(body)})
    });
@@ -66,6 +72,7 @@ export class DeviceCloudSave {
   return this.session;
  }
  async authenticate(){
+  if(!this.url||!this.publishableKey)this.disabled=true;
   if(this.disabled){this.setStatus('setup-required',this.lastErrorCode);return null;}
   if(this.session?.access_token&&this.session.expires_at>Date.now()/1000+90){
    this.setStatus('connected');return this.session;
