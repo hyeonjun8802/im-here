@@ -1172,3 +1172,27 @@ body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
     bottom:calc(16px + min(1040px, calc(100vw - 10px)) * 172 / 1148 * .66 + env(safe-area-inset-bottom))!important;
   }
 }
+
+/* v35 | Four top-left stock pictograms only (food / water / medicine / parts).
+ * Existing 2x2 cells, stock counters, header frame and weather stay unchanged.
+ * Use responsive icon boxes instead of inheriting the tiny counter's 1em. */
+body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
+  width:clamp(18px,1.45vw,22px)!important;
+  height:clamp(18px,1.45vw,22px)!important;
+  min-width:0!important;
+  min-height:0!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+}
+@media (min-width:721px) and (max-width:1023px) {
+  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
+    width:clamp(13px,1.7vw,18px)!important;
+    height:clamp(13px,1.7vw,18px)!important;
+  }
+}
+@media (max-width:720px) {
+  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
+    width:clamp(10px,2.9vw,13px)!important;
+    height:clamp(10px,2.9vw,13px)!important;
+  }
+}
