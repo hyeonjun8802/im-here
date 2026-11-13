@@ -66,6 +66,9 @@ export class CinematicMomentV510 {
    this.title.textContent=m.title;this.detail.textContent=m.detail;
    this.plate.hidden=false;this.plate.classList.add('is-active');
   }
+  // The shared lower story queue displays the words; this camera/light shot
+  // still begins immediately and never waits for notification text.
+  this.world.onCinematicNarrative?.(type,m);
   return true;
  }
  cancel(){

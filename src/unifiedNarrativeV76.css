@@ -1,0 +1,88 @@
+/* AFTERDAY v76 | one non-interactive lower message channel.
+ * The original floating daily story and cinematic text plates are retired
+ * visually; cinematic camera/light and their game outcomes still run. */
+body.afterday-real-ui-v3 #hud .survival-kit > #survival-chapter,
+body.afterday-real-ui-v3 #app > .afterday-cinema{
+  display:none!important;
+}
+body.afterday-real-ui-v3 #hud #log.event-log{
+  position:fixed!important;
+  z-index:18!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:calc(154px + env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;
+  width:min(460px,calc(100vw - 28px))!important;
+  max-width:calc(100vw - 28px)!important;
+  max-height:min(24dvh,132px)!important;
+  padding:11px 16px!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(193,166,125,.53)!important;
+  border-left:3px solid rgba(218,176,110,.8)!important;
+  border-radius:6px!important;
+  background:linear-gradient(100deg,rgba(13,23,28,.96),rgba(21,31,34,.90))!important;
+  box-shadow:0 7px 22px #0008!important;
+  text-shadow:0 1px 4px #0009!important;
+  text-align:left!important;
+  color:#f1e7d3!important;
+  font:600 12px/1.5 'Noto Sans KR',system-ui,sans-serif!important;
+  letter-spacing:-.015em!important;
+  word-break:keep-all!important;
+  overflow-wrap:break-word!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  touch-action:pan-y!important;
+  pointer-events:auto!important;
+  animation:none!important;
+}
+body.afterday-real-ui-v3 #hud #log.event-log:not([data-active="true"]){
+  display:none!important;
+}
+body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"]{
+  display:block!important;
+}
+/* Immediate visual gating: prevent even a single animation frame of
+ * overlap while the queue coordinator pauses its remaining reading time. */
+body.afterday-real-ui-v3 #hud:has(> .afterday-board.is-open) #log.event-log,
+body.afterday-real-ui-v3 #hud:has(.survival-kit.premium-equipment-open) #log.event-log,
+body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) #log.event-log,
+body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) #log.event-log{
+  display:none!important;
+}
+@media(min-width:721px) and (max-width:1023px){
+  body.afterday-real-ui-v3 #hud #log.event-log{
+    bottom:calc(
+      max(95px,(100vw - 8px) * 172 / 1148 + 19px) +
+      clamp(274px,26vw,328px) * 308 / 461 + 10px +
+      env(safe-area-inset-bottom)
+    )!important;
+  }
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud #log.event-log{
+    width:calc(100vw - 24px)!important;
+    max-width:calc(100vw - 24px)!important;
+    bottom:calc(
+      max(75px,(100vw - 8px) * 172 / 1148 + 19px) +
+      clamp(204px,57vw,246px) * 308 / 461 + 10px +
+      env(safe-area-inset-bottom)
+    )!important;
+    max-height:min(22dvh,126px)!important;
+    padding:9px 11px!important;
+    font-size:clamp(10px,2.85vw,11px)!important;
+    line-height:1.43!important;
+    border-left-width:2px!important;
+  }
+}
+@media(max-height:490px){
+  body.afterday-real-ui-v3 #hud #log.event-log{
+    bottom:min(45dvh,177px)!important;
+    max-height:22dvh!important;
+    font-size:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.afterday-real-ui-v3 #hud #log.event-log{transition:none!important}
+}
