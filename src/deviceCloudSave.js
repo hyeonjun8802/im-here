@@ -14,9 +14,17 @@ export class DeviceCloudSave {
   this.fetcher=fetcher;
   this.timeoutMs=timeoutMs;
   this.disabled=false;
+  this.status='local';
+  this.lastErrorCode=null;
+  this.onStatusChange=null;
   this.queue=Promise.resolve();
   this.session=null;
   try{this.session=JSON.parse(storage?.getItem(ANON_SESSION_STORAGE_KEY)||'null');}catch{}
+ }
+ setStatus(status,code=null){
+  this.status=status;
+  this.lastErrorCode=code;
+  this.onStatusChange?.(status,code);
  }
  async request(path,{method='GET',token=null,body,prefer}={}){
   const controller=new AbortController();
@@ -54,11 +62,15 @@ export class DeviceCloudSave {
    expires_at:Number(record.expires_at)||Math.floor(Date.now()/1000)+Number(record.expires_in||3600)
   };
   try{this.storage?.setItem(ANON_SESSION_STORAGE_KEY,JSON.stringify(this.session));}catch{}
+  this.setStatus('connected');
   return this.session;
  }
  async authenticate(){
-  if(this.disabled)return null;
-  if(this.session?.access_token&&this.session.expires_at>Date.now()/1000+90)return this.session;
+  if(this.disabled){this.setStatus('setup-required',this.lastErrorCode);return null;}
+  if(this.session?.access_token&&this.session.expires_at>Date.now()/1000+90){
+   this.setStatus('connected');return this.session;
+  }
+  this.setStatus('connecting');
   try{
    if(this.session?.refresh_token){
     try{
@@ -77,7 +89,10 @@ export class DeviceCloudSave {
     method:'POST',body:{data:{},gotrue_meta_security:{}}
    });
    return this.storeSession(signed);
-  }catch{return null;}
+  }catch(error){
+   this.setStatus(this.disabled?'setup-required':'offline',error.status??null);
+   return null;
+  }
  }
  async load(){
   const session=await this.authenticate();
@@ -87,11 +102,21 @@ export class DeviceCloudSave {
     token:session.access_token
    });
    const payload=Array.isArray(records)?records[0]?.state:null;
+   this.setStatus('connected');
    return payload&&typeof payload==='object'&&payload.version===4?payload:null;
-  }catch{return null;}
+  }catch(error){
+   this.setStatus(this.disabled?'setup-required':'offline',error.status??null);
+   return null;
+  }
+ }
+ async retry(){
+  this.disabled=false;
+  this.setStatus('connecting');
+  await this.load();
+  return this.status==='connected'||this.status==='saved';
  }
  save(state){
-  if(this.disabled)return this.queue;
+  if(this.disabled){this.setStatus('setup-required',this.lastErrorCode);return this.queue;}
   const snapshot=JSON.parse(JSON.stringify(state));
   this.queue=this.queue.catch(()=>{}).then(async()=>{
    const session=await this.authenticate();
@@ -106,7 +131,10 @@ export class DeviceCloudSave {
       saved_at:new Date(snapshot.deviceSaveAtMs||Date.now()).toISOString()
      }
     });
-   }catch{/* Local game remains playable without network. */}
+    this.setStatus('saved');
+   }catch(error){
+    this.setStatus(this.disabled?'setup-required':'offline',error.status??null);
+   }
   });
   return this.queue;
  }
