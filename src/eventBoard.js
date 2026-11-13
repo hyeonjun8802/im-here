@@ -153,7 +153,11 @@ export class AfterdayEventBoard {
     if(options.silent)this.pendingNoticeSound=false;
     else this.playNoticeSound();
     if(!mandatory)this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
-    else el.querySelector('button:not([hidden])')?.focus({preventScroll:true});
+    else {
+      const target=key==='expedition'?'.afterday-board-expedition':
+        key==='companionInvite'?'.afterday-board-companion':'.afterday-board-rations';
+      el.querySelector(target+' button:not(:disabled)')?.focus({preventScroll:true});
+    }
     return true;
   }
   requiresChoice(){return this.choiceLocked===true;}
