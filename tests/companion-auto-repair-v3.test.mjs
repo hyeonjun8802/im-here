@@ -80,6 +80,7 @@ test('real simulation repairs only while playing, before the installed purifier 
  online.food=90;online.water=90;
  online.lastTickAt=start+DAY_MS;
  online.nextWeatherAt=start+3*DAY_MS;
+ online.majorDisasterAt=start+3*DAY_MS; // Isolate maintenance from scheduled roof damage.
  const offline=sanitize(JSON.parse(JSON.stringify(online)),start+DAY_MS+60000);
  // Restoring a save clamps no relevant values, so test each tick in isolation.
  advance(offline,start+DAY_MS+60000,true);
