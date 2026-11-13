@@ -121,5 +121,24 @@ test('tablet and mobile positions clear the existing nine-slot bar and emergency
  assert.match(css,/#hud:has\(> \.afterday-v3-urgent-actions\.has-urgent\) > \.neon-status-hud/);
  assert.match(css,/#hud:has\(#life-panel:not\(\.hidden\)\) > \.neon-status-hud/);
  assert.match(css,/#hud:has\(#weather-panel:not\(\.hidden\)\) > \.neon-status-hud/);
- assert.match(css,/#hud:has\(\.afterday-board\.is-open\) > \.neon-status-hud/);
+ assert.match(css,/#hud:has\(\.afterday-board\.is-choice\.is-open\) > \.neon-status-hud/);
+});
+
+
+test('inactive effects have NO placeholders; live effects stay visible during transient notices',()=>{
+ const css=readFileSync(new URL('../src/neonStatusHud.css',import.meta.url),'utf8');
+ const js=readFileSync(new URL('../src/neonStatusHud.js',import.meta.url),'utf8');
+ const inactive=css.match(/\.neon-status__item\[data-active="false"\]\s*\{([^}]+)\}/);
+ assert.ok(inactive,'inactive button CSS selector remains present');
+ assert.match(inactive[1],/width:0!important/);
+ assert.match(inactive[1],/flex-basis:0!important/);
+ assert.match(inactive[1],/opacity:0!important/);
+ assert.match(inactive[1],/visibility:hidden/);
+ assert.match(inactive[1],/pointer-events:none!important/);
+ assert.match(js,/button\.tabIndex=active\?0:-1/);
+ assert.match(js,/button\.setAttribute\('aria-hidden',String\(!active\)\)/);
+ assert.match(js,/if\(!active\)\{\s*button\.classList\.remove\('is-open'\)/);
+ assert.doesNotMatch(css,/#hud:has\(\.afterday-board\.is-open\) > \.neon-status-hud/);
+ assert.match(css,/#hud:has\(\.afterday-board\.is-choice\.is-open\) > \.neon-status-hud/);
+ assert.doesNotMatch(js,/IDLE_DETAILS|비활성 ·/);
 });
