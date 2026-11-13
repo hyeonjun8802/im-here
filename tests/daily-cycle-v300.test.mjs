@@ -52,7 +52,7 @@ test('v300: physical bed approach is safe, cot is the intentional contact surfac
  const life=src('src/survivorLife.js');
  assert.match(life,/sleepBed:\{pos:COT\.feet,approach:COT\.approach/);
  assert.match(life,/this\.stage='exit';this\.stageTime=0;this\.morningWaking=true/);
- assert.match(life,/this\.performDuration=action==='stretch'&&!manual\?16:spec\.duration/);
+ assert.match(life,/this\.performDuration=action==='sleep'&&manual\?18:action==='stretch'&&!manual\?16:spec\.duration/);
 });
 
 test('v300: actual articulated 3D rig tilts onto cot and returns upright during wake',()=>{
