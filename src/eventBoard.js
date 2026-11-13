@@ -222,6 +222,10 @@ export class AfterdayEventBoard {
     }else if(this.activeKey==='companionRations'){
       el.querySelector('.afterday-board-rations-share').disabled=
         (state?.supply?.food||0)<1||(state?.supply?.water||0)<1;
+      const health=Number(state?.companion?.health)||0;
+      el.querySelector('.afterday-board-rations-conserve small').textContent=
+        health<=36?'소비 없음 · 건강 -16 · 협업 중단 또는 캠프 이탈 위험':
+        '소비 없음 · 건강 -16 · 3일간 작업 속도 +10%';
     }
   }
   sync(state,{warningAhead=false}={}) {
