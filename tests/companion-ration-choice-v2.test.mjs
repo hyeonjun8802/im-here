@@ -40,7 +40,7 @@ test('the live minute loop offers a single non-automatic decision',()=>{
  assert.ok(s.companion.rationPending);
  assert.match(s.events.join(' '),/식량 배분/);
  advance(s,t0+7*DAY_MS+120000,false);
- assert.equal(s.events.filter(e=>e.includes('물자 분배')).length,1);
+ assert.equal(s.events.filter(e=>e.includes('식량 배분')).length,1);
  const other=savedCompanion();other.lastTickAt=t0+7*DAY_MS;
  advance(other,t0+7*DAY_MS+60000,true);
  assert.equal(other.companion.rationPending,null,'offline simulation never demands an on-screen choice');
