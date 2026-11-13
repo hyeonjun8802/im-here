@@ -19,6 +19,45 @@ let gameClock=new GameClock(now,saved?.gameClockOffsetMs,
   Number(saved?.clockSchema)>=2?saved?.gameClockSavedRealAtMs:null,{progressWhileAway:true});
 let state=sanitize(saved,gameClock.virtualNow);
 const deviceCloud=new DeviceCloudSave();
+// Connection diagnostics stay inside the existing Weather / Settings panel,
+// never over the approved survival HUD or bottom action slots.
+function installCloudStatusControl(){
+ const panel=$('#weather-panel');
+ if(!panel||panel.querySelector('.cloud-save-control'))return;
+ const row=document.createElement('div');
+ row.className='cloud-save-control';
+ const message=document.createElement('span');
+ message.setAttribute('role','status');
+ message.setAttribute('aria-live','polite');
+ const retry=document.createElement('button');
+ retry.type='button';
+ retry.className='small-button';
+ retry.textContent='다시 연결';
+ row.append(message,retry);
+ panel.appendChild(row);
+ const captions={
+  local:'기기 저장 사용 중 · 클라우드 확인 전',
+  connecting:'클라우드 연결 확인 중…',
+  connected:'클라우드 연결됨 · 자동 저장 준비',
+  saved:'클라우드 자동 저장 완료',
+  'setup-required':'클라우드 설정 확인 필요 · 기기 저장은 정상',
+  offline:'클라우드 연결 불가 · 기기 저장은 정상'
+ };
+ const update=()=>{
+  message.textContent=captions[deviceCloud.status]||captions.offline;
+  row.dataset.cloudStatus=deviceCloud.status;
+  retry.hidden=!['offline','setup-required'].includes(deviceCloud.status);
+ };
+ deviceCloud.onStatusChange=update;
+ retry.addEventListener('click',async()=>{
+  retry.disabled=true;
+  const connected=await deviceCloud.retry();
+  if(connected)await deviceCloud.save(state);
+  retry.disabled=false;
+  update();
+ });
+ update();
+}
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
 const disasterForecast=installPremiumHudV1000($('#disaster-forecast'));
@@ -414,6 +453,7 @@ function animation(){
  requestAnimationFrame(draw);
 }
 async function boot(){try{
+  installCloudStatusControl();
   // Prefer the latest save for this anonymous device. This request is bounded
   // and never prevents local play if the provider or network is unavailable.
   const cloudSaved=await deviceCloud.load();
