@@ -55,10 +55,9 @@ function setAsset(name, crop) {
 }
 
 
-/** Keep the original nine painted slots stable on phones, even when the
- * weather unlocks extra actions. Move the EXISTING buttons (and their event
- * listeners) to a separate emergency tray; restore DOM order on desktop.
- * No game state or action definitions are modified. */
+/** Keep the original nine painted slots stable at ALL viewport widths.
+ * Weather/unlock actions live in a separate tray instead of expanding the
+ * nine-slot bitmap. Move the existing button nodes; preserve game listeners. */
 export function installResponsiveActionSlots(actionbar,reserve,repairTank){
   const compactQuery=window.matchMedia('(max-width:720px)');
   const emergencyIds=['take-cover','secure-supplies','collect-water'];
@@ -69,36 +68,26 @@ export function installResponsiveActionSlots(actionbar,reserve,repairTank){
   tray.setAttribute('aria-label','날씨 및 재난 긴급 행동');
   actionbar.insertAdjacentElement('afterend',tray);
 
-  // Comment anchors do not consume grid cells. They preserve button order
-  // across mobile/desktop transitions without cloning or replacing controls.
-  const anchors=emergency.map(button=>{
-    const anchor=document.createComment('emergency '+button.id);
-    actionbar.insertBefore(anchor,button);
-    return {button,anchor};
-  });
-  const compact=()=>compactQuery.matches;
   const syncSlots=()=>{
-    // The repair-tank action is the regular ninth slot. Only genuine
-    // overflow actions become separate mobile controls.
-    const specialActive=Boolean(repairTank&&!repairTank.hidden) ||
-      (!compact()&&emergency.some(button=>!button.hidden));
+    // Exactly one ninth cell: real tank repair OR its passive placeholder.
+    const specialActive=Boolean(repairTank&&!repairTank.hidden);
     if(reserve.hidden!==specialActive)reserve.hidden=specialActive;
     const visible=Array.from(actionbar.querySelectorAll(':scope > button'))
       .filter(el=>!el.hidden).length + (reserve.hidden?0:1);
     actionbar.classList.toggle('v3-has-extra-actions',visible>9);
     actionbar.dataset.visibleSlots=String(visible);
     actionbar.dataset.reserveSlot=String(!reserve.hidden);
-    tray.classList.toggle('has-urgent',compact()&&emergency.some(button=>!button.hidden));
+    tray.classList.toggle('has-urgent',emergency.some(button=>!button.hidden));
   };
   const placeEmergency=()=>{
-    for(const {button,anchor} of anchors){
-      if(compact())tray.appendChild(button);
-      else anchor.parentNode.insertBefore(button,anchor.nextSibling);
+    // Do not clone/recreate buttons or shift the nine source-art columns.
+    // Do not move nodes on each weather tick: append only when necessary.
+    for(const button of emergency){
+      if(button.parentNode!==tray)tray.appendChild(button);
     }
     syncSlots();
   };
-  // Both hosts are watched: mobile emergency buttons are no longer children
-  // of the original bar, but HUD still changes only their hidden attributes.
+  // Observe only button visibility; no subtree/child-list feedback loops.
   const visibilityObserver=new MutationObserver(syncSlots);
   const watch={subtree:true,attributes:true,attributeFilter:['hidden']};
   visibilityObserver.observe(actionbar,watch);

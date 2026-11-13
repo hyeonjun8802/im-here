@@ -1096,18 +1096,79 @@ body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
   }
 }
 
-/* v33 | PC only: supply-ready badge is larger and optically lower.
- * No navigation frame, action, mobile or tablet changes. */
+/* v34 | PC-only supply badge: reduce visual weight inside the original slot.
+ * Mobile and tablet notification sizes remain unchanged. */
 @media (min-width:1024px) and (hover:hover) and (pointer:fine) {
   body.afterday-real-ui-v3 #hud .actionbar > button#explore > i.afterday-supply-dot {
-    top:12px!important;
-    right:10px!important;
-    width:28px!important;
-    height:28px!important;
-    min-width:28px!important;
-    min-height:28px!important;
+    top:9px!important;
+    right:8px!important;
+    width:23px!important;
+    height:23px!important;
+    min-width:23px!important;
+    min-height:23px!important;
     border-width:2px!important;
-    font:900 16px/1 system-ui,sans-serif!important;
-    box-shadow:0 0 0 1px #8e0612,0 0 10px #f2293c!important;
+    font:900 13px/1 system-ui,sans-serif!important;
+    box-shadow:0 0 0 1px #8e0612,0 0 8px #f2293c!important;
+  }
+}
+
+/* v34 | Non-phone emergency actions use a separate tray ABOVE the original
+ * nine-cell bitmap. The mobile layout keeps its existing exact rules. */
+@media (min-width:721px) {
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions.has-urgent {
+    position:fixed!important;
+    left:50%!important;
+    right:auto!important;
+    bottom:calc(16px + min(1040px, calc(100vw - 10px)) * 172 / 1148 + env(safe-area-inset-bottom))!important;
+    transform:translateX(-50%)!important;
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    width:max-content!important;
+    max-width:calc(100vw - 24px)!important;
+    z-index:26!important;
+    pointer-events:auto!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button {
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:7px!important;
+    min-height:36px!important;
+    padding:6px 11px!important;
+    border:1px solid rgba(244,174,91,.77)!important;
+    border-radius:5px!important;
+    background:linear-gradient(180deg,rgba(52,43,34,.96),rgba(17,22,28,.97))!important;
+    box-shadow:0 3px 8px #0009!important;
+    color:#ffebc9!important;
+    font:700 12px/1.1 'Noto Sans KR',system-ui,sans-serif!important;
+    white-space:nowrap!important;
+    cursor:pointer!important;
+    pointer-events:auto!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button[hidden] {
+    display:none!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button > img.afterday-v3-action-icon {
+    position:static!important;
+    display:block!important;
+    width:20px!important;
+    height:20px!important;
+    max-width:20px!important;
+    max-height:20px!important;
+    flex:0 0 20px!important;
+    margin:0!important;
+    transform:none!important;
+    object-fit:contain!important;
+  }
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions > button > span {
+    display:none!important;
+  }
+}
+@media (min-width:1024px) and (hover:hover) and (pointer:fine) {
+  body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions.has-urgent {
+    bottom:calc(16px + min(1040px, calc(100vw - 10px)) * 172 / 1148 * .66 + env(safe-area-inset-bottom))!important;
   }
 }
