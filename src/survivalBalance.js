@@ -81,7 +81,7 @@ export const DAILY_SURVIVAL_BEATS=Object.freeze([
 
 /** Actionable, non-punitive direction drawn only from actual live state.
  * No virtual reward, daily login obligation or new save field is created. */
-export function survivalPriority(s){
+export function survivalPriority(s,day=1){
   if(!s||typeof s!=='object')return '건강과 식량·식수 상태를 먼저 확인하세요.';
   if(s.survivalStatus==='dead')return '생존 기록을 확인하세요.';
   if(s.weather==='tornado')return '강풍에 대비해 대피와 물자 보호를 결정하세요.';
@@ -95,7 +95,7 @@ export function survivalPriority(s){
   if(s.kit?.purifier===false)return '비를 식수로 만들 정수기 확보를 준비하세요.';
   if(s.kit?.seeds===false)return '장기 식량 확보를 위해 재배용 씨앗을 찾아보세요.';
   if(s.kit?.radio===false)return '도시의 생존 신호를 들을 무전기 확보를 준비하세요.';
-  if(s.kit?.radio&&Number(s.scavenge?.radioLastDay)!==Number(s.day))
+  if(s.kit?.radio&&Number(s.scavenge?.radioLastDay)!==Number(day))
     return '무전기로 교신할 수 있는지 확인하세요.';
   return '물자 비축과 대피소 상태를 점검해 다음 날을 준비하세요.';
 }
@@ -108,6 +108,6 @@ export function survivalDailyBriefing(day,s){
   const authored=milestone?survivalChapter(d):null;
   const note=DAILY_SURVIVAL_BEATS[(d-1)%DAILY_SURVIVAL_BEATS.length];
   const title=authored?.title||`DAY ${d} · ${note.title}`;
-  const line=(authored?.line||note.line)+' 오늘의 목표: '+survivalPriority(s);
+  const line=(authored?.line||note.line)+' 오늘의 목표: '+survivalPriority(s,d);
   return {day:d,title,line};
 }
