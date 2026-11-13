@@ -1,0 +1,53 @@
+/* AFTERDAY QA AUTO | only the speed switch's adjacent control is styled.
+ * The weather frame, time text, forecast and nine-slot actionbar stay unchanged. */
+body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:flex-end!important;
+  width:54px!important;
+  min-width:54px!important;
+  max-width:54px!important;
+  height:29px!important;
+  min-height:29px!important;
+  max-height:29px!important;
+  margin:5px 0 0!important;
+  padding:0 2px!important;
+  border:1px solid rgba(161,175,153,.7)!important;
+  border-image:none!important;
+  border-radius:5px!important;
+  background:rgba(15,24,29,.91)!important;
+  background-image:none!important;
+  color:#cbd8cd!important;
+  box-shadow:inset 0 0 0 1px rgba(235,248,230,.04),0 2px 8px rgba(0,0,0,.42)!important;
+  text-shadow:0 1px 3px #000!important;
+  font:800 11px/1 system-ui,sans-serif!important;
+  letter-spacing:.035em!important;
+  white-space:nowrap!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  cursor:pointer!important;
+  flex:none!important;
+}
+body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle[aria-pressed="true"]{
+  color:#bcffda!important;
+  border-color:#79d3a1!important;
+  background:rgba(20,66,48,.94)!important;
+  box-shadow:inset 0 0 0 1px rgba(161,255,200,.14),0 0 10px rgba(66,205,131,.25)!important;
+}
+body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle:focus-visible{
+  outline:2px solid #91e9b6!important;
+  outline-offset:2px!important;
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle{
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    height:29px!important;
+    min-height:29px!important;
+    max-height:29px!important;
+    margin-top:4px!important;
+    font-size:10px!important;
+  }
+}
