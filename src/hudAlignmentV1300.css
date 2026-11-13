@@ -1095,3 +1095,19 @@ body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
     font-size:clamp(32px,3.6vw,44px)!important;
   }
 }
+
+/* v33 | PC only: supply-ready badge is larger and optically lower.
+ * No navigation frame, action, mobile or tablet changes. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine) {
+  body.afterday-real-ui-v3 #hud .actionbar > button#explore > i.afterday-supply-dot {
+    top:12px!important;
+    right:10px!important;
+    width:28px!important;
+    height:28px!important;
+    min-width:28px!important;
+    min-height:28px!important;
+    border-width:2px!important;
+    font:900 16px/1 system-ui,sans-serif!important;
+    box-shadow:0 0 0 1px #8e0612,0 0 10px #f2293c!important;
+  }
+}
