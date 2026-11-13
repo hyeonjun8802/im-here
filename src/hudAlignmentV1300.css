@@ -958,3 +958,45 @@ body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions {
     transform-origin:bottom left!important;
   }
 }
+/* AFTERDAY v25 | pending supply opportunity, bottom explore/chest slot.
+ * Actual scavenge.pending is the sole source of truth. Keep the original
+ * nine-cell artwork and centered glyph untouched on PC and mobile. */
+body.afterday-real-ui-v3 #hud .actionbar #explore > .afterday-supply-badge {
+  position:absolute!important;
+  display:grid!important;
+  place-items:center!important;
+  top:8%!important;
+  right:11%!important;
+  bottom:auto!important;
+  left:auto!important;
+  width:clamp(15px,2.25vw,19px)!important;
+  height:clamp(15px,2.25vw,19px)!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  flex:none!important;
+  align-self:auto!important;
+  z-index:6!important;
+  border:1px solid #ffe1ad!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle at 30% 25%,#ffe1a0,#ffab43 65%,#b9571f)!important;
+  box-shadow:0 0 5px #ffae55bb,0 1px 3px #000b!important;
+  color:#321809!important;
+  font:900 11px/1 system-ui,sans-serif!important;
+  text-align:center!important;
+  pointer-events:none!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar #explore > .afterday-supply-badge[hidden] {
+  display:none!important;
+}
+@media(max-width:720px) {
+  body.afterday-real-ui-v3 #hud .actionbar #explore > .afterday-supply-badge {
+    top:9%!important;
+    right:8%!important;
+    width:14px!important;
+    height:14px!important;
+    font-size:10px!important;
+  }
+}

@@ -89,6 +89,11 @@ function renderHUD(){
  $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
  $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
  const open=state.scavenge?.pending;
+ const supplyAvailable=Boolean(open)&&!dead;
+ const supplyBadge=$('#explore .afterday-supply-badge');
+ if(supplyBadge)supplyBadge.hidden=!supplyAvailable;
+ $('#explore').setAttribute('aria-label',supplyAvailable?'보급 탐색 · 새로운 탐색 기회 있음':'긴급 탐색');
+ $('#explore').title=supplyAvailable?'새로운 보급 탐색 기회가 있습니다':'긴급 탐색';
  $('#expedition-toggle').hidden=!open||dead;
  const waiting=state.companion?.pending;
  $('#companion-toggle').hidden=!waiting||dead;
