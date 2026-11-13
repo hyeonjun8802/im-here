@@ -18,6 +18,7 @@ test('emergency supplies are offered only during actual shortage, without false 
  assert.equal(status.ready,false);
  assert.match(status.reason,/19시간/);
  assert.equal(applyAction(s,'explore',start+3600000).good,false);
+ s.supply.water=1; // Still short on supplies after the cooldown.
  status=emergencyExploreAvailability(s,start+20*3600000);
  assert.equal(status.ready,true);
 });
