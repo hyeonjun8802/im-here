@@ -130,3 +130,54 @@ export function applyCompanionMinute(s,day,weather,{addLog=()=>{}}={}){
  }
  return {foodUsed,waterUsed,partsFound,departed:false};
 }
+
+
+/** Honest HUD view of the EXISTING passive labor modifier.
+ * A healthy helper increases progress of OWNED, functional purifier/garden
+ * at 1.3x; no bonus is awarded when the equipment is missing or broken. */
+export function companionBuffView(s){
+ const c=s?.companion;
+ if(!c?.present)return {state:'absent',label:'',description:''};
+ const health=Math.round(Number(c.health)||0);
+ const dailyCost='매 게임 하루 식량 1개·식수 1개 소비';
+ if(!companionWorks(s))return {
+  state:'resting',label:'🤝 동료 지침 · 협업 중단',
+  description:`동료 건강 ${health}% · 작업 속도 보너스 중단 · ${dailyCost}`
+ };
+ const purifier=Boolean(s.kit?.purifier&&Number(s.facilities?.tank)>=40);
+ const garden=Boolean(s.kit?.seeds);
+ if(!purifier&&!garden)return {
+  state:'waiting',label:'🤝 동료 대기 · 설비 필요',
+  description:`동료 건강 ${health}% · 정수기/씨앗을 확보하거나 탱크를 수리하면 협업 속도 +30% · ${dailyCost}`
+ };
+ const target=purifier&&garden?'정수·재배':purifier?'정수':'재배';
+ const pct=Math.round((COMPANION_BALANCE.foodBonus-1)*100);
+ return {
+  state:'boosted',label:`🤝 ${target} 속도 +${pct}%`,
+  description:`동료 건강 ${health}% · ${target} 작업 진행 속도 +${pct}% (정수 최대 생산량은 기존 상한 유지) · 안전한 날씨에는 폐자재 회수도 도움 · ${dailyCost}`
+ };
+}
+
+/** Relationship story beats depend only on saved recruitment day, kit and
+ * current health. Pure presentation: no new clock, loot, or save fields. */
+export function companionStoryBeat(s,day){
+ const c=s?.companion;
+ if(!c?.present)return null;
+ const since=Math.floor(Number(day)||0)-Math.floor(Number(c.arrivedDay)||0);
+ if(since===1)return {
+  title:'둘이 맞이한 첫 아침',
+  line:'새 동료가 모닥불 옆에 두 사람 몫의 그릇을 놓았다. “같이 버티려면 오늘 먹을 몫부터 세야겠네요.”'
+ };
+ if(since===3)return s.kit?.purifier&&Number(s.facilities?.tank)>=40
+  ?{title:'물탱크 아래 두 손',line:'동료가 정수기의 밸브를 살핀다. “물 한 병이 더 빨리 나오면 내일이 달라지겠죠.” 정수 작업에 손이 보태졌다.'}
+  :s.kit?.seeds
+   ?{title:'작은 화단의 약속',line:'동료는 마른 흙을 고르고 씨앗 옆에 물을 조금 남겨 두었다. “이게 자라면 우리도 좀 나아지겠죠.”'}
+   :{title:'아직 비어 있는 작업대',line:'동료가 빈 물통을 닦으며 묻는다. “정수기나 씨앗이 있으면 제가 도울 수 있을 텐데요.”'};
+ if(since===7)return c.obtainedParts>0
+  ?{title:'녹슨 나사가 남긴 것',line:'동료가 직접 모아 둔 수리 부품을 보여 준다. 버려진 도시에서도 둘이 힘을 합치면 쓸 만한 것이 남는다.'}
+  :{title:'낡은 계단실의 발소리',line:'처음에는 낯설던 발소리가 이제 익숙하다. 동료는 지친 몸으로도 옥상에 남아 다음 날을 준비한다.'};
+ if(since===14)return c.health<=20
+  ?{title:'두 사람의 균열',line:'동료가 작업대 옆에 주저앉았다. “식량과 물이 부족하면 일손도 멈춥니다.” 이제는 서로의 생존을 살펴야 한다.'}
+  :{title:'같이 버틴 열네 번째 날',line:'동료가 잠든 도시를 바라보며 말했다. “처음에는 구조를 기다렸는데, 지금은 우리가 이 옥상을 지키고 있네요.”'};
+ return null;
+}

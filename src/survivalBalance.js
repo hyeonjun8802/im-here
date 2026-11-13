@@ -1,3 +1,4 @@
+import {companionStoryBeat} from './supportCompanion.js';
 /** AFTERDAY v4.1 survival director: one rooftop, one survivor, one real-time clock.
  * These are game-balance units, not medical or meteorological measurements.
  * All incidence rolls are made once per encounter from saved seeds, never per frame.
@@ -90,6 +91,7 @@ export function survivalPriority(s,day=1){
   if((Number(s.supply?.food)||0)<=1)return '식량이 부족합니다. 오늘의 보급 기회를 확인하세요.';
   if(Number(s.health)<45)return '건강이 낮습니다. 휴식과 치료 가능 여부를 확인하세요.';
   if(s.scavenge?.pending)return '하단 보급 버튼에서 오늘의 탐색 위험과 보상을 비교하세요.';
+  if(s.companion?.present&&Number(s.companion.health)<=20)return '동료가 지쳐 정수·재배 협업이 중단됐습니다. 두 사람의 식량·식수를 살피세요.';
   if(Number(s.facilities?.tank)<40)return '손상된 물탱크를 확인하고 수리 가능 여부를 살피세요.';
   if(s.kit?.tent===false)return '안전한 잠자리를 위해 텐트 탐색 기회를 기다리세요.';
   if(s.kit?.purifier===false)return '비를 식수로 만들 정수기 확보를 준비하세요.';
@@ -107,7 +109,8 @@ export function survivalDailyBriefing(day,s){
   const milestone=d===1||SURVIVAL_CHAPTERS.some(beat=>beat.day===d);
   const authored=milestone?survivalChapter(d):null;
   const note=DAILY_SURVIVAL_BEATS[(d-1)%DAILY_SURVIVAL_BEATS.length];
-  const title=authored?.title||`DAY ${d} · ${note.title}`;
-  const line=(authored?.line||note.line)+' 오늘의 목표: '+survivalPriority(s,d);
+  const companionNote=milestone?null:companionStoryBeat(s,d);
+  const title=authored?.title||companionNote?.title||`DAY ${d} · ${note.title}`;
+  const line=(authored?.line||companionNote?.line||note.line)+' 오늘의 목표: '+survivalPriority(s,d);
   return {day:d,title,line};
 }

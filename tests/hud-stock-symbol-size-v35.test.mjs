@@ -29,7 +29,7 @@ test('all four live resource counters retain their matching pictograms',()=>{
 });
 
 test('desktop stock counts are readable without scaling icons, frames or phone layout',()=>{
-  const quantityCss=css.slice(css.indexOf('/* v36 | PC readability calibrated'));
+  const quantityCss=css.slice(css.indexOf('/* v36 | PC readability calibrated'),css.indexOf('/* v38 | Existing companion-status line'));
   assert.match(quantityCss,/@media \(min-width:1024px\) and \(hover:hover\) and \(pointer:fine\)\s*\{/);
   assert.match(quantityCss,/\.survival-hud-stock strong\s*\{/);
   assert.match(quantityCss,/font-size:clamp\(24px,1\.8vw,30px\)!important;/);

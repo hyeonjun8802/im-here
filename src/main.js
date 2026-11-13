@@ -8,6 +8,7 @@ import {DeviceCloudSave} from './deviceCloudSave.js';
 import {survivalDailyBriefing} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
+import {companionBuffView} from './supportCompanion.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
@@ -154,14 +155,18 @@ function renderHUD(){
  $('#expedition-toggle').hidden=!open||dead;
  const waiting=state.companion?.pending;
  $('#companion-toggle').hidden=!waiting||dead;
- const companionLong=state.companion?.present
-   ?'지원 생존자 동행 · 건강 '+Math.round(state.companion.health)+'% · 식량/식수 매일 -1 · 정수/재배 +30%'
-   :waiting?'다른 생존자의 구조 요청 · 받아들일지 선택하세요'
-   :state.companion?.lost?'함께하던 생존자는 캠프를 떠났습니다':'주변 생존자 신호를 기다리는 중';
- $('#companion-status').textContent=state.companion?.present?
-   '생존자 동행 · 건강 '+Math.round(state.companion.health)+'%':
+ const companionBuff=companionBuffView(state);
+ const companionLong=state.companion?.present?companionBuff.description:
+   waiting?'다른 생존자의 구조 요청 · 받아들일지 선택하세요':
+   state.companion?.lost?'함께하던 생존자는 캠프를 떠났습니다':'주변 생존자 신호를 기다리는 중';
+ const companionNode=$('#companion-status');
+ companionNode.textContent=state.companion?.present?companionBuff.label:
    waiting?'생존자 구조 요청 대기':state.companion?.lost?'동행 생존자 이탈':'생존자 신호 대기';
- $('#companion-status').title=companionLong;
+ companionNode.classList.toggle('companion-buff-active',companionBuff.state==='boosted');
+ companionNode.classList.toggle('companion-buff-waiting',companionBuff.state==='waiting');
+ companionNode.classList.toggle('companion-buff-resting',companionBuff.state==='resting');
+ companionNode.title=companionLong;
+ companionNode.setAttribute('aria-label',companionLong);
  $('#radio-contact').hidden=!state.kit.radio||dead;
  const owned=ITEM_IDS.filter(id=>state.kit?.[id]);
  // Simulated disaster damage can remove an already-installed item. Refresh
@@ -253,6 +258,20 @@ function runSurvivalAction(action){
    save();
  }
  toast(result.msg,action.startsWith('scavenge_')||action.startsWith('companion_')||action==='radio_contact'?'quiet':'');
+ // Companion choices now have one explicit story consequence. The underlying
+ // choice was already committed and saved; these panels never grant a reward.
+ if(result.good&&action.startsWith('companion_')&&!eventBoard?.activeKey){
+   const joined=result.outcome==='joined';
+   eventBoard?.show(joined?'companionJoined':'companionOutcome',{
+     title:joined?'두 사람이 함께 지키는 옥상':
+       result.outcome==='declined'?'다시 혼자가 된 옥상':
+       result.outcome?.startsWith('traded')?'식량 한 개의 교환':'스쳐 간 구조 신호',
+     description:joined?
+       '“저도 일할 수 있어요. 함께 버텨요.” 정수·재배 설비가 있으면 작업 속도 +30%. 대신 매 게임 하루 식량과 식수 각각 1개가 필요하다.':
+       result.msg,
+     silent:true,duration:10500
+   });
+ }
  // An expedition's consequences deserve a short, skippable acknowledgement.
  // This is display-only: no second loot roll, reward, save or alarm sound.
  if(result.good&&action.startsWith('scavenge_')&&result.outcome!=='safe'&&!eventBoard?.activeKey){
