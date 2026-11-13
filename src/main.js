@@ -140,7 +140,10 @@ function renderHUD(){
  // cannot waste a tap only to report its cooldown afterward.
  supplyButton.dataset.supplyReady=String(supplyAvailable);
  supplyButton.dataset.supplyKind=open?'expedition':emergency.ready?'emergency':'unavailable';
- supplyButton.disabled=dead||(!open&&!emergency.ready);
+ // Keep an unavailable slot tappable solely to EXPLAIN its current lock.
+ // Native disabled buttons cannot deliver the cooldown hint on touch devices.
+ supplyButton.disabled=dead;
+ supplyButton.setAttribute('aria-disabled',String(!open&&!emergency.ready));
  const supplyHelp=open?'오늘의 탐색 선택 가능 · 클릭하여 장비/보급 결정':emergency.reason;
  supplyButton.setAttribute('aria-label',supplyHelp);
  supplyButton.title=supplyHelp;
