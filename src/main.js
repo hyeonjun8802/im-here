@@ -92,8 +92,8 @@ let autoSurvivalEnabled=false;
 let lastAutoActionReal=0;
 // One brief chapter caption per in-game day. Regular HUD refreshes must not
 // restart its timeout or leave a permanent black backdrop over the 3D world.
-const CHAPTER_CAPTION_MS=6500;
 const narrativeQueue=new NarrativeQueueV76();
+const CHAPTER_CAPTION_MS=6500;
 let displayedChapterDay=null;
 let chapterCaptionTimer=null;
 function syncChapterCaption(day,dead){
