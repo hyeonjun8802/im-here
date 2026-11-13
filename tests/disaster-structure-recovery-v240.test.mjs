@@ -48,7 +48,15 @@ test('damaged gear disappears exactly once and is queued for real reacquisition'
  // Next game day can offer a new expedition for still-missing equipment.
  restored.scavenge.lastOfferedDay=4;
  const next=offerDailyScavenge(restored,5,{force:true});
- assert.equal(next.target,'seeds');
+ assert.ok(ITEM_IDS.includes(next.target));
+ assert.equal(restored.kit.seeds,false);
+ // Every missing item, including destroyed ones, is eligible for subsequent
+ // genuine expedition loot; an item must never respawn automatically.
+ restored.scavenge.pending=null;
+ for(const id of ITEM_IDS)restored.kit[id]=id!=='seeds';
+ restored.scavenge.lastOfferedDay=5;
+ const seedOnly=offerDailyScavenge(restored,6,{force:true});
+ assert.equal(seedOnly.target,'seeds');
 });
 test('offline weather and preview tornado cannot remove inventory',()=>{
  const s=defaults(started);

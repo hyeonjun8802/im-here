@@ -37,8 +37,6 @@ export function sanitize(raw, now=Date.now()) {
   s.itemSystemVersion=1;
   s.kit=normalizeKit(raw.kit,legacy);
   s.scavenge=sanitizeScavengeDirector(raw.scavenge,s.startedAt);
-  s.structureImpactEpisode=Math.max(-1,Math.min(s.weatherEpisode||0,Math.floor(Number(raw.structureImpactEpisode)??-1)));
-  s.equipmentLossEpisode=Math.max(-1,Math.min(s.weatherEpisode||0,Math.floor(Number(raw.equipmentLossEpisode)??-1)));
   s.companion=sanitizeCompanion(raw.companion);
   const offset=Number(s.gameClockOffsetMs);
   s.gameClockOffsetMs=Number.isFinite(offset)?offset:0;
@@ -80,6 +78,9 @@ export function sanitize(raw, now=Date.now()) {
   s.tornadoSuppliesSecured=Boolean(s.tornadoSuppliesSecured);
   s.tornadoPreview=Boolean(s.tornadoPreview);
   s.weatherEpisode=Math.max(0,Math.floor(Number(s.weatherEpisode)||0));
+  const boundedEpisode=value=>Number.isFinite(value)?Math.max(-1,Math.min(s.weatherEpisode,Math.floor(value))):-1;
+  s.structureImpactEpisode=boundedEpisode(raw.structureImpactEpisode);
+  s.equipmentLossEpisode=boundedEpisode(raw.equipmentLossEpisode);
   const legacyWeatherSchedule=Number(raw.weatherScheduleVersion)!==2;
   s.weatherScheduleVersion=2;
   s.weatherSinceAt=Math.max(0,Number(s.weatherSinceAt)||s.startedAt);
@@ -302,12 +303,11 @@ export function advance(s,now=Date.now(),offline=false){
       // not only a label change. If rain rolls into rain again, the player sees
       // one new scheduled rain interval and the progress ring restarts at 0%.
       s.weatherSinceAt=tickTime;
-      if(s.weather!==was){
+      if(s.weather!==was||scheduledImpact){
         s.weatherEpisode++;
-        addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
-      }
-      if(s.weather!==was||scheduledImpact)
+        if(s.weather!==was)addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
         applyDisasterStructureDamage(s,s.weather,getDay(s.startedAt,tickTime),{offline});
+      }
     }
     const e=s.weather;
     // In actual weather, each minute ruins another background tower, at most three.
