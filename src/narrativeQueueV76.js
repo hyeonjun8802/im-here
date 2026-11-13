@@ -21,9 +21,9 @@ export class NarrativeQueueV76 {
    this.queue=this.queue.filter(item=>item.kind!=='daily');
    if(this.active?.kind==='daily')this.active=null;
   }else if(this.active&&priority>this.active.priority){
-   // A significant cinematic can interrupt ambience. Keep any unfinished
-   // non-daily message rather than restarting or dropping it.
-   if(this.active.kind!=='daily')this.queue.unshift(this.active);
+   // A cinematic can interrupt ambience. Resume the interrupted text
+   // later, unless a newer daily chapter supersedes it at high speed.
+   if(this.active.remainingMs>250)this.queue.unshift(this.active);
    this.active=null;
   }
   this.queue.push(message);
