@@ -72,3 +72,33 @@ test('mobile and desktop story size stays within the viewport, above the real eq
  assert.match(css,/max-height:min\(24vh,148px\)!important/);
  assert.match(css,/prefers-reduced-motion:reduce/);
 });
+
+
+test('ordinary story/results appear near the lower equipment area, while urgent alerts stay high',()=>{
+ const board=readFileSync(new URL('../src/eventBoard.js',import.meta.url),'utf8');
+ const boardCss=readFileSync(new URL('../src/eventBoard.css',import.meta.url),'utf8');
+ // The classes are the authoritative existing event severities.
+ assert.match(board,/expeditionResult:\{[^\n]*severity:'social'/);
+ assert.match(board,/companionJoined:\{[^\n]*severity:'social'/);
+ assert.match(board,/helicopter:\s*\{[^\n]*severity:'opportunity'/);
+ assert.match(board,/storm:\s*\{[^\n]*severity:'disaster'/);
+ assert.match(board,/tornado:\s*\{[^\n]*severity:'disaster'/);
+ assert.match(css,/> \.afterday-board:is\(\.afterday-board--social,\.afterday-board--opportunity\):not\(\.is-choice\)\{/);
+ assert.match(css,/top:auto!important/);
+ assert.match(css,/bottom:calc\(160px \+ env\(safe-area-inset-bottom\)\)!important/);
+ assert.match(css,/@media\(min-width:721px\) and \(max-width:1023px\)/);
+ assert.match(css,/@media\(max-width:720px\)/);
+ assert.match(css,/max-height:min\(29dvh,190px\)!important/);
+ assert.match(css, /#hud:has\(> \.afterday-board:is\(\.afterday-board--social,\.afterday-board--opportunity\)\.is-open:not\(\.is-choice\)\)/);
+ assert.match(boardCss,/\.afterday-board\.is-choice\{\s*position:fixed;top:50%;left:50%/);
+ assert.doesNotMatch(css, /\.afterday-board--danger|\.afterday-board--disaster/);
+});
+
+test('story-only popups clear the equipment top in ordinary portrait mobile viewports',()=>{
+ for(const viewport of [320,360,375,390,414,480,720]){
+   const kitBottom=Math.max(75,(viewport-8)*172/1148+19);
+   const kitHeight=Math.min(246,Math.max(204,viewport*.57))*308/461;
+   const popupBottom=kitBottom+kitHeight+12;
+   assert.ok(popupBottom-(kitBottom+kitHeight)>=12,viewport+'px: card must clear equipment');
+ }
+});
