@@ -173,7 +173,10 @@ export class SurvivorLife{
   }
   this.morningWaking=false;
   if(action!=='sleep')this.world.sleepBedding?.setCover(0);
-  this.current=action;this.activitySpec=spec;this.stage='approach';this.manual=manual;this.stageTime=0;this.performDuration=action==='stretch'&&!manual?16:spec.duration;this.activityLabel=`${spec.label} · 이동 중`;
+  this.current=action;this.activitySpec=spec;this.stage='approach';this.manual=manual;this.stageTime=0;
+  // Manual rest reuses the authored lying/sleeping pose, but wakes after 18s.
+  // Nightly autonomous sleep remains until the morning clock triggers waking.
+  this.performDuration=action==='sleep'&&manual?18:action==='stretch'&&!manual?16:spec.duration;this.activityLabel=`${spec.label} · 이동 중`;
   const start=this.world.survivor.position;
   // For chair actions, first arrive IN FRONT of the chair, then settle onto it.
   const approach=spot.approach??spot.pos;
@@ -257,7 +260,7 @@ export class SurvivorLife{
    if(decision.type==='sleep'&&this.clock>=this.nextSleepRetry){
     if(!this.request('sleep',false))this.nextSleepRetry=this.clock+8;
     else this.nextSleepRetry=0;
-   }else if(decision.type==='wake'&&!this.morningWaking&&this.stage!=='exit'){
+   }else if(decision.type==='wake'&&!(this.current==='sleep'&&this.manual)&&!this.morningWaking&&this.stage!=='exit'){
     // No teleport: rise from the real cot, then walk to the morning stretch spot.
     this.stage='exit';this.stageTime=0;this.morningWaking=true;
     this.activityLabel='07:00 · 잠에서 깨어 일어나는 중';
