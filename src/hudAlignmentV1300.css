@@ -1217,3 +1217,38 @@ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
     font-variant-numeric:tabular-nums!important;
   }
 }
+
+/* v38 | Existing companion-status line becomes a truthful 1-line labor buff.
+ * No new overlay, resource panel, icon or frame scaling. Reuse the text slot
+ * so both PC and mobile keep the original equipment artwork geometry. */
+body.afterday-real-ui-v3 #hud #companion-status.companion-buff-active{
+  color:#b4f5ce!important;
+  font-weight:850!important;
+  background:linear-gradient(90deg,rgba(30,87,65,.76),rgba(21,62,53,.38))!important;
+  border-left:2px solid #72d4a0!important;
+  border-radius:3px!important;
+  padding:1px 5px!important;
+  text-shadow:0 1px 2px #000c!important;
+  box-shadow:inset 0 1px rgba(184,252,210,.12)!important;
+}
+body.afterday-real-ui-v3 #hud #companion-status.companion-buff-waiting{
+  color:#efd9ac!important;
+  font-weight:700!important;
+  background:rgba(96,72,38,.24)!important;
+  border-left:2px solid #cba365!important;
+  padding:1px 5px!important;
+}
+body.afterday-real-ui-v3 #hud #companion-status.companion-buff-resting{
+  color:#f3b6a1!important;
+  font-weight:750!important;
+  background:rgba(92,43,38,.24)!important;
+  border-left:2px solid #da8a70!important;
+  padding:1px 5px!important;
+}
+@media (max-width:720px) {
+  body.afterday-real-ui-v3 #hud #companion-status.companion-buff-active,
+  body.afterday-real-ui-v3 #hud #companion-status.companion-buff-waiting,
+  body.afterday-real-ui-v3 #hud #companion-status.companion-buff-resting{
+    padding:0 3px!important;
+  }
+}
