@@ -4,6 +4,7 @@ import {installPremiumHudV1000} from './premiumHudV1000.js';
 import {installCommonUiAssetsV3} from './commonUiAssetsV3.js';
 import {installPremiumEquipmentHudV1600} from './premiumEquipmentHudV1600.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
+import {DeviceCloudSave} from './deviceCloudSave.js';
 import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
@@ -14,9 +15,10 @@ import {persistFreshRestart} from './restartSession.js';
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
 // One in-game day passes every ten minutes of active play; background time pauses.
-const gameClock=new GameClock(now,saved?.gameClockOffsetMs,
-  Number(saved?.clockSchema)>=2?saved?.gameClockSavedRealAtMs:null);
-const state=sanitize(saved,gameClock.virtualNow);
+let gameClock=new GameClock(now,saved?.gameClockOffsetMs,
+  Number(saved?.clockSchema)>=2?saved?.gameClockSavedRealAtMs:null,{progressWhileAway:true});
+let state=sanitize(saved,gameClock.virtualNow);
+const deviceCloud=new DeviceCloudSave();
 migrateLegacyGameDay(state,gameClock.virtualNow); // Preserve DAY and permanent ruins from old saves.
 advance(state,gameClock.virtualNow,true);
 const disasterForecast=installPremiumHudV1000($('#disaster-forecast'));
@@ -33,7 +35,9 @@ const save=()=>{
   state.gameClockOffsetMs=gameClock.offset(real);
   state.gameClockSavedRealAtMs=real;
   state.clockSchema=3;
+  state.deviceSaveAtMs=Math.max(real,(Number(state.deviceSaveAtMs)||0)+1);
   localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+  void deviceCloud.save(state);
   return true;
  }catch{return false}
 };
@@ -174,6 +178,7 @@ function runSurvivalAction(action){
  if(result.good){
    if(action.startsWith('scavenge_')||action.startsWith('companion_'))world?.syncSurvivalInventory(state);
    if(action==='radio_contact')world?.setAction('radio');
+   else if(action==='rest')world?.setAction('sleep');
    else if(action==='take_cover')world?.setAction('shelter');
    else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
    else if(!action.startsWith('scavenge_')&&!action.startsWith('companion_')&&action!=='radio_contact')world?.setAction(action);
@@ -247,7 +252,8 @@ function bindEvents(){
   try{
     // Persist a known-good fresh session BEFORE navigation. pagehide,
     // visibilitychange and the 15s autosave are all blocked by restartInProgress.
-    persistFreshRestart(localStorage,Date.now());
+    const fresh=persistFreshRestart(localStorage,Date.now());
+    void deviceCloud.save(fresh);
   }catch{
     // If persistence itself is unavailable, at least remove the dead save.
     try{localStorage.removeItem(SAVE_KEY)}catch{}
@@ -261,7 +267,7 @@ function bindEvents(){
   if(activity==='radio'){
     runSurvivalAction('radio_contact');return;
   }
-  const accepted=world?.setAction(activity);
+  const accepted=world?.setAction(activity==='rest'?'sleep':activity);
   if(accepted&&autoLifeCamera)world?.setCameraView(['guitar','radio','sit','rest','cook'].includes(activity)?'portrait':'survivor');
   if(!accepted){toast('현재 재난 상황에서는 해당 활동을 진행할 수 없습니다.');return;}
   if(activity==='guitar'){
@@ -308,7 +314,7 @@ function bindEvents(){
  window.addEventListener('pagehide',save);
  document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible'){
-   // Resuming a sleeping browser tab never accelerates missed background time.
+   // A hidden tab catches up by real elapsed time, never by the 50x active speed.
    const t=gameClock.tick(Date.now(),false);
    advance(state,t,true);renderHUD();save();
   }else{
@@ -408,6 +414,18 @@ function animation(){
  requestAnimationFrame(draw);
 }
 async function boot(){try{
+  // Prefer the latest save for this anonymous device. This request is bounded
+  // and never prevents local play if the provider or network is unavailable.
+  const cloudSaved=await deviceCloud.load();
+  if(cloudSaved&&(Number(cloudSaved.deviceSaveAtMs)||0)>(Number(saved?.deviceSaveAtMs)||0)){
+   const resumedAt=Date.now();
+   gameClock=new GameClock(resumedAt,cloudSaved.gameClockOffsetMs,
+    Number(cloudSaved.clockSchema)>=2?cloudSaved.gameClockSavedRealAtMs:null,{progressWhileAway:true});
+   state=sanitize(cloudSaved,gameClock.virtualNow);
+   migrateLegacyGameDay(state,gameClock.virtualNow);
+   advance(state,gameClock.virtualNow,true);
+   try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch{}
+  }
   $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});
   // A new world begins without gear. Day 1 always offers a real player decision;
   // old saves retain their original camp assets and supply.
