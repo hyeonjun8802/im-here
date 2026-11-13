@@ -1037,26 +1037,12 @@ body.afterday-real-ui-v3 #hud .actionbar > button#explore[data-supply-ready="fal
   }
 }
 
-/* v27 | the equipment pane is display-only. Keep the hidden DOM marker so
- * older frame sizing selectors continue matching, but retire its extra action.
- * The painted original gold well is masked by a dark inset; the real chest
- * button remains in the unchanged nine-slot lower navigation. */
+/* v27 | The equipment pane is display-only. Keep the retired action hidden
+ * for existing layout selectors; no pseudo-element mask is painted. The clean
+ * equipment background is prepared from the source atlas as one image. */
 body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
   display:none!important;
   visibility:hidden!important;
-  pointer-events:none!important;
-}
-body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action[hidden])::after {
-  content:""!important;
-  display:block!important;
-  position:absolute!important;
-  left:10%!important;
-  right:10%!important;
-  top:76%!important;
-  height:18%!important;
-  z-index:1!important;
-  border-radius:3px!important;
-  background:linear-gradient(180deg,#111922,#141d25 65%,#101820)!important;
   pointer-events:none!important;
 }
 
@@ -1088,87 +1074,24 @@ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action[hidden]):
   display:none!important;
 }
 
-/* v31 | Desktop application of the larger approved HUD proportions.
- * Only CSS: original metal sprites, nine hit targets, weather/game state,
- * existing event actions and ALL phone/tablet geometry are preserved. */
+/* v32 | Correct PC-only adjustment: original frame sizes restored by
+ * removing v31. Enlarge GLYPHS ONLY inside the unchanged nine metal cells.
+ * Mobile, tablet, resource panels and all event/game logic are untouched. */
 @media (min-width:1024px) and (hover:hover) and (pointer:fine) {
-  body.afterday-real-ui-v3 #hud .disaster-forecast.premium-hud-v1000{
-    transform:translateX(-50%) scale(.78)!important;
-    transform-origin:center top!important;
-  }
-  body.afterday-real-ui-v3 #hud .actionbar{
-    transform:translateX(-50%) scale(.94)!important;
-    transform-origin:center bottom!important;
-  }
-  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
-    transform:scale(.86)!important;
-    transform-origin:bottom left!important;
-  }
-  body.afterday-real-ui-v3 #hud .topbar .survival-quick-info,
-  body.afterday-real-ui-v3 #hud .topbar .top-right{
-    top:calc(min(1450px,100vw - 6px) * .108 + 12px + env(safe-area-inset-top))!important;
-  }
-  body.afterday-real-ui-v3 #hud .topbar .survival-quick-info{
-    left:calc(50vw - min(1450px,100vw - 6px) * .38 + 14px)!important;
-  }
-  body.afterday-real-ui-v3 #hud .topbar .top-right{
-    right:calc(50vw - min(1450px,100vw - 6px) * .38 + 14px)!important;
-  }
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions){
-    bottom:calc(10px + env(safe-area-inset-bottom))!important;
-  }
-  /* Icons remain centered inside the existing painted slots. */
   body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button > img.afterday-v3-action-icon,
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img{
-    width:clamp(42px,4.2vw,52px)!important;
-    height:clamp(42px,4.2vw,52px)!important;
-    max-width:calc(100% - 18px)!important;
-    max-height:53%!important;
-    left:50%!important;top:42%!important;
+  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot > img {
+    width:clamp(46px,4.5vw,58px)!important;
+    height:clamp(46px,4.5vw,58px)!important;
+    max-width:calc(100% - 12px)!important;
+    max-height:calc(100% - 12px)!important;
+    left:50%!important;
+    top:calc(50% + 3px)!important;
     transform:translate(-50%,-50%)!important;
     object-fit:contain!important;
   }
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span{
-    top:42%!important;width:clamp(40px,4vw,50px)!important;
-    height:clamp(40px,4vw,50px)!important;font-size:clamp(32px,3.3vw,42px)!important;
+  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button:not([data-v3-sprite]) > span {
+    width:clamp(40px,4.1vw,52px)!important;
+    height:clamp(40px,4.1vw,52px)!important;
+    font-size:clamp(32px,3.6vw,44px)!important;
   }
-  /* Real action labels, not baked-in text or new click targets. */
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > button::after,
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot::after{
-    content:""!important;display:block!important;position:absolute!important;
-    top:74%!important;left:50%!important;right:auto!important;bottom:auto!important;
-    width:max-content!important;max-width:96%!important;height:auto!important;
-    transform:translate(-50%,-50%)!important;
-    margin:0!important;padding:0!important;
-    background:none!important;background-image:none!important;
-    border:0!important;box-shadow:none!important;
-    font:800 13px/1.1 'Noto Sans KR',system-ui,sans-serif!important;
-    letter-spacing:-.035em!important;text-align:center!important;white-space:nowrap!important;
-    color:#f4e8d0!important;text-shadow:0 2px 3px #000e!important;
-    pointer-events:none!important;z-index:2!important;
-  }
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #drink::after{content:"식수"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #eat::after{content:"식량"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #repair::after{content:"수리"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #rest::after{content:"휴식"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #medicine::after{content:"치료"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #explore::after{content:"탐색"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #repair-tank::after{content:"물탱크"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #life-panel-toggle::after{content:"일상"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > #weather-panel-toggle::after{content:"기상"!important}
-  body.afterday-real-ui-v3 #hud .actionbar:not(.v3-has-extra-actions) > .afterday-v3-standby-slot::after{
-    content:"물탱크"!important;color:#9b9186!important;
-  }
-  /* Match event-notice scale/spacing to the larger desktop HUD; mandatory
-   * choice dialogs retain their separate existing styles and behavior. */
-  body .afterday-board:not(.is-choice){
-    top:clamp(174px,19vh,222px)!important;
-    width:min(720px,calc(100vw - 56px))!important;
-    min-height:140px!important;
-  }
-  body .afterday-board:not(.is-choice) .afterday-board-art{min-height:138px!important}
-  body .afterday-board:not(.is-choice) .afterday-board-title{font-size:clamp(19px,1.55vw,23px)!important}
-  body .afterday-board:not(.is-choice) .afterday-board-description{font-size:clamp(12px,1vw,14px)!important}
-  body .afterday-board:not(.is-choice) .afterday-board-category{font-size:12px!important}
 }
-/* end v31 desktop-only polish */
