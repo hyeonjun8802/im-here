@@ -87,6 +87,7 @@ export function survivalPriority(s,day=1){
   if(s.survivalStatus==='dead')return '생존 기록을 확인하세요.';
   if(s.weather==='tornado')return '강풍에 대비해 대피와 물자 보호를 결정하세요.';
   if(s.companion?.pending)return '구조 요청을 확인하고 물과 식량을 나눌지 결정하세요.';
+  if(s.companion?.rationPending)return '동료와 식량을 나눌지, 비축량을 지킬지 주변 생존 장비에서 결정하세요.';
   if((Number(s.supply?.water)||0)<=1)return '식수 재고가 위험합니다. 집수 또는 보급 경로를 확인하세요.';
   if((Number(s.supply?.food)||0)<=1)return '식량이 부족합니다. 오늘의 보급 기회를 확인하세요.';
   if(Number(s.health)<45)return '건강이 낮습니다. 휴식과 치료 가능 여부를 확인하세요.';
