@@ -8,17 +8,23 @@ const html=read('index.html'),main=read('src/main.js'),css=read('src/hudAlignmen
 
 test('supply badge belongs to the original bottom explore slot, not an extra cell',()=>{
  assert.ok(html.includes('<button id="explore" data-action="explore" aria-label="긴급 탐색" data-supply-ready="false">'));
- assert.ok(!html.includes('class="afterday-supply-badge"'),'legacy span is intentionally removed');
- assert.match(css,/#hud \.actionbar > button#explore\[data-supply-ready="true"\]::after/);
- assert.match(css,/content:"!"!important/);
- assert.match(css,/display:grid!important/);
+ assert.ok(html.includes('<i class="afterday-supply-dot" aria-hidden="true" hidden>!</i>'));
+ assert.equal((html.match(/class="afterday-supply-dot"/g)||[]).length,1,'one dot on the original nine-slot navigation');
+ assert.doesNotMatch(css,/#hud \.actionbar > button#explore\[data-supply-ready="true"\]::after/);
+ assert.match(css,/#hud \.actionbar > button#explore > i\.afterday-supply-dot/);
+ assert.match(css,/background:#ed1930!important/);
+ assert.match(css,/border:2px solid #fff5ee!important/);
+ assert.match(css,/z-index:90!important/);
  assert.match(css,/pointer-events:none!important/);
+ assert.match(css,/\.afterday-supply-dot\[hidden\]/);
  assert.match(css,/@media\(max-width:720px\)/);
 });
 test('HUD badge appears for either a pending expedition or an eligible emergency supply run',()=>{
  assert.match(main,/const supplyAvailable=!dead&&\(Boolean\(open\)\|\|emergency.ready\)/);
  assert.match(main,/const supplyButton=\$\('#explore'\)/);
  assert.match(main,/supplyButton\.dataset\.supplyReady=String\(supplyAvailable\)/);
+ assert.match(main,/const supplyDot=supplyButton\.querySelector\('\.afterday-supply-dot'\)/);
+ assert.match(main,/if\(supplyDot\)supplyDot\.hidden=!supplyAvailable/);
  assert.match(main,/supplyButton\.setAttribute\('aria-label',supplyHelp\)/);
  const initial=Date.UTC(2026,10,13,0);
  const state=defaults(initial);
