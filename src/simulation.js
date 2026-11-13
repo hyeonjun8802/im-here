@@ -1,7 +1,7 @@
 import {scriptedDisasterType,disasterGapMsAfter,chooseScenarioWeather,weatherDurationMs} from './weatherScenarioV920.js';
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
-import {makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
+import {ITEM_INFO,makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,offerRecoveryScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
 import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute} from './supportCompanion.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
@@ -19,6 +19,7 @@ export const defaults = (now=Date.now())=>({
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
   itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
+  structureImpactEpisode:-1,equipmentLossEpisode:-1,
   supply:{food:3,water:4,medicine:0,parts:2}, facilities:{shelter:50,tank:66,storage:72},
   events:['DAY 1: 옥상 콘크리트에 누웠다. 텐트도 정수기도 없다. 오늘 탐색할지 결정해야 한다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
 });
@@ -36,6 +37,8 @@ export function sanitize(raw, now=Date.now()) {
   s.itemSystemVersion=1;
   s.kit=normalizeKit(raw.kit,legacy);
   s.scavenge=sanitizeScavengeDirector(raw.scavenge,s.startedAt);
+  s.structureImpactEpisode=Math.max(-1,Math.min(s.weatherEpisode||0,Math.floor(Number(raw.structureImpactEpisode)??-1)));
+  s.equipmentLossEpisode=Math.max(-1,Math.min(s.weatherEpisode||0,Math.floor(Number(raw.equipmentLossEpisode)??-1)));
   s.companion=sanitizeCompanion(raw.companion);
   const offset=Number(s.gameClockOffsetMs);
   s.gameClockOffsetMs=Number.isFinite(offset)?offset:0;
@@ -136,6 +139,52 @@ export function wallClock(now=Date.now()) {return new Intl.DateTimeFormat('ko-KR
 export function localHour(now=Date.now()) {const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));const get=k=>Number(parts.find(p=>p.type===k)?.value||0);return get('hour')+get('minute')/60+get('second')/3600;}
 function nextRandom(s){s.weatherSeed=(Math.imul(s.weatherSeed,1664525)+1013904223)>>>0;return s.weatherSeed/4294967296;}
 export function addEvent(s,msg){if(s.events[s.events.length-1]!==msg){s.events.push(msg);s.eventSerial=(Number(s.eventSerial)||0)+1;}if(s.events.length>16)s.events.shift();}
+
+/* Gameplay durability belongs to the playable rooftop shelter, water tank and
+ * storage. Distant city towers keep their separate permanent-collapse state.
+ * These are balance values applied ONCE per real weather episode, not per frame. */
+export const DISASTER_STRUCTURE_DAMAGE=Object.freeze({
+ rain:Object.freeze({shelter:3,tank:4,storage:1}),
+ storm:Object.freeze({shelter:9,tank:7,storage:8}),
+ tornado:Object.freeze({shelter:7,tank:6,storage:8}),
+ heat:Object.freeze({shelter:2,tank:5,storage:4}),
+ cold:Object.freeze({shelter:5,tank:9,storage:3}),
+ dust:Object.freeze({shelter:8,tank:3,storage:7}),
+ wildfire:Object.freeze({shelter:14,tank:6,storage:12})
+});
+const EQUIPMENT_EXPOSURE=Object.freeze({
+ rain:[['tent','shelter',20],['purifier','tank',20]],
+ storm:[['tent','shelter',45],['radio','storage',30],['purifier','tank',30]],
+ tornado:[['tent','shelter',75],['radio','storage',70],['purifier','tank',45],['seeds','storage',65]],
+ heat:[['seeds','storage',35]],
+ cold:[['purifier','tank',45]],
+ dust:[['radio','storage',35],['tent','shelter',25]],
+ wildfire:[['seeds','storage',60],['tent','shelter',50],['radio','storage',35]]
+});
+function loseExposedEquipment(s,type,day){
+ if(s.equipmentLossEpisode===s.weatherEpisode)return null;
+ const exposed=EQUIPMENT_EXPOSURE[type]||[];
+ const found=exposed.find(([id,structure,threshold])=>s.kit[id]&&s.facilities[structure]<threshold);
+ if(!found)return null;
+ const [id]=found;
+ s.kit[id]=false;
+ s.equipmentLossEpisode=s.weatherEpisode;
+ addEvent(s,`${WEATHER_KO[type]} 피해로 ${ITEM_INFO[id].label}이(가) 파손됐다. 폐허 탐색으로 다시 확보할 수 있다.`);
+ offerRecoveryScavenge(s,day,id);
+ return id;
+}
+export function applyDisasterStructureDamage(s,type,day,{offline=false}={}){
+ const values=DISASTER_STRUCTURE_DAMAGE[type];
+ if(!values||s.structureImpactEpisode===s.weatherEpisode)return {applied:false,lostItem:null};
+ s.structureImpactEpisode=s.weatherEpisode;
+ for(const [structure,amount] of Object.entries(values))
+   s.facilities[structure]=CAP(s.facilities[structure]-amount);
+ addEvent(s,`${WEATHER_KO[type]} 재난으로 옥상 시설 내구도가 감소했다. 대피소 -${values.shelter}, 물탱크 -${values.tank}, 보관시설 -${values.storage}.`);
+ // A near/direct tornado has a separate protected rooftop-impact phase.
+ const lostItem=(!offline&&type!=='tornado')?loseExposedEquipment(s,type,day):null;
+ return {applied:true,lostItem};
+}
+
 /** Monotonic tornado damage: preview and real weather have the same permanent city consequences.
  * Safe to replay after autosave or reload; a ruined tower can never be repaired by weather changes. */
 export function recordTornadoDamage(s,targetCount,source='weather'){
@@ -191,6 +240,7 @@ export function resolveTornadoRoofImpact(s,now=Date.now()){
  s.facilities.storage=CAP(s.facilities.storage-base.storage);
  // A real close pass can damage the rainwater filter, making later rain less useful.
  s.facilities.tank=CAP(s.facilities.tank-(s.tornadoApproach==='direct'?24:11));
+ loseExposedEquipment(s,'tornado',getDay(s.startedAt,now));
  const label=s.tornadoApproach==='direct'?'옥상 직격':'옥상 바로 옆 통과';
  addEvent(s,`${label}: 건강 -${healthLoss}, 식량 -${foodLoss}, 식수 -${waterLoss}. ${s.tornadoCoverActive?'대피로 부상을 줄였다.':'대피하지 못해 파편에 노출됐다.'}`);
  evaluateSurvival(s,now);
@@ -255,13 +305,9 @@ export function advance(s,now=Date.now(),offline=false){
       if(s.weather!==was){
         s.weatherEpisode++;
         addEvent(s,`날씨가 ${WEATHER_KO[s.weather]} 상태로 바뀌었다.`);
-        // A brief, one-time physical aftermath, NOT a damage roll every frame.
-        if(s.weather==='storm'){
-          s.facilities.shelter=CAP(s.facilities.shelter-2);
-          s.facilities.storage=CAP(s.facilities.storage-2);
-          s.facilities.tank=CAP(s.facilities.tank-2);
-        }
       }
+      if(s.weather!==was||scheduledImpact)
+        applyDisasterStructureDamage(s,s.weather,getDay(s.startedAt,tickTime),{offline});
     }
     const e=s.weather;
     // In actual weather, each minute ruins another background tower, at most three.

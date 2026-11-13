@@ -948,3 +948,13 @@ body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions {
     display:none!important;
   }
 }
+
+/* v24 | phone equipment pane: keep the single original 461x308 resource,
+ * text, badge, popup trigger and exploration button together. Transform the
+ * entire panel instead of competing with the many legacy width/padding rules. */
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+    transform:scale(.52)!important;
+    transform-origin:bottom left!important;
+  }
+}

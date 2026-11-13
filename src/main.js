@@ -24,6 +24,7 @@ const disasterForecast=installPremiumHudV1000($('#disaster-forecast'));
 void installCommonUiAssetsV3();
 installPremiumEquipmentHudV1600();
 let restartInProgress=false;
+let lastKitVisualKey=null;
 const save=()=>{
  if(restartInProgress)return true;
  try{
@@ -101,6 +102,13 @@ function renderHUD(){
  $('#companion-status').title=companionLong;
  $('#radio-contact').hidden=!state.kit.radio||dead;
  const owned=ITEM_IDS.filter(id=>state.kit?.[id]);
+ // Simulated disaster damage can remove an already-installed item. Refresh
+ // actual roof meshes only when ownership changes, never every HUD tick.
+ const kitVisualKey=ITEM_IDS.map(id=>state.kit?.[id]?'1':'0').join('');
+ if(world&&kitVisualKey!==lastKitVisualKey){
+   world.syncSurvivalInventory(state);
+   lastKitVisualKey=kitVisualKey;
+ }
  const kitLabels={tent:'텐트',purifier:'정수기',seeds:'재배 씨앗',radio:'무전기'};
  const inventoryNode=$('#inventory-items');
  inventoryNode.textContent=owned.length?
@@ -139,7 +147,7 @@ function renderHUD(){
    const node=$('#hud-stock-'+name);
    if(node)node.textContent=String(Math.max(0,Math.round(Number(value)||0)));
  }
- const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span>`;
+ const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="대피소 내구도">🏚 ${Math.round(state.facilities.shelter)}%</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span><span title="보관시설 내구도">📦 ${Math.round(state.facilities.storage)}%</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
  $('#medicine').classList.toggle('needs-attention',state.health<65&&state.supply.medicine>0);
  $('#explore').classList.toggle('needs-attention',r.food<3||r.water<4||state.health<38||state.facilities.shelter<38);

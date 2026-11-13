@@ -71,6 +71,22 @@ export function normalizeKit(input,legacy=false){
  const p=input&&typeof input==='object'?input:{};
  return Object.fromEntries(ITEM_IDS.map(k=>[k,typeof p[k]==='boolean'?p[k]:prior[k]]));
 }
+/** Replace or queue an actual expedition target when a disaster destroys gear.
+ * No free item grant; successful exploration still runs through existing odds. */
+export function offerRecoveryScavenge(s,day,item){
+ const d=s.scavenge;
+ if(s.survivalStatus==='dead'||!ITEM_IDS.includes(item)||s.kit[item])return null;
+ // Preserve a previously offered mission when it already targets missing gear.
+ if(d.pending){
+   if(d.pending.target!=='cache'&&!s.kit[d.pending.target])return d.pending;
+ }else{
+   d.lastOfferedDay=Math.max(d.lastOfferedDay,day);
+ }
+ const title=`재난 피해 복구 · ${ITEM_INFO[item].label}`;
+ const description=`${ITEM_INFO[item].label}이(가) 파손됐다. 폐허 탐색에서 다시 회수할 수 있다. 성공 여부와 부상 위험은 기존 탐색 규칙을 따른다.`;
+ d.pending={day,id:`scavenge:recovery:${day}:${item}:${d.expeditionCount}`,title,description,target:item};
+ return d.pending;
+}
 export function offerDailyScavenge(s,day,{force=false}={}){
  const d=s.scavenge;
  if(s.survivalStatus==='dead'||d.pending||day<=d.lastOfferedDay||day<1)return null;
@@ -141,7 +157,7 @@ export function resolveScavengeChoice(s,decision,{day,addLog=()=>{}}={}){
    outcome='supplies';msg=acquireSupplies();
   }else{
    s.kit[p.target]=true;outcome='item';
-   msg=`장비 획득: ${ITEM_INFO[p.target].label}. 장비는 영구 보관되며 다음 생존 전략이 달라진다.`;
+   msg=`장비 획득: ${ITEM_INFO[p.target].label}. 재난에 잃지 않도록 시설을 관리해야 한다.`;
   }
  }else if(r<odds.item+odds.supplies){
   outcome='supplies';msg=acquireSupplies();
