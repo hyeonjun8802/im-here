@@ -147,16 +147,17 @@ body.afterday-real-ui-v3 #hud .neon-status__item[data-phase="critical"][data-eff
     bottom:calc(149px + (100vw - 8px) * 172 / 1148 + env(safe-area-inset-bottom))!important;
   }
 }
-/* When a panel is opened its content always takes priority over status dots. */
+/* Non-modal notifications may coexist with active effect lights; only full
+ * panels and blocking choice dialogs suppress the indicators. */
 body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) > .neon-status-hud,
 body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) > .neon-status-hud,
-body.afterday-real-ui-v3 #hud:has(.afterday-board.is-open) > .neon-status-hud{
+body.afterday-real-ui-v3 #hud:has(.afterday-board.is-choice.is-open) > .neon-status-hud{
   opacity:0!important;
   pointer-events:none!important;
 }
 body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) > .neon-status-hud > button,
 body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) > .neon-status-hud > button,
-body.afterday-real-ui-v3 #hud:has(.afterday-board.is-open) > .neon-status-hud > button{
+body.afterday-real-ui-v3 #hud:has(.afterday-board.is-choice.is-open) > .neon-status-hud > button{
   pointer-events:none!important;
 }
 @media(prefers-reduced-motion:reduce){
