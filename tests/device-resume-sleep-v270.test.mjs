@@ -42,8 +42,10 @@ test('anonymous client persists a per-browser auth session and owner-filtered sa
  const cloud=new DeviceCloudSave({storage:local,fetcher:mockFetch});
  const restored=await cloud.load();
  assert.equal(restored.deviceSaveAtMs,100);
+ assert.equal(cloud.status,'connected');
  assert.equal(JSON.parse(local.getItem(ANON_SESSION_STORAGE_KEY)).user_id,userId);
  await cloud.save({version:4,deviceSaveAtMs:200});
+ assert.equal(cloud.status,'saved');
  assert.ok(calls.some(x=>x.url.includes('user_id=eq.'+userId)));
  const post=calls.find(x=>x.options.method==='POST'&&x.url.includes('/rest/v1/'));
  assert.equal(JSON.parse(post.options.body).user_id,userId);
@@ -57,6 +59,7 @@ test('unavailable anonymous provider leaves local games functional',async()=>{
  const cloud=new DeviceCloudSave({storage:local,fetcher:badFetch});
  assert.equal(await cloud.load(),null);
  assert.equal(cloud.disabled,true);
+ assert.equal(cloud.status,'setup-required');
  await cloud.save({version:4,deviceSaveAtMs:123});
  assert.equal(requests,1,'do not retry disabled provider every autosave');
 });
@@ -74,4 +77,47 @@ test('gear panel duplicate is hidden while bottom button remains functional',()=
  assert.match(main,/new DeviceCloudSave\(\)/);
  assert.match(main,/progressWhileAway:true/);
  assert.match(main,/cloudSaved\.deviceSaveAtMs/);
+});
+
+test('after enabling anonymous Auth, the same browser can retry and sync',async()=>{
+ let enabled=false,signups=0,saves=0;
+ const local=new Map();
+ const storage={getItem:k=>local.get(k)||null,setItem:(k,v)=>local.set(k,v)};
+ const uuid='12345678-1234-4234-8234-123456789abc';
+ const fetcher=async(url,options)=>{
+  if(url.includes('/auth/v1/signup')){
+   signups++;
+   if(!enabled)return {ok:false,status:422,text:async()=>JSON.stringify({msg:'anonymous disabled'})};
+   return {ok:true,text:async()=>JSON.stringify({
+    user:{id:uuid},access_token:'token',refresh_token:'refresh',
+    expires_at:Math.floor(Date.now()/1000)+3600
+   })};
+  }
+  if(url.includes('?select=state&'))return {ok:true,text:async()=>'[]'};
+  if(url.includes('/rest/v1/afterday_device_saves')){
+   assert.equal(options.headers.Authorization,'Bearer token');
+   saves++;
+   return {ok:true,text:async()=>''};
+  }
+  throw Error('unexpected test endpoint');
+ };
+ const cloud=new DeviceCloudSave({storage,fetcher});
+ assert.equal(await cloud.load(),null);
+ assert.equal(cloud.status,'setup-required');
+ enabled=true;
+ assert.equal(await cloud.retry(),true);
+ assert.equal(cloud.status,'connected');
+ await cloud.save({version:4,deviceSaveAtMs:Date.now()});
+ assert.equal(cloud.status,'saved');
+ assert.equal(signups,2);
+ assert.equal(saves,1);
+});
+test('cloud status is displayed only inside weather settings, not the main HUD',()=>{
+ const main=read('main.js'),css=read('hudAlignmentV1300.css');
+ assert.match(main,/function installCloudStatusControl\(\)/);
+ assert.match(main,/panel=\$\('#weather-panel'\)/);
+ assert.match(main,/deviceCloud\.onStatusChange=update/);
+ assert.match(main,/const connected=await deviceCloud\.retry\(\)/);
+ assert.match(main,/if\(connected\)await deviceCloud\.save\(state\)/);
+ assert.match(css,/#hud #weather-panel \.cloud-save-control/);
 });
