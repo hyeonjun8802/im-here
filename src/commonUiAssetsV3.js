@@ -31,6 +31,19 @@ function makeCrops(image, frames) {
     if(!ctx) throw new Error('UI atlas canvas context unavailable');
     ctx.clearRect(0,0,f.w,f.h);
     ctx.drawImage(image,f.x,f.y,f.w,f.h,0,0,f.w,f.h);
+    if(name==='equipment_panel'){
+      // The source artwork has a non-interactive gold button baked into its
+      // lower interior. Reuse pristine interior pixels in the same original
+      // 461x308 coordinate space and bake ONE clean bitmap before it reaches
+      // CSS. No positioned cover, pseudo-layer, hidden-click region or
+      // viewport-specific mask is created.
+      //
+      // Keep the metal header (y<207), both vertical rails (x<49/x>432),
+      // and the complete lower frame edge (y>=285) from the original.
+      ctx.drawImage(image,
+        f.x+49,f.y+116,383,78,
+        49,207,383,78);
+    }
     const src=canvas.toDataURL('image/png');
     cache.set(name,src);
     return src;
