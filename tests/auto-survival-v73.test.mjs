@@ -110,6 +110,7 @@ test('real radio gear gives at most one daily contact; later days may try again'
 test('rain collection and rest never ignore cooldown, weather or tool costs',()=>{
  const s=fresh();
  s.weather='rain';s.supply.water=2;s.supply.parts=1;
+ s.exploreCooldownAt=startedAt+DAY_MS; // Scavenging has its own independent cooldown.
  assert.equal(plan(s),null,'do not spend the final emergency part on improvised filtration');
  s.kit.purifier=true;
  assert.equal(plan(s),'collect_water');
