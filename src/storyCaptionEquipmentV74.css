@@ -1,0 +1,111 @@
+/* AFTERDAY v74 | Existing daily story caption moves from screen center to
+ * the top of the original bottom-left equipment frame.
+ * The story is positioned relative to the REAL equipment panel, so PC
+ * scaling, mobile width, and short-screen adjustments stay in alignment. */
+body.afterday-real-ui-v3 #hud .survival-kit > #survival-chapter{
+  position:absolute!important;
+  top:auto!important;
+  bottom:calc(100% + 11px)!important;
+  left:0!important;
+  right:auto!important;
+  transform:none!important;
+  display:block!important;
+  width:clamp(340px,34vw,440px)!important;
+  max-width:calc(100vw - 28px)!important;
+  max-height:min(24vh,148px)!important;
+  overflow:hidden!important;
+  padding:10px 13px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(179,151,108,.44)!important;
+  border-left:3px solid rgba(218,176,109,.88)!important;
+  border-radius:5px!important;
+  background:linear-gradient(95deg,rgba(16,27,30,.94),rgba(16,27,30,.83))!important;
+  box-shadow:0 7px 20px rgba(0,0,0,.35)!important;
+  color:#f1e5cc!important;
+  text-align:left!important;
+  font-size:clamp(16px,1.28vw,18px)!important;
+  line-height:1.38!important;
+  font-weight:650!important;
+  letter-spacing:-.025em!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  word-break:keep-all!important;
+  text-shadow:0 1px 3px #0009!important;
+  pointer-events:none!important;
+  z-index:5!important;
+}
+/* The expandable equipment actions also open immediately above this frame.
+ * Never cover the menu with a non-interactive 6.5-second story caption. */
+body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > #survival-chapter,
+body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > #survival-chapter.is-visible{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud .survival-kit > #survival-chapter{
+    bottom:calc(100% + 8px)!important;
+    left:0!important;
+    width:min(318px,calc(100vw - 20px))!important;
+    max-width:calc(100vw - 20px)!important;
+    max-height:min(27vh,156px)!important;
+    padding:8px 10px!important;
+    font-size:clamp(11px,2.95vw,12px)!important;
+    line-height:1.38!important;
+    border-left-width:2px!important;
+  }
+}
+@media(max-height:490px){
+  body.afterday-real-ui-v3 #hud .survival-kit > #survival-chapter{
+    bottom:calc(100% + 6px)!important;
+    max-height:23vh!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.afterday-real-ui-v3 #hud .survival-kit > #survival-chapter{
+    transition:none!important;
+  }
+}
+
+/* Story-only notices (radio conversation, scavenging result, companion
+ * relationship, milestone, helicopter supplies) should not compete with
+ * the weather and time HUD. Keep urgent danger/disaster alerts at TOP and
+ * interactive 2/4-option dialogs CENTER as already implemented. */
+body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+  top:auto!important;
+  bottom:calc(160px + env(safe-area-inset-bottom))!important;
+  max-height:min(28dvh,220px)!important;
+  overflow-y:auto!important;
+}
+/* If a daily caption and a narrative result occur together, show the
+ * event card rather than duplicate overlapping text. No gameplay paused. */
+body.afterday-real-ui-v3 #hud:has(> .afterday-board:is(.afterday-board--social,.afterday-board--opportunity).is-open:not(.is-choice))
+  .survival-kit > #survival-chapter.is-visible{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+@media(min-width:721px) and (max-width:1023px){
+  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+    bottom:calc(
+      max(95px,(100vw - 8px) * 172 / 1148 + 19px) +
+      clamp(274px,26vw,328px) * 308 / 461 + 14px +
+      env(safe-area-inset-bottom)
+    )!important;
+  }
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+    bottom:calc(
+      max(75px,(100vw - 8px) * 172 / 1148 + 19px) +
+      clamp(204px,57vw,246px) * 308 / 461 + 12px +
+      env(safe-area-inset-bottom)
+    )!important;
+    max-height:min(29dvh,190px)!important;
+  }
+}
+@media(max-height:480px){
+  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+    bottom:min(46dvh,190px)!important;
+    max-height:27dvh!important;
+  }
+}
