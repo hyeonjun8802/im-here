@@ -66,3 +66,46 @@ body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > #survival-c
     transition:none!important;
   }
 }
+
+/* Story-only notices (radio conversation, scavenging result, companion
+ * relationship, milestone, helicopter supplies) should not compete with
+ * the weather and time HUD. Keep urgent danger/disaster alerts at TOP and
+ * interactive 2/4-option dialogs CENTER as already implemented. */
+body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+  top:auto!important;
+  bottom:calc(160px + env(safe-area-inset-bottom))!important;
+  max-height:min(28dvh,220px)!important;
+  overflow-y:auto!important;
+}
+/* If a daily caption and a narrative result occur together, show the
+ * event card rather than duplicate overlapping text. No gameplay paused. */
+body.afterday-real-ui-v3 #hud:has(> .afterday-board:is(.afterday-board--social,.afterday-board--opportunity).is-open:not(.is-choice))
+  .survival-kit > #survival-chapter.is-visible{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+@media(min-width:721px) and (max-width:1023px){
+  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+    bottom:calc(
+      max(95px,(100vw - 8px) * 172 / 1148 + 19px) +
+      clamp(274px,26vw,328px) * 308 / 461 + 14px +
+      env(safe-area-inset-bottom)
+    )!important;
+  }
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+    bottom:calc(
+      max(75px,(100vw - 8px) * 172 / 1148 + 19px) +
+      clamp(204px,57vw,246px) * 308 / 461 + 12px +
+      env(safe-area-inset-bottom)
+    )!important;
+    max-height:min(29dvh,190px)!important;
+  }
+}
+@media(max-height:480px){
+  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+    bottom:min(46dvh,190px)!important;
+    max-height:27dvh!important;
+  }
+}
