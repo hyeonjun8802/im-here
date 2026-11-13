@@ -6,7 +6,7 @@ import {DeviceCloudSave,ANON_SESSION_STORAGE_KEY} from '../src/deviceCloudSave.j
 import {defaults,sanitize} from '../src/simulation.js';
 import {createFreshRestartState} from '../src/restartSession.js';
 
-const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
+const read=file=>readFileSync(new URL('../src/'+file,import.meta.url),'utf8');
 
 test('opt-in clock continues by real elapsed while browser is closed',()=>{
  const start=Date.UTC(2026,10,13);
