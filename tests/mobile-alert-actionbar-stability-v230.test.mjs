@@ -87,7 +87,8 @@ test('rain warning adds a separate emergency control but keeps nine painted menu
    query.matches=false;
    query.listeners[0]();
    for(const id of urgent)assert.equal(nodes[id].parentNode,api.tray);
-   assert.deepEqual(stable(),initial,'resizing cannot shift desktop action icons');
+   const withRepair=[...initial.slice(0,6),'repair-tank',...initial.slice(6)];
+   assert.deepEqual(stable(),withRepair,'desktop shows the unlocked repair button in its existing ninth cell');
    assert.equal(bar.dataset.visibleSlots,'9');
    assert.ok(!bar.classList.contains('v3-has-extra-actions'));
    assert.ok(api.tray.classList.contains('has-urgent'),'active disaster buttons remain accessible on desktop');
