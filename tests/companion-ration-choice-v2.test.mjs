@@ -122,7 +122,7 @@ test('the existing equipment menu reopens the choice; the modal can be deferred'
  assert.match(eventBoard,/onCompanionRationChoice\('conserve'\)/);
  assert.match(eventBoard,/key==='expedition'\|\|key==='companionInvite'\|\|key==='companionRations'/);
  assert.match(eventBoard,/companionRations',rations\.id,\{silent:true\}/);
- assert.match(main,/action==='companion_rations_share'/);
+ assert.match(main,/\['companion_rations_share','companion_rations_conserve'\]\.includes\(action\)/);
  assert.match(main,/onCompanionRationChoice:choice=>runSurvivalAction\('companion_rations_'\+choice\)/);
  assert.match(main,/companion-buff-strained/);
 });
