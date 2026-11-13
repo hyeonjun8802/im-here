@@ -202,7 +202,7 @@ export function companionBuffView(s,day=0){
   description:`동료 건강 ${health}% · 작업 속도 보너스 중단 · ${dailyCost}`
  };
  const purifier=Boolean(s.kit?.purifier&&Number(s.facilities?.tank)>=40);
- const garden=Boolean(s.kit?.seeds);
+ const garden=Boolean(s.kit?.seeds&&Number(s.facilities?.storage)>=20);
  if(!purifier&&!garden)return {
   state:'waiting',label:'🤝 동료 대기 · 설비 필요',
   description:`동료 건강 ${health}% · 정수기/씨앗을 확보하거나 탱크를 수리하면 협업 속도 +30% · ${dailyCost}`
