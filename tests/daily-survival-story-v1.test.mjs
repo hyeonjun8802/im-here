@@ -43,5 +43,6 @@ test('a completed expedition shows one silent, dismissible result, not a second 
   assert.match(board,/expeditionResult:\{\s*category:'탐색의 결과'/);
   assert.match(js,/eventBoard\?\.show\('expeditionResult',[\s\S]*?silent:true,duration:7800/);
   assert.match(js,/result\.good&&action\.startsWith\('scavenge_'\)&&result\.outcome!=='safe'/);
+  assert.match(js,/result\.outcome!=='safe'&&!eventBoard\?\.activeKey/);
   assert.doesNotMatch(js,/addEvent\(state,'expeditionResult'\)|applyAction\(state,'expeditionResult'/);
 });
