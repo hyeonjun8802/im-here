@@ -3,9 +3,8 @@
  * with a public PUBLISHABLE key and ownership-protected RLS, never service_role.
  * LocalStorage remains authoritative when offline or Auth is not enabled.
  */
-// Configure a dedicated, RLS-secured GAME project with Vercel's public Vite
-// environment variables. The previous shared business project had unrelated
-// public tables without RLS, so its URL/key must not ship in the game.
+// Use a dedicated RLS-secured game project. Missing environment variables
+// leave the existing device-local game saves available.
 export const SUPABASE_GAME_URL=import.meta.env?.VITE_AFTERDAY_SUPABASE_URL||'';
 export const SUPABASE_GAME_PUBLISHABLE_KEY=import.meta.env?.VITE_AFTERDAY_SUPABASE_PUBLISHABLE_KEY||'';
 export const ANON_SESSION_STORAGE_KEY='AFTERDAY_DEVICE_ANON_SESSION_V1';
