@@ -99,6 +99,19 @@ test('conserving keeps stores but slows +30% teamwork to +10% for three days',()
  assert.match(survivalDailyBriefing(12,s).line,/그날은 이해/);
 });
 
+test('low-health conservation clearly stops work and warns about departure',()=>{
+ const s=savedCompanion();s.companion.health=27;
+ offerCompanionRationChoice(s,8);
+ const r=applyAction(s,'companion_rations_conserve',t0+7*DAY_MS);
+ assert.equal(r.good,true);
+ assert.match(r.msg,/협업이 중단/);
+ assert.equal(s.companion.health,11);
+ assert.equal(companionProductionFactor(s,8),1);
+ assert.equal(companionBuffView(s,8).state,'resting');
+ const board=readFileSync(new URL('../src/eventBoard.js',import.meta.url),'utf8');
+ assert.match(board,/health<=36\?'소비 없음/);
+});
+
 test('future reward is bounded by storage cap and companion must remain alive',()=>{
  const s=savedCompanion();
  offerCompanionRationChoice(s,8);applyAction(s,'companion_rations_share',t0+7*DAY_MS);
