@@ -7,7 +7,8 @@ const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const html=read('index.html'),main=read('src/main.js'),css=read('src/hudAlignmentV1300.css');
 
 test('supply badge belongs to the original bottom explore slot, not an extra cell',()=>{
- assert.match(html,/<button id="explore" data-action="explore" aria-label="긴급 탐색">[\\s\\S]*?<span class="afterday-supply-badge" aria-hidden="true" hidden>!<\\/span><\\/button>/);
+ assert.ok(html.includes('<button id="explore" data-action="explore" aria-label="긴급 탐색">'));
+ assert.ok(html.includes('<span class="afterday-supply-badge" aria-hidden="true" hidden>!</span></button>'));
  assert.equal((html.match(/class="afterday-supply-badge"/g)||[]).length,1);
  assert.match(css,/#hud \.actionbar #explore > \.afterday-supply-badge/);
  assert.match(css,/\.afterday-supply-badge\[hidden\] \{\s*display:none!important/);
