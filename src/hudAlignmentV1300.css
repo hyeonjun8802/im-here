@@ -1096,18 +1096,19 @@ body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
   }
 }
 
-/* v34 | PC-only supply badge: reduce visual weight inside the original slot.
- * Mobile and tablet notification sizes remain unchanged. */
+/* v34 | PC-only supply badge: scaled parent is .66, so place the
+ * badge WITHIN the painted cell rather than overlapping the upper metal rail.
+ * Phone/tablet badge rules and the nine-slot artwork are unchanged. */
 @media (min-width:1024px) and (hover:hover) and (pointer:fine) {
   body.afterday-real-ui-v3 #hud .actionbar > button#explore > i.afterday-supply-dot {
-    top:9px!important;
+    top:30%!important;
     right:8px!important;
-    width:23px!important;
-    height:23px!important;
-    min-width:23px!important;
-    min-height:23px!important;
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    min-height:34px!important;
     border-width:2px!important;
-    font:900 13px/1 system-ui,sans-serif!important;
+    font:900 20px/1 system-ui,sans-serif!important;
     box-shadow:0 0 0 1px #8e0612,0 0 8px #f2293c!important;
   }
 }
@@ -1197,13 +1198,22 @@ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
   }
 }
 
-/* v36 | Desktop stock QUANTITY digits only. The four resource glyphs already
- * have their own sizes in v35; do not scale the metal frame or 2x2 grid. */
-@media (min-width:1024px) {
+/* v36 | PC readability calibrated to the top HUD's .60 transform.
+ * At 1600px viewport, 28.8px CSS stock numerals render about 17px onscreen.
+ * Preserve the metal artwork, icon artwork, track widths, 2x2 grid and phone. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine) {
   body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong {
-    font-size:clamp(15px,1.25vw,18px)!important;
+    font-size:clamp(24px,1.8vw,30px)!important;
+    font-weight:850!important;
+    line-height:1!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat-label {
+    font-size:clamp(15px,1.2vw,19px)!important;
+  }
+  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat strong {
+    font-size:clamp(16px,1.3vw,20px)!important;
     font-weight:800!important;
-    line-height:1.12!important;
     font-variant-numeric:tabular-nums!important;
   }
 }
