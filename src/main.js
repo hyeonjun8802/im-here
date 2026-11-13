@@ -5,7 +5,7 @@ import {installCommonUiAssetsV3} from './commonUiAssetsV3.js';
 import {installPremiumEquipmentHudV1600} from './premiumEquipmentHudV1600.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {DeviceCloudSave} from './deviceCloudSave.js';
-import {survivalChapter} from './survivalBalance.js';
+import {survivalDailyBriefing} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
@@ -99,7 +99,7 @@ function syncChapterCaption(day,dead){
  }
  if(displayedChapterDay===day)return;
  displayedChapterDay=day;
- const chapter=survivalChapter(day);
+ const chapter=survivalDailyBriefing(day,state);
  node.textContent=chapter.title+' · '+chapter.line;
  node.classList.remove('is-hidden');
  node.classList.add('is-visible');
@@ -253,6 +253,22 @@ function runSurvivalAction(action){
    save();
  }
  toast(result.msg,action.startsWith('scavenge_')||action.startsWith('companion_')||action==='radio_contact'?'quiet':'');
+ // An expedition's consequences deserve a short, skippable acknowledgement.
+ // This is display-only: no second loot roll, reward, save or alarm sound.
+ if(result.good&&action.startsWith('scavenge_')&&result.outcome!=='safe'){
+   const outcomeNames={
+     item:'새로운 장비를 발견했다',
+     supplies:'쓸 만한 물자를 확보했다',
+     injury:'상처를 안고 돌아왔다',
+     sickness:'오염된 폐허에서 귀환했다',
+     empty:'빈손으로 옥상에 돌아왔다'
+   };
+   eventBoard?.show('expeditionResult',{
+     title:outcomeNames[result.outcome]||'탐색 결과',
+     description:result.msg,
+     silent:true,duration:7800
+   });
+ }
  return result;
 }
 function bindEvents(){
