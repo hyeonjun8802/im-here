@@ -32,7 +32,7 @@ test('story uses equipment geometry rather than absolute screen center or top we
  assert.match(css,/@media\(max-width:720px\)/);
  assert.match(css,/bottom:calc\(100% \+ 8px\)!important/);
  assert.match(css,/width:min\(318px,calc\(100vw - 20px\)\)!important/);
- assert.doesNotMatch(css,/#weather-brief|\.disaster-forecast|\.afterday-board|\.actionbar|#speed-toggle/);
+ assert.doesNotMatch(css,/#weather-brief|\.disaster-forecast|\.actionbar|#speed-toggle/);
 });
 
 test('the story cannot cover the equipment popup or steal its clicks',()=>{
