@@ -3,7 +3,8 @@
 .afterday-board{
   --event-edge:#b64e46;--event-pill:#8e3534;
   position:absolute;z-index:42;pointer-events:auto;box-sizing:border-box;
-  top:calc(90px + env(safe-area-inset-top));left:50%;
+  /* Keep notices below the unscaled source frame on touch/tablet screens. */
+  top:calc(min(1450px,100vw - 6px) * 300 / 1647 + 18px + env(safe-area-inset-top));left:50%;
   width:min(640px,calc(100vw - 36px));min-height:114px;
   display:flex;align-items:stretch;overflow:hidden;
   border:2px solid color-mix(in srgb,var(--event-edge) 77%,#52463f);
@@ -44,7 +45,7 @@
 .afterday-event-preview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px}
 .afterday-event-preview-grid button{border:1px solid #c4a47d55;border-radius:6px;min-height:35px;background:#25303abb;color:#f0eee8;font-size:10px;padding:6px;cursor:pointer;line-height:1.4}
 #hud:has(.afterday-board.is-open)>#warning{opacity:0;pointer-events:none}
-@media(max-width:720px){.afterday-board{top:calc(69px + env(safe-area-inset-top));width:calc(100vw - 24px);min-height:92px}.afterday-board-art{flex-basis:34%;min-height:90px}.afterday-board-body{padding:8px 37px 8px 3px;gap:3px}.afterday-board-category{font-size:9px;padding:3px 8px}.afterday-board-title{font-size:12px}.afterday-board-description{font-size:9px}.afterday-board-secure{font-size:9px;min-height:25px}.afterday-board-close{width:23px;height:23px;right:6px;top:6px}}
+@media(max-width:720px){.afterday-board{top:calc((100vw - 4px) * 300 / 1647 + 18px + env(safe-area-inset-top));width:calc(100vw - 24px);min-height:92px}.afterday-board-art{flex-basis:34%;min-height:90px}.afterday-board-body{padding:8px 37px 8px 3px;gap:3px}.afterday-board-category{font-size:9px;padding:3px 8px}.afterday-board-title{font-size:12px}.afterday-board-description{font-size:9px}.afterday-board-secure{font-size:9px;min-height:25px}.afterday-board-close{width:23px;height:23px;right:6px;top:6px}}
 @media(prefers-reduced-motion:reduce){.afterday-board.is-open{animation:none;opacity:1;transform:translateX(-50%)}}
 
 /* One-time actionable disaster warning: player can protect life or stores. */
@@ -141,4 +142,13 @@
  z-index:5;
  border:1px solid #d6bd8b77;
  background:#192026ed;
+}
+
+/* v71 | Desktop weather art is uniformly scaled .60; notices follow its
+ * visible lower edge instead of using the unscaled source aspect height.
+ * Mandatory story decisions remain centered by .afterday-board.is-choice. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine){
+  .afterday-board:not(.is-choice){
+    top:calc(min(1450px,100vw - 6px) * .10929 + 18px + env(safe-area-inset-top));
+  }
 }
