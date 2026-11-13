@@ -15,8 +15,8 @@ test('supply badge belongs to the original bottom explore slot, not an extra cel
  assert.match(css,/pointer-events:none!important/);
  assert.match(css,/@media\(max-width:720px\)/);
 });
-test('HUD uses actual pending expedition and not low food/water as badge state',()=>{
- assert.match(main,/const supplyAvailable=Boolean\(open\)&&!dead/);
+test('HUD badge appears for either a pending expedition or an eligible emergency supply run',()=>{
+ assert.match(main,/const supplyAvailable=!dead&&\(Boolean\(open\)\|\|emergency.ready\)/);
  assert.match(main,/const supplyButton=\$\('#explore'\)/);
  assert.match(main,/supplyButton\.dataset\.supplyReady=String\(supplyAvailable\)/);
  assert.match(main,/supplyButton\.setAttribute\('aria-label',supplyAvailable\?/);
