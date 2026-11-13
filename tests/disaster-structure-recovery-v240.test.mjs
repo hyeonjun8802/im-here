@@ -89,10 +89,10 @@ test('real disaster simulation preserves gameplay and preview separation',()=>{
  if(s.weather==='storm')assert.ok(s.facilities.tank<before.tank);
  assert.equal(s.version,4);
  const css=readFileSync(new URL('../src/hudAlignmentV1300.css',import.meta.url),'utf8');
- const bottom=css.slice(css.indexOf('/* v24 | phone equipment pane:'));
+ const bottom=css.slice(css.indexOf('/* v26 | restore readable phone equipment size'));
  assert.match(bottom,/@media\(max-width:720px\)/);
  assert.match(bottom,/\.survival-kit:has\(> \.survival-kit-action\)/);
- assert.match(bottom,/transform:scale\(\.52\)!important/);
+ assert.match(bottom,/transform:scale\(\.72\)!important/);
  assert.match(bottom,/transform-origin:bottom left!important/);
  const main=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  assert.match(main,/kitVisualKey!==lastKitVisualKey/);
