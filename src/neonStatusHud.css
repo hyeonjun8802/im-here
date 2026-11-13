@@ -38,13 +38,17 @@ body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item {
   pointer-events:auto!important;
   transition:opacity .32s ease, transform .32s ease, flex-basis .32s ease, width .32s ease, visibility .32s;
 }
+/* Standby signals stay visible as small monochrome lights. They only
+ * become full-size colored neon when an authoritative effect is active. */
 body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item[data-active="false"] {
-  width:0!important;
-  flex-basis:0!important;
-  opacity:0!important;
-  visibility:hidden;
-  transform:scale(.72);
-  pointer-events:none!important;
+  width:28px!important;
+  height:28px!important;
+  flex-basis:28px!important;
+  opacity:.55!important;
+  visibility:visible!important;
+  transform:scale(1);
+  filter:grayscale(1) brightness(.75);
+  pointer-events:auto!important;
 }
 body.afterday-real-ui-v3 #hud .neon-status__image{
   display:block;
@@ -139,24 +143,26 @@ body.afterday-real-ui-v3 #hud .neon-status__item[data-phase="critical"][data-eff
     height:clamp(30px,8.1vw,36px)!important;
   }
   body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item[data-active="false"]{
-    width:0!important;
-    flex-basis:0!important;
+    width:24px!important;
+    flex-basis:24px!important;
+    height:24px!important;
   }
   /* Three emergency actions already use this corner on narrow screens. */
   body.afterday-real-ui-v3 #hud:has(> .afterday-v3-urgent-actions.has-urgent) > .neon-status-hud{
     bottom:calc(149px + (100vw - 8px) * 172 / 1148 + env(safe-area-inset-bottom))!important;
   }
 }
-/* When a panel is opened its content always takes priority over status dots. */
+/* Non-modal notifications are at the TOP and may coexist with status dots.
+ * Only blocking story-choice overlays or full panels conceal the signals. */
 body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) > .neon-status-hud,
 body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) > .neon-status-hud,
-body.afterday-real-ui-v3 #hud:has(.afterday-board.is-open) > .neon-status-hud{
+body.afterday-real-ui-v3 #hud:has(.afterday-board.is-choice.is-open) > .neon-status-hud{
   opacity:0!important;
   pointer-events:none!important;
 }
 body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) > .neon-status-hud > button,
 body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) > .neon-status-hud > button,
-body.afterday-real-ui-v3 #hud:has(.afterday-board.is-open) > .neon-status-hud > button{
+body.afterday-real-ui-v3 #hud:has(.afterday-board.is-choice.is-open) > .neon-status-hud > button{
   pointer-events:none!important;
 }
 @media(prefers-reduced-motion:reduce){
