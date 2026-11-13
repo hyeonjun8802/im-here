@@ -1196,3 +1196,14 @@ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock .hud-picto {
     height:clamp(10px,2.9vw,13px)!important;
   }
 }
+
+/* v36 | Desktop stock QUANTITY digits only. The four resource glyphs already
+ * have their own sizes in v35; do not scale the metal frame or 2x2 grid. */
+@media (min-width:1024px) {
+  body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong {
+    font-size:clamp(15px,1.25vw,18px)!important;
+    font-weight:800!important;
+    line-height:1.12!important;
+    font-variant-numeric:tabular-nums!important;
+  }
+}
