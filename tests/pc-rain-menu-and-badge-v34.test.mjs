@@ -118,9 +118,9 @@ test('PC rain/disaster actions never displace the original nine dock cells',()=>
   }
 });
 
-test('PC badge is smaller and desktop urgent tray sits outside nine painted cells',()=>{
+test('PC badge is visible inside painted slot and urgent tray stays outside nine cells',()=>{
   assert.match(css,/\/\* v34 \| PC-only supply badge/);
-  assert.match(css,/top:9px!important;[\s\S]*?right:8px!important;[\s\S]*?width:23px!important;/);
+  assert.match(css,/top:30%!important;[\s\S]*?right:8px!important;[\s\S]*?width:34px!important;/);
   assert.match(css,/@media \(min-width:721px\)[\s\S]*?\.afterday-v3-urgent-actions\.has-urgent/);
   assert.match(css,/\.afterday-v3-urgent-actions > button\[hidden\][\s\S]*?display:none!important;/);
   assert.match(css,/@media \(min-width:1024px\) and \(hover:hover\) and \(pointer:fine\)[\s\S]*?bottom:calc\(16px/);
