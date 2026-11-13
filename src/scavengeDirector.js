@@ -196,7 +196,7 @@ export function applyAcquiredItemMinute(s,day,weather,{addLog=()=>{}}={}){
  // on a mere page reload.
  if(kit.purifier&&s.facilities.tank>=40&&d.purifierProduced<2&&s.supply.water<16){
    const efficiency=s.facilities.tank>=70?1:.55;
-   d.filterMinutes+=efficiency*(weather==='cold'?.32:1)*companionProductionFactor(s);
+   d.filterMinutes+=efficiency*(weather==='cold'?.32:1)*companionProductionFactor(s,day);
    if(d.filterMinutes>=240){
      const n=Math.min(Math.floor(d.filterMinutes/240),2-d.purifierProduced,16-s.supply.water);
      if(n>0){s.supply.water+=n;d.purifierProduced+=n;water=n;
@@ -209,7 +209,7 @@ export function applyAcquiredItemMinute(s,day,weather,{addLog=()=>{}}={}){
  if(kit.seeds&&s.facilities.storage>=20&&s.supply.food<16){
    const sunshine=weather==='heat'?.24:weather==='cold'?.25:weather==='tornado'?.10:
      weather==='rain'?.95:weather==='storm'?.45:1;
-   d.farmMinutes+=sunshine*companionProductionFactor(s);
+   d.farmMinutes+=sunshine*companionProductionFactor(s,day);
    if(d.farmMinutes>=1860){
      const n=Math.min(2,16-s.supply.food);
      if(n>0){s.supply.food+=n;food=n;d.lastHarvestDay=day;

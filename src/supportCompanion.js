@@ -11,12 +11,14 @@ export const newCompanion=()=>({
   present:false,pending:null,health:78,
   arrivedDay:0,foodMinutes:0,waterMinutes:0,salvageMinutes:0,
   lastContactId:0,lost:false,departedDay:0,
-  obtainedParts:0,lastNarrativeDay:0
+  obtainedParts:0,lastNarrativeDay:0,
+  rationPending:null,rationDecision:'none',rationResolvedDay:0,
+  strainedUntilDay:0,rationAftermathDone:false
 });
 export function sanitizeCompanion(raw){
  const b=newCompanion(),v=raw&&typeof raw==='object'?raw:{},a={...b,...v};
  a.present=Boolean(v.present);a.lost=Boolean(v.lost);
- for(const name of ['arrivedDay','lastContactId','departedDay','obtainedParts','lastNarrativeDay']){
+ for(const name of ['arrivedDay','lastContactId','departedDay','obtainedParts','lastNarrativeDay','rationResolvedDay','strainedUntilDay']){
   a[name]=Math.floor(bound(v[name],0,100000));
  }
  for(const name of ['foodMinutes','waterMinutes','salvageMinutes'])a[name]=bound(v[name],0,COMPANION_BALANCE.salvageMinutes);
@@ -26,7 +28,13 @@ export function sanitizeCompanion(raw){
    Number.isInteger(v.pending.day)&&v.pending.day>=1?
    {radioNewsId:v.pending.radioNewsId,day:v.pending.day,
     id:`companion:${v.pending.radioNewsId}`}:null;
+ a.rationDecision=['share','conserve'].includes(v.rationDecision)?v.rationDecision:'none';
+ a.rationAftermathDone=Boolean(v.rationAftermathDone);
+ a.rationPending=a.present&&a.rationDecision==='none'&&v.rationPending&&
+   Number.isInteger(v.rationPending.day)&&v.rationPending.day>=a.arrivedDay&&a.arrivedDay>0?
+   {day:v.rationPending.day,id:`companion:rations:${a.arrivedDay}`}:null;
  if(a.lost)a.present=false;
+ if(!a.present)a.rationPending=null;
  return a;
 }
 export function offerCompanionRescue(s,day){
@@ -85,12 +93,63 @@ export function resolveCompanionRescue(s,decision,{addLog=()=>{},day=1}={}){
  }
  c.present=true;c.lost=false;c.health=78;c.arrivedDay=day;
  c.foodMinutes=0;c.waterMinutes=0;c.salvageMinutes=0;
+ c.rationPending=null;c.rationDecision='none';c.rationResolvedDay=0;
+ c.strainedUntilDay=0;c.rationAftermathDone=false;
  const msg='지원 생존자를 옥상으로 받아들였다. 매 게임 하루 식량·식수 각 1개를 나누는 대신 정수·텃밭 효율이 30% 향상된다. 이 사람은 조작하는 주인공이 아니다.';
  addLog(msg);return {good:true,outcome:'joined',msg};
 }
 export const companionWorks=s=>Boolean(s?.companion?.present&&s.companion.health>20);
-export function companionProductionFactor(s){
- return companionWorks(s)?COMPANION_BALANCE.foodBonus:1;
+export function companionProductionFactor(s,day=0){
+ if(!companionWorks(s))return 1;
+ const c=s.companion;
+ // Saved ration decision: withholding food costs three GAME days of teamwork.
+ return c.rationDecision==='conserve'&&Number(day)>0&&Number(day)<c.strainedUntilDay
+  ?1.1:COMPANION_BALANCE.foodBonus;
+}
+/** One voluntary dilemma three game days after rescue. No random rerolls. */
+export function offerCompanionRationChoice(s,day){
+ const c=s?.companion;
+ if(!c?.present||c.lost||c.rationPending||c.rationDecision!=='none'||
+    !c.arrivedDay||day<c.arrivedDay+3||s.survivalStatus==='dead')return null;
+ c.rationPending={day,id:`companion:rations:${c.arrivedDay}`};
+ return c.rationPending;
+}
+export function resolveCompanionRationChoice(s,decision,{day=1,addLog=()=>{}}={}){
+ const c=s?.companion;
+ if(!c?.present||!c.rationPending)return {good:false,msg:'결정할 동료 물자 요청이 없습니다.'};
+ if(!['share','conserve'].includes(decision))return {good:false,msg:'선택을 확인해 주세요.'};
+ if(decision==='share'&&(s.supply.food<1||s.supply.water<1))
+  return {good:false,msg:'함께 나누려면 식량과 식수 각각 1개가 필요합니다. 선택은 유지됩니다.'};
+ c.rationPending=null;c.rationDecision=decision;c.rationResolvedDay=day;
+ c.rationAftermathDone=false;
+ let msg;
+ if(decision==='share'){
+  s.supply.food--;s.supply.water--;
+  c.health=Math.min(100,c.health+12);
+  c.strainedUntilDay=0;
+  msg='동료와 식량·식수 각 1개를 나눴다. 동료 건강 +12. “이 은혜는 잊지 않을게요.” 안전한 날, 동료가 3일 뒤 폐자재를 다시 찾아보겠다고 약속했다.';
+ }else{
+  c.health=Math.max(0,c.health-16);
+  c.strainedUntilDay=day+3;
+  msg=c.health>20
+   ?'남은 식량과 식수를 지켰다. 동료 건강 -16. “알겠어요. 오늘은 제가 쉬겠습니다.” 앞으로 게임 3일간 정수·재배 협업 속도가 +10%로 낮아진다.'
+   :'남은 식량과 식수를 지켰다. 동료 건강 -16. “알겠어요. 오늘은 제가 쉬겠습니다.” 동료 건강이 20 이하로 떨어져 협업이 중단됐다. 체력이 0이 되면 캠프를 떠날 수 있다.';
+ }
+ addLog(msg);
+ return {good:true,outcome:decision,msg};
+}
+/** A one-time, delayed consequence; only in safe weather and with stock room.
+ * Never triggers for refused help, missing helper, or reloaded completed saves. */
+export function applyCompanionRationAftermath(s,day,weather,{addLog=()=>{}}={}){
+ const c=s?.companion;
+ if(!c?.present||c.rationDecision!=='share'||c.rationAftermathDone||
+    day<c.rationResolvedDay+3||!companionWorks(s)||
+    !['clear','cloud'].includes(weather)||s.supply.parts>=COMPANION_BALANCE.salvageCap)
+  return 0;
+ c.rationAftermathDone=true;c.obtainedParts++;
+ s.supply.parts++;
+ addLog('동료가 나눴던 식량에 보답했다. 안전한 날 옥상 폐자재에서 수리 부품 +1을 찾아왔다.');
+ return 1;
 }
 export function applyCompanionMinute(s,day,weather,{addLog=()=>{}}={}){
  const c=s.companion;if(!c?.present)return {foodUsed:0,waterUsed:0,partsFound:0,departed:false};
@@ -110,7 +169,7 @@ export function applyCompanionMinute(s,day,weather,{addLog=()=>{}}={}){
  if(!s.kit?.tent&&['rain','storm','cold'].includes(weather))
   c.health=Math.max(0,c.health-basic.shelterlessHealthLoss);
  if(c.health<=0){
-  c.present=false;c.lost=true;c.departedDay=day;
+  c.present=false;c.lost=true;c.departedDay=day;c.rationPending=null;
   const msg='지원 생존자가 물자와 체력을 버티지 못해 캠프를 떠났다. 남은 생존자는 다시 혼자다.';
   addLog(msg);
   return {foodUsed,waterUsed,partsFound,departed:true};
@@ -135,7 +194,7 @@ export function applyCompanionMinute(s,day,weather,{addLog=()=>{}}={}){
 /** Honest HUD view of the EXISTING passive labor modifier.
  * A healthy helper increases progress of OWNED, functional purifier/garden
  * at 1.3x; no bonus is awarded when the equipment is missing or broken. */
-export function companionBuffView(s){
+export function companionBuffView(s,day=0){
  const c=s?.companion;
  if(!c?.present)return {state:'absent',label:'',description:''};
  const health=Math.round(Number(c.health)||0);
@@ -145,16 +204,16 @@ export function companionBuffView(s){
   description:`동료 건강 ${health}% · 작업 속도 보너스 중단 · ${dailyCost}`
  };
  const purifier=Boolean(s.kit?.purifier&&Number(s.facilities?.tank)>=40);
- const garden=Boolean(s.kit?.seeds);
+ const garden=Boolean(s.kit?.seeds&&Number(s.facilities?.storage)>=20);
  if(!purifier&&!garden)return {
   state:'waiting',label:'🤝 동료 대기 · 설비 필요',
   description:`동료 건강 ${health}% · 정수기/씨앗을 확보하거나 탱크를 수리하면 협업 속도 +30% · ${dailyCost}`
  };
  const target=purifier&&garden?'정수·재배':purifier?'정수':'재배';
- const pct=Math.round((COMPANION_BALANCE.foodBonus-1)*100);
+ const pct=Math.round((companionProductionFactor(s,day)-1)*100);
  return {
-  state:'boosted',label:`🤝 ${target} 속도 +${pct}%`,
-  description:`동료 건강 ${health}% · ${target} 작업 진행 속도 +${pct}% (정수 최대 생산량은 기존 상한 유지) · 안전한 날씨에는 폐자재 회수도 도움 · ${dailyCost}`
+  state:pct<30?'strained':'boosted',label:`🤝 ${target} 속도 +${pct}%`,
+  description:`동료 건강 ${health}% · ${target} 작업 진행 속도 +${pct}%${pct<30?' · 물자 비축 선택으로 협업 속도가 일시 감소':''} (정수 최대 생산량은 기존 상한 유지) · 안전한 날씨에는 폐자재 회수도 도움 · ${dailyCost}`
  };
 }
 
@@ -173,6 +232,13 @@ export function companionStoryBeat(s,day){
   :s.kit?.seeds
    ?{title:'작은 화단의 약속',line:'동료는 마른 흙을 고르고 씨앗 옆에 물을 조금 남겨 두었다. “이게 자라면 우리도 좀 나아지겠죠.”'}
    :{title:'아직 비어 있는 작업대',line:'동료가 빈 물통을 닦으며 묻는다. “정수기나 씨앗이 있으면 제가 도울 수 있을 텐데요.”'};
+ if(since===7&&c.rationDecision==='share')return c.rationAftermathDone
+  ?{title:'빈 창고에 돌아온 부품',line:'동료가 내민 수리 부품은 나눠 먹었던 그날의 약속이었다. “다음엔 제가 도울 차례죠.”'}
+  :{title:'함께 지킨 식량의 기억',line:'동료는 작은 수리 부품 하나라도 구해 보겠다며 계단실을 살폈다. 서로 나눴던 식사가 지금도 둘을 움직인다.'};
+ if(since===7&&c.rationDecision==='conserve')return {
+  title:'나누지 못한 식사의 거리',
+  line:'보급 상자를 사이에 두고 동료가 조용히 말했다. “그날은 이해했어요. 그래도 우리 둘의 몫을 다시 생각해야겠네요.”'
+ };
  if(since===7)return c.obtainedParts>0
   ?{title:'녹슨 나사가 남긴 것',line:'동료가 직접 모아 둔 수리 부품을 보여 준다. 버려진 도시에서도 둘이 힘을 합치면 쓸 만한 것이 남는다.'}
   :{title:'낡은 계단실의 발소리',line:'처음에는 낯설던 발소리가 이제 익숙하다. 동료는 지친 몸으로도 옥상에 남아 다음 날을 준비한다.'};

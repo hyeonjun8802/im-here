@@ -154,15 +154,21 @@ function renderHUD(){
  supplyButton.title=supplyHelp;
  $('#expedition-toggle').hidden=!open||dead;
  const waiting=state.companion?.pending;
- $('#companion-toggle').hidden=!waiting||dead;
- const companionBuff=companionBuffView(state);
+ const rationWaiting=state.companion?.rationPending;
+ const companionToggle=$('#companion-toggle');
+ companionToggle.hidden=!(waiting||rationWaiting)||dead;
+ companionToggle.textContent=rationWaiting?'동료 물자 분배 선택':'생존자 구조 선택';
+ companionToggle.setAttribute('aria-label',rationWaiting?'동료 물자 분배 선택 열기':'생존자 구조 선택 열기');
+ const companionBuff=companionBuffView(state,day);
  const companionLong=state.companion?.present?companionBuff.description:
    waiting?'다른 생존자의 구조 요청 · 받아들일지 선택하세요':
+   rationWaiting?'동료와 식량·식수를 어떻게 나눌지 선택하세요':
    state.companion?.lost?'함께하던 생존자는 캠프를 떠났습니다':'주변 생존자 신호를 기다리는 중';
  const companionNode=$('#companion-status');
  companionNode.textContent=state.companion?.present?companionBuff.label:
    waiting?'생존자 구조 요청 대기':state.companion?.lost?'동행 생존자 이탈':'생존자 신호 대기';
  companionNode.classList.toggle('companion-buff-active',companionBuff.state==='boosted');
+ companionNode.classList.toggle('companion-buff-strained',companionBuff.state==='strained');
  companionNode.classList.toggle('companion-buff-waiting',companionBuff.state==='waiting');
  companionNode.classList.toggle('companion-buff-resting',companionBuff.state==='resting');
  companionNode.title=companionLong;
@@ -229,6 +235,8 @@ function runSurvivalAction(action){
      ?['scavenge_go','scavenge_scout','scavenge_salvage','scavenge_stay'].includes(action)
      :eventBoard.activeKey==='companionInvite'
      ?['companion_invite','companion_aid','companion_trade','companion_decline'].includes(action)
+     :eventBoard.activeKey==='companionRations'
+     ?['companion_rations_share','companion_rations_conserve'].includes(action)
      :false;
    if(!valid)return {good:false,msg:'진행 중인 퀘스트를 먼저 선택하세요.'};
  }
@@ -260,7 +268,14 @@ function runSurvivalAction(action){
  toast(result.msg,action.startsWith('scavenge_')||action.startsWith('companion_')||action==='radio_contact'?'quiet':'');
  // Companion choices now have one explicit story consequence. The underlying
  // choice was already committed and saved; these panels never grant a reward.
- if(result.good&&action.startsWith('companion_')&&!eventBoard?.activeKey){
+ if(result.good&&action.startsWith('companion_rations_')&&!eventBoard?.activeKey){
+   eventBoard?.show('companionRationResult',{
+     title:result.outcome==='share'?'함께 나눈 한 끼':'비축을 선택한 밤',
+     description:result.msg,
+     silent:true,duration:10500
+   });
+ }
+ if(result.good&&action.startsWith('companion_')&&!action.startsWith('companion_rations_')&&!eventBoard?.activeKey){
    const joined=result.outcome==='joined';
    eventBoard?.show(joined?'companionJoined':'companionOutcome',{
      title:joined?'두 사람이 함께 지키는 옥상':
@@ -551,6 +566,7 @@ async function boot(){try{
   eventBoard=new AfterdayEventBoard({host:$('#hud'),initialState:state,onNotice:()=>save(),
     onExpeditionChoice:choice=>runSurvivalAction('scavenge_'+choice),
     onCompanionChoice:choice=>runSurvivalAction('companion_'+choice),
+    onCompanionRationChoice:choice=>runSurvivalAction('companion_rations_'+choice),
     onSecure:()=>runSurvivalAction('secure_storage'),
     onCover:()=>runSurvivalAction('take_cover'),
     onPrepare:()=>runSurvivalAction('secure_supplies')});

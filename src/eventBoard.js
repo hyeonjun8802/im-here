@@ -19,6 +19,8 @@ export const EVENT_STYLES = Object.freeze({
   companionInvite:{ category:'구조 요청',title:'“혼자 버티는 것보다 둘이 나을까요?”',description:'무전 속 생존자가 옥상 계단실에 도착했다. “정수기와 화단을 도울 수 있어요. 대신 오늘부터 먹을 것과 물을 나눠주세요.” 합류 시 정수·재배 작업속도 +30%(설비 필요), 하루 식량·식수 각 1개 소비.',image:'stranger.webp',severity:'social',duration:300000 },
   companionJoined:{ category:'동료 합류',title:'두 사람이 함께 지키는 옥상',description:'“저도 일할 수 있어요. 함께 버텨요.”',image:'stranger.webp',severity:'social',duration:10500 },
   companionOutcome:{ category:'구조 선택의 결과',title:'다시 고요해진 계단실',description:'누군가 떠나고, 옥상에는 선택의 결과가 남았다.',image:'stranger.webp',severity:'social',duration:10500 },
+  companionRations:{ category:'동료의 부탁',title:'“우리 둘이 먹을 물자는 충분할까요?”',description:'동료가 남은 물과 식량을 앞에 두고 묻는다. 지금 한 몫을 나누면 건강을 회복하고, 나중에 동료가 폐자재를 찾아 보답한다. 비축을 지키면 3일간 협업이 느려진다.',image:'stranger.webp',severity:'social',duration:300000 },
+  companionRationResult:{ category:'함께한 선택의 결과',title:'두 사람의 내일',description:'오늘의 식량 배분이 다음 작업에 영향을 준다.',image:'stranger.webp',severity:'social',duration:10500 },
   survivorCall: { category:'무전 교신',title:'다른 생존자의 신호가 잡혔습니다',description:'도시 어딘가에 살아 있는 사람이 있습니다. 옥상 캠프에는 생존자 한 명만 머뭅니다.',image:'stranger.webp',severity:'social',duration:8000 },
   milestone:    { category:'생존 일지', title:'또 하루를 버텼습니다',description:'다음 생존 계획을 확인하세요.',image:'supply_cache.webp',severity:'social',duration:8500 },
   rain:         { category:'재난', title:'강한 비가 시작됐습니다',description:'천막 누수와 배수로 상태를 확인하세요.',image:'storm.webp',severity:'disaster',duration:6000 },
@@ -47,10 +49,10 @@ export function eventFromMessage(message='') {
 }
 
 export class AfterdayEventBoard {
-  constructor({host,initialState,onSecure=()=>{},onCover=()=>{},onPrepare=()=>{},onExpeditionChoice=()=>{},onCompanionChoice=()=>{},onNotice=()=>{},onLog=()=>{}}={}) {
+  constructor({host,initialState,onSecure=()=>{},onCover=()=>{},onPrepare=()=>{},onExpeditionChoice=()=>{},onCompanionChoice=()=>{},onCompanionRationChoice=()=>{},onNotice=()=>{},onLog=()=>{}}={}) {
     if (!host) throw new Error('AFTERDAY HUD container required');
     this.onSecure=onSecure;this.onCover=onCover;this.onPrepare=onPrepare;
-    this.onNotice=onNotice;this.onLog=onLog;this.onExpeditionChoice=onExpeditionChoice;this.onCompanionChoice=onCompanionChoice;
+    this.onNotice=onNotice;this.onLog=onLog;this.onExpeditionChoice=onExpeditionChoice;this.onCompanionChoice=onCompanionChoice;this.onCompanionRationChoice=onCompanionRationChoice;
     this.lastLog=initialState?.events?.at(-1)||'';
     this.lastLogSerial=initialState?.eventSerial||0;
     this.lastWeather=initialState?.weather||'clear';
@@ -84,6 +86,9 @@ export class AfterdayEventBoard {
 <button class="afterday-board-companion-aid" type="button"><strong>② 식수만 지원한다</strong><small>식수 -1 · 부품 정보 45%</small></button>
 <button class="afterday-board-companion-trade" type="button"><strong>③ 물자를 교환한다</strong><small>식량 -1 · 유용한 보상 75%</small></button>
 <button class="afterday-board-companion-decline" type="button"><strong>④ 출입을 거절한다</strong><small>물자 손실 없음 · 도움도 없음</small></button>
+</div><div class="afterday-board-companion afterday-board-rations" hidden>
+<button class="afterday-board-rations-share" type="button"><strong>① 식량·식수를 함께 나눈다</strong><small>식량 -1 · 식수 -1 · 동료 건강 +12 · 3일 뒤 안전한 날 부품 +1</small></button>
+<button class="afterday-board-rations-conserve" type="button"><strong>② 남은 물자를 지킨다</strong><small>소비 없음 · 동료 건강 -16 · 3일간 작업 속도 +10%</small></button>
 </div></div><button class="afterday-board-close" type="button" aria-label="알림 닫기">×</button>`;
     host.append(this.element);
     this.element.querySelector('.afterday-board-close').addEventListener('click',()=>this.deferChoice());
@@ -98,6 +103,8 @@ export class AfterdayEventBoard {
     this.element.querySelector('.afterday-board-companion-aid').addEventListener('click',()=>this.onCompanionChoice('aid'));
     this.element.querySelector('.afterday-board-companion-trade').addEventListener('click',()=>this.onCompanionChoice('trade'));
     this.element.querySelector('.afterday-board-companion-decline').addEventListener('click',()=>this.onCompanionChoice('decline'));
+    this.element.querySelector('.afterday-board-rations-share').addEventListener('click',()=>this.onCompanionRationChoice('share'));
+    this.element.querySelector('.afterday-board-rations-conserve').addEventListener('click',()=>this.onCompanionRationChoice('conserve'));
     this.injectPreviewControls();
   }
   playNoticeSound(){
@@ -118,7 +125,7 @@ export class AfterdayEventBoard {
     const data=EVENT_STYLES[key];if(!data)return false;
     if(this.choiceLocked&&this.activeKey!==key)return false;
     clearTimeout(this.timer);this.activeKey=key;
-    const mandatory=key==='expedition'||key==='companionInvite';
+    const mandatory=key==='expedition'||key==='companionInvite'||key==='companionRations';
     this.choiceLocked=mandatory;this.backdrop.hidden=!mandatory;
     const el=this.element;el.hidden=false;el.className=`afterday-board afterday-board--${data.severity}${mandatory?' is-choice':''}`;
     el.setAttribute('role',mandatory?'dialog':'status');
@@ -139,13 +146,18 @@ export class AfterdayEventBoard {
     el.querySelector('.afterday-board-prepare').hidden=!risky;
     el.querySelector('.afterday-board-expedition').hidden=key!=='expedition';
     el.querySelector('.afterday-board-companion').hidden=key!=='companionInvite';
+    el.querySelector('.afterday-board-rations').hidden=key!=='companionRations';
     // Restart physical hanging animation for each newly arriving notice.
     void el.offsetHeight;el.classList.add('is-open');
     this.seen.push({key,at:Date.now()});if(this.seen.length>30)this.seen.shift();
     if(options.silent)this.pendingNoticeSound=false;
     else this.playNoticeSound();
     if(!mandatory)this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
-    else el.querySelector('button:not([hidden])')?.focus({preventScroll:true});
+    else {
+      const target=key==='expedition'?'.afterday-board-expedition':
+        key==='companionInvite'?'.afterday-board-companion':'.afterday-board-rations';
+      el.querySelector(target+' button:not(:disabled)')?.focus({preventScroll:true});
+    }
     return true;
   }
   requiresChoice(){return this.choiceLocked===true;}
@@ -181,8 +193,10 @@ export class AfterdayEventBoard {
     return shown;
   }
   openPendingCompanion(state){
-    if(!state?.companion?.pending)return false;
-    const shown=this.show('companionInvite',{silent:true});
+    const invite=state?.companion?.pending;
+    const rations=state?.companion?.rationPending;
+    if(!invite&&!rations)return false;
+    const shown=this.show(invite?'companionInvite':'companionRations',{silent:true});
     if(shown)this.updateQuestChoices(state);
     return shown;
   }
@@ -205,6 +219,13 @@ export class AfterdayEventBoard {
         (state?.supply?.food||0)<1||(state?.supply?.water||0)<1;
       el.querySelector('.afterday-board-companion-aid').disabled=(state?.supply?.water||0)<1;
       el.querySelector('.afterday-board-companion-trade').disabled=(state?.supply?.food||0)<1;
+    }else if(this.activeKey==='companionRations'){
+      el.querySelector('.afterday-board-rations-share').disabled=
+        (state?.supply?.food||0)<1||(state?.supply?.water||0)<1;
+      const health=Number(state?.companion?.health)||0;
+      el.querySelector('.afterday-board-rations-conserve small').textContent=
+        health<=36?'소비 없음 · 건강 -16 · 협업 중단 또는 캠프 이탈 위험':
+        '소비 없음 · 건강 -16 · 3일간 작업 속도 +10%';
     }
   }
   sync(state,{warningAhead=false}={}) {
@@ -268,8 +289,12 @@ export class AfterdayEventBoard {
     if(lowFood&&!this.lastLowFood&&!shown&&!state.raiderAlert&&state.survivalStatus!=='dead')
       this.showOnce(state,'shortage',`shortage:${currentSerial}`);
     this.lastLowFood=lowFood;
+    const rations=state.companion?.rationPending;
+    if(rations&&!shown&&!this.activeKey&&!state.raiderAlert&&state.survivalStatus!=='dead')
+      shown=this.showOnce(state,'companionRations',rations.id,{silent:true})||shown;
     if(this.activeKey==='expedition'&&!expedition)this.dismiss(true);
     if(this.activeKey==='companionInvite'&&!invitation)this.dismiss(true);
+    if(this.activeKey==='companionRations'&&!rations)this.dismiss(true);
     if(typeof this.updateQuestChoices==='function'&&this.choiceLocked)this.updateQuestChoices(state);
     if(this.activeKey==='raiders'&&!state.raiderAlert)this.element.querySelector('.afterday-board-secure').hidden=true;
     if(this.activeKey==='tornadoNear'||this.activeKey==='tornadoDirect'){
