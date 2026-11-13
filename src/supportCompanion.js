@@ -131,7 +131,9 @@ export function resolveCompanionRationChoice(s,decision,{day=1,addLog=()=>{}}={}
  }else{
   c.health=Math.max(0,c.health-16);
   c.strainedUntilDay=day+3;
-  msg='남은 식량과 식수를 지켰다. 동료 건강 -16. “알겠어요. 오늘은 제가 쉬겠습니다.” 앞으로 게임 3일간 정수·재배 협업 속도가 +10%로 낮아진다.';
+  msg=c.health>20
+   ?'남은 식량과 식수를 지켰다. 동료 건강 -16. “알겠어요. 오늘은 제가 쉬겠습니다.” 앞으로 게임 3일간 정수·재배 협업 속도가 +10%로 낮아진다.'
+   :'남은 식량과 식수를 지켰다. 동료 건강 -16. “알겠어요. 오늘은 제가 쉬겠습니다.” 동료 건강이 20 이하로 떨어져 협업이 중단됐다. 체력이 0이 되면 캠프를 떠날 수 있다.';
  }
  addLog(msg);
  return {good:true,outcome:decision,msg};
