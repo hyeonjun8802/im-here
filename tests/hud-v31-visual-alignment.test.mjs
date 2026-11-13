@@ -48,7 +48,8 @@ test('equipment panel uses original source button exactly once with readable saf
  assert.match(css,/min-height:clamp\(140px,37\.5vw,169px\)/);
  assert.match(css,/padding:24px 14px 41px/);
  assert.match(html,/id="survival-kit-action"/);
- assert.match(html,/explore\?\.click\(\)/);
+ assert.match(html,/id="survival-kit-action"[^>]*hidden/);
+ assert.doesNotMatch(html,/common-ui-v1202-action-js/);
 });
 test('responsive actionbar and equipment have clearance at phone and tablet widths',()=>{
  const clamp=(a,x,b)=>Math.max(a,Math.min(b,x));
