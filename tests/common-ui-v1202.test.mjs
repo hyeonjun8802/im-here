@@ -9,7 +9,9 @@ const js=read('src/commonUiAssetsV3.js').toString();
 
 test('v12.2 exploration action and real status text survive common UI merge',()=>{
  assert.match(html,/id="survival-kit-action"/);
- assert.match(html,/explore\?\.click\(\)/);
+ assert.match(html,/id="survival-kit-action"[^>]*hidden/);
+ assert.doesNotMatch(html,/common-ui-v1202-action-js/);
+ assert.match(html,/id="explore" data-action="explore"/);
  assert.match(html,/id="survival-day-chip"/);
  assert.match(html,/id="speed-toggle"/);
  assert.match(html,/id="warning"/);
