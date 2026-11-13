@@ -139,6 +139,10 @@ function renderHUD(){
  // run. The badge covers either actual opportunity; an unavailable slot
  // cannot waste a tap only to report its cooldown afterward.
  supplyButton.dataset.supplyReady=String(supplyAvailable);
+ // An actual element is intentionally used instead of ::after: bottom-bar
+ // styles suppress button pseudo-elements and can hide CSS-only badges.
+ const supplyDot=supplyButton.querySelector('.afterday-supply-dot');
+ if(supplyDot)supplyDot.hidden=!supplyAvailable;
  supplyButton.dataset.supplyKind=open?'expedition':emergency.ready?'emergency':'unavailable';
  // Keep an unavailable slot tappable solely to EXPLAIN its current lock.
  // Native disabled buttons cannot deliver the cooldown hint on touch devices.
