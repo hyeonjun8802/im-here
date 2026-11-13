@@ -633,9 +633,9 @@ export class AfterWorld {
   this.focusLookHeight=view==='portrait'?2.22:1.9;
   this.cityLookHeight=view==='overhead'?2.1:3.3;
  }
- setQuality(value){
+ setQuality(value){const gpuSafeMode=this.gpuSafeMode;
   const mobile=this.isMobile;
-  const low=this.gpuSafeMode||value==='low'||(value==='auto'&&innerWidth<700);
+  const low=gpuSafeMode||value==='low'||(value==='auto'&&innerWidth<700);
   const balanced=!mobile&&value==='auto'&&!low;
   // Desktop AUTO is genuinely balanced. HIGH preserves the original 1.8 DPR,
   // 4096px sun shadow, SSAO and extra practical shadow.
