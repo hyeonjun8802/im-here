@@ -110,8 +110,10 @@ export class CinematicPostV130 {
   if(this.grade?.uniforms?.uTexel)this.grade.uniforms.uTexel.value.set(
     1/Math.max(1,width*ratio),1/Math.max(1,height*ratio));
  }
- setQuality(low){
-  if(this.ssao)this.ssao.enabled=!low;
+ setQuality(low,balanced=false){
+  // AUTO keeps cinematic color, bloom and FXAA but skips full-screen SSAO.
+  // HIGH restores SSAO; LOW bypasses all postprocessing.
+  if(this.ssao)this.ssao.enabled=!low&&!balanced;
   this.active=!!this.composer&&!low;
   this.composer?.setPixelRatio(this.world.renderer.getPixelRatio());
   this.updateResolution(

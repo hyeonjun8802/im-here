@@ -294,12 +294,16 @@ export class PremiumAssetFinishV620{
     for(const c of this.contacts)c.mesh.material.opacity=(.16+wet*.10+n*.035);
   }
 
-  setQuality(low){
+  setQuality(low,balanced=false){
     if(!this.world.sun)return;
     const mobile=this.world.isMobile||low;
-    this.world.sun.shadow.mapSize.set(mobile?1024:4096,mobile?1024:4096);
-    this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;
-    for(const l of this.practical)l.castShadow=!mobile&&l===this.practical[0];
+    const size=mobile?1024:balanced?2048:4096;
+    if(this.world.sun.shadow.mapSize.x!==size||this.world.sun.shadow.mapSize.y!==size){
+      this.world.sun.shadow.mapSize.set(size,size);
+      this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;
+    }
+    // The one extra practical-light shadow is only needed in HIGH mode.
+    for(const l of this.practical)l.castShadow=!mobile&&!balanced&&l===this.practical[0];
   }
 
   dispose(){

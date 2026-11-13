@@ -172,7 +172,7 @@ export class AfterWorld {
    this.cinematicPost=new CinematicPostV130(this);
   }
   this.cinematicMoment=new CinematicMomentV510(this);
-  if(!this.isMobile)this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();window.addEventListener('resize',()=>this.resize());
+  if(!this.isMobile)this.eventPerformance=new PremiumEventPhysicsV520(this);this.heroAssetPromise=this.loadHeroAssets();this.resize();if(!this.isMobile)this.setQuality('auto');window.addEventListener('resize',()=>this.resize());
  }
  /** Load three locally baked, true 3D GLB models with UVs and embedded PBR textures.
   * Fallback procedural props stay visible if decoding or fetching fails.
@@ -633,7 +633,24 @@ export class AfterWorld {
   this.focusLookHeight=view==='portrait'?2.22:1.9;
   this.cityLookHeight=view==='overhead'?2.1:3.3;
  }
- setQuality(value){const low=this.gpuSafeMode||value==='low'||(value==='auto'&&innerWidth<700);const mobile=this.isMobile;this.renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?(this.gpuSafeMode?1:low?1:1.2):low?1.15:1.8));const shadowSize=mobile?(this.gpuSafeMode?256:512):low?1024:4096;this.sun.shadow.mapSize.set(shadowSize,shadowSize);this.sun.shadow.map?.dispose();this.sun.shadow.map=null;this.renderer.shadowMap.enabled=!this.gpuSafeMode;this.premiumAssetFinish?.setQuality(low);this.cinematicPost?.setQuality(low);this.resize()}
+ setQuality(value){
+  const mobile=this.isMobile;
+  const low=this.gpuSafeMode||value==='low'||(value==='auto'&&innerWidth<700);
+  const balanced=!mobile&&value==='auto'&&!low;
+  // Desktop AUTO is genuinely balanced. HIGH preserves the original 1.8 DPR,
+  // 4096px sun shadow, SSAO and extra practical shadow.
+  const ratio=mobile?(this.gpuSafeMode?1:low?1:1.2):low?1.15:balanced?1.3:1.8;
+  this.renderer.setPixelRatio(Math.min(devicePixelRatio,ratio));
+  const shadowSize=mobile?(this.gpuSafeMode?256:512):low?1024:balanced?2048:4096;
+  if(this.sun.shadow.mapSize.x!==shadowSize||this.sun.shadow.mapSize.y!==shadowSize){
+   this.sun.shadow.mapSize.set(shadowSize,shadowSize);
+   this.sun.shadow.map?.dispose();this.sun.shadow.map=null;
+  }
+  this.renderer.shadowMap.enabled=!this.gpuSafeMode;
+  this.premiumAssetFinish?.setQuality(low,balanced);
+  this.cinematicPost?.setQuality(low,balanced);
+  this.resize();
+ }
  update(dt,now,game,cinematicDt=dt){
   this.syncSurvivalInventory(game);
   // Accelerated 2×/4× also advances physical weather and survivor animation.
@@ -763,7 +780,10 @@ export class AfterWorld {
   if(this.tarpMesh){const arr=this.tarpMesh.geometry.attributes.position.array,original=this.tarpVerts;
    for(let i=0;i<arr.length;i+=3)arr[i+1]=original[i+1]+Math.sin(t*2+original[i]*.7+original[i+2])*(.055+vw.wind*.20);
    this.tarpMesh.geometry.attributes.position.needsUpdate=true;
-   if(Math.floor(t*10)%8===0)this.tarpMesh.geometry.computeVertexNormals();}
+   const step=Math.floor(t*10);
+   if(step%8===0&&this._lastTarpNormalStep!==step){
+    this._lastTarpNormalStep=step;this.tarpMesh.geometry.computeVertexNormals();
+   }}
   // Local PBR GLB canopy sways in actual wind, retaining its authored UVs and silhouette.
   if(this.heroCanopyMesh&&this.heroCanopyVerts){
    const p=this.heroCanopyMesh.geometry.attributes.position,base=this.heroCanopyVerts;
@@ -772,7 +792,10 @@ export class AfterWorld {
     p.array[i+1]=base[i+1]+Math.sin(t*1.3+x*.42+z*.27)*(0.012+vw.wind*.15);
    }
    p.needsUpdate=true;
-   if(Math.floor(t*8)%5===0)this.heroCanopyMesh.geometry.computeVertexNormals();
+   const step=Math.floor(t*8);
+   if(step%5===0&&this._lastCanopyNormalStep!==step){
+    this._lastCanopyNormalStep=step;this.heroCanopyMesh.geometry.computeVertexNormals();
+   }
   }
   for(let i=0;i<this.flames.length;i++){let f=this.flames[i];f.scale.y=.65+Math.sin(t*9+i*3)*.27;f.rotation.z=Math.sin(t*4+i)*.2;}
   if(this.cameraTransition){
