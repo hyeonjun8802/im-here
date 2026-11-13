@@ -1024,3 +1024,26 @@ body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions {
     font-size:11px!important;
   }
 }
+
+/* v27 | the equipment pane is display-only. Keep the hidden DOM marker so
+ * older frame sizing selectors continue matching, but retire its extra action.
+ * The painted original gold well is masked by a dark inset; the real chest
+ * button remains in the unchanged nine-slot lower navigation. */
+body.afterday-real-ui-v3 #hud .survival-kit > .survival-kit-action[hidden] {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action[hidden])::after {
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  left:10%!important;
+  right:10%!important;
+  top:76%!important;
+  height:18%!important;
+  z-index:1!important;
+  border-radius:3px!important;
+  background:linear-gradient(180deg,#111922,#141d25 65%,#101820)!important;
+  pointer-events:none!important;
+}
