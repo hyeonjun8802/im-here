@@ -10,11 +10,6 @@ const ASSETS=Object.freeze({
   cover:'/assets/ui/neon-status/cover.svg'
 });
 const ORDER=['infection','cover','companion'];
-const IDLE_DETAILS=Object.freeze({
-  infection:'감염 없음 · 질병 위험이 높아지면 붉은 네온으로 켜집니다.',
-  cover:'대피 보호 없음 · 토네이도 발생 중 실제 대피할 때 노란 네온으로 켜집니다.',
-  companion:'동료 협업 없음 · 건강한 동료와 작동 중인 정수기 또는 텃밭이 있으면 녹색 네온으로 켜집니다.'
-});
 
 export function majorNeonEffects(s,virtualNow,day){
   if(!s||s.survivalStatus==='dead')return [];
@@ -74,8 +69,8 @@ function createNeonStatusHud(host){
     button.className='neon-status__item';
     button.dataset.effect=id;
     button.dataset.active='false';
-    button.setAttribute('aria-expanded','false');
-    button.tabIndex=0;
+    button.setAttribute('aria-hidden','true');
+    button.tabIndex=-1;
     const img=document.createElement('img');
     img.className='neon-status__image';
     img.src=ASSETS[id];
@@ -85,6 +80,7 @@ function createNeonStatusHud(host){
     tip.className='neon-status__tooltip';
     button.append(img,tip);
     button.addEventListener('click',()=>{
+      if(button.dataset.active!=='true')return;
       const next=!button.classList.contains('is-open');
       for(const other of hud.querySelectorAll('button.is-open')){
         other.classList.remove('is-open');
@@ -117,10 +113,14 @@ export function syncNeonStatusHud(host,state,virtualNow,day){
     button.dataset.active=String(active);
     button.dataset.phase=effect?.phase||'steady';
     button.dataset.kind=effect?.kind||'buff';
-    // Dim standby signals always remain visible and explain their conditions.
-    // They do not claim a buff or debuff is active.
-    const caption=active?`${effect.label} · ${effect.detail}`:
-      `비활성 · ${IDLE_DETAILS[button.dataset.effect]}`;
+    button.tabIndex=active?0:-1;
+    button.setAttribute('aria-hidden',String(!active));
+    if(!active){
+      button.classList.remove('is-open');
+      button.setAttribute('aria-expanded','false');
+      continue;
+    }
+    const caption=`${effect.label} · ${effect.detail}`;
     if(button.getAttribute('aria-label')!==caption){
       button.setAttribute('aria-label',caption);
       button.title=caption;
