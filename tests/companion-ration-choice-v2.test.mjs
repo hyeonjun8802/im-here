@@ -38,7 +38,7 @@ test('the live minute loop offers a single non-automatic decision',()=>{
  s.lastTickAt=t0+7*DAY_MS;
  advance(s,t0+7*DAY_MS+60000,false);
  assert.ok(s.companion.rationPending);
- assert.match(s.events.join(' '),/물자 분배/);
+ assert.match(s.events.join(' '),/식량 배분/);
  advance(s,t0+7*DAY_MS+120000,false);
  assert.equal(s.events.filter(e=>e.includes('물자 분배')).length,1);
  const other=savedCompanion();other.lastTickAt=t0+7*DAY_MS;
