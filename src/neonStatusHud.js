@@ -50,7 +50,7 @@ export function majorNeonEffects(s,virtualNow,day){
     }
     effects.push({
       id:'companion',kind:cooperation.state==='strained'?'strained':'buff',
-      phase,label:cooperation.label.replace(/^🤝\s*/,''),detail:cooperation.description
+      phase,label:cooperation.state==='strained'?'동료 협업 +10%':'동료 협업 +30%',detail:cooperation.description
     });
   }
   return ORDER.map(id=>effects.find(effect=>effect.id===id)).filter(Boolean);
