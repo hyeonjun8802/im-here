@@ -67,45 +67,62 @@ body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > #survival-c
   }
 }
 
-/* Story-only notices (radio conversation, scavenging result, companion
- * relationship, milestone, helicopter supplies) should not compete with
- * the weather and time HUD. Keep urgent danger/disaster alerts at TOP and
- * interactive 2/4-option dialogs CENTER as already implemented. */
-body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+/* v75 | All NON-MODAL events (including threat and weather warnings) belong
+ * beneath the weather HUD. Their severity colors/action buttons remain.
+ * The player's mandatory expedition and companion choices stay centered. */
+body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
   top:auto!important;
-  bottom:calc(160px + env(safe-area-inset-bottom))!important;
+  bottom:calc(125px + env(safe-area-inset-bottom))!important;
   max-height:min(28dvh,220px)!important;
   overflow-y:auto!important;
 }
 /* If a daily caption and a narrative result occur together, show the
  * event card rather than duplicate overlapping text. No gameplay paused. */
-body.afterday-real-ui-v3 #hud:has(> .afterday-board:is(.afterday-board--social,.afterday-board--opportunity).is-open:not(.is-choice))
+body.afterday-real-ui-v3 #hud:has(> .afterday-board.is-open:not(.is-choice))
   .survival-kit > #survival-chapter.is-visible{
   opacity:0!important;
   visibility:hidden!important;
 }
 @media(min-width:721px) and (max-width:1023px){
-  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+  body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
     bottom:calc(
       max(95px,(100vw - 8px) * 172 / 1148 + 19px) +
-      clamp(274px,26vw,328px) * 308 / 461 + 14px +
+      clamp(274px,26vw,328px) * 308 / 461 + 2px +
       env(safe-area-inset-bottom)
     )!important;
   }
 }
 @media(max-width:720px){
-  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
+  body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
     bottom:calc(
       max(75px,(100vw - 8px) * 172 / 1148 + 19px) +
-      clamp(204px,57vw,246px) * 308 / 461 + 12px +
+      clamp(204px,57vw,246px) * 308 / 461 + 0px +
       env(safe-area-inset-bottom)
     )!important;
     max-height:min(29dvh,190px)!important;
   }
 }
 @media(max-height:480px){
-  body.afterday-real-ui-v3 #hud > .afterday-board:is(.afterday-board--social,.afterday-board--opportunity):not(.is-choice){
-    bottom:min(46dvh,190px)!important;
+  body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
+    bottom:min(41dvh,166px)!important;
     max-height:27dvh!important;
+  }
+}
+
+/* v75 | Cinematic achievements/failures (e.g. '아무것도 공짜로 얻을 수 없다')
+ * use a DIFFERENT layer from the daily subtitle and alert board.
+ * Relocate ONLY this text plate below the live day/time/current-weather HUD.
+ * Camera, shot timing, audio and the bottom equipment artwork are untouched. */
+body.afterday-real-ui-v3 #app > .afterday-cinema{
+  top:clamp(224px,30vh,325px)!important;
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #app > .afterday-cinema{
+    top:calc((100vw - 4px) * 300 / 1647 + 122px + env(safe-area-inset-top))!important;
+  }
+}
+@media(min-width:721px) and (max-height:490px){
+  body.afterday-real-ui-v3 #app > .afterday-cinema{
+    top:clamp(184px,42vh,234px)!important;
   }
 }
