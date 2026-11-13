@@ -121,7 +121,9 @@ test('320px portrait, tablets and desktop place queue above physical bottom equi
  assert.match(css,/@media\(min-width:721px\) and \(max-width:1023px\)/);
  assert.match(css,/bottom:calc\(154px \+ env\(safe-area-inset-bottom\)\)!important/);
  assert.match(css,/width:calc\(100vw - 24px\)!important/);
- assert.match(css,/pointer-events:none!important/);
+ assert.match(css,/pointer-events:auto!important/);
+ assert.match(css,/touch-action:pan-y!important/);
+ assert.match(css,/overscroll-behavior:contain!important/);
  assert.match(css,/max-height:min\(22dvh,126px\)!important/);
  for(const w of [320,360,375,390,414,480,720]){
   const rail=Math.max(75,(w-8)*172/1148+19);
