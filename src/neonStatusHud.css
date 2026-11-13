@@ -1,0 +1,169 @@
+/* AFTERDAY | Minimal survival effect signals. No progress rings or timers.
+ * All selectors are isolated to this display-only layer. */
+body.afterday-real-ui-v3 #hud > .neon-status-hud {
+  position:fixed!important;
+  right:clamp(14px,2.2vw,34px)!important;
+  bottom:calc(17px + env(safe-area-inset-bottom))!important;
+  z-index:27!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+  width:max-content!important;
+  max-width:calc(100vw - 24px)!important;
+  height:48px!important;
+  pointer-events:none!important;
+}
+body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item {
+  display:block!important;
+  flex:0 0 45px!important;
+  width:45px!important;
+  height:45px!important;
+  min-width:0!important;
+  min-height:0!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+  appearance:none!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  opacity:1;
+  transform:scale(1);
+  visibility:visible;
+  overflow:visible!important;
+  cursor:pointer;
+  pointer-events:auto!important;
+  transition:opacity .32s ease, transform .32s ease, flex-basis .32s ease, width .32s ease, visibility .32s;
+}
+body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item[data-active="false"] {
+  width:0!important;
+  flex-basis:0!important;
+  opacity:0!important;
+  visibility:hidden;
+  transform:scale(.72);
+  pointer-events:none!important;
+}
+body.afterday-real-ui-v3 #hud .neon-status__image{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  filter:drop-shadow(0 0 3px rgba(139,245,181,.34));
+  animation:none;
+}
+body.afterday-real-ui-v3 #hud .neon-status__item[data-effect="infection"] .neon-status__image {
+  filter:drop-shadow(0 0 3px rgba(245,91,139,.38));
+}
+body.afterday-real-ui-v3 #hud .neon-status__item[data-effect="cover"] .neon-status__image{
+  filter:drop-shadow(0 0 3px rgba(242,190,89,.34));
+}
+body.afterday-real-ui-v3 #hud .neon-status__item[data-kind="strained"] .neon-status__image{
+  filter:hue-rotate(-92deg) saturate(1.65) drop-shadow(0 0 3px rgba(243,174,85,.5));
+}
+body.afterday-real-ui-v3 #hud .neon-status__item:focus-visible{
+  outline:2px solid #e5d3a2!important;
+  outline-offset:2px!important;
+}
+body.afterday-real-ui-v3 #hud .neon-status__tooltip{
+  position:absolute;
+  right:0;
+  bottom:calc(100% + 11px);
+  z-index:2;
+  width:max-content;
+  max-width:min(285px,calc(100vw - 26px));
+  white-space:normal;
+  font:600 11px/1.5 'Noto Sans KR',system-ui,sans-serif;
+  letter-spacing:0;
+  text-align:left;
+  color:#f1ede0;
+  background:rgba(13,20,24,.96);
+  border:1px solid rgba(172,169,146,.58);
+  border-radius:6px;
+  box-shadow:0 5px 16px #000a;
+  padding:9px 11px;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(4px);
+  pointer-events:none;
+  transition:opacity .16s ease, transform .16s ease, visibility .16s;
+}
+body.afterday-real-ui-v3 #hud .neon-status__item:is(:hover,:focus-visible,.is-open) .neon-status__tooltip{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+}
+@keyframes afterday-neon-near{
+  0%,100%{opacity:1}
+  50%{opacity:.48}
+}
+@keyframes afterday-neon-imminent{
+  0%,100%{opacity:1}
+  50%{opacity:.28}
+}
+@keyframes afterday-neon-severe{
+  0%,100%{filter:drop-shadow(0 0 3px rgba(245,91,139,.4))}
+  50%{filter:drop-shadow(0 0 7px rgba(245,91,139,.8))}
+}
+/* Only the actually timed +10% companion penalty receives faster flashes
+ * during its final in-game day. Infection has NO known expiry. */
+body.afterday-real-ui-v3 #hud .neon-status__item[data-phase="near"] .neon-status__image{
+  animation:afterday-neon-near 1.2s ease-in-out infinite;
+}
+body.afterday-real-ui-v3 #hud .neon-status__item[data-phase="imminent"] .neon-status__image{
+  animation:afterday-neon-imminent .56s ease-in-out infinite;
+}
+body.afterday-real-ui-v3 #hud .neon-status__item[data-phase="critical"][data-effect="infection"] .neon-status__image{
+  animation:afterday-neon-severe 2.4s ease-in-out infinite;
+}
+/* This tray is separate from the actionbar art. In tablets the nine-slot
+ * artwork occupies almost the entire width, so place effects ABOVE it. */
+@media (min-width:721px) and (max-width:1023px){
+  body.afterday-real-ui-v3 #hud > .neon-status-hud{
+    right:14px!important;
+    bottom:calc(18px + min(1040px,calc(100vw - 12px)) * 172 / 1148 + env(safe-area-inset-bottom))!important;
+  }
+}
+@media (max-width:720px){
+  body.afterday-real-ui-v3 #hud > .neon-status-hud{
+    right:10px!important;
+    bottom:calc(15px + (100vw - 8px) * 172 / 1148 + env(safe-area-inset-bottom))!important;
+    gap:5px!important;
+    height:37px!important;
+  }
+  body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item{
+    width:clamp(30px,8.1vw,36px)!important;
+    flex-basis:clamp(30px,8.1vw,36px)!important;
+    height:clamp(30px,8.1vw,36px)!important;
+  }
+  body.afterday-real-ui-v3 #hud > .neon-status-hud > .neon-status__item[data-active="false"]{
+    width:0!important;
+    flex-basis:0!important;
+  }
+  /* Three emergency actions already use this corner on narrow screens. */
+  body.afterday-real-ui-v3 #hud:has(> .afterday-v3-urgent-actions.has-urgent) > .neon-status-hud{
+    bottom:calc(149px + (100vw - 8px) * 172 / 1148 + env(safe-area-inset-bottom))!important;
+  }
+}
+/* When a panel is opened its content always takes priority over status dots. */
+body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) > .neon-status-hud,
+body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) > .neon-status-hud,
+body.afterday-real-ui-v3 #hud:has(.afterday-board.is-open) > .neon-status-hud{
+  opacity:0!important;
+  pointer-events:none!important;
+}
+body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) > .neon-status-hud > button,
+body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) > .neon-status-hud > button,
+body.afterday-real-ui-v3 #hud:has(.afterday-board.is-open) > .neon-status-hud > button{
+  pointer-events:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  body.afterday-real-ui-v3 #hud .neon-status__image{
+    animation:none!important;
+  }
+  body.afterday-real-ui-v3 #hud .neon-status__item{
+    transition:none!important;
+  }
+}
