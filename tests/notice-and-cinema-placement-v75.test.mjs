@@ -10,7 +10,7 @@ const cinematicJs=readFileSync(new URL('../src/cinematicMomentV510.js',import.me
 
 test('all four real event severities use the lowered non-modal notice placement',()=>{
  for(const kind of ['danger','disaster','opportunity','social'])
-   assert.match(eventCss,new RegExp('afterday-board--'+kind+'|afterday-board--'+kind+'[^\\n]*'));
+   assert.match(eventJs,new RegExp("severity:'"+kind+"'"));
  const lower=css.match(/#hud > \.afterday-board:not\(\.is-choice\)\s*\{([^}]+)\}/);
  assert.ok(lower,'all non-choice alerts must be targeted regardless of severity');
  assert.match(lower[1],/top:auto!important/);
