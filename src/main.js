@@ -168,6 +168,7 @@ function renderHUD(){
  companionNode.textContent=state.companion?.present?companionBuff.label:
    waiting?'생존자 구조 요청 대기':state.companion?.lost?'동행 생존자 이탈':'생존자 신호 대기';
  companionNode.classList.toggle('companion-buff-active',companionBuff.state==='boosted');
+ companionNode.classList.toggle('companion-buff-strained',companionBuff.state==='strained');
  companionNode.classList.toggle('companion-buff-waiting',companionBuff.state==='waiting');
  companionNode.classList.toggle('companion-buff-resting',companionBuff.state==='resting');
  companionNode.title=companionLong;
