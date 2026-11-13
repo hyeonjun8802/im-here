@@ -4,7 +4,8 @@
  */
 export const COMPANION_BALANCE=Object.freeze({
   foodMinutes:1440,waterMinutes:1440,foodBonus:1.3,waterBonus:1.3,
-  salvageMinutes:2880,salvageCap:14,shelterlessHealthLoss:.006
+  salvageMinutes:2880,salvageCap:14,shelterlessHealthLoss:.006,
+  autoRepairCost:2,autoRepairReserve:2,autoRepairTargetThreshold:80
 });
 const bound=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
 export const newCompanion=()=>({
@@ -13,12 +14,13 @@ export const newCompanion=()=>({
   lastContactId:0,lost:false,departedDay:0,
   obtainedParts:0,lastNarrativeDay:0,
   rationPending:null,rationDecision:'none',rationResolvedDay:0,
-  strainedUntilDay:0,rationAftermathDone:false
+  strainedUntilDay:0,rationAftermathDone:false,
+  lastAutoRepairDay:0,lastAutoRepairTarget:null,lastAutoRepairPoints:0
 });
 export function sanitizeCompanion(raw){
  const b=newCompanion(),v=raw&&typeof raw==='object'?raw:{},a={...b,...v};
  a.present=Boolean(v.present);a.lost=Boolean(v.lost);
- for(const name of ['arrivedDay','lastContactId','departedDay','obtainedParts','lastNarrativeDay','rationResolvedDay','strainedUntilDay']){
+ for(const name of ['arrivedDay','lastContactId','departedDay','obtainedParts','lastNarrativeDay','rationResolvedDay','strainedUntilDay','lastAutoRepairDay','lastAutoRepairPoints']){
   a[name]=Math.floor(bound(v[name],0,100000));
  }
  for(const name of ['foodMinutes','waterMinutes','salvageMinutes'])a[name]=bound(v[name],0,COMPANION_BALANCE.salvageMinutes);
@@ -28,6 +30,8 @@ export function sanitizeCompanion(raw){
    Number.isInteger(v.pending.day)&&v.pending.day>=1?
    {radioNewsId:v.pending.radioNewsId,day:v.pending.day,
     id:`companion:${v.pending.radioNewsId}`}:null;
+ a.lastAutoRepairTarget=['tank','shelter','storage'].includes(v.lastAutoRepairTarget)?v.lastAutoRepairTarget:null;
+ a.lastAutoRepairPoints=Math.min(38,a.lastAutoRepairPoints);
  a.rationDecision=['share','conserve'].includes(v.rationDecision)?v.rationDecision:'none';
  a.rationAftermathDone=Boolean(v.rationAftermathDone);
  a.rationPending=a.present&&a.rationDecision==='none'&&v.rationPending&&
@@ -95,6 +99,7 @@ export function resolveCompanionRescue(s,decision,{addLog=()=>{},day=1}={}){
  c.foodMinutes=0;c.waterMinutes=0;c.salvageMinutes=0;
  c.rationPending=null;c.rationDecision='none';c.rationResolvedDay=0;
  c.strainedUntilDay=0;c.rationAftermathDone=false;
+ c.lastAutoRepairDay=0;c.lastAutoRepairTarget=null;c.lastAutoRepairPoints=0;
  const msg='지원 생존자를 옥상으로 받아들였다. 매 게임 하루 식량·식수 각 1개를 나누는 대신 정수·텃밭 효율이 30% 향상된다. 이 사람은 조작하는 주인공이 아니다.';
  addLog(msg);return {good:true,outcome:'joined',msg};
 }
@@ -151,6 +156,42 @@ export function applyCompanionRationAftermath(s,day,weather,{addLog=()=>{}}={}){
  addLog('동료가 나눴던 식량에 보답했다. 안전한 날 옥상 폐자재에서 수리 부품 +1을 찾아왔다.');
  return 1;
 }
+/** Automatic, fully paid maintenance by a healthy companion.
+ * Uses the same existing costs/heal amounts as manual repair:
+ * tank: 2 parts -> +38; shelter/storage: 2 parts -> +27.
+ * Reserve 2 parts for player emergencies unless any system is near failure.
+ * At most one repair per GAME DAY; never call this during offline catch-up.
+ * No extra inventory, new clock, animation, random roll, or unpaid upgrades.
+ */
+export function applyCompanionAutoRepair(s,day,weather,{addLog=()=>{}}={}){
+ const c=s?.companion,fac=s?.facilities,stock=s?.supply;
+ if(!companionWorks(s)||s.survivalStatus==='dead'||!fac||!stock||
+    !Number.isInteger(day)||day<1||c.lastAutoRepairDay===day||
+    !['clear','cloud'].includes(weather)||Number(stock.parts)<COMPANION_BALANCE.autoRepairCost)
+   return null;
+ const urgent=[['tank',40],['shelter',40],['storage',30]]
+   .find(([name,limit])=>Number(fac[name])<limit);
+ let target=urgent?.[0];
+ if(!target){
+   if(Number(stock.parts)<COMPANION_BALANCE.autoRepairCost+COMPANION_BALANCE.autoRepairReserve)
+     return null;
+   target=['tank','shelter','storage']
+     .filter(name=>Number.isFinite(fac[name])&&fac[name]<COMPANION_BALANCE.autoRepairTargetThreshold)
+     .sort((a,b)=>fac[a]-fac[b])[0];
+ }
+ if(!target)return null;
+ const before=Number(fac[target]);
+ const healed=Math.min(100-before,target==='tank'?38:27);
+ if(!(healed>0))return null;
+ stock.parts-=COMPANION_BALANCE.autoRepairCost;
+ fac[target]=Math.min(100,before+healed);
+ c.lastAutoRepairDay=day;c.lastAutoRepairTarget=target;
+ c.lastAutoRepairPoints=Math.round(healed);
+ const name={tank:'물탱크',shelter:'대피소',storage:'보관시설'}[target];
+ addLog(`동료 자동수리: ${name} 내구도 +${Math.round(healed)}%p (현재 ${Math.round(fac[target])}%). 수리 부품 -2.`);
+ return {target,points:healed,partsUsed:2,day};
+}
+
 export function applyCompanionMinute(s,day,weather,{addLog=()=>{}}={}){
  const c=s.companion;if(!c?.present)return {foodUsed:0,waterUsed:0,partsFound:0,departed:false};
  let foodUsed=0,waterUsed=0,partsFound=0;
@@ -199,6 +240,10 @@ export function companionBuffView(s,day=0){
  if(!c?.present)return {state:'absent',label:'',description:''};
  const health=Math.round(Number(c.health)||0);
  const dailyCost='매 게임 하루 식량 1개·식수 1개 소비';
+ const repairName={tank:'물탱크',shelter:'대피소',storage:'보관시설'}[c.lastAutoRepairTarget];
+ const repairedToday=Number(day)>0&&c.lastAutoRepairDay===Number(day)&&Boolean(repairName);
+ const repairTag=repairedToday?`🔧 ${repairName} 자동수리 +${c.lastAutoRepairPoints}%p`:'';
+
  if(!companionWorks(s))return {
   state:'resting',label:'🤝 동료 지침 · 협업 중단',
   description:`동료 건강 ${health}% · 작업 속도 보너스 중단 · ${dailyCost}`
@@ -206,14 +251,14 @@ export function companionBuffView(s,day=0){
  const purifier=Boolean(s.kit?.purifier&&Number(s.facilities?.tank)>=40);
  const garden=Boolean(s.kit?.seeds&&Number(s.facilities?.storage)>=20);
  if(!purifier&&!garden)return {
-  state:'waiting',label:'🤝 동료 대기 · 설비 필요',
-  description:`동료 건강 ${health}% · 정수기/씨앗을 확보하거나 탱크를 수리하면 협업 속도 +30% · ${dailyCost}`
+  state:'waiting',label:repairTag||'🤝 동료 대기 · 설비 필요',
+  description:`동료 건강 ${health}% · 정수기/씨앗을 확보하거나 탱크를 수리하면 협업 속도 +30% · ${dailyCost}${repairTag?' · '+repairTag:''}`
  };
  const target=purifier&&garden?'정수·재배':purifier?'정수':'재배';
  const pct=Math.round((companionProductionFactor(s,day)-1)*100);
  return {
-  state:pct<30?'strained':'boosted',label:`🤝 ${target} 속도 +${pct}%`,
-  description:`동료 건강 ${health}% · ${target} 작업 진행 속도 +${pct}%${pct<30?' · 물자 비축 선택으로 협업 속도가 일시 감소':''} (정수 최대 생산량은 기존 상한 유지) · 안전한 날씨에는 폐자재 회수도 도움 · ${dailyCost}`
+  state:pct<30?'strained':'boosted',label:repairTag||`🤝 ${target} 속도 +${pct}%`,
+  description:`동료 건강 ${health}% · ${target} 작업 진행 속도 +${pct}%${pct<30?' · 물자 비축 선택으로 협업 속도가 일시 감소':''} (정수 최대 생산량은 기존 상한 유지) · 안전한 날씨에는 폐자재 회수도 도움 · ${dailyCost}${repairTag?' · '+repairTag:''}`
  };
 }
 
