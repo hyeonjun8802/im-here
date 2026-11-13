@@ -2,7 +2,7 @@ import {scriptedDisasterType,disasterGapMsAfter,chooseScenarioWeather,weatherDur
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
 import {ITEM_INFO,makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,offerRecoveryScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
-import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute,offerCompanionRationChoice,resolveCompanionRationChoice,applyCompanionRationAftermath} from './supportCompanion.js';
+import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute,offerCompanionRationChoice,resolveCompanionRationChoice,applyCompanionRationAftermath,applyCompanionAutoRepair} from './supportCompanion.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
@@ -344,6 +344,9 @@ export function advance(s,now=Date.now(),offline=false){
     const economy=applyWeatherEconomyMinute(s,e,gameDay);
     applyCompanionMinute(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     applyCompanionRationAftermath(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
+    // Repairs consume real parts once a game day; never spend silently offline.
+    // Run before producer work so a restored water tank helps immediately.
+    if(!offline)applyCompanionAutoRepair(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     applyAcquiredItemMinute(s,gameDay,e,{addLog:msg=>addEvent(s,msg)});
     const weatherLedger=s.weatherEconomy;
     if(economy.waterGained&&weatherLedger.benefitNotifiedEpisode!==s.weatherEpisode){
