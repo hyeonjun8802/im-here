@@ -40,6 +40,14 @@ body.afterday-real-ui-v3 #hud #log.event-log:not([data-active="true"]){
 body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"]{
   display:block!important;
 }
+/* Immediate visual gating: prevent even a single animation frame of
+ * overlap while the queue coordinator pauses its remaining reading time. */
+body.afterday-real-ui-v3 #hud:has(> .afterday-board.is-open) #log.event-log,
+body.afterday-real-ui-v3 #hud:has(.survival-kit.premium-equipment-open) #log.event-log,
+body.afterday-real-ui-v3 #hud:has(#life-panel:not(.hidden)) #log.event-log,
+body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) #log.event-log{
+  display:none!important;
+}
 @media(min-width:721px) and (max-width:1023px){
   body.afterday-real-ui-v3 #hud #log.event-log{
     bottom:calc(
