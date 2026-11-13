@@ -39,7 +39,7 @@ test('anonymous client persists a per-browser auth session and owner-filtered sa
    return {ok:true,text:async()=>''};
   throw Error('Unexpected mock request');
  };
- const cloud=new DeviceCloudSave({storage:local,fetcher:mockFetch});
+ const cloud=new DeviceCloudSave({storage:local,fetcher:mockFetch,url:'https://example.supabase.co',publishableKey:'sb_publishable_test'});
  const restored=await cloud.load();
  assert.equal(restored.deviceSaveAtMs,100);
  assert.equal(cloud.status,'connected');
@@ -56,7 +56,7 @@ test('unavailable anonymous provider leaves local games functional',async()=>{
  const local={getItem:()=>null,setItem:()=>{}};
  let requests=0;
  const badFetch=async()=>{requests++;return {ok:false,status:422,text:async()=>JSON.stringify({msg:'Anonymous signins disabled'})};};
- const cloud=new DeviceCloudSave({storage:local,fetcher:badFetch});
+ const cloud=new DeviceCloudSave({storage:local,fetcher:badFetch,url:'https://example.supabase.co',publishableKey:'sb_publishable_test'});
  assert.equal(await cloud.load(),null);
  assert.equal(cloud.disabled,true);
  assert.equal(cloud.status,'setup-required');
@@ -101,7 +101,7 @@ test('after enabling anonymous Auth, the same browser can retry and sync',async(
   }
   throw Error('unexpected test endpoint');
  };
- const cloud=new DeviceCloudSave({storage,fetcher});
+ const cloud=new DeviceCloudSave({storage,fetcher,url:'https://example.supabase.co',publishableKey:'sb_publishable_test'});
  assert.equal(await cloud.load(),null);
  assert.equal(cloud.status,'setup-required');
  enabled=true;
@@ -120,4 +120,20 @@ test('cloud status is displayed only inside weather settings, not the main HUD',
  assert.match(main,/const connected=await deviceCloud\.retry\(\)/);
  assert.match(main,/if\(connected\)await deviceCloud\.save\(state\)/);
  assert.match(css,/#hud #weather-panel \.cloud-save-control/);
+});
+
+test('unconfigured public game cannot call shared business backend',async()=>{
+ let requests=0;
+ const storage={getItem:()=>null,setItem:()=>{}};
+ const cloud=new DeviceCloudSave({storage,url:'',publishableKey:'',fetcher:async()=>{requests++;throw Error('should not request');}});
+ assert.equal(cloud.status,'setup-required');
+ assert.equal(await cloud.load(),null);
+ await cloud.save({version:4,deviceSaveAtMs:200});
+ assert.equal(requests,0);
+ assert.equal(await cloud.retry(),false);
+ assert.equal(requests,0);
+ const config=read('deviceCloudSave.js');
+ assert.match(config,/VITE_AFTERDAY_SUPABASE_URL/);
+ assert.match(config,/VITE_AFTERDAY_SUPABASE_PUBLISHABLE_KEY/);
+ assert.doesNotMatch(config,/nxltvnwszhdqnhbxbkpa/);
 });
