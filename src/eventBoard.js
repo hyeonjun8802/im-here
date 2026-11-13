@@ -83,7 +83,7 @@ export class AfterdayEventBoard {
 <button class="afterday-board-companion-decline" type="button"><strong>④ 출입을 거절한다</strong><small>물자 손실 없음 · 도움도 없음</small></button>
 </div></div><button class="afterday-board-close" type="button" aria-label="알림 닫기">×</button>`;
     host.append(this.element);
-    this.element.querySelector('.afterday-board-close').addEventListener('click',()=>this.dismiss());
+    this.element.querySelector('.afterday-board-close').addEventListener('click',()=>this.deferChoice());
     this.element.querySelector('.afterday-board-secure').addEventListener('click',()=>this.onSecure());
     this.element.querySelector('.afterday-board-cover').addEventListener('click',()=>this.onCover());
     this.element.querySelector('.afterday-board-prepare').addEventListener('click',()=>this.onPrepare());
@@ -120,7 +120,12 @@ export class AfterdayEventBoard {
     const el=this.element;el.hidden=false;el.className=`afterday-board afterday-board--${data.severity}${mandatory?' is-choice':''}`;
     el.setAttribute('role',mandatory?'dialog':'status');
     if(mandatory)el.setAttribute('aria-modal','true');else el.removeAttribute('aria-modal');
-    el.querySelector('.afterday-board-close').hidden=mandatory;
+    // A story decision is important, but the player can postpone it rather
+    // than having all survival actions permanently blocked.
+    const close=el.querySelector('.afterday-board-close');
+    close.hidden=false;
+    close.title=mandatory?'나중에 선택 · 하단 보급/생존자 버튼에서 다시 열기':'알림 닫기';
+    close.setAttribute('aria-label',mandatory?'나중에 선택':'알림 닫기');
     el.querySelector('img').src=new URL(data.image,BASE).href;
     el.querySelector('.afterday-board-category').textContent=data.category;
     el.querySelector('.afterday-board-title').textContent=options.title||data.title;
@@ -141,6 +146,11 @@ export class AfterdayEventBoard {
     return true;
   }
   requiresChoice(){return this.choiceLocked===true;}
+  deferChoice(){
+    // Keep the underlying pending expedition/invitation intact and reopenable.
+    // Only the visible modal is dismissed; no resource or quest is consumed.
+    return this.dismiss(true);
+  }
   dismiss(force=false){
     if(this.choiceLocked&&!force)return false;
     clearTimeout(this.timer);this.choiceLocked=false;this.backdrop.hidden=true;
@@ -207,17 +217,13 @@ export class AfterdayEventBoard {
     if(expedition&&state.survivalStatus!=='dead'){
       shown=this.showOnce(state,'expedition',expedition.id,
         {title:expedition.title,description:expedition.description})||shown;
-      // Reload must restore a persisted, unresolved decision even if its alarm was seen.
-      if(!shown&&this.activeKey!=='expedition'&&state.noticeSeenIds?.includes(expedition.id)&&
-         typeof this.openPendingExpedition==='function')
-        shown=this.openPendingExpedition(state)||shown;
+      // A postponed or previously-seen quest stays available via the
+      // bottom supply badge; never force-reopen it on every HUD refresh.
     }
     const invitation=state.companion?.pending;
     if(invitation&&!expedition&&state.survivalStatus!=='dead'){
       shown=this.showOnce(state,'companionInvite',invitation.id)||shown;
-      if(!shown&&this.activeKey!=='companionInvite'&&state.noticeSeenIds?.includes(invitation.id)&&
-         typeof this.openPendingCompanion==='function')
-        shown=this.openPendingCompanion(state)||shown;
+      // Pending companion invitations likewise remain manually reopenable.
     }
     const radio=state.scavenge;
     // A contacted survivor already produced a rescue-choice notice.

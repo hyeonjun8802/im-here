@@ -9,7 +9,7 @@ import {survivalChapter} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
-import {SAVE_KEY,defaults,sanitize,advance,applyAction,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
+import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
@@ -118,7 +118,7 @@ function renderHUD(){
  disasterForecast.sync(state,t);
  $('#days').title='실제 플레이 10분마다 게임 하루가 지나갑니다 (기본 1×)';
  $('#day-pace').textContent='1일 = 플레이 10분';
- $('#clock').title='게임 내 서울 시각 · 플레이 10분 = 게임 1일 · 미접속 시 일시정지';
+ $('#clock').title='게임 내 서울 시각 · 플레이 10분 = 게임 1일 · 미접속 중 최대 8시간의 현실 시간 경과 반영';
  syncChapterCaption(day,dead);
  $('#game-over').classList.toggle('hidden',!dead);
  if(dead){
@@ -132,11 +132,18 @@ function renderHUD(){
  $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
  $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
  const open=state.scavenge?.pending;
- const supplyAvailable=Boolean(open)&&!dead;
+ const emergency=emergencyExploreAvailability(state,t);
+ const supplyAvailable=!dead&&(Boolean(open)||emergency.ready);
  const supplyButton=$('#explore');
+ // A regular scavenging decision takes priority over the separate emergency
+ // run. The badge covers either actual opportunity; an unavailable slot
+ // cannot waste a tap only to report its cooldown afterward.
  supplyButton.dataset.supplyReady=String(supplyAvailable);
- supplyButton.setAttribute('aria-label',supplyAvailable?'보급 탐색 · 새로운 탐색 기회 있음':'긴급 탐색');
- supplyButton.title=supplyAvailable?'새로운 보급 탐색 기회가 있습니다':'긴급 탐색';
+ supplyButton.dataset.supplyKind=open?'expedition':emergency.ready?'emergency':'unavailable';
+ supplyButton.disabled=dead||(!open&&!emergency.ready);
+ const supplyHelp=open?'오늘의 탐색 선택 가능 · 클릭하여 장비/보급 결정':emergency.reason;
+ supplyButton.setAttribute('aria-label',supplyHelp);
+ supplyButton.title=supplyHelp;
  $('#expedition-toggle').hidden=!open||dead;
  const waiting=state.companion?.pending;
  $('#companion-toggle').hidden=!waiting||dead;
@@ -161,7 +168,8 @@ function renderHUD(){
  const inventoryNode=$('#inventory-items');
  inventoryNode.textContent=owned.length?
    '보유 '+owned.length+'종 · '+owned.map(id=>kitLabels[id]||ITEM_INFO[id].label).join(' · '):
-   '장비 없음 · 탐색으로 확보';
+   open?'장비 없음 · 하단 보급 상자(!)에서 탐색':
+   '장비 없음 · 보급 탐색에서 확보';
  inventoryNode.title=owned.length?
    owned.map(id=>ITEM_INFO[id].label+' · '+ITEM_INFO[id].description).join(' / '):
    '탐색을 통해 장비를 획득할 수 있습니다';
@@ -198,7 +206,7 @@ function renderHUD(){
  const r=state.supply;$('#resources').innerHTML=`<span>🥫 ${r.food}</span><span title="정수된 식수 저장량">💧 ${r.water}/${WEATHER_WATER_CAPACITY}</span><span>⚕ ${r.medicine}</span><span>⚙ ${r.parts}</span><span title="대피소 내구도">🏚 ${Math.round(state.facilities.shelter)}%</span><span title="빗물 정수 시설 상태">🚰 ${Math.round(state.facilities.tank)}%</span><span title="보관시설 내구도">📦 ${Math.round(state.facilities.storage)}%</span>`;
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
  $('#medicine').classList.toggle('needs-attention',state.health<65&&state.supply.medicine>0);
- $('#explore').classList.toggle('needs-attention',r.food<3||r.water<4||state.health<38||state.facilities.shelter<38);
+ $('#explore').classList.toggle('needs-attention',supplyAvailable);
  eventBoard?.sync(state,{warningAhead});
 }
 function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}

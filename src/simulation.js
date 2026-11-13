@@ -411,6 +411,22 @@ export function advance(s,now=Date.now(),offline=false){
   s.lastTickAt=now;
   return s;
 }
+
+/** UI and action logic share the same gate for emergency supply runs.
+ * Story expeditions (scavenge.pending) are separate and remain selectable. */
+export function emergencyExploreAvailability(s,now=Date.now()){
+ if(s.survivalStatus==='dead')return {ready:false,reason:'생존이 종료됐습니다.'};
+ const need=s.supply.food<3||s.supply.water<4||s.health<38||
+   s.facilities.shelter<38||s.facilities.tank<40;
+ if(!need)return {ready:false,reason:'비상 탐색은 식량·식수 부족 또는 시설 위기일 때 열립니다.'};
+ if(['storm','tornado','dust','wildfire'].includes(s.weather))
+   return {ready:false,reason:'대형 재난 중에는 외부 탐색이 위험합니다. 날씨가 잦아들면 다시 가능합니다.'};
+ if(now<s.exploreCooldownAt){
+   const hours=Math.max(1,Math.ceil((s.exploreCooldownAt-now)/3600000));
+   return {ready:false,reason:`긴급 탐색 재사용 대기 · 게임 시간 약 ${hours}시간 후 가능`};
+ }
+ return {ready:true,reason:'긴급 보급 가능 · 식량·식수·수리 부품을 회수할 수 있습니다.'};
+}
 export function applyAction(s,action,now=Date.now()){
  const out=(good,msg)=>({good,msg});
  if(s.survivalStatus==='dead')return out(false,'생존이 종료됐다. 새 생존을 시작해야 한다.');
@@ -494,10 +510,9 @@ export function applyAction(s,action,now=Date.now()){
    s.health=CAP(s.health+healed);s.action='rest';s.actionUntil=now+9000;
    return out(true,`대피소에서 휴식해 건강을 ${healed}만큼 회복했다.`);
  }
- if(action==='explore'){const need=s.supply.food<3||s.supply.water<4||s.health<38||s.facilities.shelter<38||s.facilities.tank<40;
- if(!need)return out(false,'탐험은 식량·식수 부족 또는 위기일 때만 가능하다.');
- if(['storm','tornado','dust','wildfire'].includes(s.weather))return out(false,'대형 재난 중에는 건물 밖 탐색이 위험하다. 잠잠해질 때까지 기다려야 한다.');
- if(now<s.exploreCooldownAt)return out(false,'탐색한 계단실이 아직 위험하다. 다음 긴급 탐색까지 20시간을 기다려야 한다.');
+ if(action==='explore'){
+ const availability=emergencyExploreAvailability(s,now);
+ if(!availability.ready)return out(false,availability.reason);
  const r=nextRandom(s),injury=r<.22?12:4;
  s.health=CAP(s.health-injury);s.supply.food+=r<.23?3:5;
  s.supply.water=s.supply.water>=WEATHER_WATER_CAPACITY?s.supply.water:Math.min(WEATHER_WATER_CAPACITY,s.supply.water+(r<.30?2:4));

@@ -132,3 +132,13 @@
 @media(prefers-reduced-motion:reduce){
  .afterday-board.is-choice.is-open{animation:none;opacity:1;transform:translate(-50%,-50%)}
 }
+/* v29 | allow players to defer story choices rather than freezing survival
+ * until a mandatory modal decision is submitted. Preserve the choice card. */
+.afterday-board.is-choice .afterday-board-close{
+ display:grid!important;
+ top:9px;
+ right:9px;
+ z-index:5;
+ border:1px solid #d6bd8b77;
+ background:#192026ed;
+}
