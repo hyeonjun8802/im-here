@@ -1252,3 +1252,20 @@ body.afterday-real-ui-v3 #hud #companion-status.companion-buff-resting{
     padding:0 3px!important;
   }
 }
+
+/* v39 | Companion ration choice shows its real 3-day slowdown in the same
+ * equipment text line. No additional frame, buttons or resource overlays. */
+body.afterday-real-ui-v3 #hud #companion-status.companion-buff-strained{
+  color:#ffddae!important;
+  font-weight:850!important;
+  background:linear-gradient(90deg,rgba(114,73,32,.69),rgba(68,42,23,.36))!important;
+  border-left:2px solid #efb66d!important;
+  border-radius:3px!important;
+  padding:1px 5px!important;
+  text-shadow:0 1px 2px #000c!important;
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud #companion-status.companion-buff-strained{
+    padding:0 3px!important;
+  }
+}
