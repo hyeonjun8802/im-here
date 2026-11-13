@@ -9,6 +9,7 @@ import {survivalDailyBriefing} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
+import {syncNeonStatusHud} from './neonStatusHud.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
@@ -206,6 +207,7 @@ function renderHUD(){
  $('#mood').textContent=dead?'생존 종료':state.health<32?'위험':state.sickness>=50?'질병 악화':danger?'주의':'생존 중';
  $('#warning').classList.toggle('hidden',!danger);$('#warning').textContent=state.animalAlert?'⚠ 굶주린 동물이 보급품을 노리고 있습니다':state.weather==='tornado'?(state.tornadoApproach==='direct'?'⚠ 옥상 직격 위험 · 즉시 대피 또는 물자 고정':state.tornadoApproach==='near'?'⚠ 토네이도 근접 · 파편과 식량 유실 위험':'⚠ 토네이도 위험 · 대피소를 보강하세요'):state.weather==='storm'?'⚡ 낙뢰 경보 · 외부 활동을 피하세요':state.weather==='dust'?'🌪 모래폭풍 경보 · 강풍과 비산 모래 · 대피소 보호':state.weather==='wildfire'?'🔥 산불 연기 접근 · 식수 확보 · 외부 활동 금지':state.water<18?'⚠ 식수 부족 · 보급이 필요합니다':state.sickness>=35?'⚠ 감염 의심 · 치료제가 필요합니다':warningAhead?`⚠ ${WEATHER_KO[state.majorDisasterType]} 예보 · 대비하세요`:'⚠ 생존자 건강 상태가 악화되고 있습니다';
  $('#survivor-bars').innerHTML=statusBars.map(([key,label,color])=>`<div class="stat"><div class="stat-line"><span>${label}</span><strong>${Math.round(state[key])}</strong></div><div class="bar"><i style="width:${state[key]}%;background:${color}"></i></div></div>`).join('');
+ syncNeonStatusHud($('#hud'),state,t,day);
  // v9.5: mirror the authoritative survivor model into the integrated top frame.
  // The HUD is display-only. No duplicated inventory or synthetic 'stamina' state.
  const telemetry=[['health',state.health],['food',state.food],['water',state.water]];
