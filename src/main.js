@@ -255,7 +255,7 @@ function runSurvivalAction(action){
  toast(result.msg,action.startsWith('scavenge_')||action.startsWith('companion_')||action==='radio_contact'?'quiet':'');
  // An expedition's consequences deserve a short, skippable acknowledgement.
  // This is display-only: no second loot roll, reward, save or alarm sound.
- if(result.good&&action.startsWith('scavenge_')&&result.outcome!=='safe'){
+ if(result.good&&action.startsWith('scavenge_')&&result.outcome!=='safe'&&!eventBoard?.activeKey){
    const outcomeNames={
      item:'새로운 장비를 발견했다',
      supplies:'쓸 만한 물자를 확보했다',
