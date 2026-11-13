@@ -20,7 +20,8 @@ function harness(){
  let next=1;const pending=new Map();
  const sandbox={
   $:selector=>selector==='#survival-chapter'?node:null,
-  survivalChapter:day=>({title:'DAY '+day,line:'Story '+day}),
+  state:{},
+  survivalDailyBriefing:(day)=>({title:'DAY '+day,line:'Story '+day}),
   setTimeout:(fn,ms)=>{const id=next++;pending.set(id,{fn,ms});return id},
   clearTimeout:id=>pending.delete(id)
  };

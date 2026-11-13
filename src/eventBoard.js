@@ -14,6 +14,7 @@ export const EVENT_STYLES = Object.freeze({
   tornadoNear:  { category:'긴급 재난', title:'토네이도 · 옥상 바로 옆 접근!',description:'파편이 곧 들이닥칩니다. 먼저 대피하거나 물자를 고정하세요.',image:'storm.webp',severity:'danger',duration:16000 },
   tornadoDirect:{ category:'긴급 재난', title:'토네이도 · 옥상 직격 위험!',description:'건물 위를 덮치는 강풍입니다. 대피와 식량 보호를 결정하세요.',image:'storm.webp',severity:'danger',duration:16000 },
   expedition:   { category:'오늘의 생존 선택',title:'계단실 아래에서 물자 흔적 발견',description:'내려갈지, 옥상에 남을지 결정하세요. 부상과 질병 위험이 있습니다.',image:'supply_cache.webp',severity:'opportunity',duration:300000 },
+  expeditionResult:{ category:'탐색의 결과',title:'옥상으로 돌아왔다',description:'이번 선택의 결과가 다음 생존에 영향을 줍니다.',image:'supply_cache.webp',severity:'social',duration:7800 },
   helicopter:   { category:'구조 신호',title:'구조 헬기 보급품 투하!',description:'무전기에 응답한 헬기가 생존 물자를 떨어뜨렸습니다.',image:'supply_cache.webp',severity:'opportunity',duration:9500 },
   companionInvite:{ category:'구조 요청',title:'생존자 한 명이 옥상 입구에서 도움을 요청합니다',description:'받아들이면 식량·식수를 나눠야 합니다. 대신 정수와 텃밭 수확을 도와줄 수 있습니다. 들일까요?',image:'stranger.webp',severity:'social',duration:300000 },
   survivorCall: { category:'무전 교신',title:'다른 생존자의 신호가 잡혔습니다',description:'도시 어딘가에 살아 있는 사람이 있습니다. 옥상 캠프에는 생존자 한 명만 머뭅니다.',image:'stranger.webp',severity:'social',duration:8000 },
