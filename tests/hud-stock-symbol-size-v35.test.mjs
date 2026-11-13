@@ -5,7 +5,7 @@ import {readFileSync} from 'node:fs';
 const css=readFileSync(new URL('../src/hudAlignmentV1300.css',import.meta.url),'utf8');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const marker='/* v35 | Four top-left stock pictograms only';
-const patch=css.slice(css.indexOf(marker),css.indexOf('/* v36 | Desktop stock QUANTITY digits'));
+const patch=css.slice(css.indexOf(marker),css.indexOf('/* v36 | PC readability calibrated'));
 
 test('top resource icons use dedicated responsive sizes without resizing numbers or HUD art',()=>{
   assert.ok(patch.startsWith(marker));
@@ -29,10 +29,12 @@ test('all four live resource counters retain their matching pictograms',()=>{
 });
 
 test('desktop stock counts are readable without scaling icons, frames or phone layout',()=>{
-  const quantityCss=css.slice(css.indexOf('/* v36 | Desktop stock QUANTITY digits'));
-  assert.match(quantityCss,/@media \(min-width:1024px\)\s*\{/);
+  const quantityCss=css.slice(css.indexOf('/* v36 | PC readability calibrated'));
+  assert.match(quantityCss,/@media \(min-width:1024px\) and \(hover:hover\) and \(pointer:fine\)\s*\{/);
   assert.match(quantityCss,/\.survival-hud-stock strong\s*\{/);
-  assert.match(quantityCss,/font-size:clamp\(15px,1\.25vw,18px\)!important;/);
+  assert.match(quantityCss,/font-size:clamp\(24px,1\.8vw,30px\)!important;/);
   assert.match(quantityCss,/font-variant-numeric:tabular-nums!important;/);
+  assert.match(quantityCss,/\.survival-hud-stat-label\s*\{[\s\S]*?font-size:clamp\(15px,1\.2vw,19px\)!important;/);
+  assert.match(quantityCss,/\.survival-hud-stat strong\s*\{[\s\S]*?font-size:clamp\(16px,1\.3vw,20px\)!important;/);
   assert.doesNotMatch(quantityCss,/\.hud-picto|\.premium-hud__frame|\.actionbar|@media \(max-width:720px\)/);
 });
