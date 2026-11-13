@@ -19,7 +19,7 @@ test('HUD badge appears for either a pending expedition or an eligible emergency
  assert.match(main,/const supplyAvailable=!dead&&\(Boolean\(open\)\|\|emergency.ready\)/);
  assert.match(main,/const supplyButton=\$\('#explore'\)/);
  assert.match(main,/supplyButton\.dataset\.supplyReady=String\(supplyAvailable\)/);
- assert.match(main,/supplyButton\.setAttribute\('aria-label',supplyAvailable\?/);
+ assert.match(main,/supplyButton\.setAttribute\('aria-label',supplyHelp\)/);
  const initial=Date.UTC(2026,10,13,0);
  const state=defaults(initial);
  state.supply.food=0;state.supply.water=0;
