@@ -983,45 +983,57 @@ body.afterday-real-ui-v3 #hud > .afterday-v3-urgent-actions {
     font-size:11px!important;
   }
 }
-/* AFTERDAY v26 | visible supply alert anchored to the EXISTING chest button.
- * Use its own pseudo-element, not a child span: the sprite loader deliberately
- * hides ALL spans inside icon buttons. This also restores ::after which the
- * nine-slot CSS normally clears; higher ID specificity applies only when
- * an actual expedition is pending. */
-#hud .actionbar > button#explore[data-supply-ready="true"]::after{
-  content:"!"!important;
+/* AFTERDAY v30 | physical red notification on the real supply button.
+ * The nine-slot frame suppresses button pseudo-elements and strips visual
+ * spans; use a positioned <i> child that does not participate in layout.
+ * Preserve PC/mobile action-cell dimensions and all other artwork. */
+body.afterday-real-ui-v3 #hud .actionbar > button#explore {
+  position:relative!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar > button#explore > i.afterday-supply-dot {
+  position:absolute!important;
   display:grid!important;
   place-items:center!important;
-  position:absolute!important;
-  top:2px!important;
-  right:4px!important;
+  box-sizing:border-box!important;
+  top:5px!important;
+  right:7px!important;
   bottom:auto!important;
   left:auto!important;
-  width:17px!important;
-  height:17px!important;
-  min-width:17px!important;
-  min-height:17px!important;
+  width:21px!important;
+  height:21px!important;
+  min-width:21px!important;
+  min-height:21px!important;
   padding:0!important;
   margin:0!important;
   transform:none!important;
-  border:1px solid #fff1cf!important;
+  font:900 13px/1 system-ui,sans-serif!important;
+  font-style:normal!important;
+  color:#fff!important;
+  text-shadow:0 1px 1px #6c0000!important;
+  background:#ed1930!important;
+  border:2px solid #fff5ee!important;
   border-radius:50%!important;
-  background:#f78b24!important;
-  box-shadow:0 0 0 1px #8a3209,0 0 7px #ffad42!important;
-  color:#27130b!important;
-  font:900 12px/1 system-ui,sans-serif!important;
-  z-index:25!important;
+  box-shadow:0 0 0 1px #8e0612,0 0 8px #f2293c!important;
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:90!important;
   pointer-events:none!important;
 }
+body.afterday-real-ui-v3 #hud .actionbar > button#explore > i.afterday-supply-dot[hidden],
+body.afterday-real-ui-v3 #hud .actionbar > button#explore[data-supply-ready="false"] > i.afterday-supply-dot {
+  display:none!important;
+  visibility:hidden!important;
+}
 @media(max-width:720px){
-  #hud .actionbar > button#explore[data-supply-ready="true"]::after{
+  body.afterday-real-ui-v3 #hud .actionbar > button#explore > i.afterday-supply-dot {
     top:2px!important;
-    right:3px!important;
-    width:15px!important;
-    height:15px!important;
-    min-width:15px!important;
-    min-height:15px!important;
-    font-size:11px!important;
+    right:1px!important;
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+    min-height:18px!important;
+    border-width:1.5px!important;
+    font-size:12px!important;
   }
 }
 
