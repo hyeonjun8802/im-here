@@ -6,6 +6,7 @@ import {installPremiumEquipmentHudV1600} from './premiumEquipmentHudV1600.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {DeviceCloudSave} from './deviceCloudSave.js';
 import {survivalDailyBriefing} from './survivalBalance.js';
+import {NarrativeQueueV76} from './narrativeQueueV76.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
@@ -92,6 +93,7 @@ let lastAutoActionReal=0;
 // One brief chapter caption per in-game day. Regular HUD refreshes must not
 // restart its timeout or leave a permanent black backdrop over the 3D world.
 const CHAPTER_CAPTION_MS=6500;
+const narrativeQueue=new NarrativeQueueV76();
 let displayedChapterDay=null;
 let chapterCaptionTimer=null;
 function syncChapterCaption(day,dead){
@@ -107,6 +109,10 @@ function syncChapterCaption(day,dead){
  displayedChapterDay=day;
  const chapter=survivalDailyBriefing(day,state);
  node.textContent=chapter.title+' · '+chapter.line;
+ if(typeof narrativeQueue!=='undefined')narrativeQueue.enqueue({
+  key:'day:'+day,kind:'daily',priority:1,durationMs:CHAPTER_CAPTION_MS,
+  text:chapter.title+' · '+chapter.line
+ });
  node.classList.remove('is-hidden');
  node.classList.add('is-visible');
  if(chapterCaptionTimer!==null)clearTimeout(chapterCaptionTimer);
@@ -115,6 +121,27 @@ function syncChapterCaption(day,dead){
   node.classList.add('is-hidden');
   chapterCaptionTimer=null;
  },CHAPTER_CAPTION_MS);
+}
+/** One visible long-form text channel. Blocking cards/choices have immediate
+ * priority, while narrative reading time is paused instead of discarded. */
+function syncNarrativeMessage(realNow,dead){
+ const node=$('#log');
+ if(!node)return;
+ if(dead){narrativeQueue.clear();node.dataset.active='false';return;}
+ const kit=$('#survival-kit');
+ const blocked=document.visibilityState!=='visible'||
+  Boolean(eventBoard?.requiresChoice())||
+  Boolean(eventBoard?.element&&!eventBoard.element.hidden)||
+  Boolean(kit?.classList.contains('premium-equipment-open'))||
+  !$('#life-panel').classList.contains('hidden')||
+  !$('#weather-panel').classList.contains('hidden')||
+  !$('#loading').classList.contains('hidden');
+ const active=narrativeQueue.tick(realNow,blocked);
+ node.dataset.active=String(Boolean(active));
+ if(active){
+  const text=node.querySelector('span');
+  if(text.textContent!==active.text)text.textContent=active.text;
+ }
 }
 const statusBars=[['health','건강','#a4c2a4'],['food','포만감','#e5bc78'],['water','수분','#80bed9'],['temperature','체온 안정','#d5a280'],['sickness','질병 위험','#c78686']];
 function renderHUD(){
@@ -232,6 +259,7 @@ function renderHUD(){
  $('#medicine').classList.toggle('needs-attention',state.health<65&&state.supply.medicine>0);
  $('#explore').classList.toggle('needs-attention',supplyAvailable);
  eventBoard?.sync(state,{warningAhead});
+ syncNarrativeMessage(Date.now(),dead);
 }
 function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
 function runSurvivalAction(action){
@@ -580,6 +608,13 @@ async function boot(){try{
   // old saves retain their original camp assets and supply.
   offerDailyScavenge(state,getDay(state.startedAt,gameClock.virtualNow));
   world.syncSurvivalInventory(state);
+  // Cinematic camera/light begins immediately; only its overlapping story
+  // title is queued until alert boards, equipment controls and choices close.
+  world.onCinematicNarrative=(type,m)=>narrativeQueue.enqueue({
+   key:'cinema:'+type+':'+Date.now()+':'+narrativeQueue.serial,
+   kind:'cinema',priority:2,durationMs:Math.round(m.duration*1000),
+   text:m.title+' · '+m.detail
+  });
   // The preview is safe for survivor resources/time, but demolished city buildings are permanent.
   world.onTornadoEncounterChange=()=>save(); // Persist each new tornado track immediately.
   world.onTornadoImpact=(id,index)=>{
