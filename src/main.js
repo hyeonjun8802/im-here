@@ -12,7 +12,7 @@ import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
 import {syncNeonStatusHud} from './neonStatusHud.js';
-import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge,shouldAutoAnimateSurvivor} from './autoSurvivalV73.js';
+import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge,selectAutoCompanionAction,selectAutoMapAction,shouldAutoAnimateSurvivor} from './autoSurvivalV73.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,evaluateSurvival,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
@@ -348,24 +348,48 @@ function runSurvivalAction(action,isAuto=false){
  }
  return result;
 }
-/** Reuse regular action validation, resource costs, cinematics, logs and saves.
- * Never click/auto-answer a companion rescue or ration decision.
- * Exactly one auto action per real 1.25s, even at 50x speed.
- */
+/** AUTO explicitly includes equipment-menu quests and the mapped expeditions.
+ * Existing action validation and one-action-per-1.25s remain the only source
+ * of health, loot, radio, companion and resource side effects. */
 function runAutoSurvival(real,gameNow){
- if(!autoSurvivalEnabled||restartInProgress||gpuContextLost||state.explorationMap?.mission||
+ if(!autoSurvivalEnabled||restartInProgress||gpuContextLost||
     document.visibilityState!=='visible'||state.survivalStatus==='dead')return;
  if(real-lastAutoActionReal<AUTO_ACTION_INTERVAL_MS)return;
  lastAutoActionReal=real;
- if(eventBoard?.requiresChoice()&&eventBoard.activeKey!=='expedition'){
-   eventBoard.deferChoice(); // Preserve high-stakes decisions for the player.
+ // Once a map journey starts, finish the same persisted journey; never
+ // start a second one or re-roll an encounter at 50×.
+ const mapPlan=selectAutoMapAction(state,gameNow);
+ if(state.explorationMap?.mission){
+   if(mapPlan?.kind==='choice'&&!eventBoard?.requiresChoice()){
+     explorationUI?.autoStep(mapPlan,real);
+   }
    return;
  }
- const action=eventBoard?.requiresChoice()
-   ?selectAutoScavenge(state):planAutoSurvivalAction(state,gameNow);
- if(!action)return;
- const result=runSurvivalAction(action,true);
- if(!result.good&&eventBoard?.requiresChoice())eventBoard.deferChoice();
+ const choice=eventBoard?.requiresChoice();
+ const companion=selectAutoCompanionAction(state);
+ if(choice){
+   const action=eventBoard.activeKey==='expedition'?selectAutoScavenge(state):
+     ['companionInvite','companionRations'].includes(eventBoard.activeKey)?companion:null;
+   if(action)runSurvivalAction(action,true);
+   return;
+ }
+ // Rescue/rations can also be temporarily deferred inside the equipment menu.
+ if(companion){
+   runSurvivalAction(companion,true);
+   return;
+ }
+ const action=planAutoSurvivalAction(state,gameNow);
+ if(action&&action!=='explore'){
+   runSurvivalAction(action,true);
+   return;
+ }
+ // Mapped locations are deliberately more valuable than repeating ordinary
+ // emergency salvage. Do not lock AUTO out of the two new locations.
+ if(mapPlan?.kind==='depart'&&explorationUI){
+   const result=explorationUI.autoStep(mapPlan,real);
+   if(result.good)return;
+ }
+ if(action==='explore')runSurvivalAction(action,true);
 }
 function bindEvents(){
  const speedButton=$('#speed-toggle');
@@ -388,8 +412,8 @@ function bindEvents(){
    autoButton.setAttribute('aria-label',autoSurvivalEnabled?
      '테스트 자동 생존 실행 중. 누르면 중지':'테스트 자동 생존 꺼짐. 누르면 시작');
    autoButton.title=autoSurvivalEnabled?
-     'AUTO 실행 중 · 필요시 기존 생존/보급/무전 행동 자동 실행 · 동료 선택은 수동':
-     'AUTO 테스트 · 기존 행동 조건과 자원을 지키며 자동 실행 (중요 선택은 수동)';
+     'AUTO 실행 중 · 식수·식량·수리·동료·무전·일일 탐색·동네 탐사를 기존 비용으로 자동 실행':
+     'AUTO 테스트 · 기능 메뉴와 지도 탐험 포함, 기존 생존 규칙과 비용 그대로 사용';
  };
  autoButton.addEventListener('click',()=>{
    autoSurvivalEnabled=!autoSurvivalEnabled;
@@ -690,7 +714,8 @@ async function boot(){try{
    onEmergency:()=>runSurvivalAction('explore'),
    onDaily:()=>eventBoard?.openPendingExpedition(state),
    hasBlockingChoice:()=>Boolean(eventBoard?.requiresChoice()||
-      (eventBoard?.element&&!eventBoard.element.hidden))
+      (eventBoard?.element&&!eventBoard.element.hidden)),
+   isAutoEnabled:()=>autoSurvivalEnabled
   });
   window.afterday={state,world,save,renderHUD,eventBoard,gameClock,explorationUI};
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
