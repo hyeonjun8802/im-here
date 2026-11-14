@@ -134,13 +134,16 @@ test('routine repair preserves a two-part emergency reserve and manual actions s
  assert.equal(s.supply.parts,2);
 });
 
-test('high-impact companion choices stay manual and their game clock can resume',()=>{
+test('equipment-menu companion, rations and neighborhood exploration now join explicit AUTO',()=>{
  const js=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
- assert.match(js,/eventBoard\.activeKey!=='expedition'/);
- assert.match(js,/eventBoard\.deferChoice\(\)/);
- assert.match(js,/selectAutoScavenge\(state\):planAutoSurvivalAction\(state,gameNow\)/);
  const planner=readFileSync(new URL('../src/autoSurvivalV73.js',import.meta.url),'utf8');
- assert.doesNotMatch(planner,/return ['"]companion_invite|return ['"]companion_rations_share/);
+ assert.match(js,/selectAutoCompanionAction\(state\)/);
+ assert.match(js,/selectAutoMapAction\(state,gameNow\)/);
+ assert.match(js,/explorationUI\?\.autoStep\(mapPlan,real\)/);
+ assert.match(js,/runSurvivalAction\(companion,true\)/);
+ assert.match(js,/let autoSurvivalEnabled=false/);
+ assert.match(planner,/export function selectAutoCompanionAction/);
+ assert.match(planner,/export function selectAutoMapAction/);
  assert.doesNotMatch(planner,/Math\.random|s\.supply\.\w+\+\+|localStorage|setInterval/);
 });
 
