@@ -1,0 +1,87 @@
+/* AFTERDAY v84 | Black Map: 12 authored sites, two uncluttered zones.
+ * Changes stay inside the map dialog. No modifications to main HUD frames,
+ * original actionbar, weather, survival balance or world canvas. */
+.exploration-map-v78 .exploration-map__areas{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 8px;
+}
+.exploration-map-v78 .exploration-map__areas button{
+ min-height:42px;padding:8px 10px;
+ background:linear-gradient(180deg,#2c3939,#111d24);border:1px solid #7a7867;
+ color:#d8d0bd;border-radius:4px;font:800 12px/1.2 'Noto Sans KR',system-ui,sans-serif;
+}
+.exploration-map-v78 .exploration-map__areas button[aria-pressed="true"]{
+ border-color:#f0bd74;color:#fff0cd;
+ background:linear-gradient(180deg,#594732,#262826);
+ box-shadow:inset 0 0 0 1px #ab885c;
+}
+.exploration-map-v78 .exploration-map__city{
+ width:100%;height:100%;object-fit:cover;
+ image-rendering:auto;filter:contrast(1.06) saturate(.87);
+}
+.exploration-map-v78 .exploration-map__site-image{
+ width:100%;height:min(19vh,210px);max-height:210px;object-fit:cover;object-position:center;
+ image-rendering:auto;filter:saturate(.86) contrast(1.07);
+}
+.exploration-map-v78 .exploration-map__card.is-locked .exploration-map__site-image{
+ filter:grayscale(.7) brightness(.46) blur(3px);
+}
+.exploration-map-v78 .exploration-map__marker{min-width:37px;min-height:37px}
+.exploration-map-v78 .exploration-map__marker img{width:25px;height:25px;object-fit:contain}
+.exploration-map-v78 .exploration-map__tower,
+.exploration-map-v78 .exploration-map__finale{
+ display:flex;flex-direction:column;gap:8px;
+ border:1px solid #917b58;border-left:3px solid #cda56d;
+ padding:11px;background:linear-gradient(140deg,#273233,#141c1e);
+ color:#f1dfbf;
+}
+.exploration-map-v78 .exploration-map__tower[hidden],
+.exploration-map-v78 .exploration-map__finale[hidden]{display:none!important}
+.exploration-map-v78 .exploration-map__tower strong,
+.exploration-map-v78 .exploration-map__finale strong{
+ font-size:13px;font-weight:850;color:#f4d4a4;line-height:1.3;
+}
+.exploration-map-v78 .exploration-map__tower p,
+.exploration-map-v78 .exploration-map__finale p{
+ font-size:11px;line-height:1.55;margin:0;color:#dad4c6;
+}
+.exploration-map-v78 .exploration-map__tower-actions{
+ display:grid;grid-template-columns:1fr;gap:6px;
+}
+.exploration-map-v78 .exploration-map__tower-actions button{
+ min-height:42px;white-space:normal;text-align:center;
+ padding:9px 8px;font-size:12px;font-weight:750;
+ color:#f7e3c3;background:#574735;border:1px solid #c39a63;border-radius:4px;
+}
+.exploration-map-v78 .exploration-map__tower-actions button:disabled{
+ opacity:.5;cursor:default;
+}
+.exploration-map-v78 .exploration-map__card p{
+ overflow-wrap:break-word;word-break:keep-all;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__panel{
+  max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y:auto;overscroll-behavior:contain;
+ }
+ .exploration-map-v78 .exploration-map__areas button{
+  font-size:11px;min-height:44px;
+ }
+ .exploration-map-v78 .exploration-map__map{
+  max-height:min(33dvh,264px);
+ }
+ .exploration-map-v78 .exploration-map__site-image{
+  height:min(18dvh,144px);max-height:144px;
+ }
+ .exploration-map-v78 .exploration-map__marker{
+  width:36px;height:36px;min-width:36px;min-height:36px;
+ }
+ .exploration-map-v78 .exploration-map__marker img{width:24px;height:24px}
+ .exploration-map-v78 .exploration-map__tower,
+ .exploration-map-v78 .exploration-map__finale{padding:9px;gap:6px}
+ .exploration-map-v78 .exploration-map__tower-actions button{min-height:44px}
+ .exploration-map-v78 .exploration-map__choices button{min-height:44px}
+}
+@media(max-width:350px){
+ .exploration-map-v78 .exploration-map__areas button{font-size:10px;padding:6px 4px}
+ .exploration-map-v78 .exploration-map__map{max-height:29dvh}
+}
