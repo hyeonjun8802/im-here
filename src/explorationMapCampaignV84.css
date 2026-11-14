@@ -85,3 +85,14 @@
  .exploration-map-v78 .exploration-map__areas button{font-size:10px;padding:6px 4px}
  .exploration-map-v78 .exploration-map__map{max-height:29dvh}
 }
+
+/* v85: keep visited story memories inside the approved location card. */
+.exploration-map-v78 .exploration-map__card .exploration-map__last-story,
+.exploration-map-v78 .exploration-map__card .exploration-map__last-trail{
+ margin:8px 0 0;padding:7px 9px;border-left:2px solid #ae956a;
+ background:rgba(33,46,47,.72);color:#dacfba;
+ font:500 11px/1.55 'Noto Sans KR',system-ui,sans-serif;
+}
+.exploration-map-v78 .exploration-map__card .exploration-map__last-trail{
+ border-left-color:#81a89b;color:#c8e0d3;
+}

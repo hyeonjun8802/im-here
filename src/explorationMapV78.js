@@ -3,6 +3,7 @@
  * resolveScavengeChoice roll is used for resources, equipment and risks.
  * Location, mission phase and reward receipt are persisted together. */
 import {hash32,resolveScavengeChoice} from './scavengeDirector.js';
+import {explorationOutcomeStory,explorationTrail,EXPLORATION_CHOICES,EXPLORATION_OUTCOMES} from './explorationStoryV85.js';
 
 const DAY_MS=86400000;
 export const EXPLORATION_TRAVEL_GAME_MS=25*60000;
@@ -27,10 +28,10 @@ const SITE_IDS=new Set(EXPLORATION_SITES.map(site=>site.id));
 const CHOICES=new Set(['go','scout','salvage','stay']);
 
 export const TOWER_PHASES=Object.freeze(['unknown','discovered','surveyed','parts_ready','restored','channel17']);
-const newTower=()=>({phase:'unknown',reservedParts:0});
+const newTower=()=>({phase:'unknown',reservedParts:0,lastStory:''});
 const newEnding=()=>({type:'none',atDay:0});
 const knownSiteIds=new Set(EXPLORATION_SITES.map(site=>site.id));
-const siteEntry=(visibility='unknown')=>({visibility,visits:0,completed:false,lastOutcome:''});
+const siteEntry=(visibility='unknown')=>({visibility,visits:0,completed:false,lastOutcome:'',lastChoice:'',lastDay:0,lastStory:'',lastTrail:''});
 function revealFollowing(map,site){
  for(const id of site.unlock||[]){
   if(map.sites[id]?.visibility==='unknown')map.sites[id].visibility='rumored';
@@ -49,28 +50,32 @@ function refreshProgression(map){
    if(map.sites[site.id].visibility==='unknown')map.sites[site.id].visibility='rumored';
  }
 }
+function recordTowerNote(tower,msg){
+ tower.lastStory=msg;
+ return {good:true,phase:tower.phase,msg};
+}
 export function advanceTowerStory(s,action){
  const map=s.explorationMap;
  if(!map?.tower||s.survivalStatus==='dead')return {good:false,msg:'탐사를 진행할 수 없습니다.'};
  const tower=map.tower,phase=tower.phase;
  if(action==='survey'&&phase==='discovered'){
   tower.phase='surveyed';
-  return {good:true,phase:tower.phase,msg:'통신실에서 확보한 도면으로 탑의 파손 구간과 17번 채널 배선을 확인했습니다.'};
+  return recordTowerNote(tower,'통신실 도면을 펼치니 도시 외곽의 철탑에서 배선 하나가 끊겨 있었다. 17번 채널로 연결할 경로를 확인했다.');
  }
  if(action==='prepare'&&phase==='surveyed'){
   if((s.supply?.parts||0)<4)return {good:false,msg:'안전한 통신탑 복구에는 수리 부품 4개가 필요합니다.'};
   s.supply.parts-=4;tower.reservedParts=4;tower.phase='parts_ready';
-  return {good:true,phase:tower.phase,msg:'수리 부품 4개를 통신탑 복구용으로 확보했습니다.'};
+  return recordTowerNote(tower,'수리 부품 4개를 실제 비축에서 분리했다. 손상된 전원 장치와 안테나 배선 복구에 사용할 예정이다.');
  }
  if(action==='restore'&&phase==='parts_ready'){
   if(tower.reservedParts!==4)return {good:false,msg:'저장된 수리 부품 확보 기록을 먼저 확인해야 합니다.'};
   tower.phase='restored';
-  return {good:true,phase:tower.phase,msg:'부품을 사용해 통신탑의 전원과 배선 경로를 복구했습니다.'};
+  return recordTowerNote(tower,'확보한 부품으로 통신탑 배선과 전원 연결을 복구했다. 이제 단파 무전기가 있어야 17번 채널을 확인할 수 있다.');
  }
  if(action==='connect'&&phase==='restored'){
   if(!s.kit?.radio)return {good:false,msg:'17번 채널에 연결하려면 단파 무전기를 먼저 확보해야 합니다.'};
   tower.phase='channel17';refreshProgression(map);
-  return {good:true,phase:tower.phase,msg:'17번 채널 연결 성공. 새로운 원거리 탐사 6곳의 위치를 확인했습니다.'};
+  return recordTowerNote(tower,'정비한 무전기로 17번 채널을 연결했다. 먼 지역의 탐사 위치 여섯 곳을 확인했다. 구조 응답이 확인된 것은 아니다.');
  }
  return {good:false,msg:'현재 진행 단계에서 선택할 수 없는 통신탑 작업입니다.'};
 }
@@ -117,13 +122,18 @@ export function sanitizeExplorationMap(input){
   const visibility=completed?'completed':visits>0?'visited':
    ['rumored','unknown'].includes(old.visibility)?old.visibility:b.sites[site.id].visibility;
   b.sites[site.id]={visibility,visits,completed,
-   lastOutcome:['item','supplies','injury','sickness','empty','safe'].includes(old.lastOutcome)?old.lastOutcome:''};
+   lastOutcome:EXPLORATION_OUTCOMES.includes(old.lastOutcome)?old.lastOutcome:'',
+   lastChoice:EXPLORATION_CHOICES.includes(old.lastChoice)?old.lastChoice:'',
+   lastDay:safeInt(old.lastDay),
+   lastStory:String(old.lastStory||'').slice(0,300),
+   lastTrail:visits>0?String(old.lastTrail||'').slice(0,180):''};
  }
  b.lastAttemptDay=safeInt(input.lastAttemptDay);
  const oldTower=input.tower&&typeof input.tower==='object'?input.tower:{};
  const phase=TOWER_PHASES.includes(oldTower.phase)?oldTower.phase:'unknown';
  b.tower={phase,reservedParts:phase==='unknown'||phase==='discovered'||phase==='surveyed'?0:
-  Math.min(4,safeInt(oldTower.reservedParts,0,4))};
+  Math.min(4,safeInt(oldTower.reservedParts,0,4)),
+  lastStory:String(oldTower.lastStory||'').slice(0,260)};
  const oldEnding=input.ending&&typeof input.ending==='object'?input.ending:{};
  b.ending={type:['settle','signal'].includes(oldEnding.type)?oldEnding.type:'none',
   atDay:safeInt(oldEnding.atDay)};
@@ -133,7 +143,9 @@ export function sanitizeExplorationMap(input){
   b.mission={siteId:m.siteId,phase:m.phase,dueAt:safeMs(m.dueAt),
    realReadyAt:safeMs(m.realReadyAt),
    result:['item','supplies','injury','sickness','empty','safe'].includes(m.result)?m.result:'',
-   message:String(m.message||'').slice(0,250)};
+   message:String(m.message||'').slice(0,250),
+   choice:EXPLORATION_CHOICES.includes(m.choice)?m.choice:'',
+   story:String(m.story||'').slice(0,300)};
  }
  // Keep legacy v1 map progress and the old house-to-store unlock intact.
  refreshProgression(b);
@@ -176,17 +188,26 @@ export function advanceMapExpedition(s,now,realNow=Date.now()){
   if(site&&mission.result!=='safe'){
    site.visits=Math.min(1000,site.visits+1);
    site.lastOutcome=mission.result;
+   site.lastChoice=EXPLORATION_CHOICES.includes(mission.choice)?mission.choice:'';
+   site.lastStory=String(mission.story||'').slice(0,300);
+   site.lastDay=currentExplorationDay(s,now);
    if(['item','supplies'].includes(mission.result)){
     site.completed=true;site.visibility='completed';
    }else site.visibility='visited';
    const explored=EXPLORATION_SITES.find(entry=>entry.id===mission.siteId);
-   if(explored)revealFollowing(s.explorationMap,explored);
+   if(explored){
+    revealFollowing(s.explorationMap,explored);
+    // Clues are physical route observations on a real visit, not loot.
+    // Even an injured survivor can have seen the next area's sign.
+    site.lastTrail=explorationTrail(explored.id).slice(0,180);
+   }
    refreshProgression(s.explorationMap);
   }
   const completed=Boolean(site?.completed),message=mission.message;
+  const story=mission.story||'',trail=mission.result==='safe'?'':site?.lastTrail||'';
   const siteId=mission.siteId;
   s.explorationMap.mission=null; // Commit exactly once before the map is redrawn.
-  return {changed:true,kind:'returned',siteId,completed,msg:message};
+  return {changed:true,kind:'returned',siteId,completed,msg:message,story,trail};
  }
  return {changed:false};
 }
@@ -219,6 +240,8 @@ export function resolveMapExpedition(s,choice,now,realNow=Date.now()){
   if(gained)result.msg+=' 봉인된 의약품 +1.';
  }
  mission.phase='returning';mission.result=result.outcome;
+ mission.choice=choice;
+ mission.story=explorationOutcomeStory(site.id,choice,result.outcome);
  mission.message=site.label+' · '+result.msg;
  mission.dueAt=now+EXPLORATION_TRAVEL_GAME_MS;
  mission.realReadyAt=realNow+EXPLORATION_MIN_REAL_MS;

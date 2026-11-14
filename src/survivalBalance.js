@@ -103,6 +103,45 @@ export function survivalPriority(s,day=1){
   return '물자 비축과 대피소 상태를 점검해 다음 날을 준비하세요.';
 }
 
+/** The Black Map affects existing DAY 10/20/30 subtitles, not the
+ * 30-day survival clock, kit odds, autonomous behavior or popup count.
+ * All branches read only already-persisted player choices.
+ */
+export function explorationChapterContext(day,s){
+ const map=s?.explorationMap;
+ if(!map)return '';
+ const complete=id=>Boolean(map.sites?.[id]?.completed);
+ const total=Object.values(map.sites||{}).filter(site=>site?.completed).length;
+ if(day===10){
+  if(complete('water_station'))
+   return '정수실의 조사 기록을 다시 펼쳤다. 이제 옥상 물탱크 상태가 생존을 결정한다.';
+  if(map.sites?.water_station?.visibility!=='unknown')
+   return '정수실의 위치는 알지만 아직 조사하지 못했다. 물자와 체력을 더 준비해야 한다.';
+  return '비가 와도 정수 장치는 저절로 나타나지 않는다. 오늘의 비축을 다시 확인한다.';
+ }
+ if(day===20){
+  if(map.tower?.phase==='channel17')
+   return '17번 채널을 연결했다. 응답을 보장할 수는 없지만 먼 지역의 탐사 경로를 찾았다.';
+  if(s.companion?.present)
+   return '무전의 목소리가 같은 옥상에서 살아간다. 식량과 물을 둘이 나눌 준비가 필요하다.';
+  if(s.scavenge?.radioNewsType==='contact')
+   return '한 차례 살아 있는 목소리를 들었다. 다음 교신은 결과를 보장하지 않는다.';
+  if(!s.kit?.radio)
+   return '아직 단파 무전기가 없다. 통신실과 남은 장비를 확인해야 한다.';
+  return '무전기는 있지만 도시의 응답은 일정하지 않다. 구조를 단정할 수 없다.';
+ }
+ if(day===30){
+  if(map.ending?.type==='settle')
+   return '탐사를 마치고 이 옥상에 정착하기로 했다. 내일의 생존도 직접 준비해야 한다.';
+  if(map.ending?.type==='signal')
+   return '17번 채널에 생존 기록을 송신했다. 구조를 기다리며 옥상을 계속 지킨다.';
+  if(total>0)
+   return '검은 지도에 조사 완료 '+total+'곳이 남았다. 아직 모든 결말이 정해진 것은 아니다.';
+  return '아직 지도 밖에는 모르는 곳이 많다. 옥상에서 다시 내일을 준비한다.';
+ }
+ return '';
+}
+
 /** One new briefing per day, while keeping authored milestone chapters.
  * No state mutation: repeated reads and save/reload produce the same text. */
 export function survivalDailyBriefing(day,s){
@@ -112,6 +151,11 @@ export function survivalDailyBriefing(day,s){
   const note=DAILY_SURVIVAL_BEATS[(d-1)%DAILY_SURVIVAL_BEATS.length];
   const companionNote=milestone?null:companionStoryBeat(s,d);
   const title=authored?.title||companionNote?.title||`DAY ${d} · ${note.title}`;
-  const line=(authored?.line||companionNote?.line||note.line)+' 오늘의 목표: '+survivalPriority(s,d);
+  const context=explorationChapterContext(d,s);
+  // The old DAY 20 default assumes no reply ever came. Do not repeat that
+  // claim after a real radio contact or companion rescue.
+  const baseLine=d===20&&context?
+   '끊어진 도시의 신호가 지금의 선택을 바꾸고 있다.':authored?.line||companionNote?.line||note.line;
+  const line=baseLine+(context?' '+context:'')+' 오늘의 목표: '+survivalPriority(s,d);
   return {day:d,title,line};
 }

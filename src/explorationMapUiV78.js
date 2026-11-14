@@ -6,6 +6,8 @@ import {
  advanceMapExpedition,resolveMapExpedition,advanceTowerStory,
  mapFinaleAvailability,resolveMapFinale
 } from './explorationMapV78.js';
+import {scavengeOdds} from './scavengeDirector.js';
+import {explorationScene} from './explorationStoryV85.js';
 
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
@@ -216,7 +218,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    restored:'통신탑을 복구했습니다. 단파 무전기로 17번 채널을 연결하면 원거리 구역을 찾을 수 있습니다.',
    channel17:'17번 채널 연결 완료 · 원거리 탐사 구역 6곳이 열렸습니다.'
   };
-  q('#exploration-tower-story').textContent=stages[phase]||'';
+  q('#exploration-tower-story').textContent=(stages[phase]||'')+
+   (s.explorationMap?.tower?.lastStory?' 지난 작업 기록: '+s.explorationMap.tower.lastStory:'');
   container.replaceChildren();
   const current={
    discovered:['고장 난 통신탑 조사','survey'],
@@ -272,23 +275,42 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   image.alt='';image.className='exploration-map__site-image';
   const title=document.createElement('strong');title.textContent=locked?'미발견 장소':site.label;
   const status=document.createElement('small');
-  status.textContent=(LABELS[stateInfo.visibility]||'미발견')+' · 위험 '+site.risk+
-    (stateInfo.visits?' · 방문 '+stateInfo.visits+'회':'');
+  // A place's old low/medium/high art label did NOT affect actual rolls.
+  // Do not misrepresent it as a site-specific gameplay probability.
+  status.textContent=(LABELS[stateInfo.visibility]||'미발견')+
+    (stateInfo.visits?' · 방문 '+stateInfo.visits+'회':'')+
+    (locked?'':' · 행동·날씨별 사고 확률 아래 안내');
   const description=document.createElement('p');description.textContent=locked?'탐사 단서가 더 필요합니다. 근거리 조사와 통신탑 복구를 진행하세요.':site.description;
   const rewards=document.createElement('p');
   rewards.textContent='예상 발견: '+(locked?'확인 전':site.reward);
   mapCard.append(image,title,status,description,rewards);
+  if(!locked&&stateInfo.lastStory){
+   const memory=document.createElement('p');
+   memory.className='exploration-map__last-story';
+   memory.textContent='최근 탐사 기록 · DAY '+(stateInfo.lastDay||'?')+' · '+stateInfo.lastStory;
+   mapCard.append(memory);
+  }
+  if(!locked&&stateInfo.lastTrail){
+   const trail=document.createElement('p');
+   trail.className='exploration-map__last-trail';
+   trail.textContent='확인한 단서 · '+stateInfo.lastTrail;
+   mapCard.append(trail);
+  }
   if(mission){
-   stage.textContent=mission.phase==='outbound'?'옥상 계단실을 내려가고 있습니다. 현장에 도착하면 선택지가 열립니다.':
-    mission.phase==='returning'?'탐험 결과를 기록했습니다. 옥상으로 돌아오는 중입니다.':
-    site.scene+' 행동에 따라 기존 물자·부상·감염 확률이 적용됩니다.';
+   stage.textContent=mission.phase==='outbound'?'옥상 계단실을 내려가고 있습니다. '+site.scene:
+    mission.phase==='returning'?'귀환 중 · '+(mission.story||'탐험 결과를 기록했습니다.'):
+    (explorationScene(site.id)?.arrival||site.scene)+' 선택과 날씨에 따라 부상·감염 확률이 달라집니다.';
    if(mission.phase==='encounter'){
     const sceneActions=SCENARIO_ACTIONS[site.id]||[];
+    const riskText=decision=>{
+     const odds=scavengeOdds(decision,s.weather);
+     return odds?' · 부상 '+Math.round(odds.injury*100)+'% / 감염 '+Math.round(odds.sickness*100)+'%':'';
+    };
     const actions=[
-     ['go',(sceneActions[0]||'깊이 수색')+' · 위험 높음'],
-     ['scout',(sceneActions[1]||'안전 정찰')+' · 식수 -1'],
-     ['salvage',(sceneActions[2]||'자재 회수')+' · 부품 중심'],
-     ['stay','위험을 피하고 즉시 복귀']
+     ['go',(sceneActions[0]||'깊이 수색')+riskText('go')],
+     ['scout',(sceneActions[1]||'안전 정찰')+' · 식수 -1'+riskText('scout')],
+     ['salvage',(sceneActions[2]||'자재 회수')+riskText('salvage')],
+     ['stay','위험을 피하고 즉시 복귀 · 방문 기록 없음']
     ];
     for(const [decision,caption] of actions){
      choices.appendChild(makeButton(caption,()=>{
