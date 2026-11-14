@@ -348,7 +348,8 @@ function runSurvivalAction(action,isAuto=false){
  }
  return result;
 }
-/** AUTO explicitly includes equipment-menu quests and the mapped expeditions.
+/** Reuse regular action validation, resource costs, cinematics, logs and saves.
+ * AUTO explicitly includes equipment-menu quests and the mapped expeditions.
  * Existing action validation and one-action-per-1.25s remain the only source
  * of health, loot, radio, companion and resource side effects. */
 function runAutoSurvival(real,gameNow){
