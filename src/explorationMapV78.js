@@ -3,6 +3,7 @@
  * resolveScavengeChoice roll is used for resources, equipment and risks.
  * Location, mission phase and reward receipt are persisted together. */
 import {hash32,resolveScavengeChoice} from './scavengeDirector.js';
+import {explorationOutcomeStory,explorationTrail,EXPLORATION_CHOICES,EXPLORATION_OUTCOMES} from './explorationStoryV85.js';
 
 const DAY_MS=86400000;
 export const EXPLORATION_TRAVEL_GAME_MS=25*60000;
@@ -30,7 +31,7 @@ export const TOWER_PHASES=Object.freeze(['unknown','discovered','surveyed','part
 const newTower=()=>({phase:'unknown',reservedParts:0});
 const newEnding=()=>({type:'none',atDay:0});
 const knownSiteIds=new Set(EXPLORATION_SITES.map(site=>site.id));
-const siteEntry=(visibility='unknown')=>({visibility,visits:0,completed:false,lastOutcome:''});
+const siteEntry=(visibility='unknown')=>({visibility,visits:0,completed:false,lastOutcome:'',lastChoice:'',lastDay:0,lastStory:'',lastTrail:''});
 function revealFollowing(map,site){
  for(const id of site.unlock||[]){
   if(map.sites[id]?.visibility==='unknown')map.sites[id].visibility='rumored';
@@ -117,7 +118,11 @@ export function sanitizeExplorationMap(input){
   const visibility=completed?'completed':visits>0?'visited':
    ['rumored','unknown'].includes(old.visibility)?old.visibility:b.sites[site.id].visibility;
   b.sites[site.id]={visibility,visits,completed,
-   lastOutcome:['item','supplies','injury','sickness','empty','safe'].includes(old.lastOutcome)?old.lastOutcome:''};
+   lastOutcome:EXPLORATION_OUTCOMES.includes(old.lastOutcome)?old.lastOutcome:'',
+   lastChoice:EXPLORATION_CHOICES.includes(old.lastChoice)?old.lastChoice:'',
+   lastDay:safeInt(old.lastDay),
+   lastStory:String(old.lastStory||'').slice(0,300),
+   lastTrail:visits>0?String(old.lastTrail||'').slice(0,180):''};
  }
  b.lastAttemptDay=safeInt(input.lastAttemptDay);
  const oldTower=input.tower&&typeof input.tower==='object'?input.tower:{};
@@ -133,7 +138,9 @@ export function sanitizeExplorationMap(input){
   b.mission={siteId:m.siteId,phase:m.phase,dueAt:safeMs(m.dueAt),
    realReadyAt:safeMs(m.realReadyAt),
    result:['item','supplies','injury','sickness','empty','safe'].includes(m.result)?m.result:'',
-   message:String(m.message||'').slice(0,250)};
+   message:String(m.message||'').slice(0,250),
+   choice:EXPLORATION_CHOICES.includes(m.choice)?m.choice:'',
+   story:String(m.story||'').slice(0,300)};
  }
  // Keep legacy v1 map progress and the old house-to-store unlock intact.
  refreshProgression(b);
@@ -176,17 +183,26 @@ export function advanceMapExpedition(s,now,realNow=Date.now()){
   if(site&&mission.result!=='safe'){
    site.visits=Math.min(1000,site.visits+1);
    site.lastOutcome=mission.result;
+   site.lastChoice=EXPLORATION_CHOICES.includes(mission.choice)?mission.choice:'';
+   site.lastStory=String(mission.story||'').slice(0,300);
+   site.lastDay=currentExplorationDay(s,now);
    if(['item','supplies'].includes(mission.result)){
     site.completed=true;site.visibility='completed';
    }else site.visibility='visited';
    const explored=EXPLORATION_SITES.find(entry=>entry.id===mission.siteId);
-   if(explored)revealFollowing(s.explorationMap,explored);
+   if(explored){
+    revealFollowing(s.explorationMap,explored);
+    // Clues are physical route observations on a real visit, not loot.
+    // Even an injured survivor can have seen the next area's sign.
+    site.lastTrail=explorationTrail(explored.id).slice(0,180);
+   }
    refreshProgression(s.explorationMap);
   }
   const completed=Boolean(site?.completed),message=mission.message;
+  const story=mission.story||'',trail=mission.result==='safe'?'':site?.lastTrail||'';
   const siteId=mission.siteId;
   s.explorationMap.mission=null; // Commit exactly once before the map is redrawn.
-  return {changed:true,kind:'returned',siteId,completed,msg:message};
+  return {changed:true,kind:'returned',siteId,completed,msg:message,story,trail};
  }
  return {changed:false};
 }
@@ -219,6 +235,8 @@ export function resolveMapExpedition(s,choice,now,realNow=Date.now()){
   if(gained)result.msg+=' 봉인된 의약품 +1.';
  }
  mission.phase='returning';mission.result=result.outcome;
+ mission.choice=choice;
+ mission.story=explorationOutcomeStory(site.id,choice,result.outcome);
  mission.message=site.label+' · '+result.msg;
  mission.dueAt=now+EXPLORATION_TRAVEL_GAME_MS;
  mission.realReadyAt=realNow+EXPLORATION_MIN_REAL_MS;
