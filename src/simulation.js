@@ -3,6 +3,7 @@ import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarni
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
 import {ITEM_INFO,makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,offerRecoveryScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
 import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute,offerCompanionRationChoice,resolveCompanionRationChoice,applyCompanionRationAftermath,applyCompanionAutoRepair} from './supportCompanion.js';
+import {newExplorationMap,sanitizeExplorationMap} from './explorationMapV78.js';
 export const MAX_OFFLINE_MS = 8 * 60 * 60 * 1000;
 export const SAVE_KEY = 'AFTERDAY_THREEJS_SIMCITY_v04';
 export const CAP = (v,min=0,max=100)=>Math.max(min, Math.min(max, v));
@@ -18,7 +19,7 @@ export const defaults = (now=Date.now())=>({
   version:4, clockSchema:3, weatherScheduleVersion:2, gameClockOffsetMs:0, gameClockSavedRealAtMs:now, deviceSaveAtMs:now, tornadoCityDamaged:false, tornadoDamageCount:0, tornadoDamagedIds:[], ambientCollapseIds:[], ambientCollapseSerial:0, nextAmbientCollapseAt:now+18*60000, tornadoCurrentSites:[], tornadoPreviousCenterId:null, tornadoEncounter:0, tornadoEncounterActive:false, tornadoEpisodeDamageCount:0, tornadoApproach:'distant', tornadoStartedAt:0, tornadoPreview:false, tornadoRoofImpactEncounter:0, tornadoCoverActive:false, tornadoSuppliesSecured:false, animalAlert:false, raiderAlert:false, raiderUntilAt:0, raiderCooldownAt:0, sickness:0, startedAt:now, lastTickAt:now, nextWeatherAt:now+4*3600000, pendingWeather:'cloud', simRemainderMs:0, weatherEpisode:0, weatherSinceAt:now, nextTornadoAllowedAt:0, majorDisasterSerial:1, majorDisasterType:majorDisasterTypeFor(47283,1), majorDisasterAt:now+MAJOR_DISASTER_LEAD_MS, majorDisasterAppliedSerial:0, noticeSeenIds:[], eventSerial:0, survivalStatus:'alive', diedAt:0, deathCause:'', survivalMilestones:[], restCooldownAt:0, exploreCooldownAt:0, collectWaterCooldownAt:0,
   weather:'clear', weatherSeed:47283, health:88, food:72, water:68, temperature:50,
   weatherEconomy:defaultWeatherEconomy(),
-  itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),
+  itemSystemVersion:1,kit:normalizeKit(null),scavenge:makeScavengeDirector(now),companion:newCompanion(),explorationMap:newExplorationMap(),
   structureImpactEpisode:-1,equipmentLossEpisode:-1,
   supply:{food:3,water:4,medicine:0,parts:2}, facilities:{shelter:50,tank:66,storage:72},
   events:['DAY 1: 옥상 콘크리트에 누웠다. 텐트도 정수기도 없다. 오늘 탐색할지 결정해야 한다.'], mission:'오늘도 살아남기', action:'idle', actionUntil:0
@@ -37,6 +38,7 @@ export function sanitize(raw, now=Date.now()) {
   s.itemSystemVersion=1;
   s.kit=normalizeKit(raw.kit,legacy);
   s.scavenge=sanitizeScavengeDirector(raw.scavenge,s.startedAt);
+  s.explorationMap=sanitizeExplorationMap(raw.explorationMap);
   s.companion=sanitizeCompanion(raw.companion);
   const offset=Number(s.gameClockOffsetMs);
   s.gameClockOffsetMs=Number.isFinite(offset)?offset:0;
