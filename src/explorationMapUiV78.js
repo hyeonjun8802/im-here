@@ -27,7 +27,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   <div class="exploration-map__columns">
    <div class="exploration-map__map-wrap">
     <div class="exploration-map__map" aria-label="방문하면 안개가 밝아지는 동네 지도">
-     <img class="exploration-map__city" src="${ASSET}map/overview.svg" alt="폐허가 된 동네의 탐사 지도"/>
+     <img class="exploration-map__city" src="${ASSET}map/overview.webp" alt="폐허가 된 동네의 탐사 지도"/>
      <canvas id="exploration-fog" width="320" height="213" aria-hidden="true"></canvas>
      <span class="exploration-map__home" aria-label="나의 옥상">⌂</span>
      <div id="exploration-map-markers" class="exploration-map__markers"></div>
@@ -151,7 +151,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const site=mission?siteById(mission.siteId):siteById(selected);
   const stateInfo=getSiteState(site.id);
   const image=document.createElement('img');
-  image.src=ASSET+'locations/'+site.id+'.svg';
+  image.src=ASSET+'locations/'+site.id+'.webp';
   image.alt='';image.className='exploration-map__site-image';
   const title=document.createElement('strong');title.textContent=site.label;
   const status=document.createElement('small');
