@@ -31,7 +31,7 @@ test('map black fog exposes the original ruined neighborhood and uses actual v2 
  const ui=read('src/explorationMapUiV78.js');
  const css=read('src/explorationMapPolishV79.css');
  assert.match(ui,/map\/overview\.webp/);
- assert.match(ui,/"\+site\.id\+'\.webp'/);
+ assert.match(ui,/image\.src=ASSET\+'locations\/'\+site\.id\+'\.webp'/);
  assert.match(ui,/globalCompositeOperation='destination-out'/);
  assert.match(ui,/reveal\(\.50,\.50,\.22\)/);
  assert.match(ui,/function updateRoute\(\)/);
