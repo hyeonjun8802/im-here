@@ -63,6 +63,7 @@ export function advanceTowerStory(s,action){
   return {good:true,phase:tower.phase,msg:'수리 부품 4개를 통신탑 복구용으로 확보했습니다.'};
  }
  if(action==='restore'&&phase==='parts_ready'){
+  if(tower.reservedParts!==4)return {good:false,msg:'저장된 수리 부품 확보 기록을 먼저 확인해야 합니다.'};
   tower.phase='restored';
   return {good:true,phase:tower.phase,msg:'부품을 사용해 통신탑의 전원과 배선 경로를 복구했습니다.'};
  }
@@ -212,8 +213,11 @@ export function resolveMapExpedition(s,choice,now,realNow=Date.now()){
  // Emergency-medicine sites give one actual medicine only after a successful
  // existing scavenging result. A resolved mission cannot award again.
  if(['pharmacy','hospital'].includes(site.id)&&
-    ['item','supplies'].includes(result.outcome))
-  s.supply.medicine=Math.min(999,(s.supply.medicine||0)+1);
+    ['item','supplies'].includes(result.outcome)){
+  const gained=Math.min(1,Math.max(0,999-(s.supply.medicine||0)));
+  s.supply.medicine+=gained;
+  if(gained)result.msg+=' 봉인된 의약품 +1.';
+ }
  mission.phase='returning';mission.result=result.outcome;
  mission.message=site.label+' · '+result.msg;
  mission.dueAt=now+EXPLORATION_TRAVEL_GAME_MS;
