@@ -7,13 +7,14 @@ import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {DeviceCloudSave} from './deviceCloudSave.js';
 import {survivalDailyBriefing} from './survivalBalance.js';
 import {NarrativeQueueV76} from './narrativeQueueV76.js';
+import {createExplorationMapV78} from './explorationMapUiV78.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
 import {syncNeonStatusHud} from './neonStatusHud.js';
 import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge,shouldAutoAnimateSurvivor} from './autoSurvivalV73.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
-import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
+import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,evaluateSurvival,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
@@ -74,7 +75,7 @@ const save=()=>{
  if(restartInProgress)return true;
  try{
   const real=Date.now();
-  gameClock.tick(real,document.visibilityState==='visible'&&!eventBoard?.requiresChoice());
+  gameClock.tick(real,document.visibilityState==='visible'&&!eventBoard?.requiresChoice()&&!explorationUI?.needsChoice());
   state.gameClockOffsetMs=gameClock.offset(real);
   state.gameClockSavedRealAtMs=real;
   state.clockSchema=3;
@@ -86,6 +87,7 @@ const save=()=>{
 };
 let world;
 let eventBoard=null;
+let explorationUI=null;
 let autoLifeCamera=true;
 // QA auto-player is deliberately session-only and OFF after every reload.
 let autoSurvivalEnabled=false;
@@ -130,7 +132,7 @@ function syncNarrativeMessage(realNow,dead){
  if(dead){narrativeQueue.clear();node.dataset.active='false';return;}
  const kit=$('#survival-kit');
  const blocked=document.visibilityState!=='visible'||
-  Boolean(eventBoard?.requiresChoice())||
+  Boolean(eventBoard?.requiresChoice())||Boolean(explorationUI?.isOpen())||
   Boolean(eventBoard?.element&&!eventBoard.element.hidden)||
   Boolean(kit?.classList.contains('premium-equipment-open'))||
   !$('#life-panel').classList.contains('hidden')||
@@ -351,7 +353,7 @@ function runSurvivalAction(action,isAuto=false){
  * Exactly one auto action per real 1.25s, even at 50x speed.
  */
 function runAutoSurvival(real,gameNow){
- if(!autoSurvivalEnabled||restartInProgress||gpuContextLost||
+ if(!autoSurvivalEnabled||restartInProgress||gpuContextLost||state.explorationMap?.mission||
     document.visibilityState!=='visible'||state.survivalStatus==='dead')return;
  if(real-lastAutoActionReal<AUTO_ACTION_INTERVAL_MS)return;
  lastAutoActionReal=real;
@@ -416,9 +418,10 @@ function bindEvents(){
   if(status&&!status.classList.contains('is-collapsed'))$('#survivor-status-toggle')?.click();
  });
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
-    if(btn.dataset.action==='explore'&&state.scavenge?.pending){
+    if(btn.dataset.action==='explore'&&state.scavenge?.pending&&eventBoard?.requiresChoice()){
       eventBoard?.openPendingExpedition(state);return;
     }
+    if(btn.dataset.action==='explore'){explorationUI?.open(btn);return;}
     runSurvivalAction(btn.dataset.action);
   }));
  $('#expedition-toggle').addEventListener('click',()=>eventBoard?.openPendingExpedition(state));
@@ -563,10 +566,11 @@ function animation(){
  const draw=t=>{
   const realDt=Math.min(Math.max((t-last)/1000,0),.05);last=t;
   const real=Date.now(),foreground=document.visibilityState==='visible';
-  const questPaused=Boolean(eventBoard?.requiresChoice());
+  const questPaused=Boolean(eventBoard?.requiresChoice()||explorationUI?.needsChoice());
   // Pause virtual survival clock, not the user's ability to read or choose.
   const gameNow=gameClock.tick(real,foreground&&!questPaused&&!gpuContextLost);
   if(gameNow-state.lastTickAt>10000)advance(state,gameNow,!foreground);
+  if(foreground&&!gpuContextLost)explorationUI?.tick(gameNow,real);
   // QA-only auto actions use the same buttons' real action path, not a parallel
   // resource simulation. Do not run when hidden, during a GPU loss or offline.
   if(foreground&&!gpuContextLost)runAutoSurvival(real,gameNow);
@@ -656,7 +660,39 @@ async function boot(){try{
     onSecure:()=>runSurvivalAction('secure_storage'),
     onCover:()=>runSurvivalAction('take_cover'),
     onPrepare:()=>runSurvivalAction('secure_supplies')});
-  window.afterday={state,world,save,renderHUD,eventBoard,gameClock};
+  explorationUI=createExplorationMapV78({
+   getState:()=>state,
+   getNow:()=>gameClock.virtualNow,
+   save,
+   onDepart:result=>{
+    addEvent(state,result.msg);
+    world?.setAction('explore'); // existing real rooftop route to the stairwell
+   },
+   onChoice:result=>{
+    evaluateSurvival(state,gameClock.virtualNow);
+    world?.syncSurvivalInventory(state);
+    if(result.item||result.outcome==='injury'||result.outcome==='sickness')
+     world?.playCinematic(result.item||result.outcome);
+    addEvent(state,'동네 탐험: '+result.msg);
+    renderHUD();
+   },
+   onReturn:result=>{
+    const name=result.siteId==='ruined_house'?'무너진 주택':'편의점';
+    addEvent(state,name+' 탐험 귀환 · '+(result.completed?'조사를 완료하고 지도에 기록했습니다.':'방문 위치를 지도에 기록했습니다.'));
+    narrativeQueue.enqueue({
+     key:'map:return:'+result.siteId+':'+gameClock.virtualNow,
+     kind:'cinema',priority:2,durationMs:5500,
+     text:name+' · '+(result.completed?'조사 완료! 검은 지도가 밝아졌습니다.':'방문 기록 완료. 다음에 다시 조사할 수 있습니다.')
+    });
+    // Do not re-start a moving character's route (50× AUTO regression).
+    if(world?.life&&['idle','done'].includes(world.life.stage))world.setAction('watch');
+   },
+   onEmergency:()=>runSurvivalAction('explore'),
+   onDaily:()=>eventBoard?.openPendingExpedition(state),
+   hasBlockingChoice:()=>Boolean(eventBoard?.requiresChoice()||
+      (eventBoard?.element&&!eventBoard.element.hidden))
+  });
+  window.afterday={state,world,save,renderHUD,eventBoard,gameClock,explorationUI};
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
