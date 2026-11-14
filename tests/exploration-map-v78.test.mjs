@@ -18,10 +18,11 @@ const depart=(s,id='ruined_house',now=start,actual=real)=>{
  assert.deepEqual(advanceMapExpedition(s,now+EXPLORATION_TRAVEL_GAME_MS,actual+EXPLORATION_MIN_REAL_MS).kind,'arrived');
 };
 
-test('first launch discovers only the nearby house and own roof; store is not available',()=>{
+test('first launch discovers only the nearby house and own roof; distant sites remain unknown',()=>{
  const s=state();
- assert.deepEqual(EXPLORATION_SITES.map(site=>site.id),['ruined_house','convenience_store']);
- assert.equal(s.explorationMap.version,1);
+ assert.equal(EXPLORATION_SITES.length,12);
+ assert.deepEqual(EXPLORATION_SITES.slice(0,2).map(site=>site.id),['ruined_house','convenience_store']);
+ assert.equal(s.explorationMap.version,2);
  assert.equal(s.explorationMap.sites.ruined_house.visibility,'rumored');
  assert.equal(s.explorationMap.sites.convenience_store.visibility,'unknown');
  assert.equal(mapExpeditionAvailability(s,'ruined_house',start).ready,true);

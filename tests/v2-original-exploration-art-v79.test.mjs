@@ -10,7 +10,7 @@ const ART={
  'locations/convenience_store.svg':{bytes:2128,sha:'847f735f2f80d363e7ef701f25317b5a7928dbe77dfccabb8f417cce10a28549'}
 };
 
-test('three production assets now contain verified optimized original v2 map/site artwork',()=>{
+test('three original v2 source assets remain intact as archived reference resources',()=>{
  for(const [p,expected] of Object.entries(ART)){
   const svg=read('public/assets/exploration/'+p);
   assert.match(svg,/^<svg[^>]*viewBox="/);
@@ -27,11 +27,11 @@ test('three production assets now contain verified optimized original v2 map/sit
  }
 });
 
-test('map black fog exposes the original ruined neighborhood and uses actual v2 location photos',()=>{
+test('Black Map fog and original geometry stay intact while displaying new detailed art',()=>{
  const ui=read('src/explorationMapUiV78.js');
  const css=read('src/explorationMapPolishV79.css');
- assert.match(ui,/map\/overview\.webp/);
- assert.match(ui,/image\.src=ASSET\+'locations\/'\+site\.id\+'\.webp'/);
+ assert.match(ui,/map\/overview_hd\.svg/);
+ assert.match(ui,/ASSET\+'locations\/'\+site\.id\+'_hd\.svg'/);
  assert.match(ui,/globalCompositeOperation='destination-out'/);
  assert.match(ui,/reveal\(\.50,\.50,\.22\)/);
  assert.match(ui,/function updateRoute\(\)/);

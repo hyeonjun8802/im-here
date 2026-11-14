@@ -80,7 +80,7 @@ export function installMobileExpandedActions(root=document){
  };
  const open=()=>{
   // Never let the optional sheet cover a mandatory in-game decision.
-  if(root.querySelector('#hud > .afterday-board.is-choice')||
+  if(root.querySelector('#hud > .afterday-board.is-choice:not([hidden])')||
      root.querySelector('.exploration-map-v78:not([hidden])'))return;
   const admin=root.getElementById('admin-toggle');
   if(admin?.getAttribute('aria-expanded')==='true')admin.click();

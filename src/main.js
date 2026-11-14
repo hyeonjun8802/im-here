@@ -4,6 +4,7 @@ import {installPremiumHudV1000} from './premiumHudV1000.js';
 import {installCommonUiAssetsV3} from './commonUiAssetsV3.js';
 import {installPremiumEquipmentHudV1600} from './premiumEquipmentHudV1600.js';
 import {installMobileExpandedActions} from './mobileExpandedActionsV83.js';
+import {EXPLORATION_SITES} from './explorationMapV78.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {DeviceCloudSave} from './deviceCloudSave.js';
 import {survivalDailyBriefing} from './survivalBalance.js';
@@ -788,7 +789,7 @@ async function boot(){try{
     renderHUD();
    },
    onReturn:result=>{
-    const name=result.siteId==='ruined_house'?'무너진 주택':'편의점';
+    const name=EXPLORATION_SITES.find(site=>site.id===result.siteId)?.label||'동네';
     addEvent(state,name+' 탐험 귀환 · '+(result.completed?'조사를 완료하고 지도에 기록했습니다.':'방문 위치를 지도에 기록했습니다.'));
     narrativeQueue.enqueue({
      key:'map:return:'+result.siteId+':'+gameClock.virtualNow,
@@ -797,6 +798,10 @@ async function boot(){try{
     });
     // Do not re-start a moving character's route (50× AUTO regression).
     if(world?.life&&['idle','done'].includes(world.life.stage))world.setAction('watch');
+   },
+   onStory:result=>{
+    addEvent(state,'검은 지도: '+result.msg);
+    renderHUD();
    },
    onEmergency:()=>runSurvivalAction('explore'),
    onDaily:()=>eventBoard?.openPendingExpedition(state),
