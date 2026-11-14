@@ -32,6 +32,18 @@ export function installPremiumEquipmentHudV1600(root=document){
  menuHeading.textContent='장비 기능';
  actions.prepend(menuHeading);
  kit.insertBefore(toggle,actions);
+ // Keep the floating menu inside the usable viewport without moving the
+ // original equipment bitmap or its baked-in action well.
+ const updatePopoverSpace=()=>{
+  if(typeof window==='undefined')return;
+  const top=kit.getBoundingClientRect().top;
+  const forecast=document.getElementById('disaster-forecast');
+  const forecastBottom=forecast?.getBoundingClientRect().bottom||0;
+  const upperClearance=window.matchMedia('(max-width:720px)').matches
+   ?Math.max(12,forecastBottom+8):12;
+  const available=Math.max(60,Math.floor(top-upperClearance-8));
+  actions.style.setProperty('--afterday-equipment-menu-space',available+'px');
+ };
  const close=()=>{
   kit.classList.remove('premium-equipment-open');
   toggle.setAttribute('aria-expanded','false');
@@ -46,6 +58,7 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.addEventListener('click',event=>{
   event.stopPropagation();
   const isOpen=kit.classList.toggle('premium-equipment-open');
+  if(isOpen)updatePopoverSpace();
   toggle.setAttribute('aria-expanded',String(isOpen));
   toggle.setAttribute('aria-label',isOpen?'생존 장비 기능 닫기':'생존 장비 기능 열기');
  });
@@ -57,5 +70,13 @@ export function installPremiumEquipmentHudV1600(root=document){
   }
  });
  new MutationObserver(sync).observe(actions,{subtree:true,attributes:true,attributeFilter:['hidden']});
+ if(typeof window!=='undefined'){
+  window.addEventListener('resize',()=>{
+   if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
+  });
+  document.addEventListener('afterday:common-ui-ready',()=>{
+   if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
+  });
+ }
  sync();
 }
