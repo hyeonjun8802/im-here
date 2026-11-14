@@ -422,6 +422,64 @@ function bindEvents(){
    updateAutoLabel();
  });
  updateAutoLabel();
+ // ADMIN is a client-side QA shortcut panel, not a privileged server administrator.
+ // Reuse existing game actions and save() rather than introducing new gameplay paths.
+ const adminButton=$('#admin-toggle');
+ const adminPanel=$('#admin-panel');
+ if(adminButton&&adminPanel){
+  const adminFeedback=$('#admin-feedback');
+  const closeAdmin=(focusButton=false)=>{
+   adminPanel.classList.add('hidden');
+   adminPanel.setAttribute('aria-hidden','true');
+   adminButton.setAttribute('aria-expanded','false');
+   adminButton.setAttribute('aria-label','어드민 테스트 도구 열기');
+   if(focusButton)adminButton.focus();
+  };
+  const positionAdmin=()=>{
+   const rect=adminButton.getBoundingClientRect();
+   const height=adminPanel.offsetHeight;
+   const top=Math.max(8,Math.min(rect.bottom+8,window.innerHeight-height-8));
+   const right=Math.max(8,window.innerWidth-rect.right);
+   adminPanel.style.top=Math.round(top)+'px';
+   adminPanel.style.right=Math.round(right)+'px';
+  };
+  adminButton.addEventListener('click',()=>{
+   const opening=adminPanel.classList.contains('hidden');
+   if(!opening){closeAdmin();return;}
+   $('#life-panel')?.classList.add('hidden');
+   $('#weather-panel')?.classList.add('hidden');
+   adminPanel.classList.remove('hidden');
+   adminPanel.setAttribute('aria-hidden','false');
+   adminButton.setAttribute('aria-expanded','true');
+   adminButton.setAttribute('aria-label','어드민 테스트 도구 닫기');
+   $('#admin-runtime-status').textContent=
+    `${$('#days')?.textContent?.trim()||'DAY'} · ${speedButton.textContent} · ${autoButton.textContent}`;
+   adminFeedback.textContent='';
+   positionAdmin();
+   $('#admin-close').focus();
+  });
+  $('#admin-close').addEventListener('click',()=>closeAdmin(true));
+  adminPanel.querySelectorAll('[data-admin-target]').forEach(button=>{
+   button.addEventListener('click',()=>{
+    const target=document.getElementById(button.dataset.adminTarget);
+    closeAdmin();
+    if(target&&!target.disabled)target.click();
+   });
+  });
+  $('#admin-save').addEventListener('click',()=>{
+   adminFeedback.textContent=save()?'로컬 생존 기록 저장 완료':'로컬 저장에 실패했습니다';
+  });
+  document.addEventListener('keydown',event=>{
+   if(event.key==='Escape'&&!adminPanel.classList.contains('hidden'))closeAdmin(true);
+  });
+  document.addEventListener('pointerdown',event=>{
+   if(!adminPanel.classList.contains('hidden')&&
+      !adminPanel.contains(event.target)&&!adminButton.contains(event.target))closeAdmin();
+  },true);
+  window.addEventListener('resize',()=>{
+   if(!adminPanel.classList.contains('hidden'))positionAdmin();
+  });
+ }
  // Tap the actual 3D canvas (not a dialog/button) to dismiss open overlays.
  // Dragging to rotate the camera must not close panels.
  const canvas=$('#world');
