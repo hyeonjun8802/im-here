@@ -73,7 +73,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const canvas=q('#exploration-fog'),ctx=canvas.getContext('2d');
   if(!ctx)return;
   ctx.clearRect(0,0,320,213);
-  ctx.fillStyle='rgba(5,9,13,.92)';ctx.fillRect(0,0,320,213);
+  ctx.fillStyle='rgba(5,9,13,.82)';ctx.fillRect(0,0,320,213);
   const reveal=(x,y,r,opacity=1)=>{
    const cx=x*320,cy=y*213,rad=r*320;
    const gradient=ctx.createRadialGradient(cx,cy,rad*.15,cx,cy,rad);
@@ -84,12 +84,35 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.fill();
    ctx.globalCompositeOperation='source-over';
   };
-  reveal(.56,.56,.19);
+  reveal(.50,.50,.22);
   for(const site of EXPLORATION_SITES){
    const data=getSiteState(site.id);
    if(data.visibility==='unknown')continue;
-   reveal(site.x,site.y,data.visits>0?.2:.085,data.visits>0?1:.64);
+   reveal(site.x,site.y,data.visits>0?.2:.11,data.visits>0?1:.72);
   }
+ }
+ function updateRoute(){
+  const old=q('.exploration-map__route');
+  old?.remove();
+  const site=siteById(selected),data=getSiteState(selected);
+  if(!site||data.visibility==='unknown')return;
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 320 213');
+  svg.setAttribute('aria-hidden','true');
+  svg.classList.add('exploration-map__route');
+  const path=document.createElementNS(ns,'path');
+  const targetX=site.x*320,targetY=site.y*213;
+  // Soft corner follows nearby ruined streets instead of a straight UI arrow.
+  const jointX=160+(targetX-160)*.62;
+  path.setAttribute('d',`M 160 106.5 Q ${jointX.toFixed(1)} 106.5 ${jointX.toFixed(1)} ${(106.5+targetY)/2} T ${targetX.toFixed(1)} ${targetY.toFixed(1)}`);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke',data.completed?'#86c79a':'#efbd77');
+  path.setAttribute('stroke-width','1.6');
+  path.setAttribute('stroke-dasharray','3 4');
+  path.setAttribute('stroke-linecap','round');
+  svg.append(path);
+  q('.exploration-map__map').append(svg);
  }
  function updateMarkers(){
   markers.replaceChildren();
@@ -124,7 +147,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;
   const visited=EXPLORATION_SITES.filter(site=>getSiteState(site.id).visits>0).length;
   q('#exploration-map-count').textContent=`방문 ${visited}/2 · 완료 ${completed}/2`;
-  renderFog();updateMarkers();choices.replaceChildren();mapCard.replaceChildren();
+  renderFog();updateMarkers();updateRoute();choices.replaceChildren();mapCard.replaceChildren();
   const site=mission?siteById(mission.siteId):siteById(selected);
   const stateInfo=getSiteState(site.id);
   const image=document.createElement('img');
