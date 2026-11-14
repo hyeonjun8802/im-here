@@ -154,7 +154,7 @@ export function survivalDailyBriefing(day,s){
   const context=explorationChapterContext(d,s);
   // The old DAY 20 default assumes no reply ever came. Do not repeat that
   // claim after a real radio contact or companion rescue.
-  const baseLine=d===20&&context&&!context.startsWith('아직 단파 무전기가')?
+  const baseLine=d===20&&context?
    '끊어진 도시의 신호가 지금의 선택을 바꾸고 있다.':authored?.line||companionNote?.line||note.line;
   const line=baseLine+(context?' '+context:'')+' 오늘의 목표: '+survivalPriority(s,d);
   return {day:d,title,line};
