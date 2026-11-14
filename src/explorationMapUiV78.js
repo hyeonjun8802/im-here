@@ -51,11 +51,13 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  const mapCard=q('#exploration-map-card');
  const stage=q('#exploration-map-stage');
  const choices=q('#exploration-map-choices');
- let selected='ruined_house',lastTrigger=null,lastMissionKey='';
+ let selected='ruined_house',lastTrigger=null,lastMissionKey='',snoozeUntil=0;
  const visible=()=>!root.hidden;
  const getSiteState=id=>getState().explorationMap?.sites?.[id]||{visibility:'unknown',visits:0,completed:false};
  const close=()=>{
   if(!visible())return;
+  if(getState().explorationMap?.mission?.phase==='encounter')
+   snoozeUntil=Date.now()+6000; // Let the player inspect supplies before reopening.
   root.hidden=true;
   if(lastTrigger?.isConnected)lastTrigger.focus({preventScroll:true});
  };
@@ -184,6 +186,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  function tick(now=getNow(),realNow=Date.now()){
   const progress=advanceMapExpedition(getState(),now,realNow);
   if(progress.changed){
+   selected=progress.siteId||selected;
    save();
    if(progress.kind==='arrived'){
     if(!hasBlockingChoice?.())open();
@@ -197,7 +200,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const mission=getState().explorationMap?.mission;
    const identity=mission?mission.siteId+':'+mission.phase:'idle';
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
-  }else if(getState().explorationMap?.mission?.phase==='encounter'&&!hasBlockingChoice?.()){
+  }else if(getState().explorationMap?.mission?.phase==='encounter'&&
+     realNow>=snoozeUntil&&!hasBlockingChoice?.()){
    open();
   }
   return progress;
