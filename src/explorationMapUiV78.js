@@ -9,6 +9,22 @@ import {
 
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
+/* Different story actions per location. Underlying action IDs still use the
+ * single established four-choice survival economy and risk validation. */
+const SCENARIO_ACTIONS=Object.freeze({
+ ruined_house:['무너진 안방 깊이 수색','계단 안정성 정찰','낡은 철골과 목재 회수'],
+ convenience_store:['지하 창고 깊이 수색','배송표와 출입구 정찰','매대와 창고 부품 회수'],
+ pharmacy:['봉인된 약품 상자 수색','약품 오염 위험 정찰','의료 수납장 부품 회수'],
+ flower_shop:['종자 창고 깊이 수색','깨진 온실 유리 정찰','온실 프레임 회수'],
+ water_station:['정수기 제어실 깊이 수색','침수된 배관 정찰','밸브와 수리 부품 회수'],
+ communications_room:['통신 교환대 깊이 수색','17번 주파수 기록 정찰','송수신 회로 부품 회수'],
+ hypermarket:['물류 창고 깊이 수색','붕괴된 지붕 정찰','진열대 구조재 회수'],
+ underpass:['침수된 차도 깊이 진입','수위와 우회 경로 정찰','버려진 차량 부품 회수'],
+ hospital:['응급실 약품 깊이 수색','격리실 진입로 정찰','검사실 수납 부품 회수'],
+ substation:['변전소 제어실 깊이 수색','잔류 전류 위험 정찰','낡은 배선 부품 회수'],
+ community_shelter:['대피소 비축 창고 수색','생존자 장부 정찰','침상과 보호재 회수'],
+ rooftop_helipad:['착륙장 제어실 깊이 수색','안전한 접근로 정찰','신호등 부품 회수']
+});
 const siteById=id=>EXPLORATION_SITES.find(site=>site.id===id);
 export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,onChoice,onStory,onEmergency,onDaily,hasBlockingChoice,isAutoEnabled}){
  const openButton=document.getElementById('exploration-map-open');
@@ -249,26 +265,29 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   renderFinale(s,now);
   const site=mission?siteById(mission.siteId):siteById(selected);
   const stateInfo=getSiteState(site.id);
+  const locked=stateInfo.visibility==='unknown';
+  mapCard.classList.toggle('is-locked',locked);
   const image=document.createElement('img');
-  image.src=ASSET+'locations/'+site.id+'_hd.svg';
+  image.src=locked?ASSET+'map/overview_hd.svg':ASSET+'locations/'+site.id+'_hd.svg';
   image.alt='';image.className='exploration-map__site-image';
-  const title=document.createElement('strong');title.textContent=site.label;
+  const title=document.createElement('strong');title.textContent=locked?'미발견 장소':site.label;
   const status=document.createElement('small');
   status.textContent=(LABELS[stateInfo.visibility]||'미발견')+' · 위험 '+site.risk+
     (stateInfo.visits?' · 방문 '+stateInfo.visits+'회':'');
-  const description=document.createElement('p');description.textContent=site.description;
+  const description=document.createElement('p');description.textContent=locked?'탐사 단서가 더 필요합니다. 근거리 조사와 통신탑 복구를 진행하세요.':site.description;
   const rewards=document.createElement('p');
-  rewards.textContent='예상 발견: '+site.reward;
+  rewards.textContent='예상 발견: '+(locked?'확인 전':site.reward);
   mapCard.append(image,title,status,description,rewards);
   if(mission){
    stage.textContent=mission.phase==='outbound'?'옥상 계단실을 내려가고 있습니다. 현장에 도착하면 선택지가 열립니다.':
     mission.phase==='returning'?'탐험 결과를 기록했습니다. 옥상으로 돌아오는 중입니다.':
     site.scene+' 행동에 따라 기존 물자·부상·감염 확률이 적용됩니다.';
    if(mission.phase==='encounter'){
+    const sceneActions=SCENARIO_ACTIONS[site.id]||[];
     const actions=[
-     ['go',site.label+' 깊이 수색 · 위험 높음'],
-     ['scout',site.label+' 안전 정찰 · 식수 -1'],
-     ['salvage',site.label+' 잔해 회수 · 부품 중심'],
+     ['go',(sceneActions[0]||'깊이 수색')+' · 위험 높음'],
+     ['scout',(sceneActions[1]||'안전 정찰')+' · 식수 -1'],
+     ['salvage',(sceneActions[2]||'자재 회수')+' · 부품 중심'],
      ['stay','위험을 피하고 즉시 복귀']
     ];
     for(const [decision,caption] of actions){
