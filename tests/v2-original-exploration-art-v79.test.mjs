@@ -21,6 +21,8 @@ test('three production assets now contain verified optimized original v2 map/sit
   assert.equal(b.toString('ascii',0,4),'RIFF',p);
   assert.equal(b.toString('ascii',8,12),'WEBP',p);
   assert.equal(createHash('sha256').update(b).digest('hex'),expected.sha,p);
+  const webp=readFileSync(new URL('../public/assets/exploration/'+p.replace(/\.svg$/,'.webp'),import.meta.url));
+  assert.equal(createHash('sha256').update(webp).digest('hex'),expected.sha,'production WebP matches v2 source');
   assert.doesNotMatch(svg,/<path |<rect /,p+' must not be a hand-drawn placeholder');
  }
 });
@@ -28,8 +30,8 @@ test('three production assets now contain verified optimized original v2 map/sit
 test('map black fog exposes the original ruined neighborhood and uses actual v2 location photos',()=>{
  const ui=read('src/explorationMapUiV78.js');
  const css=read('src/explorationMapPolishV79.css');
- assert.match(ui,/map\/overview\.svg/);
- assert.match(ui,/"\+site\.id\+'\.svg'/);
+ assert.match(ui,/map\/overview\.webp/);
+ assert.match(ui,/"\+site\.id\+'\.webp'/);
  assert.match(ui,/globalCompositeOperation='destination-out'/);
  assert.match(ui,/reveal\(\.50,\.50,\.22\)/);
  assert.match(ui,/function updateRoute\(\)/);
