@@ -8,6 +8,14 @@ import {WEATHER_WATER_CAPACITY} from './weatherEconomy.js';
 
 export const AUTO_ACTION_INTERVAL_MS=1250;
 
+/** Autoplay may spend items immediately, but must not restart the survivor's
+ * walk/sit/sleep animation for every successful action at 50× speed.
+ * Actual emergencies alone may interrupt an ongoing visual activity. */
+export function shouldAutoAnimateSurvivor(life,action){
+  if(action==='take_cover')return true;
+  return !life||life.stage==='idle'||life.stage==='done';
+}
+
 export function selectAutoScavenge(s){
   if(!s?.scavenge?.pending)return null;
   // Choose a real, existing quest outcome; never roll rewards here.

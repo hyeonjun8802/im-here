@@ -18,7 +18,7 @@ test('AUTO is disabled by default in the UI and only runs on live visible frame 
  assert.match(js,/if\(foreground&&!gpuContextLost\)runAutoSurvival\(real,gameNow\)/);
  assert.match(js,/document\.visibilityState!=='visible'/);
  assert.match(js,/real-lastAutoActionReal<AUTO_ACTION_INTERVAL_MS/);
- assert.match(js,/runSurvivalAction\(action\)/);
+ assert.match(js,/runSurvivalAction\(action,true\)/);
  assert.equal(AUTO_ACTION_INTERVAL_MS,1250);
  assert.doesNotMatch(js,/localStorage\.setItem\(['"]auto|autoSurvivalEnabled:/);
 });
