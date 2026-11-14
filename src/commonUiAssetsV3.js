@@ -158,7 +158,7 @@ export function installCommonUiAssetsV3() {
       rest:'icon_moon',medicine:'icon_medical',explore:'icon_radio',
       'take-cover':'icon_tent','secure-supplies':'icon_supply',
       'collect-water':'icon_water','repair-tank':'icon_tools',
-      'life-panel-toggle':'icon_music','weather-panel-toggle':'icon_cloud'
+      'life-panel-toggle':'icon_music','functions-toggle':'icon_functions'
     };
     for(const [id,sprite] of Object.entries(actionIcons)){
       const button=document.getElementById(id);
