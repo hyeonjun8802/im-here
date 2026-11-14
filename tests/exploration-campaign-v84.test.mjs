@@ -147,19 +147,22 @@ test('unavailable regions and bad mission IDs cannot consume game resources',()=
  assert.equal(JSON.stringify(s.supply),before);
 });
 
-test('12 location artworks are sharp real vector graphics, not the old 2KB embedded bitmap cards',()=>{
- const mapSvg=read('public/assets/exploration/map/overview_hd.svg');
- assert.match(mapSvg,/width="1536" height="1024"/);
- assert.match(mapSvg,/<path|<polygon/);
- assert.doesNotMatch(mapSvg,/data:image\/webp;base64/);
- for(const id of ids){
-  const art=read('public/assets/exploration/locations/'+id+'_hd.svg');
-  assert.match(art,/width="1600" height="900"/,id);
-  assert.ok(art.length>20000,id+' should contain actual detailed vector scene');
-  assert.doesNotMatch(art,/data:image\/webp;base64/,id);
-  const marker=read('public/assets/exploration/markers/'+id+'.svg');
-  assert.match(marker,/<svg[^>]*viewBox=/,id);
+test('15 original optimized photographic assets are complete valid WebP image files',()=>{
+ const names=[...ids,'overview','tower_story','ending_stories'];
+ assert.equal(names.length,15);
+ for(const id of names){
+  const file=readFileSync(new URL('../public/assets/exploration/photos/'+id+'.webp',import.meta.url));
+  assert.equal(file.toString('ascii',0,4),'RIFF',id+' RIFF');
+  assert.equal(file.toString('ascii',8,12),'WEBP',id+' format');
+  assert.ok(file.byteLength>100000,id+' is not a tiny placeholder');
+  const marker=id==='overview'?'state_unknown':id;
+  if(ids.includes(id)){
+   const icon=read('public/assets/exploration/markers/'+marker+'.svg');
+   assert.match(icon,/<svg[^>]*viewBox=/,id);
+  }
  }
+ const mapPhoto=readFileSync(new URL('../public/assets/exploration/photos/overview.webp',import.meta.url));
+ assert.ok(mapPhoto.byteLength>300000,'the actual aerial map is embedded in this build');
 });
 
 test('region tabs, scripted tower stages, situational actions and retina fog are connected',()=>{
@@ -175,8 +178,11 @@ test('region tabs, scripted tower stages, situational actions and retina fog are
  assert.match(ui,/advanceTowerStory\(getState\(\)/);
  assert.match(ui,/resolveMapFinale\(getState\(\)/);
  assert.match(ui,/devicePixelRatio/);
- assert.match(ui,/overview_hd\.svg/);
- assert.match(ui,/site\.id\+'_hd\.svg'/);
+ assert.match(ui,/photos\/overview\.webp/);
+ assert.match(ui,/site\.id\+'\.webp'/);
+ assert.match(ui,/photos\/tower_story\.webp/);
+ assert.match(ui,/photos\/ending_stories\.webp/);
+ assert.doesNotMatch(ui,/overview_hd\.svg|locations\/.*_hd\.svg/);
  assert.match(main,/onStory:result=>/);
  assert.doesNotMatch(main,/result\.siteId==='ruined_house'\?'무너진 주택':'편의점'/);
  assert.match(css,/@media\(max-width:350px\)/);
