@@ -122,8 +122,8 @@ body.afterday-real-ui-v3 #hud .topbar .top-right #admin-toggle{
   align-items:center;
   justify-content:space-between;
   gap:8px;
-  padding-bottom:8px;
-  border-bottom:1px solid rgba(193,160,103,.30);
+  padding-block-end:8px;
+  border-block-end:1px solid rgba(193,160,103,.30);
 }
 #hud #admin-panel .afterday-admin-head strong{font:850 14px/1.35 system-ui,sans-serif;letter-spacing:.07em;color:#f2d49d}
 #hud #admin-panel .afterday-admin-head strong span{font-size:12px;letter-spacing:0;color:#e4e4db}
