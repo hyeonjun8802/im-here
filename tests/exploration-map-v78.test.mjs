@@ -174,7 +174,6 @@ test('map data sanitizer ignores corrupted unknown location IDs and untrusted mi
  },mission:{siteId:'fraudulent_tower',phase:'loot',result:'item',message:'fake'}};
  const cleaned=sanitizeExplorationMap(dirty);
  assert.equal(cleaned.sites.ruined_house.visibility,'completed');
- assert.equal(cleaned.sites.convenience_store.visibility,'completed',false);
  assert.equal(cleaned.sites.convenience_store.completed,false);
  assert.equal(cleaned.sites.convenience_store.visibility,'unknown');
  assert.equal(cleaned.lastAttemptDay,0);
