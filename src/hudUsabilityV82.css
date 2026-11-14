@@ -1,0 +1,83 @@
+/* AFTERDAY v82 | Small-screen interaction safety.
+ * Only controls and transient panels. Original top forecast, nine painted
+ * bottom slots, 3D canvas, game simulation and save format are unchanged. */
+body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > .survival-kit-controls{
+  max-height:min(40dvh,var(--afterday-equipment-menu-space,40dvh))!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin;
+}
+body.afterday-real-ui-v3 #hud #admin-panel:not(.hidden),
+body.afterday-real-ui-v3 #hud #weather-panel:not(.hidden),
+body.afterday-real-ui-v3 #hud #life-panel:not(.hidden){
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+body.afterday-real-ui-v3 #hud #admin-panel #admin-close{
+  width:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+}
+@media(max-width:720px) and (pointer:coarse){
+  /* Three actual 44px hit boxes; unlike invisible overhangs, these cannot
+   * steal taps intended for a neighbouring button. Icons and width stay put. */
+  body.afterday-real-ui-v3 #hud .topbar .top-right #speed-toggle,
+  body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle,
+  body.afterday-real-ui-v3 #hud .topbar .top-right #admin-toggle{
+    box-sizing:border-box!important;
+    height:44px!important;
+    min-height:44px!important;
+    max-height:44px!important;
+    width:48px!important;
+    min-width:48px!important;
+    max-width:48px!important;
+    align-self:flex-end!important;
+    margin:0 0 3px!important;
+    padding:0 2px!important;
+    touch-action:manipulation!important;
+  }
+  /* The source-painted nine-slot rail is intentionally not stretched. */
+  body.afterday-real-ui-v3 #hud .survival-kit.premium-equipment-open > .survival-kit-controls > button:not([hidden]){
+    min-height:44px!important;
+    max-height:none!important;
+    padding:9px 8px!important;
+    white-space:normal!important;
+    text-overflow:clip!important;
+    overflow-wrap:break-word!important;
+    line-height:1.25!important;
+    font-size:12px!important;
+  }
+  body.afterday-real-ui-v3 #hud #admin-panel .afterday-admin-actions > button,
+  body.afterday-real-ui-v3 #hud #admin-panel #admin-save{
+    min-height:44px!important;
+  }
+  body.afterday-real-ui-v3 #hud #weather-panel:not(.hidden),
+  body.afterday-real-ui-v3 #hud #life-panel:not(.hidden){
+    box-sizing:border-box!important;
+    bottom:calc(78px + env(safe-area-inset-bottom))!important;
+    max-height:min(58dvh,calc(100dvh - 138px - env(safe-area-inset-top) - env(safe-area-inset-bottom)))!important;
+    overflow-y:auto!important;
+    z-index:35!important;
+  }
+  body.afterday-real-ui-v3 #hud #weather-panel button,
+  body.afterday-real-ui-v3 #hud #life-panel button{
+    min-height:44px;
+    touch-action:manipulation;
+  }
+  body.afterday-real-ui-v3 #hud #weather-panel .panel-head button,
+  body.afterday-real-ui-v3 #hud #life-panel .panel-head button{
+    min-width:44px;
+    min-height:44px;
+  }
+}
+@media(max-height:460px) and (pointer:coarse){
+  /* In landscape on a short display, avoid a long right-edge button stack
+   * covering the centre gameplay area. Keep all three independently usable. */
+  body.afterday-real-ui-v3 #hud .topbar .top-right #speed-toggle,
+  body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle,
+  body.afterday-real-ui-v3 #hud .topbar .top-right #admin-toggle{
+    height:38px!important;
+    min-height:38px!important;
+    max-height:38px!important;
+    margin-bottom:1px!important;
+  }
+}
