@@ -9,7 +9,7 @@ import {
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
 const siteById=id=>EXPLORATION_SITES.find(site=>site.id===id);
-export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,onChoice,onEmergency,onDaily,hasBlockingChoice}){
+export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,onChoice,onEmergency,onDaily,hasBlockingChoice,isAutoEnabled}){
  const openButton=document.getElementById('exploration-map-open');
  const root=document.createElement('section');
  root.id='exploration-map-v78';
@@ -189,10 +189,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    selected=progress.siteId||selected;
    save();
    if(progress.kind==='arrived'){
-    if(!hasBlockingChoice?.())open();
+    if(!isAutoEnabled?.()&&!hasBlockingChoice?.())open();
    }else if(progress.kind==='returned'){
     onReturn?.(progress);
-    if(!hasBlockingChoice?.())open();
+    if(!isAutoEnabled?.()&&!hasBlockingChoice?.())open();
    }
   }
   if(visible()){
@@ -201,11 +201,33 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const identity=mission?mission.siteId+':'+mission.phase:'idle';
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
   }else if(getState().explorationMap?.mission?.phase==='encounter'&&
-     realNow>=snoozeUntil&&!hasBlockingChoice?.()){
+     !isAutoEnabled?.()&&realNow>=snoozeUntil&&!hasBlockingChoice?.()){
    open();
   }
   return progress;
  }
- return {open,close,tick,render,isOpen:visible,
+ /** Run the same location actions as player buttons, without opening
+  * a modal every 1.25 seconds or awarding any extra resources. */
+ function autoStep(plan,realNow=Date.now()){
+  if(!plan||hasBlockingChoice?.())return {good:false,msg:'다른 필수 알림이 진행 중입니다.'};
+  if(plan.kind==='depart'){
+   const result=beginMapExpedition(getState(),plan.siteId,getNow(),realNow);
+   if(!result.good)return result;
+   onDepart?.(result);
+   save();
+   if(visible())render();
+   return result;
+  }
+  if(plan.kind==='choice'){
+   const result=resolveMapExpedition(getState(),plan.choice,getNow(),realNow);
+   if(!result.good)return result;
+   onChoice?.(result);
+   save();
+   if(visible())render();
+   return result;
+  }
+  return {good:false,msg:'실행할 자동 탐험이 없습니다.'};
+ }
+ return {open,close,tick,render,autoStep,isOpen:visible,
   needsChoice:()=>getState().explorationMap?.mission?.phase==='encounter'};
 }
