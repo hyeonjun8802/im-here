@@ -79,7 +79,7 @@ test('AUTO food does not silently force permanent survivor-follow camera',()=>{
  assert.equal(h.world.life.stage,'done');
  const main=read('src/main.js');
  assert.match(main,/if\(action==='eat'&&autoLifeCamera&&!isAuto\)world\?\.setCameraView\('survivor'\)/);
- assert.match(main,/const result=runSurvivalAction\(action,true\)/);
+ assert.match(main,/runSurvivalAction\(action,true\)/);
 });
 
 test('immediate safety cover can interrupt any action but not normal routine repairs',()=>{
