@@ -74,10 +74,15 @@
  image-rendering:auto;
 }
 .exploration-map-v78 .exploration-map__home{
+ left:50%;top:50%;
  border:2px solid #ffe6a2;
  color:#ffe9ae;
  background:radial-gradient(circle,#876031,#4b2f1cd9);
  box-shadow:0 0 0 5px #f5b96125,0 0 22px #f9ab52a6,0 0 5px #fff7bc inset;
+}
+.exploration-map-v78 .exploration-map__route{
+ position:absolute;inset:0;width:100%;height:100%;z-index:2;
+ pointer-events:none;filter:drop-shadow(0 0 2px #d39b5b);
 }
 .exploration-map-v78 .exploration-map__marker{
  border-color:#baae93;background:radial-gradient(circle,#30342e,#121c1d);
