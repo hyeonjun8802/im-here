@@ -448,6 +448,8 @@ function bindEvents(){
    if(!opening){closeAdmin();return;}
    $('#life-panel')?.classList.add('hidden');
    $('#weather-panel')?.classList.add('hidden');
+   const equipmentToggle=$('#equipment-actions-toggle');
+   if(equipmentToggle?.getAttribute('aria-expanded')==='true')equipmentToggle.click();
    adminPanel.classList.remove('hidden');
    adminPanel.setAttribute('aria-hidden','false');
    adminButton.setAttribute('aria-expanded','true');
@@ -521,6 +523,13 @@ function bindEvents(){
    functionsButton.setAttribute('aria-label',opened?'장비 기능 닫기':'장비 기능 열기');
    functionsButton.setAttribute('title',opened?'장비 기능 닫기':'동네 탐사·무전·동료·날씨 설정');
   };
+  // Prevent overlapping settings panels without altering the existing bridge.
+  functionsButton.addEventListener('click',()=>{
+   if(equipmentDisclosure.getAttribute('aria-expanded')!=='true'){
+    $('#life-panel')?.classList.add('hidden');
+    $('#weather-panel')?.classList.add('hidden');
+   }
+  });
   functionsButton.addEventListener('click',()=>equipmentDisclosure.click());
   new MutationObserver(syncFunctions).observe(equipmentDisclosure,{
    attributes:true,attributeFilter:['aria-expanded']
