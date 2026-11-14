@@ -1,10 +1,12 @@
 /** AFTERDAY QA auto-player.
  * Only returns existing survival actions. Never grants loot, bypasses cooldowns,
  * changes the simulation clock, or writes a save/UI state.
- * High-stakes companion invitations and ration negotiations remain manual.
+ * With AUTO explicitly on, equipment-menu quests (including companion and
+ * mapped expeditions) use real simulation validation and costs.
  */
 import {emergencyExploreAvailability,getDay} from './simulation.js';
 import {WEATHER_WATER_CAPACITY} from './weatherEconomy.js';
+import {EXPLORATION_SITES,mapExpeditionAvailability} from './explorationMapV78.js';
 
 export const AUTO_ACTION_INTERVAL_MS=1250;
 
@@ -22,6 +24,41 @@ export function selectAutoScavenge(s){
   if(s.supply?.parts<1&&Math.min(s.facilities?.tank??100,s.facilities?.shelter??100)<40)
     return 'scavenge_salvage';
   return (s.health<72&&(s.supply?.water??0)>=3)?'scavenge_scout':'scavenge_go';
+}
+
+
+/** Policy for equipment > companion decisions when the user has enabled QA AUTO.
+ * Preserve food and water at critical levels; never bypass existing requirements. */
+export function selectAutoCompanionAction(s){
+ const pending=s?.companion;
+ if(!pending)return null;
+ const stock=s.supply||{};
+ if(pending.rationPending)
+  return (stock.food>=2&&stock.water>=2)?'companion_rations_share':'companion_rations_conserve';
+ if(pending.pending){
+  if(!pending.present&&stock.food>=3&&stock.water>=3)return 'companion_invite';
+  if(stock.food>=2)return 'companion_trade';
+  if(stock.water>=2)return 'companion_aid';
+  return 'companion_decline';
+ }
+ return null;
+}
+
+/** The map may be explored automatically, but only one real expedition per
+ * game day. No auto decision is ever allowed to invent rewards or bypass risks. */
+export function selectAutoMapAction(s,now){
+ const mission=s?.explorationMap?.mission;
+ if(mission?.phase==='encounter'){
+  if(s.health<52)return {kind:'choice',choice:(s.supply?.water||0)>=2?'scout':'stay'};
+  if((s.supply?.parts||0)<2)return {kind:'choice',choice:'salvage'};
+  return {kind:'choice',choice:(s.supply?.water||0)>=3?'scout':'go'};
+ }
+ if(mission)return null;
+ for(const site of EXPLORATION_SITES){
+  if(mapExpeditionAvailability(s,site.id,now).ready)
+   return {kind:'depart',siteId:site.id};
+ }
+ return null;
 }
 
 export function planAutoSurvivalAction(s,now){
