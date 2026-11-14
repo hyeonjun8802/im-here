@@ -50,7 +50,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      <button id="exploration-area-far" type="button" aria-pressed="false">원거리 · 6곳</button>
     </div>
     <div class="exploration-map__map" aria-label="방문하면 안개가 밝아지는 동네 지도">
-     <img class="exploration-map__city" src="${ASSET}map/overview_hd.svg" alt="폐허가 된 동네의 탐사 지도"/>
+     <img class="exploration-map__city" src="${ASSET}photos/overview.webp" alt="폐허가 된 동네의 탐사 지도"/>
      <canvas id="exploration-fog" width="320" height="213" aria-hidden="true"></canvas>
      <span class="exploration-map__home" aria-label="나의 옥상">⌂</span>
      <div id="exploration-map-markers" class="exploration-map__markers"></div>
@@ -62,11 +62,13 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     <div id="exploration-map-stage" class="exploration-map__stage" role="status" aria-live="polite"></div>
     <div id="exploration-map-choices" class="exploration-map__choices"></div>
     <section id="exploration-tower" class="exploration-map__tower" aria-label="통신탑 복구 이야기" hidden>
+     <img class="exploration-map__narrative-photo" src="/assets/exploration/photos/tower_story.webp" loading="lazy" decoding="async" alt="황혼의 폐허 속 통신탑과 17번 채널 복구 장면"/>
      <strong id="exploration-tower-title">통신탑 · 끊긴 신호</strong>
      <p id="exploration-tower-story"></p>
      <div id="exploration-tower-actions" class="exploration-map__tower-actions"></div>
     </section>
     <section id="exploration-finale" class="exploration-map__finale" aria-label="생존 이야기 결말" hidden>
+     <img class="exploration-map__narrative-photo" src="/assets/exploration/photos/ending_stories.webp" loading="lazy" decoding="async" alt="폐허 도시 옥상의 정착과 구조 신호에 관한 결말 장면"/>
      <strong>마지막 기록 · 옥상의 내일</strong>
      <p id="exploration-finale-story"></p>
      <div id="exploration-finale-actions" class="exploration-map__tower-actions"></div>
@@ -271,8 +273,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const locked=stateInfo.visibility==='unknown';
   mapCard.classList.toggle('is-locked',locked);
   const image=document.createElement('img');
-  image.src=locked?ASSET+'map/overview_hd.svg':ASSET+'locations/'+site.id+'_hd.svg';
-  image.alt='';image.className='exploration-map__site-image';
+  image.src=locked?ASSET+'photos/overview.webp':ASSET+'photos/'+site.id+'.webp';
+  image.alt='';image.className='exploration-map__site-image';image.decoding='async';
   const title=document.createElement('strong');title.textContent=locked?'미발견 장소':site.label;
   const status=document.createElement('small');
   // A place's old low/medium/high art label did NOT affect actual rolls.

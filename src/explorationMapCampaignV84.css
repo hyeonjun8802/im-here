@@ -96,3 +96,16 @@
 .exploration-map-v78 .exploration-map__card .exploration-map__last-trail{
  border-left-color:#81a89b;color:#c8e0d3;
 }
+
+/* v86 · authored photographic narrative scenes (15 original WebP assets). */
+.exploration-map-v78 .exploration-map__narrative-photo{
+ display:block;width:100%;height:auto;aspect-ratio:16/9;
+ max-height:190px;object-fit:cover;object-position:center;
+ border:1px solid #8a7960;border-radius:4px;
+ image-rendering:auto;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__narrative-photo{
+  max-height:min(21dvh,168px);
+ }
+}
