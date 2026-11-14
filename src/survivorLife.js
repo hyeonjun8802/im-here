@@ -194,7 +194,9 @@ export class SurvivorLife{
   try{globalThis.localStorage?.setItem('AFTERDAY_DAILY_CYCLE_V300',JSON.stringify(this.routineRecord));}catch{}
  }
  listenEvents(game){const last=game.events?.at(-1);if(this.lastEvent===null){this.lastEvent=last||'';return;}if(!last||last===this.lastEvent)return;this.lastEvent=last;
-  if(this.manual||this.stage==='approach')return;
+  // A saved food/water event must not restart an active walking, seating,
+  // working or waking motion (AUTO can generate several events at 50×).
+  if(this.manual||!['idle','done'].includes(this.stage))return;
   if(last.includes('식사했다')&&this.current!=='eat')this.request('eat',false);
   else if(last.includes('마셨다')&&this.current!=='drink')this.request('drink',false);
  }
