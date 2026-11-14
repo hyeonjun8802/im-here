@@ -218,7 +218,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    restored:'통신탑을 복구했습니다. 단파 무전기로 17번 채널을 연결하면 원거리 구역을 찾을 수 있습니다.',
    channel17:'17번 채널 연결 완료 · 원거리 탐사 구역 6곳이 열렸습니다.'
   };
-  q('#exploration-tower-story').textContent=stages[phase]||'';
+  q('#exploration-tower-story').textContent=(stages[phase]||'')+
+   (s.explorationMap?.tower?.lastStory?' 지난 작업 기록: '+s.explorationMap.tower.lastStory:'');
   container.replaceChildren();
   const current={
    discovered:['고장 난 통신탑 조사','survey'],
