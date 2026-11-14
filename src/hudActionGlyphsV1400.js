@@ -16,6 +16,7 @@ const GLYPHS={
  wrench:'<path d="M46 9a16 16 0 0 0-17 20L11 47a6 6 0 0 0 8 8l18-18a16 16 0 0 0 18-18L44 30l-11-10Z" fill="url(#gold)"/><circle cx="17" cy="49" r="2.8" fill="#51402e" stroke="none"/>',
  music:'<path d="M28 13l26-6v32c0 7-5 12-13 12-6 0-10-3-10-8s4-9 10-10l6-1V19l-14 4v25c0 7-5 12-13 12-7 0-11-3-11-8 0-6 6-10 13-10h4Z" fill="url(#gold)" transform="translate(0 -2) scale(.98)"/>',
  cloud:'<path d="M17 51h31c7 0 12-5 12-12s-5-12-12-12c-1-9-8-16-18-16-9 0-16 6-18 14C6 26 3 31 3 38c0 8 6 13 14 13Z" fill="url(#gold)" transform="translate(2 0) scale(.94)"/>',
+ functions:'<rect x="10" y="10" width="18" height="18" rx="3" fill="url(#gold)"/><rect x="36" y="10" width="18" height="18" rx="3" fill="url(#gold)"/><rect x="10" y="36" width="18" height="18" rx="3" fill="url(#gold)"/><rect x="36" y="36" width="18" height="18" rx="3" fill="url(#gold)"/><path d="M20 15v8m-4-4h8M40 19h10M19 41v8M15 45h8M41 40l9 10m0-10-9 10" fill="none" stroke="#48443e" stroke-width="3" stroke-linecap="round"/>',
  shield:'<path d="M32 7l22 9v14c0 16-10 25-22 30C20 55 10 46 10 30V16Z" fill="url(#gold)"/><path d="M22 33l8 8 14-16" fill="none" stroke="#384857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>',
  shelter:'<path d="M9 53l23-43 23 43H9Z" fill="url(#gold)"/><path d="M32 10v43M25 53V40l7-10 7 10v13" fill="none" stroke="#705334" stroke-width="3"/>',
  supply:'<path d="M11 22l21-11 21 11v30L32 62 11 52Z" fill="url(#gold)"/><path d="M11 22l21 12 21-12M32 34v28" fill="none" stroke="#705334" stroke-width="3"/>'
@@ -23,7 +24,7 @@ const GLYPHS={
 const ACTION_TO_GLYPH={
  drink:'water',eat:'food',repair:'hammer',rest:'moon',medicine:'medical',
  explore:'crate','repair-tank':'wrench','life-panel-toggle':'music',
- 'weather-panel-toggle':'cloud','take-cover':'shield','secure-supplies':'supply',
+ 'weather-panel-toggle':'cloud','functions-toggle':'functions','take-cover':'shield','secure-supplies':'supply',
  'collect-water':'water',reserve:'wrench'
 };
 const cache=new Map();
