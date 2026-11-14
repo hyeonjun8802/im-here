@@ -9,7 +9,7 @@ import {
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
 const siteById=id=>EXPLORATION_SITES.find(site=>site.id===id);
-export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,onChoice,onEmergency,onDaily,hasBlockingChoice}){
+export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,onChoice,onEmergency,onDaily,hasBlockingChoice,isAutoEnabled}){
  const openButton=document.getElementById('exploration-map-open');
  const root=document.createElement('section');
  root.id='exploration-map-v78';
@@ -27,7 +27,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   <div class="exploration-map__columns">
    <div class="exploration-map__map-wrap">
     <div class="exploration-map__map" aria-label="방문하면 안개가 밝아지는 동네 지도">
-     <img class="exploration-map__city" src="${ASSET}map/overview.svg" alt="폐허가 된 동네의 탐사 지도"/>
+     <img class="exploration-map__city" src="${ASSET}map/overview.webp" alt="폐허가 된 동네의 탐사 지도"/>
      <canvas id="exploration-fog" width="320" height="213" aria-hidden="true"></canvas>
      <span class="exploration-map__home" aria-label="나의 옥상">⌂</span>
      <div id="exploration-map-markers" class="exploration-map__markers"></div>
@@ -73,7 +73,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const canvas=q('#exploration-fog'),ctx=canvas.getContext('2d');
   if(!ctx)return;
   ctx.clearRect(0,0,320,213);
-  ctx.fillStyle='rgba(5,9,13,.92)';ctx.fillRect(0,0,320,213);
+  ctx.fillStyle='rgba(5,9,13,.82)';ctx.fillRect(0,0,320,213);
   const reveal=(x,y,r,opacity=1)=>{
    const cx=x*320,cy=y*213,rad=r*320;
    const gradient=ctx.createRadialGradient(cx,cy,rad*.15,cx,cy,rad);
@@ -84,12 +84,35 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.fill();
    ctx.globalCompositeOperation='source-over';
   };
-  reveal(.56,.56,.19);
+  reveal(.50,.50,.22);
   for(const site of EXPLORATION_SITES){
    const data=getSiteState(site.id);
    if(data.visibility==='unknown')continue;
-   reveal(site.x,site.y,data.visits>0?.2:.085,data.visits>0?1:.64);
+   reveal(site.x,site.y,data.visits>0?.2:.11,data.visits>0?1:.72);
   }
+ }
+ function updateRoute(){
+  const old=q('.exploration-map__route');
+  old?.remove();
+  const site=siteById(selected),data=getSiteState(selected);
+  if(!site||data.visibility==='unknown')return;
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('viewBox','0 0 320 213');
+  svg.setAttribute('aria-hidden','true');
+  svg.classList.add('exploration-map__route');
+  const path=document.createElementNS(ns,'path');
+  const targetX=site.x*320,targetY=site.y*213;
+  // Soft corner follows nearby ruined streets instead of a straight UI arrow.
+  const jointX=160+(targetX-160)*.62;
+  path.setAttribute('d',`M 160 106.5 Q ${jointX.toFixed(1)} 106.5 ${jointX.toFixed(1)} ${(106.5+targetY)/2} T ${targetX.toFixed(1)} ${targetY.toFixed(1)}`);
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke',data.completed?'#86c79a':'#efbd77');
+  path.setAttribute('stroke-width','1.6');
+  path.setAttribute('stroke-dasharray','3 4');
+  path.setAttribute('stroke-linecap','round');
+  svg.append(path);
+  q('.exploration-map__map').append(svg);
  }
  function updateMarkers(){
   markers.replaceChildren();
@@ -124,11 +147,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;
   const visited=EXPLORATION_SITES.filter(site=>getSiteState(site.id).visits>0).length;
   q('#exploration-map-count').textContent=`방문 ${visited}/2 · 완료 ${completed}/2`;
-  renderFog();updateMarkers();choices.replaceChildren();mapCard.replaceChildren();
+  renderFog();updateMarkers();updateRoute();choices.replaceChildren();mapCard.replaceChildren();
   const site=mission?siteById(mission.siteId):siteById(selected);
   const stateInfo=getSiteState(site.id);
   const image=document.createElement('img');
-  image.src=ASSET+'locations/'+site.id+'.svg';
+  image.src=ASSET+'locations/'+site.id+'.webp';
   image.alt='';image.className='exploration-map__site-image';
   const title=document.createElement('strong');title.textContent=site.label;
   const status=document.createElement('small');
@@ -189,10 +212,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    selected=progress.siteId||selected;
    save();
    if(progress.kind==='arrived'){
-    if(!hasBlockingChoice?.())open();
+    if(!isAutoEnabled?.()&&!hasBlockingChoice?.())open();
    }else if(progress.kind==='returned'){
     onReturn?.(progress);
-    if(!hasBlockingChoice?.())open();
+    if(!isAutoEnabled?.()&&!hasBlockingChoice?.())open();
    }
   }
   if(visible()){
@@ -201,11 +224,33 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const identity=mission?mission.siteId+':'+mission.phase:'idle';
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
   }else if(getState().explorationMap?.mission?.phase==='encounter'&&
-     realNow>=snoozeUntil&&!hasBlockingChoice?.()){
+     !isAutoEnabled?.()&&realNow>=snoozeUntil&&!hasBlockingChoice?.()){
    open();
   }
   return progress;
  }
- return {open,close,tick,render,isOpen:visible,
+ /** Run the same location actions as player buttons, without opening
+  * a modal every 1.25 seconds or awarding any extra resources. */
+ function autoStep(plan,realNow=Date.now()){
+  if(!plan||hasBlockingChoice?.())return {good:false,msg:'다른 필수 알림이 진행 중입니다.'};
+  if(plan.kind==='depart'){
+   const result=beginMapExpedition(getState(),plan.siteId,getNow(),realNow);
+   if(!result.good)return result;
+   onDepart?.(result);
+   save();
+   if(visible())render();
+   return result;
+  }
+  if(plan.kind==='choice'){
+   const result=resolveMapExpedition(getState(),plan.choice,getNow(),realNow);
+   if(!result.good)return result;
+   onChoice?.(result);
+   save();
+   if(visible())render();
+   return result;
+  }
+  return {good:false,msg:'실행할 자동 탐험이 없습니다.'};
+ }
+ return {open,close,tick,render,autoStep,isOpen:visible,
   needsChoice:()=>getState().explorationMap?.mission?.phase==='encounter'};
 }
