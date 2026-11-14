@@ -11,7 +11,7 @@ import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
 import {syncNeonStatusHud} from './neonStatusHud.js';
-import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge} from './autoSurvivalV73.js';
+import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge,shouldAutoAnimateSurvivor} from './autoSurvivalV73.js';
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
@@ -262,7 +262,7 @@ function renderHUD(){
  syncNarrativeMessage(Date.now(),dead);
 }
 function toast(msg,kind=''){if(kind!=='quiet')addEvent(state,msg);$('#log span').textContent=msg;$('#log').classList.remove('pulse');void $('#log').offsetHeight;$('#log').classList.add('pulse');renderHUD();}
-function runSurvivalAction(action){
+function runSurvivalAction(action,isAuto=false){
  // Resolve mandatory quests before allowing unrelated survival actions.
  if(eventBoard?.requiresChoice()){
    const valid=eventBoard.activeKey==='expedition'
@@ -278,12 +278,19 @@ function runSurvivalAction(action){
  if((action.startsWith('scavenge_')&&result.good)||(action.startsWith('companion_')&&result.good))eventBoard?.dismiss(true);
  if(result.good){
    if(action.startsWith('scavenge_')||action.startsWith('companion_'))world?.syncSurvivalInventory(state);
-   if(action==='radio_contact')world?.setAction('radio');
-   else if(action==='rest')world?.setAction('sleep');
-   else if(action==='take_cover')world?.setAction('shelter');
-   else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
-   else if(!action.startsWith('scavenge_')&&!action.startsWith('companion_')&&action!=='radio_contact')world?.setAction(action);
-   if(action==='eat'&&autoLifeCamera)world?.setCameraView('survivor');
+   // AUTO uses the same real resource/cooldown action, but a new animation
+   // must not overwrite an ongoing route or performance every 1.25 seconds.
+   // Actual emergency cover is allowed to interrupt immediately.
+   if(!isAuto||shouldAutoAnimateSurvivor(world?.life,action)){
+    if(action==='radio_contact')world?.setAction('radio');
+    else if(action==='rest')world?.setAction('sleep');
+    else if(action==='take_cover')world?.setAction('shelter');
+    else if(action==='secure_supplies'||action==='repair_tank')world?.setAction('repair');
+    else if(!action.startsWith('scavenge_')&&!action.startsWith('companion_')&&action!=='radio_contact')world?.setAction(action);
+   }
+   // The player may opt into a close-up for manual food. Automatic eating
+   // must never silently lock the camera into survivor-follow mode.
+   if(action==='eat'&&autoLifeCamera&&!isAuto)world?.setCameraView('survivor');
    // The camera only celebrates a decision after it has resolved successfully.
    // No extra roll, item grant, damage, or clock alteration.
    if(action==='scavenge_go'||action==='scavenge_scout'||action==='scavenge_salvage'||action==='scavenge_stay'){
@@ -355,7 +362,7 @@ function runAutoSurvival(real,gameNow){
  const action=eventBoard?.requiresChoice()
    ?selectAutoScavenge(state):planAutoSurvivalAction(state,gameNow);
  if(!action)return;
- const result=runSurvivalAction(action);
+ const result=runSurvivalAction(action,true);
  if(!result.good&&eventBoard?.requiresChoice())eventBoard.deferChoice();
 }
 function bindEvents(){
