@@ -451,6 +451,24 @@ function bindEvents(){
   }));
  $('#expedition-toggle').addEventListener('click',()=>eventBoard?.openPendingExpedition(state));
  $('#companion-toggle').addEventListener('click',()=>eventBoard?.openPendingCompanion(state));
+ // The rarely used weather simulator now lives inside the existing equipment
+ // menu. The ninth painted HUD cell opens that same menu, without adding a
+ // tenth button or changing the survival-kit popup's existing listeners.
+ const functionsButton=$('#functions-toggle');
+ const equipmentDisclosure=$('#equipment-actions-toggle');
+ if(functionsButton&&equipmentDisclosure){
+  const syncFunctions=()=>{
+   const opened=equipmentDisclosure.getAttribute('aria-expanded')==='true';
+   functionsButton.setAttribute('aria-expanded',String(opened));
+   functionsButton.setAttribute('aria-label',opened?'장비 기능 닫기':'장비 기능 열기');
+   functionsButton.setAttribute('title',opened?'장비 기능 닫기':'동네 탐사·무전·동료·날씨 설정');
+  };
+  functionsButton.addEventListener('click',()=>equipmentDisclosure.click());
+  new MutationObserver(syncFunctions).observe(equipmentDisclosure,{
+   attributes:true,attributeFilter:['aria-expanded']
+  });
+  syncFunctions();
+ }
  $('#radio-contact').addEventListener('click',()=>runSurvivalAction('radio_contact'));
  $('#restart-game').addEventListener('click',()=>{
   if(!window.confirm('현재 생존 기록을 초기화하고 DAY 001부터 다시 시작하시겠습니까?'))return;
