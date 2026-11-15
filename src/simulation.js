@@ -1,6 +1,7 @@
 import {scriptedDisasterType,disasterGapMsAfter,chooseScenarioWeather,weatherDurationMs} from './weatherScenarioV920.js';
 import {SURVIVAL_BALANCE, SURVIVAL_CHAPTERS, chooseTornadoApproach, tornadoWarningText} from './survivalBalance.js';
 import {WEATHER_WATER_CAPACITY,defaultWeatherEconomy,sanitizeWeatherEconomy,applyWeatherEconomyMinute} from './weatherEconomy.js';
+import {awardRepairParts} from './repairPartsBalanceV95.js';
 import {ITEM_INFO,makeScavengeDirector,sanitizeScavengeDirector,normalizeKit,offerDailyScavenge,offerRecoveryScavenge,resolveScavengeChoice,applyAcquiredItemMinute,requestRadioContact} from './scavengeDirector.js';
 import {newCompanion,sanitizeCompanion,resolveCompanionRescue,applyCompanionMinute,offerCompanionRationChoice,resolveCompanionRationChoice,applyCompanionRationAftermath,applyCompanionAutoRepair} from './supportCompanion.js';
 import {newExplorationMap,sanitizeExplorationMap} from './explorationMapV78.js';
@@ -532,8 +533,8 @@ export function applyAction(s,action,now=Date.now()){
  s.health=CAP(s.health-injury);s.supply.food+=r<.23?3:5;
  s.supply.water=s.supply.water>=WEATHER_WATER_CAPACITY?s.supply.water:Math.min(WEATHER_WATER_CAPACITY,s.supply.water+(r<.30?2:4));
  // Emergency expeditions are dangerous and limited to once per 20 game hours,
- // but return enough repair components to make long-term survival achievable.
- s.supply.parts+=r<.30?2:r<.65?3:4;if(r>.65)s.supply.medicine++;
+ // but limit surplus after the camp already has a practical repair reserve.
+ const partsFound=awardRepairParts(s,r<.65?1:2);if(r>.65)s.supply.medicine++;
  s.exploreCooldownAt=now+SURVIVAL_BALANCE.exploreCooldownMs;
  s.action='explore';s.actionUntil=now+18000;
  addEvent(s,r<.22?'긴급 탐색 중 부상을 입었지만 생존 물자를 가져왔다.':'폐허 창고에서 식량과 식수를 확보했다.');
