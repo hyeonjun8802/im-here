@@ -46,3 +46,8 @@ test('button CSS has visible pressed, disabled, keyboard and phone states withou
  assert.match(core,/map\.lastAttemptDay=currentExplorationDay/);
  assert.match(ui,/beginMapExpedition\(getState\(\),site\.id,getNow\(\),Date\.now\(\)\)/);
 });
+
+test('dynamic primary buttons retain shared control artwork when specialized classes are added',()=>{
+ assert.match(ui,/if\(cls\)b\.classList\.add\(\.\.\.cls\.split/);
+ assert.doesNotMatch(ui,/if\(cls\)b\.className=cls/);
+});

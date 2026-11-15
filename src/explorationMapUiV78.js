@@ -346,7 +346,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const b=document.createElement('button');
   b.classList.add('exploration-map__control');
   b.type='button';b.textContent=text;b.disabled=disabled;
-  if(cls)b.className=cls;
+  if(cls)b.classList.add(...cls.split(/\s+/).filter(Boolean));
   b.addEventListener('click',handler);return b;
  }
 
