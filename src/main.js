@@ -17,6 +17,8 @@ import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge,select
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,evaluateSurvival,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
+import {SurvivorSpeechDirectorV108} from './survivorSpeechDirectorV108.js';
+import {SurvivorSpeechBubbleV108} from './survivorSpeechBubbleV108.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
 let saved=null;try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch{}
@@ -96,6 +98,30 @@ let lastAutoActionReal=0;
 // One brief chapter caption per in-game day. Regular HUD refreshes must not
 // restart its timeout or leave a permanent black backdrop over the 3D world.
 const narrativeQueue=new NarrativeQueueV76();
+// v108: purely observational character thoughts. Never writes simulation state.
+const survivorSpeech=new SurvivorSpeechDirectorV108({storage:sessionStorage});
+let survivorSpeechBubble=null;
+let survivorSpeechEnabled=true;
+try{survivorSpeechEnabled=localStorage.getItem('AFTERDAY_SPEECH_ENABLED_V108')!=='0';}catch{}
+function syncSurvivorSpeechToggle(){
+ const toggle=$('#survivor-speech-toggle');
+ if(!toggle)return;
+ toggle.textContent=survivorSpeechEnabled?'💬 캐릭터 혼잣말 끄기':'💬 캐릭터 혼잣말 켜기';
+ toggle.setAttribute('aria-pressed',String(survivorSpeechEnabled));
+}
+function survivorSpeechUiBlocked(){
+ return !$('#loading')?.classList.contains('hidden')||
+  !$('#game-over')?.classList.contains('hidden')||
+  !$('#life-panel')?.classList.contains('hidden')||
+  !$('#weather-panel')?.classList.contains('hidden')||
+  !$('#admin-panel')?.classList.contains('hidden')||
+  Boolean(eventBoard?.requiresChoice())||
+  Boolean(eventBoard?.element&&!eventBoard.element.hidden)||
+  Boolean(explorationUI?.isOpen())||
+  Boolean($('#survival-kit')?.classList.contains('premium-equipment-open'))||
+  Boolean($('#survival-chapter')?.classList.contains('is-visible'))||
+  $('#log')?.dataset.active==='true';
+}
 const CHAPTER_CAPTION_MS=6500;
 let displayedChapterDay=null;
 let chapterCaptionTimer=null;
@@ -395,6 +421,14 @@ function runAutoSurvival(real,gameNow){
  if(action==='explore')runSurvivalAction(action,true);
 }
 function bindEvents(){
+ const speechToggle=$('#survivor-speech-toggle');
+ speechToggle?.addEventListener('click',()=>{
+  survivorSpeechEnabled=!survivorSpeechEnabled;
+  try{localStorage.setItem('AFTERDAY_SPEECH_ENABLED_V108',survivorSpeechEnabled?'1':'0');}catch{}
+  if(!survivorSpeechEnabled)survivorSpeechBubble?.hide();
+  syncSurvivorSpeechToggle();
+ });
+ syncSurvivorSpeechToggle();
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
   speedButton.textContent=`${gameClock.speed}×`;
@@ -677,7 +711,7 @@ worldCanvas.addEventListener('webglcontextrestored',()=>{
  if(error?.textContent?.includes('3D 렌더링'))error.classList.add('hidden');
 });
 function animation(){
- let last=performance.now(),lastHUD=0,lastSave=Date.now();
+ let last=performance.now(),lastHUD=0,lastSave=Date.now(),lastSpeechTick=0,lastSpeechPosition=0;
  const draw=t=>{
   const realDt=Math.min(Math.max((t-last)/1000,0),.05);last=t;
   const real=Date.now(),foreground=document.visibilityState==='visible';
@@ -711,6 +745,24 @@ function animation(){
     }
    }
   }
+  // Follow the animated GLB Head, not a static caption or an image.
+  if(survivorSpeechBubble&&foreground&&!gpuContextLost){
+   const blocked=survivorSpeechUiBlocked();
+   if(t-lastSpeechTick>=1000){
+    lastSpeechTick=t;
+    if(world?.beardedSurvivor?.status==='ready'){
+     const thought=survivorSpeech.tick({
+      state,life:world.life,gameNow,realNow:real,
+      enabled:survivorSpeechEnabled,visible:!blocked
+     });
+     if(thought)survivorSpeechBubble.show(thought,real);
+    }
+   }
+   if(t-lastSpeechPosition>=80){
+    lastSpeechPosition=t;
+    survivorSpeechBubble.update(world,real,blocked||!survivorSpeechEnabled);
+   }
+  }else survivorSpeechBubble?.hide();
   requestAnimationFrame(draw);
  };
  requestAnimationFrame(draw);
@@ -730,6 +782,7 @@ async function boot(){try{
    try{localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch{}
   }
   $('#load-progress').textContent='실제 황혼의 생존 옥상을 준비하는 중…';world=new AfterWorld($('#world'),msg=>{$('#load-progress').textContent=msg});
+  survivorSpeechBubble=new SurvivorSpeechBubbleV108();
   // A new world begins without gear. Day 1 always offers a real player decision;
   // old saves retain their original camp assets and supply.
   offerDailyScavenge(state,getDay(state.startedAt,gameClock.virtualNow));
