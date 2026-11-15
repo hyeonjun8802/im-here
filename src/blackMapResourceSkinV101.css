@@ -615,3 +615,123 @@
   grid-template-columns:1fr!important;
  }
 }
+
+/* v103 | Site card, image/quest flow fix. The v101 site_card.webp has a
+ * permanently painted vertical divider that overlaps dynamic full-width
+ * quests and journal content. Reuse an existing one-zone original UI frame.
+ * No changes to map geometry, story logic, resources or save data. */
+.exploration-map-v78 .exploration-map__card{
+ display:flow-root!important;
+ border:13px solid #312b28!important;
+ border-image-source:var(--blackmap-v101-status)!important;
+ border-image-slice:46 166 46 56 fill!important;
+ border-image-width:13px 18px 13px 13px!important;
+ border-image-repeat:stretch!important;
+ background-color:#161b1d!important;
+ padding:12px 14px 15px!important;
+ min-width:0!important;
+ overflow-wrap:anywhere;word-break:keep-all;
+}
+/* Float only the location thumbnail. This avoids the old grid-row:1/4
+ * spanning algorithm pushing description below the full picture height. */
+.exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+ display:block!important;float:left!important;clear:none!important;
+ grid-row:auto!important;grid-column:auto!important;
+ width:32%!important;height:clamp(104px,15vw,148px)!important;
+ min-height:0!important;max-height:148px!important;
+ aspect-ratio:auto!important;object-fit:cover!important;
+ object-position:center!important;margin:0 12px 9px 0!important;
+}
+.exploration-map-v78 .exploration-map__card>strong,
+.exploration-map-v78 .exploration-map__card>small,
+.exploration-map-v78 .exploration-map__card>p{
+ display:block!important;grid-row:auto!important;grid-column:auto!important;
+ width:auto!important;min-width:0!important;
+ overflow-wrap:anywhere;word-break:keep-all;
+}
+.exploration-map-v78 .exploration-map__card>strong{
+ margin:3px 0 5px!important;font-size:17px!important;line-height:1.35!important;
+}
+.exploration-map-v78 .exploration-map__card>small{
+ margin:0 0 7px!important;line-height:1.5!important;
+}
+.exploration-map-v78 .exploration-map__card>p:first-of-type{
+ margin:0!important;font-size:12px!important;line-height:1.55!important;
+}
+.exploration-map-v78 .exploration-map__card>p:nth-of-type(2){
+ clear:both!important;margin:11px 0 0!important;padding:9px 0 0!important;
+ border-top:1px solid rgba(198,166,110,.30)!important;
+ font-size:12px!important;line-height:1.5!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__quest{
+ display:flex!important;flex-direction:row!important;align-items:flex-start!important;
+ clear:both!important;width:100%!important;min-width:0!important;
+ grid-row:auto!important;grid-column:auto!important;
+ gap:10px!important;margin:10px 0 0!important;padding:12px 0 2px!important;
+ border:0!important;border-top:1px solid rgba(198,166,110,.30)!important;
+ overflow:visible!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__quest>.exploration-map__district-photo{
+ display:block!important;flex:0 0 28%!important;width:28%!important;
+ height:clamp(76px,21vw,106px)!important;max-height:106px!important;
+ min-width:0!important;object-fit:cover!important;margin:0!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__quest>.exploration-map__quest-copy{
+ display:flex!important;flex:1 1 0!important;flex-direction:column!important;
+ gap:4px!important;min-width:0!important;max-width:100%!important;
+ overflow-wrap:anywhere;word-break:keep-all;
+}
+.exploration-map-v78 .exploration-map__card .exploration-map__quest-copy p{
+ font-size:11px!important;line-height:1.55!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__journal{
+ clear:both!important;width:100%!important;
+ grid-row:auto!important;grid-column:auto!important;
+ margin:12px 0 0!important;padding:10px 0 0!important;
+ border:0!important;border-top:1px solid rgba(198,166,110,.35)!important;
+ background:transparent!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__journal summary{
+ display:block;padding:5px 2px!important;line-height:1.6!important;
+ overflow-wrap:anywhere;word-break:keep-all;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__card{
+  display:flow-root!important;
+  border-width:10px!important;border-image-width:10px 12px 10px 10px!important;
+  padding:11px 12px 14px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+  width:33%!important;height:clamp(94px,30vw,124px)!important;
+  max-height:124px!important;margin:0 10px 8px 0!important;
+ }
+ .exploration-map-v78 .exploration-map__card>strong{
+  font-size:15px!important;margin:1px 0 4px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>small{
+  font-size:10.5px!important;margin-bottom:6px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>p:first-of-type{
+  font-size:12px!important;line-height:1.5!important;
+ }
+ .exploration-map-v78 .exploration-map__card>p:nth-of-type(2){
+  font-size:11px!important;margin-top:10px!important;padding-top:8px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__quest{
+  gap:9px!important;padding-top:10px!important;margin-top:9px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__quest>.exploration-map__district-photo{
+  flex-basis:28%!important;width:28%!important;
+  height:clamp(74px,22vw,100px)!important;
+ }
+}
+@media(max-width:360px){
+ .exploration-map-v78 .exploration-map__card{padding:9px 9px 13px!important}
+ .exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+  width:33%!important;height:100px!important;margin-right:8px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__quest{gap:7px!important}
+ .exploration-map-v78 .exploration-map__card .exploration-map__quest-copy p{
+  font-size:10.5px!important;
+ }
+}
