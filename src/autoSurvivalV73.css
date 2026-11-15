@@ -179,3 +179,21 @@ body.afterday-real-ui-v3 #hud .topbar .top-right #admin-toggle{
   }
   #hud > #admin-panel{padding:12px;gap:8px}
 }
+
+
+/* v107 | Deliberately destructive admin action, using the existing restart flow.
+ * Keep the reset visibly different from the safe save shortcut. */
+#hud #admin-panel .afterday-admin-reset{
+  width:100%;
+  min-height:44px;
+  border-color:rgba(223,128,100,.8);
+  background:rgba(103,37,33,.48);
+  color:#ffddd0;
+}
+#hud #admin-panel .afterday-admin-reset:active{
+  background:rgba(159,55,44,.62);
+}
+#hud #admin-panel .afterday-admin-reset:focus-visible{
+  outline:2px solid #ffbe9e;
+  outline-offset:2px;
+}

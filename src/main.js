@@ -555,6 +555,9 @@ function bindEvents(){
   }
   window.location.reload();
  });
+ // ADMIN reset reuses the existing confirmed fresh-start routine instead
+ // of creating a second save/reset path. A cancelled confirmation is harmless.
+ $('#admin-reset').addEventListener('click',()=>$('#restart-game').click());
  $('#life-panel-toggle').addEventListener('click',()=>{$('#life-panel').classList.toggle('hidden');$('#weather-panel').classList.add('hidden')});
  $('#close-life').addEventListener('click',()=>$('#life-panel').classList.add('hidden'));
  document.querySelectorAll('[data-life-action]').forEach(button=>button.addEventListener('click',async()=>{
