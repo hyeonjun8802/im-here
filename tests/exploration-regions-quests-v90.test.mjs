@@ -140,7 +140,7 @@ test('UI changes background at zone switch and connects quest cards and scaled m
  assert.match(ui,/const homeRadius=zone==='far'\?\.045:\.07/);
  assert.match(ui,/const radius=data\.completed\?/);
  assert.match(ui,/const progress=explorationFogStage\(/);
- assert.match(ui,/image\.src=locked\?ASSET\+region\.map/);
+ assert.match(ui,/image\.src=locked\?ASSET\+'markers\/state_unknown\.svg'/);
  assert.match(ui,/quest=explorationQuestProgress\(s\.explorationMap,site\.id\)/);
  assert.match(ui,/quest\.district\.photo/);
  assert.match(ui,/exploration-map__quest-status/);
