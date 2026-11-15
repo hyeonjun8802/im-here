@@ -1,0 +1,63 @@
+/* AFTERDAY Black Map v96: medallion icon resources.
+ * Keep existing site IDs, x/y coordinates, fog, story, badges and save data. */
+.exploration-map-v78 .exploration-map__marker,
+.exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__marker {
+ width:44px;height:44px;min-width:44px;min-height:44px;
+ padding:0;border:0;background:transparent;box-shadow:none;
+ display:grid;place-items:center;
+}
+.exploration-map-v78 .exploration-map__marker img,
+.exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__marker img {
+ display:block;width:42px;height:42px;max-width:none;max-height:none;
+ object-fit:contain;margin:0;pointer-events:none;
+ filter:drop-shadow(0 2px 2px rgba(0,0,0,.65));
+}
+.exploration-map-v78 .exploration-map__marker[data-selected="true"] {
+ border:0;background:transparent;box-shadow:none;
+}
+.exploration-map-v78 .exploration-map__marker[data-selected="true"] img,
+.exploration-map-v78 .exploration-map__marker[data-selected="true"][data-visibility="completed"] img {
+ filter:drop-shadow(0 0 6px rgba(245,196,102,.82));
+}
+.exploration-map-v78 .exploration-map__marker[data-visibility="completed"] {
+ border:0;background:transparent;box-shadow:none;
+}
+.exploration-map-v78 .exploration-map__marker[data-visibility="completed"]:not([data-selected="true"]) img {
+ filter:drop-shadow(0 0 4px rgba(111,200,148,.55));
+}
+.exploration-map-v78 .exploration-map__marker span {
+ z-index:4;right:0;bottom:0;min-width:16px;min-height:16px;
+ display:grid;place-items:center;line-height:1;
+}
+.exploration-map-v78 .exploration-map__home,
+.exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__home {
+ left:50%;top:50%;width:44px;height:44px;
+ padding:0;border:0;border-radius:50%;
+ background: url('/assets/exploration/markers/home_base.svg') center/contain no-repeat;
+ box-shadow:0 0 16px rgba(247,194,95,.3);
+}
+.exploration-map-v78 .exploration-map__home svg {display:none}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__marker,
+ .exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__marker {
+  width:42px;height:42px;min-width:42px;min-height:42px;
+ }
+ .exploration-map-v78 .exploration-map__marker img,
+ .exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__marker img{
+  width:40px;height:40px;
+ }
+ .exploration-map-v78 .exploration-map__home,
+ .exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__home{
+  width:42px;height:42px;
+ }
+}
+@media(max-width:350px){
+ .exploration-map-v78 .exploration-map__marker,
+ .exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__marker{
+  width:38px;height:38px;min-width:38px;min-height:38px;
+ }
+ .exploration-map-v78 .exploration-map__marker img,
+ .exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__marker img{width:36px;height:36px}
+ .exploration-map-v78 .exploration-map__home,
+ .exploration-map-v78 .exploration-map__map[data-zone="far"] .exploration-map__home{width:38px;height:38px}
+}
