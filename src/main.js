@@ -142,6 +142,7 @@ function syncNarrativeMessage(realNow,dead){
   !$('#loading').classList.contains('hidden');
  const active=narrativeQueue.tick(realNow,blocked);
  node.dataset.active=String(Boolean(active));
+ node.dataset.kind=active?.kind||'none';
  if(active){
   const text=node.querySelector('span');
   if(text.textContent!==active.text)text.textContent=active.text;
