@@ -8,6 +8,10 @@ import {
 } from './explorationMapV78.js';
 import {scavengeOdds} from './scavengeDirector.js';
 import {explorationScene} from './explorationStoryV85.js';
+import {
+ EXPLORATION_REGIONS,explorationQuestProgress,explorationZoneProgress,
+ explorationPinPosition
+} from './explorationQuestRegionsV90.js';
 
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
@@ -49,8 +53,9 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      <button id="exploration-area-near" type="button" aria-pressed="true">근거리 · 6곳</button>
      <button id="exploration-area-far" type="button" aria-pressed="false">원거리 · 6곳</button>
     </div>
-    <div class="exploration-map__map" aria-label="방문하면 안개가 밝아지는 동네 지도">
-     <img class="exploration-map__city" src="${ASSET}photos/overview.webp" alt="폐허가 된 동네의 탐사 지도"/>
+    <p id="exploration-map-zone-brief" class="exploration-map__zone-brief">근거리 · 옥상 주변 생활권</p>
+    <div class="exploration-map__map" data-zone="near" aria-label="방문하면 안개가 밝아지는 동네 지도">
+     <img class="exploration-map__city" src="${ASSET}regions/near_neighborhood.webp" alt="옥상 주변의 가까운 폐허 동네"/>
      <canvas id="exploration-fog" width="320" height="213" aria-hidden="true"></canvas>
      <span class="exploration-map__home" aria-label="나의 옥상"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.5 10.5 12 3.7l8.5 6.8M6.8 9.8v10.3h10.4V9.8M10 20.1v-6.4h4v6.4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
      <div id="exploration-map-markers" class="exploration-map__markers"></div>
@@ -141,11 +146,14 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.fill();
    ctx.globalCompositeOperation='source-over';
   };
-  reveal(.50,.50,.22);
+  if(zone==='far')reveal(.50,.50,.11);
+  else reveal(.50,.50,.22);
   for(const site of EXPLORATION_SITES.filter(entry=>entry.zone===zone)){
    const data=getSiteState(site.id);
    if(data.visibility==='unknown')continue;
-   reveal(site.x,site.y,data.visits>0?.2:.11,data.visits>0?1:.72);
+   const radius=zone==='far'?(data.visits>0?.125:.075):(data.visits>0?.2:.11);
+   const pin=explorationPinPosition(zone,site.id)||site;
+   reveal(pin.x,pin.y,radius,data.visits>0?1:.72);
   }
  }
  function updateRoute(){
@@ -160,7 +168,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   svg.setAttribute('aria-hidden','true');
   svg.classList.add('exploration-map__route');
   const path=document.createElementNS(ns,'path');
-  const targetX=site.x*320,targetY=site.y*213;
+  const pin=explorationPinPosition(zone,site.id)||site;
+  const targetX=pin.x*320,targetY=pin.y*213;
   // Soft corner follows nearby ruined streets instead of a straight UI arrow.
   const jointX=160+(targetX-160)*.62;
   path.setAttribute('d',`M 160 106.5 Q ${jointX.toFixed(1)} 106.5 ${jointX.toFixed(1)} ${(106.5+targetY)/2} T ${targetX.toFixed(1)} ${targetY.toFixed(1)}`);
@@ -180,7 +189,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    button.type='button';button.className='exploration-map__marker';
    button.dataset.visibility=data.visibility;button.dataset.selected=String(selected===site.id);
    button.setAttribute('aria-pressed',String(selected===site.id));
-   button.style.left=(site.x*100)+'%';button.style.top=(site.y*100)+'%';
+   const pin=explorationPinPosition(zone,site.id)||site;
+   button.style.left=(pin.x*100)+'%';button.style.top=(pin.y*100)+'%';
    button.disabled=data.visibility==='unknown';
    button.title=data.visibility==='unknown'?'미발견 지역':site.label+' · '+(LABELS[data.visibility]||'탐사');
    button.setAttribute('aria-label',button.title);
@@ -269,6 +279,17 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   q('#exploration-area-far').setAttribute('aria-pressed',String(zone==='far'));
   q('#exploration-area-near').disabled=Boolean(mission)&&zone!=='near';
   q('#exploration-area-far').disabled=Boolean(mission)&&zone!=='far';
+  const region=EXPLORATION_REGIONS[zone];
+  const mapNode=q('.exploration-map__map');
+  mapNode.dataset.zone=zone;
+  mapNode.setAttribute('aria-label',region.title+' · '+region.scope);
+  const cityImage=q('.exploration-map__city');
+  const regionImage=ASSET+region.map;
+  if(cityImage.getAttribute('src')!==regionImage)cityImage.setAttribute('src',regionImage);
+  cityImage.alt=region.alt;
+  const zoneProgress=explorationZoneProgress(s.explorationMap,zone,EXPLORATION_SITES);
+  q('#exploration-map-zone-brief').textContent=region.title+' · '+region.scope+
+   ' · 조사 '+zoneProgress.completed+'/'+zoneProgress.total;
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;
   const visited=EXPLORATION_SITES.filter(site=>getSiteState(site.id).visits>0).length;
   q('#exploration-map-count').textContent=`방문 ${visited}/${EXPLORATION_SITES.length} · 완료 ${completed}/${EXPLORATION_SITES.length}`;
@@ -280,7 +301,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const locked=stateInfo.visibility==='unknown';
   mapCard.classList.toggle('is-locked',locked);
   const image=document.createElement('img');
-  image.src=locked?ASSET+'photos/overview.webp':ASSET+'photos/'+site.id+'.webp';
+  image.src=locked?ASSET+region.map:ASSET+'photos/'+site.id+'.webp';
   image.alt='';image.className='exploration-map__site-image';image.decoding='async';
   const title=document.createElement('strong');title.textContent=locked?'미발견 장소':site.label;
   const status=document.createElement('small');
@@ -295,6 +316,41 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const rewards=document.createElement('p');
   rewards.textContent='예상 발견: '+(locked?'확인 전':site.reward);
   mapCard.append(image,title,status,description,rewards);
+  // The quest status is derived from the same persisted visit/completion flags
+  // as the actual encounter; no extra rewards or completion shortcuts.
+  const quest=explorationQuestProgress(s.explorationMap,site.id);
+  if(quest){
+   const questNode=document.createElement('section');
+   questNode.className='exploration-map__quest';
+   questNode.dataset.status=quest.status;
+   if(!locked&&quest.district){
+    const sectorImage=document.createElement('img');
+    sectorImage.className='exploration-map__district-photo';
+    sectorImage.src=ASSET+quest.district.photo;
+    sectorImage.alt=quest.district.title+' 전경';
+    sectorImage.loading='lazy';
+    sectorImage.decoding='async';
+    questNode.append(sectorImage);
+   }
+   const questCopy=document.createElement('div');
+   questCopy.className='exploration-map__quest-copy';
+   const questStatus=document.createElement('small');
+   questStatus.className='exploration-map__quest-status';
+   questStatus.textContent='지역 퀘스트 · '+quest.statusLabel+
+    (!locked&&quest.district?' · '+quest.district.title:'');
+   const questTitle=document.createElement('strong');
+   questTitle.textContent=locked?'발견되지 않은 지역 퀘스트':quest.title;
+   const questObjective=document.createElement('p');
+   questObjective.textContent=locked?
+    (zone==='far'?'17번 채널로 위치를 발견하면 이 구역의 조사 목표가 열립니다.':
+     '근거리 단서를 찾아 위치를 발견하면 조사 목표가 열립니다.'):
+    quest.status==='done'?'조사 기록 완료 · '+quest.lead:
+    quest.status==='retry'?'이전 탐사에서 목표를 끝내지 못했습니다. '+quest.objective:
+    quest.objective;
+   questCopy.append(questStatus,questTitle,questObjective);
+   questNode.append(questCopy);
+   mapCard.append(questNode);
+  }
   if(!locked&&stateInfo.lastStory){
    const memory=document.createElement('p');
    memory.className='exploration-map__last-story';
