@@ -28,7 +28,8 @@ test('only daily text loses the box, border and shadow; other messages are unaff
  assert.ok(daily.includes(dailySelector));
  for(const decl of [
   'border:0!important','border-left:0!important','background:transparent!important',
-  'box-shadow:none!important','text-align:center!important','pointer-events:none!important',
+  'box-shadow:none!important','backdrop-filter:none!important',
+  '-webkit-backdrop-filter:none!important','text-align:center!important','pointer-events:none!important',
   'text-shadow:0 1px 2px'
  ])assert.ok(daily.includes(decl),decl);
  assert.match(css,/#log\.event-log\{[\s\S]*?background:linear-gradient\(/,
