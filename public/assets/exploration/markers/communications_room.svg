@@ -7,14 +7,14 @@
  <filter id="shadow" x="-20%" y="-20%" width="140%" height="145%"><feDropShadow dx="0" dy="2" stdDeviation="1.2" flood-color="#000" flood-opacity=".8"/></filter>
  <pattern id="grain" width="13" height="11" patternUnits="userSpaceOnUse"><path d="M2 3h1M8 9h1" stroke="#b8c1a0" stroke-opacity=".11" stroke-width=".5"/></pattern>
 </defs>
-<circle cx="48" cy="49" r="46" fill="#000" opacity=".39"/>
-<circle cx="48" cy="47" r="44" fill="#140f0c" stroke="#100e0d" stroke-width="1.5"/>
-<circle cx="48" cy="47" r="42" fill="url(#rim)" stroke="#3f2a18" stroke-width="1"/>
-<circle cx="48" cy="47" r="38.5" fill="#362519" stroke="#f9dda7" stroke-opacity=".85" stroke-width="1"/>
-<circle cx="48" cy="47" r="35.6" fill="url(#enamel)" stroke="#0a181a" stroke-width="3"/>
-<circle cx="48" cy="47" r="35" fill="url(#grain)"/>
-<circle cx="48" cy="47" r="33.3" fill="none" stroke="#b9a47c" stroke-opacity=".36" stroke-width=".7"/>
-<circle cx="48" cy="47" r="29" fill="url(#glow)"/>
+<circle cx="48" cy="48" r="46" fill="#000" opacity=".39"/>
+<circle cx="48" cy="48" r="44" fill="#140f0c" stroke="#100e0d" stroke-width="1.5"/>
+<circle cx="48" cy="48" r="42" fill="url(#rim)" stroke="#3f2a18" stroke-width="1"/>
+<circle cx="48" cy="48" r="38.5" fill="#362519" stroke="#f9dda7" stroke-opacity=".85" stroke-width="1"/>
+<circle cx="48" cy="48" r="35.6" fill="url(#enamel)" stroke="#0a181a" stroke-width="3"/>
+<circle cx="48" cy="48" r="35" fill="url(#grain)"/>
+<circle cx="48" cy="48" r="33.3" fill="none" stroke="#b9a47c" stroke-opacity=".36" stroke-width=".7"/>
+<circle cx="48" cy="48" r="29" fill="url(#glow)"/>
 <g filter="url(#shadow)" fill="url(#goldGlyph)" stroke="#51371f" stroke-width="1.3" stroke-linejoin="round"><path d="M47 27 30 73h34L47 27Z" fill="none" stroke="#e9c889" stroke-width="4.2"/><path d="M36 58h23M42 43h11M28 27Q16 38 28 48M66 27q12 11 0 21M20 22Q4 40 20 55M74 22q17 18 0 33" fill="none" stroke="#e9c889" stroke-width="4" stroke-linecap="round"/><circle cx="47" cy="24" r="5.5"/></g>
 <path d="M13 35 A37 37 0 0 1 80 26" fill="none" stroke="#fff4bf" stroke-opacity=".55" stroke-width="2.2" stroke-linecap="round"/>
 <path d="M78 70 A38 38 0 0 1 23 79" fill="none" stroke="#f6d89e" stroke-opacity=".55" stroke-width="1.6"/>
