@@ -375,15 +375,23 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   }else if(guide.kind==='tower'){
    action='tower';label='통신탑 복구 단계 보기';
    const phase=s.explorationMap?.tower?.phase;
-   reason=phase==='surveyed'&&(s.supply?.parts||0)<4?
-    '수리 부품 '+Math.max(0,4-(s.supply?.parts||0))+'개가 더 필요합니다.':
-    phase==='restored'&&!s.kit?.radio?'연결하려면 단파 무전기가 필요합니다.':
+   const missingParts=phase==='surveyed'&&(s.supply?.parts||0)<4;
+   const missingRadio=phase==='restored'&&!s.kit?.radio;
+   reason=missingParts?
+    '수리 부품 '+Math.max(0,4-(s.supply?.parts||0))+'개가 더 필요합니다. 보급 탐색에서 자원을 확보하세요.':
+    missingRadio?'연결하려면 단파 무전기가 필요합니다. 보급 탐색을 확인하세요.':
     '아래에서 실제 통신탑 작업을 단계별로 진행합니다.';
+   if(missingParts||missingRadio){
+    if(s.scavenge?.pending){action='daily';label='오늘의 보급 탐색 열기';}
+    else {action='emergency';label='긴급 보급 탐색 보기';}
+   }
   }else if(guide.kind==='finale'){
    action='finale';label='마지막 생존 기록 선택하기';
    reason='정착 또는 구조 신호 송신 중 하나를 선택합니다.';
   }else{
-   disabled=true;label='검은 지도 조사 완료';reason='이후에도 생존과 옥상 관리는 계속됩니다.';
+   if(s.scavenge?.pending){action='daily';label='오늘의 생존 탐색 열기';}
+   else {action='emergency';label='긴급 보급 탐색 보기';}
+   reason='12곳 조사는 끝났지만 생존은 계속됩니다. 기존 보급 탐색을 이어가세요.';
   }
   button.dataset.action=action;button.textContent=label;button.disabled=disabled;hint.textContent=reason;
  }
@@ -618,6 +626,9 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const button=panel.querySelector('button:not(:disabled)');
    (button||panel).scrollIntoView({block:'center'});
    button?.focus({preventScroll:true});
+  }else if(action==='daily'||action==='emergency'){
+   const button=q(action==='daily'?'#exploration-map-daily':'#exploration-map-emergency');
+   if(!button.disabled)button.click();
   }
  });
  q('#exploration-map-close').addEventListener('click',close);
