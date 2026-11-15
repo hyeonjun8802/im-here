@@ -160,5 +160,9 @@ test('available region quest does not bypass 17-channel and core travel system',
  assert.equal(s.explorationMap.sites[site].visibility,'unknown');
  s.explorationMap.tower.phase='channel17';
  s.explorationMap=sanitizeExplorationMap(s.explorationMap);
+ assert.equal(mapExpeditionAvailability(s,'hypermarket',Date.UTC(2026,10,15,9)).ready,true);
+ assert.equal(mapExpeditionAvailability(s,site,Date.UTC(2026,10,15,9)).ready,false);
+ s.explorationMap.sites.hypermarket={...s.explorationMap.sites.hypermarket,completed:true,visits:1,visibility:'completed'};
+ s.explorationMap=sanitizeExplorationMap(s.explorationMap);
  assert.equal(mapExpeditionAvailability(s,site,Date.UTC(2026,10,15,9)).ready,true);
 });
