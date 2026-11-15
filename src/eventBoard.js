@@ -6,31 +6,35 @@ const BASE = new URL('./assets/events/', document.baseURI);
 const NOTICE_SOUND = new URL('./assets/audio/dragon-studio-notification-sound-372474.mp3', document.baseURI);
 
 export const EVENT_STYLES = Object.freeze({
-  raiders:      { category:'위험', title:'강도들이 식량 보관함에 접근하고 있습니다!', description:'계단실에서 낯선 발소리가 들립니다. 보관함을 지키세요.', image:'raiders.webp', severity:'danger',duration:8500 },
-  theft:        { category:'위험', title:'식량이 도난당했습니다', description:'밤사이 누군가 보관함을 열고 식량을 가져갔습니다.', image:'raiders.webp', severity:'danger',duration:7000 },
-  infected:     { category:'위험', title:'도시에서 정체불명의 무리가 포착됐습니다', description:'먼 거리에서 움직이는 사람들의 무리가 관찰됩니다.', image:'infected.webp', severity:'danger', duration:7200, demoOnly:true },
-  storm:        { category:'재난', title:'거센 폭풍이 다가오고 있습니다',description:'대피소와 전기 시설을 점검하세요.',image:'storm.webp',severity:'disaster', duration:6500 },
-  tornado:      { category:'재난', title:'토네이도 접근 경보',description:'강풍에 대비하고 생존자를 안전한 곳으로 대피시키세요.',image:'storm.webp',severity:'disaster',duration:14000 },
-  tornadoNear:  { category:'긴급 재난', title:'토네이도 · 옥상 바로 옆 접근!',description:'파편이 곧 들이닥칩니다. 먼저 대피하거나 물자를 고정하세요.',image:'storm.webp',severity:'danger',duration:16000 },
-  tornadoDirect:{ category:'긴급 재난', title:'토네이도 · 옥상 직격 위험!',description:'건물 위를 덮치는 강풍입니다. 대피와 식량 보호를 결정하세요.',image:'storm.webp',severity:'danger',duration:16000 },
+  raiders:      { category:'위험', title:'강도들이 식량 보관함에 접근하고 있습니다!', description:'계단실에서 낯선 발소리가 들립니다. 보관함을 지키세요.', image:'raiders.webp', severity:'danger',duration:5000 },
+  theft:        { category:'위험', title:'식량이 도난당했습니다', description:'밤사이 누군가 보관함을 열고 식량을 가져갔습니다.', image:'raiders.webp', severity:'danger',duration:3000 },
+  infected:     { category:'위험', title:'도시에서 정체불명의 무리가 포착됐습니다', description:'먼 거리에서 움직이는 사람들의 무리가 관찰됩니다.', image:'infected.webp', severity:'danger', duration:3000, demoOnly:true },
+  storm:        { category:'재난', title:'거센 폭풍이 다가오고 있습니다',description:'대피소와 전기 시설을 점검하세요.',image:'storm.webp',severity:'disaster', duration:3000 },
+  tornado:      { category:'재난', title:'토네이도 접근 경보',description:'강풍에 대비하고 생존자를 안전한 곳으로 대피시키세요.',image:'storm.webp',severity:'disaster',duration:5000 },
+  tornadoNear:  { category:'긴급 재난', title:'토네이도 · 옥상 바로 옆 접근!',description:'파편이 곧 들이닥칩니다. 먼저 대피하거나 물자를 고정하세요.',image:'storm.webp',severity:'danger',duration:5000 },
+  tornadoDirect:{ category:'긴급 재난', title:'토네이도 · 옥상 직격 위험!',description:'건물 위를 덮치는 강풍입니다. 대피와 식량 보호를 결정하세요.',image:'storm.webp',severity:'danger',duration:5000 },
   expedition:   { category:'오늘의 생존 선택',title:'계단실 아래에서 물자 흔적 발견',description:'내려갈지, 옥상에 남을지 결정하세요. 부상과 질병 위험이 있습니다.',image:'supply_cache.webp',severity:'opportunity',duration:300000 },
-  expeditionResult:{ category:'탐색의 결과',title:'옥상으로 돌아왔다',description:'이번 선택의 결과가 다음 생존에 영향을 줍니다.',image:'supply_cache.webp',severity:'social',duration:7800 },
-  helicopter:   { category:'구조 신호',title:'구조 헬기 보급품 투하!',description:'무전기에 응답한 헬기가 생존 물자를 떨어뜨렸습니다.',image:'supply_cache.webp',severity:'opportunity',duration:9500 },
+  expeditionResult:{ category:'탐색의 결과',title:'옥상으로 돌아왔다',description:'이번 선택의 결과가 다음 생존에 영향을 줍니다.',image:'supply_cache.webp',severity:'social',duration:3500 },
+  helicopter:   { category:'구조 신호',title:'구조 헬기 보급품 투하!',description:'무전기에 응답한 헬기가 생존 물자를 떨어뜨렸습니다.',image:'supply_cache.webp',severity:'opportunity',duration:4000 },
   companionInvite:{ category:'구조 요청',title:'“혼자 버티는 것보다 둘이 나을까요?”',description:'무전 속 생존자가 옥상 계단실에 도착했다. “정수기와 화단을 도울 수 있어요. 대신 오늘부터 먹을 것과 물을 나눠주세요.” 합류 시 정수·재배 작업속도 +30%(설비 필요), 하루 식량·식수 각 1개 소비.',image:'stranger.webp',severity:'social',duration:300000 },
-  companionJoined:{ category:'동료 합류',title:'두 사람이 함께 지키는 옥상',description:'“저도 일할 수 있어요. 함께 버텨요.”',image:'stranger.webp',severity:'social',duration:10500 },
-  companionOutcome:{ category:'구조 선택의 결과',title:'다시 고요해진 계단실',description:'누군가 떠나고, 옥상에는 선택의 결과가 남았다.',image:'stranger.webp',severity:'social',duration:10500 },
+  companionJoined:{ category:'동료 합류',title:'두 사람이 함께 지키는 옥상',description:'“저도 일할 수 있어요. 함께 버텨요.”',image:'stranger.webp',severity:'social',duration:4000 },
+  companionOutcome:{ category:'구조 선택의 결과',title:'다시 고요해진 계단실',description:'누군가 떠나고, 옥상에는 선택의 결과가 남았다.',image:'stranger.webp',severity:'social',duration:4000 },
   companionRations:{ category:'동료의 부탁',title:'“우리 둘이 먹을 물자는 충분할까요?”',description:'동료가 남은 물과 식량을 앞에 두고 묻는다. 지금 한 몫을 나누면 건강을 회복하고, 나중에 동료가 폐자재를 찾아 보답한다. 비축을 지키면 3일간 협업이 느려진다.',image:'stranger.webp',severity:'social',duration:300000 },
-  companionRationResult:{ category:'함께한 선택의 결과',title:'두 사람의 내일',description:'오늘의 식량 배분이 다음 작업에 영향을 준다.',image:'stranger.webp',severity:'social',duration:10500 },
-  survivorCall: { category:'무전 교신',title:'다른 생존자의 신호가 잡혔습니다',description:'도시 어딘가에 살아 있는 사람이 있습니다. 옥상 캠프에는 생존자 한 명만 머뭅니다.',image:'stranger.webp',severity:'social',duration:8000 },
-  milestone:    { category:'생존 일지', title:'또 하루를 버텼습니다',description:'다음 생존 계획을 확인하세요.',image:'supply_cache.webp',severity:'social',duration:8500 },
-  rain:         { category:'재난', title:'강한 비가 시작됐습니다',description:'천막 누수와 배수로 상태를 확인하세요.',image:'storm.webp',severity:'disaster',duration:6000 },
-  heat:         { category:'재난', title:'폭염 주의보',description:'식수와 그늘을 확보하고 활동을 줄이세요.',image:'food_shortage.webp',severity:'disaster',duration:6000 },
-  cold:         { category:'재난', title:'한파가 찾아왔습니다',description:'체온과 물탱크 결빙에 주의하세요.',image:'cold.webp',severity:'disaster',duration:6500 },
-  supply_cache: { category:'기회', title:'버려진 보급품을 확보했습니다',description:'탐색에서 생존에 필요한 자원을 찾았습니다.',image:'supply_cache.webp',severity:'opportunity',duration:6500 },
-  stranger:     { category:'이벤트', title:'도움이 필요한 생존자가 보입니다',description:'멀리서 구조 신호가 관찰됩니다.',image:'stranger.webp',severity:'social',duration:7000, demoOnly:true },
-  sickness:     { category:'위험', title:'생존자의 몸 상태가 좋지 않습니다',description:'의약품과 휴식이 필요합니다.',image:'sickness.webp',severity:'danger',duration:6500 },
-  shortage:     { category:'위험', title:'식량이 부족합니다',description:'보급 계획을 확인하고 남은 식량을 관리하세요.',image:'food_shortage.webp',severity:'danger',duration:6500 }
+  companionRationResult:{ category:'함께한 선택의 결과',title:'두 사람의 내일',description:'오늘의 식량 배분이 다음 작업에 영향을 준다.',image:'stranger.webp',severity:'social',duration:4000 },
+  survivorCall: { category:'무전 교신',title:'다른 생존자의 신호가 잡혔습니다',description:'도시 어딘가에 살아 있는 사람이 있습니다. 옥상 캠프에는 생존자 한 명만 머뭅니다.',image:'stranger.webp',severity:'social',duration:3500 },
+  milestone:    { category:'생존 일지', title:'또 하루를 버텼습니다',description:'다음 생존 계획을 확인하세요.',image:'supply_cache.webp',severity:'social',duration:3000 },
+  rain:         { category:'재난', title:'강한 비가 시작됐습니다',description:'천막 누수와 배수로 상태를 확인하세요.',image:'storm.webp',severity:'disaster',duration:3000 },
+  heat:         { category:'재난', title:'폭염 주의보',description:'식수와 그늘을 확보하고 활동을 줄이세요.',image:'food_shortage.webp',severity:'disaster',duration:3000 },
+  cold:         { category:'재난', title:'한파가 찾아왔습니다',description:'체온과 물탱크 결빙에 주의하세요.',image:'cold.webp',severity:'disaster',duration:3000 },
+  supply_cache: { category:'기회', title:'버려진 보급품을 확보했습니다',description:'탐색에서 생존에 필요한 자원을 찾았습니다.',image:'supply_cache.webp',severity:'opportunity',duration:3000 },
+  stranger:     { category:'이벤트', title:'도움이 필요한 생존자가 보입니다',description:'멀리서 구조 신호가 관찰됩니다.',image:'stranger.webp',severity:'social',duration:3000, demoOnly:true },
+  sickness:     { category:'위험', title:'생존자의 몸 상태가 좋지 않습니다',description:'의약품과 휴식이 필요합니다.',image:'sickness.webp',severity:'danger',duration:3000 },
+  shortage:     { category:'위험', title:'식량이 부족합니다',description:'보급 계획을 확인하고 남은 식량을 관리하세요.',image:'food_shortage.webp',severity:'danger',duration:3000 }
 });
+
+/** UI only: short-lived bottom notices cannot be prolonged by a caller.
+ * Mandatory player choice dialogs remain open until acted on or deferred. */
+export const MAX_NON_CHOICE_NOTICE_MS=5000;
 
 export function eventFromMessage(message='') {
   const m = String(message);
@@ -152,7 +156,7 @@ export class AfterdayEventBoard {
     this.seen.push({key,at:Date.now()});if(this.seen.length>30)this.seen.shift();
     if(options.silent)this.pendingNoticeSound=false;
     else this.playNoticeSound();
-    if(!mandatory)this.timer=setTimeout(()=>this.dismiss(),options.duration||data.duration);
+    if(!mandatory)this.timer=setTimeout(()=>this.dismiss(),Math.min(options.duration||data.duration,MAX_NON_CHOICE_NOTICE_MS));
     else {
       const target=key==='expedition'?'.afterday-board-expedition':
         key==='companionInvite'?'.afterday-board-companion':'.afterday-board-rations';
