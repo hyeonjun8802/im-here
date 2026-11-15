@@ -31,7 +31,7 @@ test('Black Map fog and original geometry stay intact while displaying new detai
  const ui=read('src/explorationMapUiV78.js');
  const css=read('src/explorationMapPolishV79.css');
  assert.match(ui,/regions\/near_neighborhood\.webp/);
- assert.match(ui,/regions\/far_citywide\.webp/);
+ assert.match(read('src/explorationQuestRegionsV90.js'),/regions\/far_citywide\.webp/);
  assert.match(ui,/ASSET\+'photos\/'\+site\.id\+'\.webp'/);
  assert.doesNotMatch(ui,/map\/overview_hd\.svg|ASSET\+'locations\/'\+site\.id\+'_hd\.svg'/);
  assert.match(ui,/globalCompositeOperation='destination-out'/);
