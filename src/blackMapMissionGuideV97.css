@@ -96,3 +96,19 @@
 @media(prefers-reduced-motion:reduce){
  .exploration-map-v78 .exploration-map__mission-meter span{transition:none}
 }
+
+/* Small, optional onboarding card: not an extra mandatory tutorial popup. */
+.exploration-map-v78 .exploration-map__howto{
+ margin:0 0 10px;padding:6px 10px;border:1px solid #665a43;border-radius:4px;
+ background:#152021;color:#d7dece;
+}
+.exploration-map-v78 .exploration-map__howto summary{
+ cursor:pointer;font-size:11px;font-weight:700;color:#d3b785;
+}
+.exploration-map-v78 .exploration-map__howto p{
+ margin:7px 0 2px;font-size:11px;line-height:1.55;word-break:keep-all;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__howto{padding:6px 8px;margin-bottom:8px}
+ .exploration-map-v78 .exploration-map__howto summary{font-size:10px}
+}

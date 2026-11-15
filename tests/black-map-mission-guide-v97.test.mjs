@@ -58,3 +58,11 @@ test('guided action, goal marker, tactical choice and collapsible history are in
  assert.match(css,/@media\(max-width:720px\)/);
  assert.match(read('index.html'),/blackMapMissionGuideV97\.css/);
 });
+
+test('reopening resets scroll to the mission goal and live readiness updates with game day or weather',()=>{
+ const ui=read('src/explorationMapUiV78.js');
+ assert.match(ui,/\.scrollTop=0/);
+ assert.match(ui,/currentExplorationDay\(getState\(\),now\)/);
+ assert.match(ui,/:weather-/);
+ assert.match(ui,/exploration-map__howto/);
+});

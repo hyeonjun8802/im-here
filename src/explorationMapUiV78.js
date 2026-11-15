@@ -4,7 +4,7 @@
 import {
  EXPLORATION_SITES,mapExpeditionAvailability,beginMapExpedition,
  advanceMapExpedition,resolveMapExpedition,advanceTowerStory,
- mapFinaleAvailability,resolveMapFinale
+ mapFinaleAvailability,resolveMapFinale,currentExplorationDay
 } from './explorationMapV78.js';
 import {scavengeOdds} from './scavengeDirector.js';
 import {explorationScene} from './explorationStoryV85.js';
@@ -62,6 +62,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     <span id="exploration-map-guide-hint"></span>
    </div>
   </section>
+  <details class="exploration-map__howto">
+   <summary>탐사 진행 방법 · 출발 → 현장 선택 → 귀환</summary>
+   <p>① 강조된 다음 목표를 확인하고 출발합니다. ② 현장에서 수색·정찰·회수·복귀를 선택합니다. ③ 귀환 결과를 확인합니다. 물자 확보에 성공하면 해당 장소가 조사 완료되고 다음 장소가 열립니다. 실패 시 방문 기록만 남으며 다음 생존일에 재도전할 수 있습니다.</p>
+  </details>
   <div class="exploration-map__columns">
    <div class="exploration-map__map-wrap">
     <div class="exploration-map__areas" role="group" aria-label="탐사 구역">
@@ -159,6 +163,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   }
   root.hidden=false;
   render();
+  q('.exploration-map__panel').scrollTop=0;
   q('#exploration-map-close').focus({preventScroll:true});
  }
  function renderFog(){
@@ -639,7 +644,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    if(hasBlockingChoice?.()){close();return progress;}
    const mission=getState().explorationMap?.mission;
    const identity=mission?mission.siteId+':'+mission.phase+
-    (mission.phase==='encounter'?':scout-'+String((getState().supply?.water??0)>=1):''):'idle';
+    (mission.phase==='encounter'?':scout-'+String((getState().supply?.water??0)>=1):'')+
+    ':weather-'+getState().weather:
+    'idle:'+currentExplorationDay(getState(),now)+':'+getState().weather+
+    ':health-'+String(getState().health<25)+':parts-'+Math.min(4,getState().supply?.parts??0)+
+    ':radio-'+String(Boolean(getState().kit?.radio));
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
   }else if(getState().explorationMap?.mission?.phase==='encounter'&&
      !isAutoEnabled?.()&&realNow>=snoozeUntil&&!hasBlockingChoice?.()){
