@@ -179,7 +179,7 @@ test('region tabs, scripted tower stages, situational actions and retina fog are
  assert.match(ui,/resolveMapFinale\(getState\(\)/);
  assert.match(ui,/devicePixelRatio/);
  assert.match(ui,/regions\/near_neighborhood\.webp/);
- assert.match(ui,/regions\/far_citywide\.webp/);
+ assert.match(read('src/explorationQuestRegionsV90.js'),/regions\/far_citywide\.webp/);
  assert.match(ui,/site\.id\+'\.webp'/);
  assert.match(ui,/photos\/tower_story\.webp/);
  assert.match(ui,/photos\/ending_stories\.webp/);
