@@ -17,7 +17,8 @@ import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge,select
 import {moonPhaseAt,SYNODIC_MONTH} from './lunar.js';
 import {SAVE_KEY,defaults,sanitize,advance,applyAction,emergencyExploreAvailability,addEvent,recordTornadoDamage,resolveTornadoRoofImpact,getDay,evaluateSurvival,migrateLegacyGameDay,wallClock,WEATHER,WEATHER_KO} from './simulation.js';
 import {persistFreshRestart} from './restartSession.js';
-import {SurvivorSpeechDirectorV108} from './survivorSpeechDirectorV108.js';
+import {SurvivorSpeechDirectorV108,speechCandidates} from './survivorSpeechDirectorV108.js';
+import {speechLinesFor} from './survivorSpeechLinesV108.js';
 import {SurvivorSpeechBubbleV108} from './survivorSpeechBubbleV108.js';
 
 const $=s=>document.querySelector(s),now=Date.now();
@@ -112,17 +113,20 @@ function syncSurvivorSpeechToggle(){
  toggle.setAttribute('aria-pressed',String(survivorSpeechEnabled));
 }
 function survivorSpeechUiBlocked(){
+ // Block interactive MODALS only. V108 mistakenly blocked on the retired,
+ // CSS-hidden daily chapter and on the non-modal story ticker; at 50× these
+ // restart so often that the character never had a chance to speak.
+ // Story ticker/event notifications are avoided spatially by the bubble.
  return !$('#loading')?.classList.contains('hidden')||
   !$('#game-over')?.classList.contains('hidden')||
   !$('#life-panel')?.classList.contains('hidden')||
   !$('#weather-panel')?.classList.contains('hidden')||
   !$('#admin-panel')?.classList.contains('hidden')||
   Boolean(eventBoard?.requiresChoice())||
-  Boolean(eventBoard?.element&&!eventBoard.element.hidden)||
+  Boolean(eventBoard?.element&&!eventBoard.element.hidden&&
+    eventBoard.element.classList.contains('is-choice'))||
   Boolean(explorationUI?.isOpen())||
-  Boolean($('#survival-kit')?.classList.contains('premium-equipment-open'))||
-  Boolean($('#survival-chapter')?.classList.contains('is-visible'))||
-  $('#log')?.dataset.active==='true';
+  Boolean($('#survival-kit')?.classList.contains('premium-equipment-open'));
 }
 const CHAPTER_CAPTION_MS=6500;
 let displayedChapterDay=null;
@@ -431,6 +435,21 @@ function bindEvents(){
   syncSurvivorSpeechToggle();
  });
  syncSurvivorSpeechToggle();
+ // A direct end-to-end preview: uses the current game state, the actual GLB
+ // anchor and the same bubble renderer. Never modifies survival resources.
+ $('#survivor-speech-preview')?.addEventListener('click',()=>{
+  if(!world||!survivorSpeechBubble)return;
+  survivorSpeechEnabled=true;
+  try{localStorage.setItem('AFTERDAY_SPEECH_ENABLED_V108','1');}catch{}
+  syncSurvivorSpeechToggle();
+  const candidate=speechCandidates(state,world.life,gameClock.virtualNow)[0];
+  const text=candidate?speechLinesFor(candidate.key)[0]:
+    speechLinesFor('calmDay')[0];
+  $('#close-weather').click();
+  world.setCameraView('survivor');
+  survivorSpeechBubble.show({text,group:candidate?.group||'ambient',
+    durationMs:8000},Date.now());
+ });
  const speedButton=$('#speed-toggle');
  const updateSpeedLabel=()=>{
   speedButton.textContent=`${gameClock.speed}×`;
@@ -871,7 +890,19 @@ async function boot(){try{
       (eventBoard?.element&&!eventBoard.element.hidden)),
    isAutoEnabled:()=>autoSurvivalEnabled
   });
-  window.afterday={state,world,save,renderHUD,eventBoard,gameClock,explorationUI};
+  window.afterday={state,world,save,renderHUD,eventBoard,gameClock,explorationUI,
+   survivorSpeechDiagnostics:()=>({
+    enabled:survivorSpeechEnabled,
+    model:world?.beardedSurvivor?.status||'unavailable',
+    blocked:survivorSpeechUiBlocked(),
+    sleeping:world?.life?.current==='sleep',
+    bubbleVisible:Boolean(survivorSpeechBubble?.node?.classList.contains('is-positioned')),
+    lastHideReason:survivorSpeechBubble?.lastHideReason||null,
+    text:survivorSpeechBubble?.text||'',
+    lastSpeechAt:survivorSpeech.lastSpeakAt,
+    nextSpeechAt:survivorSpeech.nextAt
+   })
+  };
   bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();

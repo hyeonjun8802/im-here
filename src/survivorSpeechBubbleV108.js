@@ -9,7 +9,7 @@ export function chooseSpeechBubblePlacement({
  obstacles=[]
 }={}){
  if(![anchorX,anchorY,width,height,viewWidth,viewHeight,top,bottom].every(Number.isFinite))return null;
- if(anchorX<-12||anchorX>viewWidth+12||anchorY<top||anchorY>bottom)return null;
+ if(anchorX<-12||anchorX>viewWidth+12||anchorY<-12||anchorY>viewHeight+12)return null;
  if(width<=0||height<=0||bottom-top<height+12)return null;
  const gap=14,edge=10;
  const positions=[
@@ -17,7 +17,12 @@ export function chooseSpeechBubblePlacement({
   {x:anchorX-width-gap,y:anchorY-height-gap,side:'left'},
   {x:anchorX+gap,y:anchorY+gap,side:'right-below'},
   {x:anchorX-width-gap,y:anchorY+gap,side:'left-below'},
-  {x:anchorX-width/2,y:anchorY-height-22,side:'above'}
+  {x:anchorX-width/2,y:anchorY-height-22,side:'above'},
+  // The character may be close to the forecast: offer a bounded position
+  // beside their head without ever overlaying the real HUD.
+  {x:anchorX+gap,y:Math.max(top+4,anchorY-height/2),side:'right'},
+  {x:anchorX-width-gap,y:Math.max(top+4,anchorY-height/2),side:'left'},
+  {x:anchorX-width/2,y:Math.max(top+4,anchorY+gap),side:'below'}
  ];
  for(const pos of positions){
   const rect={x:Math.round(pos.x),y:Math.round(pos.y),w:width,h:height};
@@ -47,7 +52,7 @@ export class SurvivorSpeechBubbleV108{
   this.headPosition=new THREE.Vector3();
   this.screenPosition=new THREE.Vector3();
   this.cameraForward=new THREE.Vector3();
-  this.until=0;this.text='';
+  this.until=0;this.text='';this.lastHideReason='waiting';
  }
  show(thought,realNow=Date.now()){
   const text=String(thought?.text||'').trim();
@@ -56,28 +61,36 @@ export class SurvivorSpeechBubbleV108{
   this.node.dataset.tone=thought.group==='danger'?'danger':'ambient';
   this.node.hidden=false;
   this.node.classList.remove('is-positioned');
-  this.until=realNow+(thought.group==='danger'?4600:3900);
+  const durationMs=Number(thought?.durationMs);
+  this.until=realNow+(Number.isFinite(durationMs)&&durationMs>0?
+   Math.min(8000,Math.max(1400,durationMs)):(thought.group==='danger'?4600:3900));
   return true;
  }
- hide(){
+ hide(reason='blocked'){
+  this.lastHideReason=reason;
   this.node.classList.remove('is-positioned');
   this.node.hidden=true;
  }
  update(world,realNow=Date.now(),blocked=false){
-  if(blocked||realNow>=this.until||!this.text){this.hide();return false;}
+  if(blocked){this.hide('modal');return false;}
+  if(realNow>=this.until||!this.text){this.hide('expired');return false;}
   const bearded=world?.beardedSurvivor;
-  // Do not draw a speech bubble beside an invisible fallback or loading avatar.
   const head=bearded?.status==='ready'?bearded?.nodes?.Head:null;
   const camera=world?.camera,canvas=world?.canvas;
-  if(!head||!camera||!canvas){this.hide();return false;}
-  head.getWorldPosition(this.headPosition);
-  this.headPosition.y+=.35;
+  if(!camera||!canvas||(!head&&!world?.survivor)){
+   this.hide('no-character');return false;
+  }
+  // Prefer the animated head. During a slow GLB load, follow the real
+  // world's survivor root rather than silently suppressing every utterance.
+  if(head){head.updateWorldMatrix(true,false);head.getWorldPosition(this.headPosition);
+   this.headPosition.y+=.35;
+  }else{world.survivor.getWorldPosition(this.headPosition);this.headPosition.y+=3.15;}
   this.cameraForward.copy(this.headPosition).sub(camera.position);
   camera.getWorldDirection(this.screenPosition);
-  if(this.cameraForward.dot(this.screenPosition)<=.01){this.hide();return false;}
+  if(this.cameraForward.dot(this.screenPosition)<=.01){this.hide('behind-camera');return false;}
   this.screenPosition.copy(this.headPosition).project(camera);
   if(!Number.isFinite(this.screenPosition.x)||!Number.isFinite(this.screenPosition.y)||
-   this.screenPosition.z<-1||this.screenPosition.z>1){this.hide();return false;}
+   this.screenPosition.z<-1||this.screenPosition.z>1){this.hide('outside-frustum');return false;}
   const r=canvas.getBoundingClientRect();
   const vw=this.doc.defaultView?.innerWidth||r.width;
   const vh=this.doc.defaultView?.innerHeight||r.height;
@@ -86,7 +99,8 @@ export class SurvivorSpeechBubbleV108{
   const selectors=[
    '#disaster-forecast','.survival-quick-info','.top-right',
    '.actionbar','.left-status','#survival-kit',
-   '#survival-chapter.is-visible','#log[data-active="true"]','#warning'
+   '#survival-chapter.is-visible','#log[data-active="true"]','#warning',
+   '.afterday-board:not(.is-choice)'
   ];
   const obstacles=[];
   for(const selector of selectors){
@@ -101,11 +115,12 @@ export class SurvivorSpeechBubbleV108{
   const result=chooseSpeechBubblePlacement({
    anchorX:x,anchorY:y,width,height,viewWidth:vw,viewHeight:vh,top,bottom,obstacles
   });
-  if(!result){this.hide();return false;}
+  if(!result){this.hide('no-safe-space');return false;}
   this.node.style.transform='translate3d('+result.x+'px,'+result.y+'px,0)';
   this.node.dataset.side=result.side;
   this.node.hidden=false;
   this.node.classList.add('is-positioned');
+  this.lastHideReason=null;
   return true;
  }
  dispose(){this.node.remove();this.text='';}

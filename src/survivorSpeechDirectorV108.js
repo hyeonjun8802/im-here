@@ -149,7 +149,8 @@ export class SurvivorSpeechDirectorV108{
  tick({state,life,gameNow=0,realNow=Date.now(),enabled=true,visible=true}={}){
   if(!enabled||!visible||state?.survivalStatus==='dead')return null;
   if(this.firstVisibleAt===null){this.firstVisibleAt=realNow;this.lastSignature=speechSituationSignature(state);return null;}
-  if(realNow-this.firstVisibleAt<8500)return null;
+  // Show a first thought while the user is still looking at the character.
+  if(realNow-this.firstVisibleAt<3500)return null;
   const signature=speechSituationSignature(state);
   const changed=signature!==this.lastSignature;
   this.lastSignature=signature;

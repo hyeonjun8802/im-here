@@ -272,6 +272,44 @@ test('speech memory storage access is guarded for restricted/private browsing',(
  assert.match(main,/try\{speechHistoryStorage=window\.sessionStorage;\}catch\{\}/);
 });
 
+test('the character can speak while the CSS-hidden daily chapter or story ticker exists',()=>{
+ const main=read('src/main.js');
+ const fn=main.slice(main.indexOf('function survivorSpeechUiBlocked(){'),
+  main.indexOf('const CHAPTER_CAPTION_MS',main.indexOf('function survivorSpeechUiBlocked(){')));
+ assert.ok(!fn.includes("$('#survival-chapter')"));
+ assert.ok(!fn.includes("$('#log')"));
+ assert.match(fn,/eventBoard\.element\.classList\.contains\('is-choice'\)/);
+});
+
+test('one-tap live preview closes settings, selects authentic contextual text and focuses the character',()=>{
+ const main=read('src/main.js');
+ const html=read('index.html');
+ assert.match(html,/id="survivor-speech-preview"/);
+ assert.match(main,/speechCandidates\(state,world\.life,gameClock\.virtualNow\)/);
+ assert.match(main,/speechLinesFor\(candidate\.key\)\[0\]/);
+ assert.match(main,/\$\('#close-weather'\)\.click\(\)/);
+ assert.match(main,/world\.setCameraView\('survivor'\)/);
+ assert.match(main,/survivorSpeechBubble\.show\(/);
+ assert.match(main,/survivorSpeechDiagnostics/);
+});
+
+test('mobile placement can recover when the character head is under HUD safe top',()=>{
+ const point=chooseSpeechBubblePlacement({
+  anchorX:185,anchorY:96,width:115,height:45,
+  viewWidth:390,viewHeight:800,top:110,bottom:680
+ });
+ assert.ok(point);
+ assert.ok(point.y>=110);
+});
+
+test('fallback anchors at actual world survivor when animated GLB is delayed',()=>{
+ const bubble=read('src/survivorSpeechBubbleV108.js');
+ assert.match(bubble,/world\.survivor\.getWorldPosition\(this\.headPosition\)/);
+ assert.match(bubble,/lastHideReason/);
+ assert.match(bubble,/no-safe-space/);
+ assert.match(bubble,/Math\.max\(top\+4,anchorY-height\/2\)/);
+});
+
 test('new speech remains separate from canonical HUD, chapter title and game-save schema',()=>{
  const world=read('src/world.js'),sim=read('src/simulation.js'),main=read('src/main.js');
  assert.match(main,/survivorSpeech\.tick/);
