@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {defaults,sanitize} from '../src/simulation.js';
 import {
  EXPLORATION_SITES,mapExpeditionAvailability,newExplorationMap,
@@ -35,7 +36,6 @@ test('all six new backgrounds are real, distinct WebP media and not vector place
   assert.equal(bytes.toString('ascii',0,4),'RIFF',path);
   assert.equal(bytes.toString('ascii',8,12),'WEBP',path);
   assert.ok(bytes.length>150000,path+' must be full-resolution photography');
-  const {createHash}=await import('node:crypto');
   hashes.add(createHash('sha256').update(bytes).digest('hex'));
  }
  assert.equal(hashes.size,6,'all six scenes must be visually distinct assets');
