@@ -353,7 +353,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const locked=stateInfo.visibility==='unknown';
   mapCard.classList.toggle('is-locked',locked);
   const image=document.createElement('img');
-  image.src=locked?ASSET+region.map:ASSET+'photos/'+site.id+'.webp';
+  image.src=locked?ASSET+'markers/state_unknown.svg':ASSET+'photos/'+site.id+'.webp';
   image.alt='';image.className='exploration-map__site-image';image.decoding='async';
   const title=document.createElement('strong');title.textContent=locked?'미발견 장소':site.label;
   const status=document.createElement('small');
