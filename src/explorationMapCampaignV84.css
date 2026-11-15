@@ -109,3 +109,74 @@
   max-height:min(21dvh,168px);
  }
 }
+
+/* v89 · One centered circle per location.
+ * Marker SVGs ALREADY contain an ornamental ring. The surrounding button
+ * is solely a transparent hit target, not another off-axis ring. The map
+ * must keep its artwork/canvas/route aspect ratio on short phone screens. */
+.exploration-map-v78 .exploration-map__map{
+ aspect-ratio:320 / 213;
+ max-height:none;
+}
+.exploration-map-v78 .exploration-map__home{
+ left:50%;top:50%;width:38px;height:38px;
+ display:grid;place-items:center;line-height:1;padding:0;
+}
+.exploration-map-v78 .exploration-map__home svg{
+ display:block;width:62%;height:62%;flex:none;
+}
+.exploration-map-v78 .exploration-map__marker{
+ width:44px;height:44px;min-width:44px;min-height:44px;
+ padding:0;border:0;border-radius:50%;
+ background:transparent;box-shadow:none;
+ display:grid;place-items:center;
+}
+.exploration-map-v78 .exploration-map__marker img{
+ display:block;width:40px;height:40px;
+ max-width:none;max-height:none;
+ object-fit:contain;margin:0;pointer-events:none;
+}
+.exploration-map-v78 .exploration-map__marker[data-selected="true"],
+.exploration-map-v78 .exploration-map__marker[data-visibility="completed"]{
+ background:transparent;border:0;box-shadow:none;
+}
+.exploration-map-v78 .exploration-map__marker[data-selected="true"] img{
+ filter:drop-shadow(0 0 6px rgba(247,189,94,.86));
+}
+.exploration-map-v78 .exploration-map__marker[data-visibility="completed"] img{
+ filter:drop-shadow(0 0 5px rgba(108,205,145,.65));
+}
+.exploration-map-v78 .exploration-map__marker[data-selected="true"][data-visibility="completed"] img{
+ filter:drop-shadow(0 0 6px rgba(247,189,94,.8));
+}
+.exploration-map-v78 .exploration-map__marker span{
+ position:absolute;right:0;bottom:0;
+ width:16px;height:16px;padding:0;
+ display:grid;place-items:center;
+ border-radius:50%;line-height:1;
+ font:bold 10px/1 system-ui,sans-serif;
+ box-sizing:border-box;
+ pointer-events:none;
+}
+.exploration-map-v78 .exploration-map__areas button:disabled{
+ opacity:.55;cursor:default;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__map{
+  max-height:none;
+ }
+ .exploration-map-v78 .exploration-map__home{
+  width:36px;height:36px;
+ }
+ .exploration-map-v78 .exploration-map__marker{
+  width:42px;height:42px;min-width:42px;min-height:42px;
+ }
+ .exploration-map-v78 .exploration-map__marker img{
+  width:38px;height:38px;
+ }
+}
+@media(max-width:350px){
+ .exploration-map-v78 .exploration-map__map{
+  max-height:none;
+ }
+}
