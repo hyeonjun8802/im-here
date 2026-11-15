@@ -534,7 +534,7 @@ export function applyAction(s,action,now=Date.now()){
  s.supply.water=s.supply.water>=WEATHER_WATER_CAPACITY?s.supply.water:Math.min(WEATHER_WATER_CAPACITY,s.supply.water+(r<.30?2:4));
  // Emergency expeditions are dangerous and limited to once per 20 game hours,
  // but limit surplus after the camp already has a practical repair reserve.
- const partsFound=awardRepairParts(s,r<.65?1:2);if(r>.65)s.supply.medicine++;
+ awardRepairParts(s,r<.65?1:2);if(r>.65)s.supply.medicine++;
  s.exploreCooldownAt=now+SURVIVAL_BALANCE.exploreCooldownMs;
  s.action='explore';s.actionUntil=now+18000;
  addEvent(s,r<.22?'긴급 탐색 중 부상을 입었지만 생존 물자를 가져왔다.':'폐허 창고에서 식량과 식수를 확보했다.');
