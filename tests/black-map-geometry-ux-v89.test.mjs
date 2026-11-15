@@ -64,6 +64,12 @@ test('home uses a fixed-center geometry SVG, rather than a font glyph with uneve
  assert.match(geometry,/\.exploration-map__home svg\{\s*display:block;width:62%;height:62%/);
 });
 
+test('on mobile, saved story outcomes span the full card under the photo and text',()=>{
+ assert.match(geometry,/\.exploration-map__card \.exploration-map__site-image\{\s*grid-column:1;grid-row:1\/5;/);
+ assert.match(geometry,/align-self:stretch;height:100%;max-height:none/);
+ assert.match(geometry,/\.exploration-map__card \.exploration-map__last-story,\s*\.exploration-map-v78 \.exploration-map__card \.exploration-map__last-trail\{\s*grid-column:1\/-1;/);
+});
+
 test('selected location is keyboard-visible and mission-in-progress tabs do not silently snap back',()=>{
  assert.match(ui,/button\.setAttribute\('aria-pressed',String\(selected===site\.id\)\)/);
  assert.match(ui,/markers\.querySelector\('\.exploration-map__marker\[data-selected="true"\]'\)\?\.focus\(\{preventScroll:true\}\)/);
