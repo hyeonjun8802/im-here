@@ -12,6 +12,8 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.setAttribute('aria-expanded','false');
  toggle.setAttribute('aria-label','생존 장비 기능 열기');
  toggle.hidden=true;
+ toggle.tabIndex=-1;
+ toggle.setAttribute('aria-hidden','true');
  actions.id='equipment-actions-menu';
  actions.setAttribute('aria-label','추가 장비 기능');
  // Keep IDs and listeners, replace informal emoji captions with art-consistent
@@ -51,8 +53,7 @@ export function installPremiumEquipmentHudV1600(root=document){
  };
  const sync=()=>{
   const active=[...actions.querySelectorAll('button')].filter(b=>!b.hidden);
-  toggle.hidden=active.length===0;
-  toggle.textContent='기능 '+active.length;
+  toggle.hidden=true; // Only the existing ninth actionbar slot opens this menu.
   if(!active.length)close();
  };
  toggle.addEventListener('click',event=>{

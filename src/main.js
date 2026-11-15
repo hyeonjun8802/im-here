@@ -221,7 +221,7 @@ function renderHUD(){
  const kitLabels={tent:'텐트',purifier:'정수기',seeds:'재배 씨앗',radio:'무전기'};
  const inventoryNode=$('#inventory-items');
  inventoryNode.textContent=owned.length?
-   '보유 '+owned.length+'종 · '+owned.map(id=>kitLabels[id]||ITEM_INFO[id].label).join(' · '):
+   owned.map(id=>kitLabels[id]||ITEM_INFO[id].label).join(' · '):
    open?'장비 없음 · 하단 보급 상자(!)에서 탐색':
    '장비 없음 · 보급 탐색에서 확보';
  inventoryNode.title=owned.length?
