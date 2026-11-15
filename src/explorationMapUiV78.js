@@ -52,7 +52,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     <div class="exploration-map__map" aria-label="방문하면 안개가 밝아지는 동네 지도">
      <img class="exploration-map__city" src="${ASSET}photos/overview.webp" alt="폐허가 된 동네의 탐사 지도"/>
      <canvas id="exploration-fog" width="320" height="213" aria-hidden="true"></canvas>
-     <span class="exploration-map__home" aria-label="나의 옥상">⌂</span>
+     <span class="exploration-map__home" aria-label="나의 옥상"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.5 10.5 12 3.7l8.5 6.8M6.8 9.8v10.3h10.4V9.8M10 20.1v-6.4h4v6.4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
      <div id="exploration-map-markers" class="exploration-map__markers"></div>
     </div>
     <div class="exploration-map__legend"><span>● 내 옥상</span><span>◌ 위치 발견</span><span>✓ 조사 완료</span></div>
@@ -89,7 +89,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  let selected='ruined_house',zone='near',lastTrigger=null,lastMissionKey='',snoozeUntil=0;
  const visible=()=>!root.hidden;
  const setZone=next=>{
-  if(!['near','far'].includes(next))return;
+  if(!['near','far'].includes(next)||getState().explorationMap?.mission)return;
   zone=next;
   const current=siteById(selected);
   if(current?.zone!==zone){
@@ -156,6 +156,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   const ns='http://www.w3.org/2000/svg';
   const svg=document.createElementNS(ns,'svg');
   svg.setAttribute('viewBox','0 0 320 213');
+  svg.setAttribute('preserveAspectRatio','none');
   svg.setAttribute('aria-hidden','true');
   svg.classList.add('exploration-map__route');
   const path=document.createElementNS(ns,'path');
@@ -178,6 +179,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const button=document.createElement('button');
    button.type='button';button.className='exploration-map__marker';
    button.dataset.visibility=data.visibility;button.dataset.selected=String(selected===site.id);
+   button.setAttribute('aria-pressed',String(selected===site.id));
    button.style.left=(site.x*100)+'%';button.style.top=(site.y*100)+'%';
    button.disabled=data.visibility==='unknown';
    button.title=data.visibility==='unknown'?'미발견 지역':site.label+' · '+(LABELS[data.visibility]||'탐사');
@@ -188,7 +190,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const stateMark=document.createElement('span');
    stateMark.textContent=data.completed?'✓':data.visibility==='visited'?'•':data.visibility==='unknown'?'?':'!';
    button.append(icon,stateMark);
-   button.addEventListener('click',()=>{selected=site.id;render()});
+   button.addEventListener('click',()=>{
+    selected=site.id;render();
+    markers.querySelector('.exploration-map__marker[data-selected="true"]')?.focus({preventScroll:true});
+   });
    markers.appendChild(button);
   }
  }
@@ -262,6 +267,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   }
   q('#exploration-area-near').setAttribute('aria-pressed',String(zone==='near'));
   q('#exploration-area-far').setAttribute('aria-pressed',String(zone==='far'));
+  q('#exploration-area-near').disabled=Boolean(mission)&&zone!=='near';
+  q('#exploration-area-far').disabled=Boolean(mission)&&zone!=='far';
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;
   const visited=EXPLORATION_SITES.filter(site=>getSiteState(site.id).visits>0).length;
   q('#exploration-map-count').textContent=`방문 ${visited}/${EXPLORATION_SITES.length} · 완료 ${completed}/${EXPLORATION_SITES.length}`;
@@ -281,8 +288,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   // Do not misrepresent it as a site-specific gameplay probability.
   status.textContent=(LABELS[stateInfo.visibility]||'미발견')+
     (stateInfo.visits?' · 방문 '+stateInfo.visits+'회':'')+
-    (locked?'':' · 행동·날씨별 사고 확률 아래 안내');
-  const description=document.createElement('p');description.textContent=locked?'탐사 단서가 더 필요합니다. 근거리 조사와 통신탑 복구를 진행하세요.':site.description;
+    (locked?'':' · 사고 위험은 현장에서 확인');
+  const description=document.createElement('p');description.textContent=locked?
+   (site.zone==='far'?'원거리 위치는 통신탑의 17번 채널 연결 후 발견할 수 있습니다.':'이전에 발견한 장소를 방문해 다음 지역의 단서를 확보하세요.'):
+   site.description;
   const rewards=document.createElement('p');
   rewards.textContent='예상 발견: '+(locked?'확인 전':site.reward);
   mapCard.append(image,title,status,description,rewards);
@@ -325,7 +334,23 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    }
   }else{
    const can=mapExpeditionAvailability(s,site.id,now);
-   stage.textContent=can.reason;
+   if(locked&&site.zone==='far'){
+    const phase=s.explorationMap?.tower?.phase||'unknown';
+    stage.textContent=phase==='unknown'?
+     '원거리 미개방 · 근거리 통신실 조사를 완료해 통신탑 단서를 찾으세요.':
+     '원거리 미개방 · 통신탑을 복구하고 단파 무전기로 17번 채널을 연결하세요.';
+   }else if(locked){
+    stage.textContent='미발견 지역 · 현재 방문 가능한 장소부터 조사하면 다음 위치가 열립니다.';
+   }else if(stateInfo.completed){
+    const next=EXPLORATION_SITES.find(entry=>entry.zone===zone&&entry.id!==site.id&&
+     getSiteState(entry.id).visibility!=='unknown'&&!getSiteState(entry.id).completed);
+    stage.textContent=next?'조사 완료 · 다음 장소: '+next.label+' · 지도에서 해당 마커를 선택하세요.':
+     '이 구역의 발견된 장소 조사를 마쳤습니다. 다른 구역 또는 통신탑 기록을 확인하세요.';
+   }else{
+    stage.textContent=can.ready?
+     '출발하면 오늘의 동네 탐사 1회를 사용합니다. 현장에서 탐사 방법과 사고 확률을 선택할 수 있습니다.':
+     can.reason;
+   }
    if(!stateInfo.completed&&stateInfo.visibility!=='unknown')
     choices.appendChild(makeButton('탐험 출발',()=>{
      if(hasBlockingChoice?.()){stage.textContent='진행 중인 생존자 선택을 먼저 처리하세요.';return;}
