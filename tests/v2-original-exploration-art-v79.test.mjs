@@ -35,7 +35,7 @@ test('Black Map fog and original geometry stay intact while displaying new detai
  assert.match(ui,/ASSET\+'photos\/'\+site\.id\+'\.webp'/);
  assert.doesNotMatch(ui,/map\/overview_hd\.svg|ASSET\+'locations\/'\+site\.id\+'_hd\.svg'/);
  assert.match(ui,/globalCompositeOperation='destination-out'/);
- assert.match(ui,/reveal\(\.50,\.50,\.22\)/);
+ assert.match(ui,/reveal\(\.50,\.50,homeRadius\+progress\.stage\*\.009,\.74\)/);
  assert.match(ui,/function updateRoute\(\)/);
  assert.match(css,/\.exploration-map__route/);
  assert.match(css,/left:50%;top:50%/);
