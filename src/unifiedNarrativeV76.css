@@ -98,6 +98,10 @@ body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"][data-kind="dail
   border-left:0!important;
   border-radius:0!important;
   background:transparent!important;
+  /* The base .event-log uses a 12px glass blur. Transparency alone does
+   * not reset backdrop-filter, so Safari still blurs the game beneath text. */
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
   box-shadow:none!important;
   color:#f3efe8!important;
   text-align:center!important;
