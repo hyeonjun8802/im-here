@@ -8,6 +8,7 @@ import {
 } from './explorationMapV78.js';
 import {scavengeOdds} from './scavengeDirector.js';
 import {explorationScene} from './explorationStoryV85.js';
+import {explorationFogStage,FOG_ALPHA_BY_STAGE} from './explorationFogStageV91.js';
 import {
  EXPLORATION_REGIONS,explorationQuestProgress,explorationZoneProgress,
  explorationPinPosition
@@ -54,6 +55,12 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      <button id="exploration-area-far" type="button" aria-pressed="false">원거리 · 6곳</button>
     </div>
     <p id="exploration-map-zone-brief" class="exploration-map__zone-brief">근거리 · 옥상 주변 생활권</p>
+    <div class="exploration-map__fog-progress" role="group" aria-label="지도 탐사 단계">
+     <span id="exploration-map-fog-stage" class="exploration-map__fog-stage" aria-live="polite">STAGE 0/6 · 미탐사</span>
+     <div id="exploration-map-fog-bars" class="exploration-map__fog-bars" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+     </div>
+    </div>
     <div class="exploration-map__map" data-zone="near" aria-label="방문하면 안개가 밝아지는 동네 지도">
      <img class="exploration-map__city" src="${ASSET}regions/near_neighborhood.webp" alt="옥상 주변의 가까운 폐허 동네"/>
      <canvas id="exploration-fog" width="320" height="213" aria-hidden="true"></canvas>
@@ -92,6 +99,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  const stage=q('#exploration-map-stage');
  const choices=q('#exploration-map-choices');
  let selected='ruined_house',zone='near',lastTrigger=null,lastMissionKey='',snoozeUntil=0;
+ let fogLastZone=null,fogLastStage=null,fogLastSignature='',fogFrame=0;
  const visible=()=>!root.hidden;
  const setZone=next=>{
   if(!['near','far'].includes(next)||getState().explorationMap?.mission)return;
@@ -113,6 +121,9 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(getState().explorationMap?.mission?.phase==='encounter')
    snoozeUntil=Date.now()+6000; // Let the player inspect supplies before reopening.
   root.hidden=true;
+  if(fogFrame){window.cancelAnimationFrame(fogFrame);fogFrame=0;}
+  // A reopened map always paints its saved stage at the exact final opacity.
+  fogLastZone=null;fogLastStage=null;fogLastSignature='';
   if(lastTrigger?.isConnected)lastTrigger.focus({preventScroll:true});
  };
  function open(trigger=null){
@@ -126,35 +137,66 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  function renderFog(){
   const canvas=q('#exploration-fog'),ctx=canvas.getContext('2d');
   if(!ctx)return;
-  // Match the device pixel ratio: a 320×213 fog mask looked soft on retina
-  // displays even after replacing the low-resolution map image.
+  const progress=explorationFogStage(getState().explorationMap,zone,EXPLORATION_SITES);
+  // The original save flags are the sole source of truth: 0/6 starts black,
+  // each *completed* site opens one stage; a failed visit reveals only its
+  // immediate surroundings and never grants a free completion stage.
+  const sig=zone+':'+progress.stage+':'+
+   EXPLORATION_SITES.filter(site=>site.zone===zone)
+    .map(site=>{const p=getSiteState(site.id);return [p.visibility,p.visits,p.completed].join(',')}).join(':');
   const ratio=Math.min(3,Math.max(1,window.devicePixelRatio||1));
   const width=Math.round(320*ratio),height=Math.round(213*ratio);
-  if(canvas.width!==width||canvas.height!==height){
-   canvas.width=width;canvas.height=height;
-  }
-  ctx.setTransform(ratio,0,0,ratio,0,0);
-  ctx.clearRect(0,0,320,213);
-  ctx.fillStyle='rgba(5,9,13,.82)';ctx.fillRect(0,0,320,213);
-  const reveal=(x,y,r,opacity=1)=>{
-   const cx=x*320,cy=y*213,rad=r*320;
-   const gradient=ctx.createRadialGradient(cx,cy,rad*.15,cx,cy,rad);
-   gradient.addColorStop(0,`rgba(0,0,0,${opacity})`);
-   gradient.addColorStop(.62,`rgba(0,0,0,${opacity*.95})`);
-   gradient.addColorStop(1,'rgba(0,0,0,0)');
-   ctx.globalCompositeOperation='destination-out';
-   ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.fill();
+  const resized=canvas.width!==width||canvas.height!==height;
+  if(resized){canvas.width=width;canvas.height=height;}
+  if(sig===fogLastSignature&&!resized)return;
+  const oldStage=fogLastZone===zone?fogLastStage:null;
+  fogLastZone=zone;fogLastStage=progress.stage;fogLastSignature=sig;
+  if(fogFrame){window.cancelAnimationFrame(fogFrame);fogFrame=0;}
+  const paint=alpha=>{
+   ctx.setTransform(ratio,0,0,ratio,0,0);
    ctx.globalCompositeOperation='source-over';
+   ctx.clearRect(0,0,320,213);
+   if(alpha<=.001)return; // Stage 6: all six sites completed, no dark mask.
+   ctx.fillStyle=`rgba(3,6,10,${alpha.toFixed(3)})`;
+   ctx.fillRect(0,0,320,213);
+   const reveal=(x,y,r,opacity=1)=>{
+    const cx=x*320,cy=y*213,rad=r*320;
+    const gradient=ctx.createRadialGradient(cx,cy,rad*.15,cx,cy,rad);
+    gradient.addColorStop(0,`rgba(0,0,0,${opacity})`);
+    gradient.addColorStop(.62,`rgba(0,0,0,${opacity*.95})`);
+    gradient.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.globalCompositeOperation='destination-out';
+    ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+   };
+   // Only a small pocket around the shelter is legible in the first stage.
+   const homeRadius=zone==='far'?.045:.07;
+   reveal(.50,.50,homeRadius+progress.stage*.009,.74);
+   for(const site of EXPLORATION_SITES.filter(entry=>entry.zone===zone)){
+    const data=getSiteState(site.id);
+    if(data.visibility==='unknown')continue;
+    const pin=explorationPinPosition(zone,site.id)||site;
+    const visited=data.visits>0||data.completed;
+    const radius=data.completed?(zone==='far'?.19:.25):
+     visited?(zone==='far'?.13:.18):(zone==='far'?.052:.07);
+    reveal(pin.x,pin.y,radius,data.completed?1:visited?.94:.3);
+   }
   };
-  if(zone==='far')reveal(.50,.50,.11);
-  else reveal(.50,.50,.22);
-  for(const site of EXPLORATION_SITES.filter(entry=>entry.zone===zone)){
-   const data=getSiteState(site.id);
-   if(data.visibility==='unknown')continue;
-   const radius=zone==='far'?(data.visits>0?.125:.075):(data.visits>0?.2:.11);
-   const pin=explorationPinPosition(zone,site.id)||site;
-   reveal(pin.x,pin.y,radius,data.visits>0?1:.72);
-  }
+  const shouldAnimate=oldStage!==null&&progress.stage>oldStage&&
+   !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  if(!shouldAnimate){paint(progress.alpha);return;}
+  const fromAlpha=FOG_ALPHA_BY_STAGE[oldStage];
+  const start=window.performance.now(),duration=900;
+  // Interpolate only when the saved completion count increases; do not
+  // replay fake stage-unlocks on reopen, reload or tab switch.
+  const animate=now=>{
+   const t=Math.min(1,Math.max(0,(now-start)/duration));
+   const eased=t*t*(3-2*t);
+   paint(fromAlpha+(progress.alpha-fromAlpha)*eased);
+   fogFrame=t<1?window.requestAnimationFrame(animate):0;
+  };
+  paint(fromAlpha);
+  fogFrame=window.requestAnimationFrame(animate);
  }
  function updateRoute(){
   const old=q('.exploration-map__route');
@@ -288,6 +330,12 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(cityImage.getAttribute('src')!==regionImage)cityImage.setAttribute('src',regionImage);
   cityImage.alt=region.alt;
   const zoneProgress=explorationZoneProgress(s.explorationMap,zone,EXPLORATION_SITES);
+  const fogProgress=explorationFogStage(s.explorationMap,zone,EXPLORATION_SITES);
+  mapNode.dataset.fogStage=String(fogProgress.stage);
+  q('#exploration-map-fog-stage').textContent=
+   'STAGE '+fogProgress.stage+'/6 · '+fogProgress.name;
+  for(const [i,step] of [...q('#exploration-map-fog-bars').children].entries())
+   step.dataset.revealed=String(i<fogProgress.stage);
   q('#exploration-map-zone-brief').textContent=region.title+' · '+region.scope+
    ' · 조사 '+zoneProgress.completed+'/'+zoneProgress.total;
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;

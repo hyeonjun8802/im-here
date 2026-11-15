@@ -137,9 +137,9 @@ test('UI changes background at zone switch and connects quest cards and scaled m
  assert.match(ui,/const region=EXPLORATION_REGIONS\[zone\]/);
  assert.match(ui,/cityImage\.setAttribute\('src',regionImage\)/);
  assert.match(ui,/q\('#exploration-map-zone-brief'\)\.textContent/);
- assert.match(ui,/if\(zone==='far'\)reveal\(\.50,\.50,\.11\)/);
- assert.match(ui,/else reveal\(\.50,\.50,\.22\)/);
- assert.match(ui,/const radius=zone==='far'/);
+ assert.match(ui,/const homeRadius=zone==='far'\?\.045:\.07/);
+ assert.match(ui,/const radius=data\.completed\?/);
+ assert.match(ui,/const progress=explorationFogStage\(/);
  assert.match(ui,/image\.src=locked\?ASSET\+region\.map/);
  assert.match(ui,/quest=explorationQuestProgress\(s\.explorationMap,site\.id\)/);
  assert.match(ui,/quest\.district\.photo/);
