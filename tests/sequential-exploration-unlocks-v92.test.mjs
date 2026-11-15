@@ -152,6 +152,9 @@ test('UI hides never-discovered pins and retains other zone, quest, map fog and 
  assert.match(ui,/다음: '\+nextPlace\.label/);
  assert.match(ui,/바로 이전 장소의 조사 완료/);
  assert.match(ui,/단계는 바로 이전 장소의 조사 완료 후 한 곳씩/);
+ assert.match(ui,/image\.src=locked\?ASSET\+'markers\/state_unknown\.svg'/);
+ assert.doesNotMatch(ui,/image\.src=locked\?ASSET\+region\.map/);
+ assert.match(read('src/explorationMapRegionsV90.css'),/\.exploration-map__card\.is-locked \.exploration-map__site-image/);
  assert.match(ui,/renderFog\(\);updateMarkers\(\);updateRoute\(\)/);
  assert.match(ui,/explorationQuestProgress\(s\.explorationMap,site\.id\)/);
  assert.match(ui,/id="exploration-map-fog-bars"/);
