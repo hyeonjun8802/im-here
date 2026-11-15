@@ -1,0 +1,57 @@
+/* AFTERDAY v93 | Mobile Black Map location card layout QA.
+ * Keep the approved map frame/photos. Fix over-stretched portrait thumbnails
+ * and ensure long Korean story records use full-width rows. */
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__card{
+  display:grid;
+  grid-template-columns:minmax(94px,34%) minmax(0,1fr);
+  grid-template-rows:auto auto auto auto auto auto auto;
+  gap:5px 9px;
+  align-items:start;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+  grid-column:1;grid-row:1 / span 3;
+  display:block;width:100%;
+  height:clamp(92px,26vw,120px);
+  max-height:120px;min-height:92px;
+  aspect-ratio:1;
+  object-fit:cover;object-position:center;align-self:start;
+ }
+ .exploration-map-v78 .exploration-map__card>strong{
+  grid-column:2;grid-row:1;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>small{
+  grid-column:2;grid-row:2;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>p:first-of-type{
+  grid-column:2;grid-row:3;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>p:nth-of-type(2){
+  grid-column:1/-1;grid-row:4;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__quest{
+  grid-column:1/-1;grid-row:5;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__last-story{
+  grid-column:1/-1;grid-row:6;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__last-trail{
+  grid-column:1/-1;grid-row:7;min-width:0;
+ }
+ .exploration-map-v78 .exploration-map__card>p,
+ .exploration-map-v78 .exploration-map__quest-copy{
+  overflow-wrap:anywhere;word-break:keep-all;
+ }
+ .exploration-map-v78 .exploration-map__panel{
+  -webkit-overflow-scrolling:touch;
+ }
+}
+@media(max-width:350px){
+ .exploration-map-v78 .exploration-map__card{
+  grid-template-columns:minmax(90px,35%) minmax(0,1fr);
+  gap:4px 6px;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+  height:92px;min-height:92px;max-height:100px;
+ }
+}
