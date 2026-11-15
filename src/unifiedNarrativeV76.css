@@ -86,3 +86,49 @@ body.afterday-real-ui-v3 #hud:has(#weather-panel:not(.hidden)) #log.event-log{
 @media(prefers-reduced-motion:reduce){
   body.afterday-real-ui-v3 #hud #log.event-log{transition:none!important}
 }
+
+/* v87 | Calendar-change narration is a lightweight subtitle, not a framed
+ * notification. Important cinematic/regular messages keep their v76 design.
+ * The existing bottom-equipment offset, queue priority and reading time stay. */
+body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"][data-kind="daily"]{
+  width:min(560px,calc(100vw - 36px))!important;
+  max-width:calc(100vw - 36px)!important;
+  padding:0 8px!important;
+  border:0!important;
+  border-left:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#f3efe8!important;
+  text-align:center!important;
+  font:500 12px/1.5 'Noto Sans KR',system-ui,sans-serif!important;
+  letter-spacing:-.018em!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.95),0 2px 6px rgba(0,0,0,.92),0 0 12px rgba(0,0,0,.72)!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+  touch-action:auto!important;
+  animation:afterday-daily-subtitle-in .24s ease-out both!important;
+}
+@keyframes afterday-daily-subtitle-in{
+  from{opacity:0}
+  to{opacity:1}
+}
+@media(max-width:720px){
+  body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"][data-kind="daily"]{
+    width:calc(100vw - 44px)!important;
+    max-width:calc(100vw - 44px)!important;
+    padding:0 3px!important;
+    font-size:clamp(11px,2.85vw,12px)!important;
+    line-height:1.48!important;
+  }
+}
+@media(max-height:490px){
+  body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"][data-kind="daily"]{
+    font-size:10px!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  body.afterday-real-ui-v3 #hud #log.event-log[data-active="true"][data-kind="daily"]{
+    animation:none!important;
+  }
+}
