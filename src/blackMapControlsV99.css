@@ -1,0 +1,207 @@
+/* AFTERDAY Black Map v99: affordance hierarchy from the existing 48-frame v3 atlas.
+ * Every button uses the same main-game equipment_action_button / wide_panel_01
+ * resources. Passive information NEVER adopts that metallic button surface.
+ * Intentionally scope to the map modal: no changes to the nine-slot HUD bar. */
+.exploration-map-v78 .exploration-map__mission-guide,
+.exploration-map-v78 .exploration-map__daily-ops{
+ border:0!important;border-left:3px solid #a18b66!important;
+ border-radius:3px!important;
+ box-shadow:none!important;
+ background:linear-gradient(110deg,rgba(25,36,36,.98),rgba(15,27,29,.93))!important;
+}
+.exploration-map-v78 .exploration-map__daily-ops{border-left-color:#829a8c!important}
+.exploration-map-v78 .exploration-map__mission-guide strong,
+.exploration-map-v78 .exploration-map__daily-copy strong{color:#f2ddb4}
+.exploration-map-v78 .exploration-map__mission-guide p,
+.exploration-map-v78 .exploration-map__daily-copy p{color:#ccd6ce}
+
+/* Main HUD art is initialized by commonUiAssetsV3.js and reused as CSS vars.
+ * Nine-slice preserves corners and border thickness at mobile/desktop widths. */
+.exploration-map-v78 button.exploration-map__control{
+ position:relative;
+ display:inline-flex;align-items:center;justify-content:center;
+ gap:5px;min-height:46px;max-width:100%;
+ box-sizing:border-box;
+ border-style:solid!important;border-width:9px!important;
+ border-color:#6c5534!important;
+ border-image-source:var(--afterday-v3-equipment_action_button,none)!important;
+ border-image-slice:20 34 20 34 fill!important;
+ border-image-width:9px 12px 9px 12px!important;
+ border-image-repeat:stretch!important;
+ border-radius:0!important;
+ padding:4px 12px!important;
+ background:linear-gradient(180deg,#9d713e,#4e3523)!important;
+ box-shadow:none!important;
+ color:#fff0d5!important;
+ text-shadow:0 1px 2px #06090c!important;
+ font-weight:800;line-height:1.3;
+ cursor:pointer;touch-action:manipulation;
+ white-space:normal;word-break:keep-all;overflow-wrap:anywhere;
+ transition:filter .12s ease,transform .12s ease;
+}
+.exploration-map-v78 button.exploration-map__control::before{
+ content:'›';font:900 18px/1 system-ui,sans-serif;
+ color:#ffe2a6;flex:none;
+}
+.exploration-map-v78 button.exploration-map__control--secondary,
+.exploration-map-v78 button.exploration-map__control--tab,
+.exploration-map-v78 button.exploration-map__control--icon,
+.exploration-map-v78 .exploration-map__choices button.exploration-map__control[data-choice="stay"],
+.exploration-map-v78 button.exploration-map__control#exploration-map-prep-cancel{
+ border-image-source:var(--afterday-v3-wide_panel_01,none)!important;
+ border-image-slice:36 39 35 39 fill!important;
+ border-image-width:9px 13px 9px 13px!important;
+ background:linear-gradient(180deg,#30403d,#1b2729)!important;
+ color:#ebe7db!important;
+}
+.exploration-map-v78 .exploration-map__areas button.exploration-map__control{
+ width:100%;min-width:0;min-height:48px;
+}
+.exploration-map-v78 .exploration-map__areas button[aria-pressed="true"]{
+ filter:brightness(1.22) saturate(1.05);
+ color:#fff1cf!important;
+}
+.exploration-map-v78 .exploration-map__areas button[aria-pressed="false"]{
+ filter:brightness(.86) saturate(.76);
+}
+.exploration-map-v78 .exploration-map__areas button[aria-pressed="true"]::before{
+ content:'●';font-size:10px;color:#ffe1a0;
+}
+.exploration-map-v78 .exploration-map__areas button[aria-pressed="false"]::before{
+ content:'○';font-size:10px;color:#c7c8b8;
+}
+.exploration-map-v78 button.exploration-map__control--icon{
+ width:44px;min-width:44px;height:44px;min-height:44px;
+ padding:0!important;font-size:22px!important;
+}
+.exploration-map-v78 button.exploration-map__control--icon::before{display:none}
+.exploration-map-v78 button.exploration-map__control:not(:disabled):hover{
+ filter:brightness(1.2) saturate(1.08);
+}
+.exploration-map-v78 button.exploration-map__control:not(:disabled):active{
+ transform:translateY(1px);filter:brightness(.97);
+}
+.exploration-map-v78 button.exploration-map__control:focus-visible{
+ outline:3px solid #ffe0a2!important;outline-offset:2px!important;
+}
+.exploration-map-v78 button.exploration-map__control:disabled{
+ opacity:1!important;filter:grayscale(.8) brightness(.58)!important;
+ color:#c4c7c4!important;cursor:not-allowed!important;
+ text-shadow:none!important;transform:none!important;
+}
+.exploration-map-v78 button.exploration-map__control:disabled::before{color:#b5bcb6}
+.exploration-map-v78 button.exploration-map__control[hidden],
+.exploration-map-v78 .exploration-map__passive-state[hidden]{
+ display:none!important;
+}
+/* A waiting state is explicitly informative and has no pointer/border/texture. */
+.exploration-map-v78 .exploration-map__passive-state{
+ display:flex;align-items:center;justify-content:center;
+ min-height:38px;margin:0;padding:5px 8px;
+ border:0!important;background:rgba(10,19,23,.37)!important;
+ box-shadow:none!important;color:#c9d4cc;
+ font-size:13px;font-weight:750;line-height:1.5;
+ cursor:default;pointer-events:none;
+}
+.exploration-map-v78 .exploration-map__passive-state::before{
+ content:'◷';font-size:17px;line-height:1;margin-right:8px;color:#c8ae7e;
+}
+.exploration-map-v78 .exploration-map__mission-controls{
+ grid-template-columns:minmax(0,1fr);
+ gap:5px;
+}
+.exploration-map-v78 #exploration-map-guide-hint{
+ display:block;text-align:center;color:#aabcb2;
+ font-weight:500;font-size:11px;line-height:1.5;
+}
+.exploration-map-v78 .exploration-map__mission-guide button.exploration-map__control{
+ width:100%;max-width:none;min-height:50px;
+}
+.exploration-map-v78 #exploration-map-daily-shortcut{
+ width:auto;min-width:108px;max-width:39%;
+ min-height:46px;font-size:11px!important;flex:0 0 auto;
+}
+.exploration-map-v78 .exploration-map__howto{
+ border:0!important;border-bottom:1px solid #526260!important;
+ background:transparent!important;box-shadow:none!important;
+ border-radius:0!important;margin:0 0 8px!important;
+ padding:4px 2px 7px!important;
+}
+.exploration-map-v78 .exploration-map__howto summary{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:8px;text-decoration:underline;text-underline-offset:3px;
+ font-weight:700;color:#c9b78d!important;font-size:11px!important;
+ cursor:pointer;list-style:none;
+}
+.exploration-map-v78 .exploration-map__howto summary::-webkit-details-marker{display:none}
+.exploration-map-v78 .exploration-map__howto summary::after{
+ content:'펼치기 ▾';font-weight:850;white-space:nowrap;color:#e2c48e;
+}
+.exploration-map-v78 .exploration-map__howto[open] summary::after{content:'접기 ▴'}
+.exploration-map-v78 .exploration-map__zone-brief,
+.exploration-map-v78 .exploration-map__stage{
+ background:rgba(12,20,23,.55)!important;border:0!important;
+ border-left:2px solid #63776d!important;box-shadow:none!important;
+ border-radius:0!important;
+ color:#bac7bd!important;font-weight:500;
+}
+.exploration-map-v78 .exploration-map__fog-progress{
+ box-shadow:none!important;cursor:default;
+}
+.exploration-map-v78 .exploration-map__card{
+ box-shadow:none!important;cursor:default;
+}
+.exploration-map-v78 .exploration-map__prep,
+.exploration-map-v78 .exploration-map__return-report{
+ border:0!important;border-left:3px solid #b59563!important;
+ border-radius:3px!important;box-shadow:none!important;
+ background:linear-gradient(110deg,#24312f,#162222)!important;
+}
+.exploration-map-v78 .exploration-map__return-report[data-success="true"]{
+ border-left-color:#8cbd9c!important;
+}
+.exploration-map-v78 .exploration-map__prep-metrics span{
+ border:0!important;box-shadow:none!important;background:rgba(9,19,21,.68)!important;
+}
+.exploration-map-v78 .exploration-map__choices button.exploration-map__control{
+ width:100%;min-height:51px;text-align:center!important;
+ padding:8px 12px!important;font-size:12px;
+}
+.exploration-map-v78 .exploration-map__choices button.exploration-map__control[data-choice]{
+ padding:9px 12px 9px 31px!important;
+ justify-content:flex-start!important;
+}
+.exploration-map-v78 .exploration-map__choices button.exploration-map__control[data-choice]::before{
+ left:14px;top:50%;transform:translateY(-50%);
+}
+.exploration-map-v78 .exploration-map__choices button.exploration-map__control:not([data-choice])::before,
+.exploration-map-v78 .exploration-map__tower-actions button.exploration-map__control::before{
+ content:'›';position:static;transform:none;
+}
+.exploration-map-v78 .exploration-map__routine button.exploration-map__control{
+ min-width:0;min-height:44px;flex:1 1 110px;font-size:11px;
+}
+@media(max-width:720px){
+ .exploration-map-v78 button.exploration-map__control{
+  min-height:44px;font-size:12px;padding:5px 9px!important;
+ }
+ .exploration-map-v78 .exploration-map__mission-guide button.exploration-map__control{
+  min-height:47px;font-size:13px!important;
+ }
+ .exploration-map-v78 .exploration-map__passive-state{
+  min-height:30px;padding:4px;font-size:12px;
+ }
+ .exploration-map-v78 #exploration-map-daily-shortcut{
+  max-width:42%;min-width:102px;font-size:10px!important;
+ }
+ .exploration-map-v78 .exploration-map__areas button.exploration-map__control{
+  min-height:46px;font-size:12px;
+ }
+ .exploration-map-v78 .exploration-map__prep-actions button.exploration-map__control{
+  min-width:0;min-height:46px;font-size:11px;
+ }
+ .exploration-map-v78 .exploration-map__howto summary{font-size:10px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .exploration-map-v78 button.exploration-map__control{transition:none!important}
+}

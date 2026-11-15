@@ -49,7 +49,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  <div class="exploration-map__panel">
   <div class="exploration-map__heading">
    <div><small>AFTERDAY · THE BLACK MAP</small><strong>검은 지도</strong><span id="exploration-map-count"></span></div>
-   <button id="exploration-map-close" type="button" aria-label="탐사 지도 닫기">✕</button>
+   <button id="exploration-map-close" class="exploration-map__control exploration-map__control--icon" type="button" aria-label="탐사 지도 닫기">✕</button>
   </div>
   <section class="exploration-map__mission-guide" aria-label="현재 탐사 목표">
    <div class="exploration-map__mission-meta">
@@ -60,7 +60,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    <p id="exploration-map-guide-description">아직 탐사할 장소가 남아 있습니다.</p>
    <div class="exploration-map__mission-meter" role="progressbar" aria-label="전체 탐사 완료율" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0"><span id="exploration-map-guide-meter"></span></div>
    <div class="exploration-map__mission-controls">
-    <button type="button" id="exploration-map-guide-action">다음 목표 확인</button>
+    <button type="button" class="exploration-map__control exploration-map__control--primary" id="exploration-map-guide-action">다음 목표 확인</button>
+    <div id="exploration-map-guide-status" class="exploration-map__passive-state" role="status" aria-live="polite" hidden>진행 상황 확인 중</div>
     <span id="exploration-map-guide-hint"></span>
    </div>
   </section>
@@ -70,12 +71,12 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     <strong id="exploration-map-daily-title"></strong>
     <p id="exploration-map-daily-detail"></p>
    </div>
-   <button type="button" id="exploration-map-daily-shortcut">보급 활동 확인</button>
+   <button type="button" class="exploration-map__control exploration-map__control--secondary" id="exploration-map-daily-shortcut">보급 활동 확인</button>
   </section>
   <section class="exploration-map__return-report" id="exploration-map-return-report" role="status" aria-label="귀환 결과" hidden>
    <strong id="exploration-map-return-title"></strong>
    <p id="exploration-map-return-detail"></p><small id="exploration-map-return-next"></small>
-   <button id="exploration-map-return-dismiss" type="button">확인 · 다음 목표 보기</button>
+   <button id="exploration-map-return-dismiss" type="button" class="exploration-map__control exploration-map__control--primary">확인 · 다음 목표 보기</button>
   </section>
   <section class="exploration-map__prep" id="exploration-map-prep" aria-label="출발 준비" hidden>
    <strong id="exploration-map-prep-title"></strong>
@@ -83,8 +84,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    <div id="exploration-map-prep-metrics" class="exploration-map__prep-metrics"></div>
    <div id="exploration-map-prep-options" class="exploration-map__prep-options"></div>
    <div class="exploration-map__prep-actions">
-    <button id="exploration-map-prep-confirm" type="button">준비 확인 · 탐사 출발</button>
-    <button id="exploration-map-prep-cancel" type="button">취소</button>
+    <button id="exploration-map-prep-confirm" type="button" class="exploration-map__control exploration-map__control--primary">준비 확인 · 탐사 출발</button>
+    <button id="exploration-map-prep-cancel" type="button" class="exploration-map__control exploration-map__control--secondary">취소</button>
    </div>
   </section>
   <details class="exploration-map__howto">
@@ -94,8 +95,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   <div class="exploration-map__columns">
    <div class="exploration-map__map-wrap">
     <div class="exploration-map__areas" role="group" aria-label="탐사 구역">
-     <button id="exploration-area-near" type="button" aria-pressed="true">근거리 · 6곳</button>
-     <button id="exploration-area-far" type="button" aria-pressed="false">원거리 · 6곳</button>
+     <button id="exploration-area-near" class="exploration-map__control exploration-map__control--tab" type="button" aria-pressed="true">근거리 · 6곳</button>
+     <button id="exploration-area-far" class="exploration-map__control exploration-map__control--tab" type="button" aria-pressed="false">원거리 · 6곳</button>
     </div>
     <p id="exploration-map-zone-brief" class="exploration-map__zone-brief">근거리 · 옥상 주변 생활권</p>
     <div class="exploration-map__fog-progress" role="group" aria-label="지도 탐사 단계">
@@ -129,8 +130,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      <div id="exploration-finale-actions" class="exploration-map__tower-actions"></div>
     </section>
     <div class="exploration-map__routine">
-     <button id="exploration-map-daily" type="button">오늘의 기존 탐색 선택</button>
-     <button id="exploration-map-emergency" type="button">긴급 보급 탐색</button>
+     <button id="exploration-map-daily" class="exploration-map__control exploration-map__control--secondary" type="button">오늘의 기존 탐색 선택</button>
+     <button id="exploration-map-emergency" class="exploration-map__control exploration-map__control--secondary" type="button">긴급 보급 탐색</button>
     </div>
    </div>
   </div>
@@ -343,6 +344,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  }
  function makeButton(text,handler,{disabled=false,cls=''}={}){
   const b=document.createElement('button');
+  b.classList.add('exploration-map__control');
   b.type='button';b.textContent=text;b.disabled=disabled;
   if(cls)b.className=cls;
   b.addEventListener('click',handler);return b;
@@ -411,6 +413,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   q('#exploration-map-guide-meter').style.width=guide.progress+'%';
   q('.exploration-map__mission-meter').setAttribute('aria-valuenow',String(guide.total));
   const button=q('#exploration-map-guide-action'),hint=q('#exploration-map-guide-hint');
+  const passive=q('#exploration-map-guide-status');
   let action='none',label='진행 상태 확인',reason='',disabled=false;
   if(guide.kind==='mission'){
    const phase=s.explorationMap.mission?.phase;
@@ -451,7 +454,13 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    else {action='emergency';label='긴급 보급 탐색 보기';}
    reason='12곳 조사는 끝났지만 생존은 계속됩니다. 기존 보급 탐색을 이어가세요.';
   }
-  button.dataset.action=action;button.textContent=label;button.disabled=disabled;hint.textContent=reason;
+  button.dataset.action=action;button.textContent=label;button.disabled=disabled;
+  // Never render a wait/blocked condition as a large gold button.
+  // Only an actionable command receives the metal button artwork and hit area.
+  button.hidden=disabled;
+  passive.hidden=!disabled;
+  if(disabled)passive.textContent=(guide.kind==='mission'?'진행 상태 · ':'출발 상태 · ')+label;
+  hint.textContent=reason;
  }
  function renderDailyOperations(s,now){
   const data=getDailyOperations(s,now),btn=q('#exploration-map-daily-shortcut');
