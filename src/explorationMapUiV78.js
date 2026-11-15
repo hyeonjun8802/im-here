@@ -447,7 +447,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     stage.textContent=phase==='unknown'?
      '원거리 미개방 · 근거리 통신실 조사를 완료해 통신탑 단서를 찾으세요.':
      phase==='channel17'?
-      '다음 원거리 단계는 이전 장소의 조사 완료 후 한 곳씩 열립니다.':
+      '다음 원거리 단계는 바로 이전 장소의 조사 완료 후 한 곳씩 열립니다.':
       '원거리 미개방 · 통신탑을 복구하고 단파 무전기로 17번 채널을 연결하세요.';
    }else if(locked){
     stage.textContent='미발견 지역 · 지금 열린 장소를 조사 완료하면 다음 하나가 열립니다.';
