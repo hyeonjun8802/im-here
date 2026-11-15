@@ -83,7 +83,7 @@ test('failed but real visits recall what happened and where the next route goes'
  assert.equal(s.explorationMap.sites.ruined_house.lastChoice,'go');
  assert.equal(s.explorationMap.sites.ruined_house.lastOutcome,result.outcome);
  assert.equal(s.explorationMap.sites.ruined_house.lastDay,1);
- assert.equal(s.explorationMap.sites.convenience_store.visibility,'rumored');
+ assert.equal(s.explorationMap.sites.convenience_store.visibility,'unknown','failed visits do not unlock new stages');
  assert.equal(s.explorationMap.sites.ruined_house.completed,false);
  assert.equal(returning(s).changed,false,'only one visit and no duplicate resources');
  const saved=sanitize(JSON.parse(JSON.stringify(s)),start+3*EXPLORATION_TRAVEL_GAME_MS);
