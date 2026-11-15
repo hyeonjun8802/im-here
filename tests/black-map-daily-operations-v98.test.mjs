@@ -54,7 +54,7 @@ test('completion keeps routine tied to existing pending scavenging rather than d
 test('new UI panels hook to same legacy map buttons and no save schema update',()=>{
  const ui=read('src/explorationMapUiV78.js'),style=read('src/blackMapDailyOperationsV98.css');
  assert.match(ui,/getDailyOperations\(s,now\)/);
- assert.match(ui,/getExpeditionPreparation\(s,site\.id,getNow\(\)\)/);
+ assert.match(ui,/getExpeditionPreparation\(getState\(\),site\.id,getNow\(\)\)/);
  assert.match(ui,/getReturnReport\(getState\(\),/);
  assert.match(ui,/id="exploration-map-prep-confirm"/);
  assert.match(ui,/id="exploration-map-daily-shortcut"/);

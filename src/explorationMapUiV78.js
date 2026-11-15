@@ -477,6 +477,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(mission){
    selected=mission.siteId;
    zone=siteById(selected)?.zone||zone;
+   hidePreparation();
   }
   q('#exploration-area-near').setAttribute('aria-pressed',String(zone==='near'));
   q('#exploration-area-far').setAttribute('aria-pressed',String(zone==='far'));
