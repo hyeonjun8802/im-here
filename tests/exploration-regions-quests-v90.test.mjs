@@ -9,6 +9,7 @@ import {
 } from '../src/explorationMapV78.js';
 import {
  EXPLORATION_REGIONS,EXPLORATION_DISTRICTS,EXPLORATION_QUESTS,
+ EXPLORATION_MAP_PINS,explorationPinPosition,
  questBySite,explorationQuestProgress,explorationZoneProgress
 } from '../src/explorationQuestRegionsV90.js';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
@@ -65,6 +66,31 @@ test('each of four landscape sectors is actually attached to a distant quest',()
  assert.equal(questBySite('substation').district,'industrial');
  assert.equal(questBySite('hospital').district,'center');
  assert.equal(questBySite('community_shelter').district,'hillside');
+});
+
+test('each location marker, route and fog spot align with the chosen scene landmark',()=>{
+ for(const zone of ['near','far']){
+  const ids=EXPLORATION_SITES.filter(site=>site.zone===zone).map(x=>x.id);
+  assert.deepEqual(Object.keys(EXPLORATION_MAP_PINS[zone]),ids,'pin IDs match their zone');
+  const pos=ids.map(id=>explorationPinPosition(zone,id));
+  for(const [i,point] of pos.entries()){
+   assert.ok(point.x>.1&&point.x<.90,zone+' '+ids[i]+' x in safe frame');
+   assert.ok(point.y>.1&&point.y<.90,zone+' '+ids[i]+' y in safe frame');
+  }
+  for(let i=0;i<pos.length;i++)for(let j=i+1;j<pos.length;j++){
+   const dx=pos[i].x-pos[j].x,dy=pos[i].y-pos[j].y;
+   assert.ok(Math.hypot(dx,dy)>.14,zone+' pins do not overlap: '+ids[i]+'/'+ids[j]);
+  }
+ }
+ assert.deepEqual(explorationPinPosition('near','flower_shop'),{x:.17,y:.44});
+ assert.deepEqual(explorationPinPosition('near','communications_room'),{x:.79,y:.14});
+ assert.deepEqual(explorationPinPosition('far','underpass'),{x:.74,y:.79});
+ assert.deepEqual(explorationPinPosition('far','substation'),{x:.14,y:.35});
+ assert.equal(explorationPinPosition('far','ruined_house'),null);
+ const ui=read('src/explorationMapUiV78.js');
+ assert.match(ui,/explorationPinPosition\(zone,site\.id\)\|\|site/g);
+ assert.equal((ui.match(/explorationPinPosition\(zone,site\.id\)\|\|site/g)||[]).length,3,
+  'fog, route and pin should use the same spatial mapping');
 });
 
 test('quests mirror existing save state and return no extra reward or progress mutation',()=>{
