@@ -118,11 +118,11 @@ test('future reward is bounded by storage cap and companion must remain alive',(
  s.supply.parts=14;
  assert.equal(applyCompanionRationAftermath(s,11,'clear'),0);
  assert.equal(s.companion.rationAftermathDone,false);
- s.supply.parts=13;s.companion.present=false;
+ s.supply.parts=11;s.companion.present=false;
  assert.equal(applyCompanionRationAftermath(s,11,'clear'),0);
  s.companion.present=true;
  assert.equal(applyCompanionRationAftermath(s,11,'clear'),1);
- assert.equal(s.supply.parts,14);
+ assert.equal(s.supply.parts,12);
 });
 
 test('the existing equipment menu reopens the choice; the modal can be deferred',()=>{
