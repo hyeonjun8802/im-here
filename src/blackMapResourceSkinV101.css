@@ -335,3 +335,283 @@
 @media(prefers-reduced-motion:reduce){
  .exploration-map-v78 button.exploration-map__control{transition:none!important}
 }
+
+/* v102 | Responsive layout correction (2026-11-16).
+ * Preserve the v101 artwork and all exploration/game state. Remove only
+ * decorative overlap, conflicting grid placement and undersized mobile text. */
+
+/* The alert image contains ornament in the text-safe area. Use a quiet
+   semantic status strip instead: no artwork or pseudo-border under words. */
+.exploration-map-v78 .exploration-map__stage,
+.exploration-map-v78 .exploration-map__passive-state{
+ border:1px solid #91764b!important;
+ border-left:3px solid #c5a06b!important;
+ border-image:none!important;
+ border-radius:2px!important;
+ background:#292620!important;
+ background-image:none!important;
+ box-shadow:inset 0 1px 0 rgba(255,227,174,.08)!important;
+ padding:10px 12px!important;
+ margin:0!important;
+ min-height:42px!important;
+ font-size:12px!important;
+ line-height:1.55!important;
+ color:#f1e1c4!important;
+ overflow-wrap:anywhere;
+ word-break:keep-all;
+}
+.exploration-map-v78 .exploration-map__passive-state{
+ justify-content:center!important;
+ gap:6px;
+}
+.exploration-map-v78 .exploration-map__passive-state::before{
+ margin:0!important;
+ flex:none;
+}
+
+/* Define each location-card row explicitly; the v101 1/6 span was
+   stretching the photograph into the description, reward and quest rows. */
+.exploration-map-v78 .exploration-map__card{
+ grid-template-rows:auto auto minmax(0,auto) auto!important;
+ align-content:start!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+ grid-column:1!important;
+ grid-row:1 / 4!important;
+ align-self:start!important;
+ height:clamp(104px,17vw,164px)!important;
+ min-height:0!important;
+ max-height:164px!important;
+ aspect-ratio:auto!important;
+ object-fit:cover;
+}
+.exploration-map-v78 .exploration-map__card>strong{
+ grid-column:2!important;
+ grid-row:1!important;
+ align-self:end;
+}
+.exploration-map-v78 .exploration-map__card>small{
+ grid-column:2!important;
+ grid-row:2!important;
+}
+.exploration-map-v78 .exploration-map__card>p:first-of-type{
+ grid-column:2!important;
+ grid-row:3!important;
+}
+.exploration-map-v78 .exploration-map__card>p:nth-of-type(2){
+ grid-column:1/-1!important;
+ grid-row:4!important;
+ margin:3px 0 0!important;
+}
+.exploration-map-v78 .exploration-map__card>.exploration-map__quest,
+.exploration-map-v78 .exploration-map__card>.exploration-map__journal{
+ grid-column:1/-1!important;
+}
+.exploration-map-v78 .exploration-map__card .exploration-map__quest-copy{
+ min-width:0!important;
+}
+.exploration-map-v78 .exploration-map__detail,
+.exploration-map-v78 .exploration-map__card{
+ max-width:100%;
+}
+.exploration-map-v78 .exploration-map__tower,
+.exploration-map-v78 .exploration-map__finale{
+ min-width:0;
+ overflow-wrap:anywhere;
+ word-break:keep-all;
+}
+.exploration-map-v78 .exploration-map__narrative-photo{
+ width:100%;
+ height:auto;
+ object-fit:cover;
+}
+
+@media(max-width:720px){
+ /* Keep the outer illustrated frame, but guarantee one scroll container and
+    enough inset for both text and iOS viewport safe areas. */
+ .exploration-map-v78{
+  overflow:hidden!important;
+  padding:calc(6px + env(safe-area-inset-top)) 6px
+   calc(6px + env(safe-area-inset-bottom))!important;
+ }
+ .exploration-map-v78 .exploration-map__panel{
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;
+  overscroll-behavior:contain;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+ }
+ /* Header has three independent text rows and a persistent close hit area.
+    The prior inline wrap could push the visit-count behind the close art. */
+ .exploration-map-v78 .exploration-map__heading{
+  align-items:center!important;
+  gap:7px!important;
+  min-height:84px!important;
+  padding:5px 7px!important;
+ }
+ .exploration-map-v78 .exploration-map__heading>div{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-content:center;
+  align-items:start!important;
+  gap:1px!important;
+  min-width:0!important;
+ }
+ .exploration-map-v78 .exploration-map__heading small{
+  white-space:normal!important;
+  font-size:9px!important;
+  letter-spacing:.11em!important;
+  line-height:1.25!important;
+ }
+ .exploration-map-v78 .exploration-map__heading strong{
+  font-size:19px!important;
+  line-height:1.2!important;
+ }
+ .exploration-map-v78 .exploration-map__heading span{
+  font-size:11px!important;
+  line-height:1.4!important;
+  white-space:normal!important;
+ }
+ .exploration-map-v78 #exploration-map-close.exploration-map__control{
+  flex:0 0 44px!important;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  align-self:center!important;
+ }
+ /* Restore a readable baseline; the older 9px mobile rules were too small. */
+ .exploration-map-v78 .exploration-map__mission-meta{
+  flex-wrap:wrap!important;
+  gap:3px 8px!important;
+  font-size:10px!important;
+ }
+ .exploration-map-v78 .exploration-map__mission-guide{
+  padding:7px 8px 8px!important;
+ }
+ .exploration-map-v78 .exploration-map__mission-guide p{
+  font-size:12px!important;
+  line-height:1.5!important;
+ }
+ .exploration-map-v78 .exploration-map__daily-ops{
+  padding:6px 7px!important;
+  align-items:center!important;
+  gap:6px!important;
+ }
+ .exploration-map-v78 .exploration-map__daily-copy strong{
+  font-size:12px!important;
+  line-height:1.35!important;
+ }
+ .exploration-map-v78 .exploration-map__daily-copy p{
+  font-size:11px!important;
+  line-height:1.45!important;
+ }
+ .exploration-map-v78 .exploration-map__daily-copy small{
+  font-size:10px!important;
+ }
+ .exploration-map-v78 .exploration-map__howto summary{
+  font-size:11px!important;
+  line-height:1.5!important;
+ }
+ .exploration-map-v78 button.exploration-map__control:not(#exploration-map-close){
+  min-height:46px!important;
+  font-size:12px!important;
+  line-height:1.4!important;
+  overflow-wrap:break-word;
+ }
+ .exploration-map-v78 #exploration-map-guide-action{
+  min-height:48px!important;
+  font-size:14px!important;
+ }
+ .exploration-map-v78 #exploration-map-guide-hint{
+  font-size:11px!important;
+  line-height:1.45!important;
+ }
+ .exploration-map-v78 #exploration-map-daily-shortcut{
+  flex:0 0 auto!important;
+  min-width:0!important;
+  max-width:39%!important;
+  padding-inline:5px!important;
+ }
+ .exploration-map-v78 .exploration-map__zone-brief{
+  font-size:11px!important;
+  line-height:1.45!important;
+ }
+ .exploration-map-v78 .exploration-map__fog-stage{
+  font-size:11px!important;
+ }
+ .exploration-map-v78 .exploration-map__card{
+  grid-template-columns:minmax(90px,32%) minmax(0,1fr)!important;
+  gap:5px 8px!important;
+  padding:7px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>.exploration-map__site-image{
+  height:clamp(95px,28vw,128px)!important;
+  max-height:128px!important;
+ }
+ .exploration-map-v78 .exploration-map__card>strong{
+  font-size:15px!important;
+  line-height:1.3!important;
+ }
+ .exploration-map-v78 .exploration-map__card>small{
+  font-size:10px!important;
+  line-height:1.4!important;
+ }
+ .exploration-map-v78 .exploration-map__card>p{
+  font-size:12px!important;
+  line-height:1.5!important;
+ }
+ .exploration-map-v78 .exploration-map__quest-copy p{
+  font-size:11px!important;
+  line-height:1.5!important;
+ }
+ .exploration-map-v78 .exploration-map__stage,
+ .exploration-map-v78 .exploration-map__passive-state{
+  font-size:12px!important;
+  padding:10px 12px!important;
+ }
+ .exploration-map-v78 .exploration-map__tower p,
+ .exploration-map-v78 .exploration-map__finale p{
+  font-size:12px!important;
+  line-height:1.6!important;
+ }
+ .exploration-map-v78 .exploration-map__tower strong,
+ .exploration-map-v78 .exploration-map__finale strong{
+  font-size:14px!important;
+ }
+ .exploration-map-v78 .exploration-map__tower-actions button.exploration-map__control,
+ .exploration-map-v78 .exploration-map__choices button.exploration-map__control{
+  min-height:48px!important;
+  font-size:13px!important;
+ }
+ .exploration-map-v78 .exploration-map__routine button.exploration-map__control{
+  min-height:46px!important;
+  min-width:0!important;
+  font-size:11px!important;
+ }
+}
+@media(max-width:360px){
+ .exploration-map-v78 .exploration-map__heading{
+  padding-inline:4px!important;
+ }
+ .exploration-map-v78 .exploration-map__mission-meta span:last-child{
+  white-space:normal!important;
+ }
+ .exploration-map-v78 .exploration-map__daily-ops{
+  flex-wrap:wrap!important;
+ }
+ .exploration-map-v78 #exploration-map-daily-shortcut{
+  flex:1 1 100%!important;
+  max-width:100%!important;
+ }
+ .exploration-map-v78 .exploration-map__card{
+  grid-template-columns:minmax(85px,34%) minmax(0,1fr)!important;
+  gap:4px 6px!important;
+ }
+ .exploration-map-v78 .exploration-map__routine{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+ }
+}
