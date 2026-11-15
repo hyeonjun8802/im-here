@@ -135,7 +135,7 @@ function chooseLine(candidates,recentTopics,recentTexts,sequence,realNow){
 export class SurvivorSpeechDirectorV108{
  constructor({storage=null}={}){
   this.storage=storage;this.lastSpeakAt=0;this.nextAt=0;
-  this.firstVisibleAt=null;this.lastSignature=null;
+  this.firstVisibleAt=null;this.lastSignature=null;this.pendingSignature=null;
   this.recentTopics=[];this.recentTexts=[];this.sequence=0;
   try{
    const saved=JSON.parse(storage?.getItem('AFTERDAY_SPEECH_RECENT_V108')||'null');
@@ -150,11 +150,17 @@ export class SurvivorSpeechDirectorV108{
   const signature=speechSituationSignature(state);
   const changed=signature!==this.lastSignature;
   this.lastSignature=signature;
-  if(realNow<this.nextAt&&(!changed||this.lastSpeakAt&&realNow-this.lastSpeakAt<SPEECH_EVENT_MIN_GAP_MS))return null;
+  // Preserve an urgent state transition even if it arrives during the
+  // minimum speech gap. Without this pending flag the next tick forgot it.
+  if(changed)this.pendingSignature=signature;
+  const pending=this.pendingSignature===signature;
+  if(realNow<this.nextAt&&(!pending||
+     (this.lastSpeakAt>0&&realNow-this.lastSpeakAt<SPEECH_EVENT_MIN_GAP_MS)))return null;
   const candidates=speechCandidates(state,life,gameNow);
   if(!candidates.length)return null;
   const choice=chooseLine(candidates,this.recentTopics,this.recentTexts,this.sequence++,realNow);
   if(!choice)return null;
+  this.pendingSignature=null;
   this.lastSpeakAt=realNow;
   const interval=choice.group==='danger'?18000:choice.group==='action'?26500:SPEECH_BASE_INTERVAL_MS;
   this.nextAt=realNow+interval+(this.sequence%4)*5500;
