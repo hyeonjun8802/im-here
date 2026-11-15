@@ -487,8 +487,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      }
     }
     if(!next&&zone==='far'&&!q('#exploration-finale').hidden){
-     stage.textContent='원거리 조사 완료 · 모든 지역을 확인했습니다. 마지막 생존 기록을 선택하세요.';
-     choices.appendChild(makeButton('마지막 기록 보기',()=>{
+     const endingRecorded=s.explorationMap?.ending?.type!=='none';
+     stage.textContent=endingRecorded?
+      '원거리 조사 완료 · 마지막 생존 기록을 남겼습니다. 기록을 확인하세요.':
+      '원거리 조사 완료 · 모든 지역을 확인했습니다. 마지막 생존 기록을 선택하세요.';
+     choices.appendChild(makeButton(endingRecorded?'완료된 기록 확인':'마지막 기록 선택하기',()=>{
       const finale=q('#exploration-finale');
       const action=finale.querySelector('button:not(:disabled)');
       (action||finale).scrollIntoView({block:'center'});
