@@ -30,7 +30,8 @@ test('three original v2 source assets remain intact as archived reference resour
 test('Black Map fog and original geometry stay intact while displaying new detailed art',()=>{
  const ui=read('src/explorationMapUiV78.js');
  const css=read('src/explorationMapPolishV79.css');
- assert.match(ui,/photos\/overview\.webp/);
+ assert.match(ui,/regions\/near_neighborhood\.webp/);
+ assert.match(ui,/regions\/far_citywide\.webp/);
  assert.match(ui,/ASSET\+'photos\/'\+site\.id\+'\.webp'/);
  assert.doesNotMatch(ui,/map\/overview_hd\.svg|ASSET\+'locations\/'\+site\.id\+'_hd\.svg'/);
  assert.match(ui,/globalCompositeOperation='destination-out'/);
