@@ -1,4 +1,5 @@
 import {companionProductionFactor,offerCompanionRescue} from './supportCompanion.js';
+import {REPAIR_PARTS_RESERVE,awardRepairParts} from './repairPartsBalanceV95.js';
 /** AFTERDAY · one playable survivor, one rooftop, risk-and-choice expeditions.
  * Day is a GAME DAY (4 real hours at 1x); all rolls use immutable starter seed,
  * not render frames or mutable weather RNG. No backend or monetized loot.
@@ -131,6 +132,8 @@ export function resolveScavengeChoice(s,decision,{day,addLog=()=>{}}={}){
  if(!QUEST_DECISIONS.includes(decision))return {good:false,msg:'잘못된 선택입니다.'};
  if(decision==='scout'&&s.supply.water<1)
   return {good:false,msg:'안전 정찰에는 식수 1개가 필요합니다. 다른 행동을 선택할 수 있습니다.'};
+ if(decision==='salvage'&&s.supply.parts>=REPAIR_PARTS_RESERVE)
+  return {good:false,msg:'수리 부품 비축이 충분합니다. 다른 탐색 행동을 선택하세요.'};
  // Commit before the deterministic roll; no duplicate resource award on reload.
  d.pending=null;d.lastResolvedDay=p.day;
  if(decision==='stay'){
@@ -145,7 +148,7 @@ export function resolveScavengeChoice(s,decision,{day,addLog=()=>{}}={}){
  const lootRoll=roll(d.seed,p.day*411+d.expeditionCount*107+29);
  const acquireSupplies=()=>{
   if(decision==='salvage'){
-   const gained=1+Math.floor(lootRoll*3);s.supply.parts=Math.min(999,s.supply.parts+gained);
+   const gained=awardRepairParts(s,1+Math.floor(lootRoll*2));
    return `폐자재 회수 성공: 부품 +${gained}.`;
   }
   if(lootRoll<.34){
@@ -156,8 +159,8 @@ export function resolveScavengeChoice(s,decision,{day,addLog=()=>{}}={}){
    const gained=decision==='scout'?1:3;s.supply.food=Math.min(999,s.supply.food+gained);
    return `보급품 발견: 식량 +${gained}.`;
   }
-  const gained=decision==='scout'?1:2;
-  s.supply.parts=Math.min(999,s.supply.parts+gained);
+  const gained=awardRepairParts(s,decision==='scout'?1:2);
+  if(!gained){s.supply.food=Math.min(999,s.supply.food+1);return '부품 비축이 충분해 대신 비상식량 +1을 챙겼다.';}
   return `보급품 발견: 수리 부품 +${gained}.`;
  };
  if(r<odds.item){
@@ -233,7 +236,10 @@ export function requestRadioContact(s,day,{addLog=()=>{}}={}){
    if(reward<.35){s.supply.food+=4;msg='구조 헬기가 옥상 근처에 식량 4개를 투하했다.';}
    else if(reward<.68){const n=Math.min(4,Math.max(0,16-s.supply.water));s.supply.water+=n;msg=`구조 헬기가 정수 식수 ${n}개를 투하했다.`;}
    else if(reward<.90){s.supply.medicine+=2;msg='구조 헬기에서 응급 치료제 2개를 떨어뜨렸다.';}
-   else{s.supply.parts+=4;msg='구조 헬기가 수리용 부품 4개를 투하했다.';}
+   else{const n=awardRepairParts(s,2);
+    if(n)msg=`구조 헬기가 수리용 부품 ${n}개를 투하했다.`;
+    else{s.supply.food=Math.min(999,s.supply.food+2);msg='수리 부품이 충분해 구조 보급품에서 식량 2개를 확보했다.';}
+   }
  }else if(v<.56){
    kind='contact';
    const pending=offerCompanionRescue(s,day);

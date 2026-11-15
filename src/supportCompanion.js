@@ -1,10 +1,11 @@
+import {REPAIR_PARTS_RESERVE,awardRepairParts} from './repairPartsBalanceV95.js';
 /** AFTERDAY: choice-based non-playable rooftop companion, not a new hero.
  * One saved radio contact can create ONE rescue choice. Every effect is
  * calculated on the authoritative game-minute loop, never per render frame.
  */
 export const COMPANION_BALANCE=Object.freeze({
   foodMinutes:1440,waterMinutes:1440,foodBonus:1.3,waterBonus:1.3,
-  salvageMinutes:2880,salvageCap:14,shelterlessHealthLoss:.006,
+  salvageMinutes:2880,salvageCap:REPAIR_PARTS_RESERVE,shelterlessHealthLoss:.006,
   autoRepairCost:2,autoRepairReserve:2,autoRepairTargetThreshold:80
 });
 const bound=(v,min,max)=>Math.min(max,Math.max(min,Number(v)||0));
@@ -77,18 +78,20 @@ export function resolveCompanionRescue(s,decision,{addLog=()=>{},day=1}={}){
  if(decision==='aid'){
   s.supply.water--;
   const parts=companionRoll(s.scavenge?.seed,p.radioNewsId,41)<COMPANION_EXCHANGE_ODDS.aidParts;
-  if(parts)s.supply.parts=Math.min(999,s.supply.parts+1);
-  const msg=parts?'식수를 나눠준 생존자가 안전한 폐자재 위치를 알려줬다. 식수 -1, 부품 +1.':
+  const gained=parts?awardRepairParts(s,1):0;
+  const msg=gained?'식수를 나눠준 생존자가 안전한 폐자재 위치를 알려줬다. 식수 -1, 부품 +1.':
+   parts?'생존자에게 식수 1개를 건넸다. 부품은 이미 충분해 더 회수하지 않았다.':
    '생존자에게 식수 1개를 건넸다. 그는 밤길로 떠났다. 물자 보상은 없었다.';
-  addLog(msg);return {good:true,outcome:parts?'aided_parts':'aided',msg};
+  addLog(msg);return {good:true,outcome:gained?'aided_parts':'aided',msg};
  }
  if(decision==='trade'){
   s.supply.food--;
   const r=companionRoll(s.scavenge?.seed,p.radioNewsId,73);
   let outcome='traded_empty',msg='식량 1개를 건넸지만 거래할 만한 물건이 없었다.';
   if(r<COMPANION_EXCHANGE_ODDS.tradeParts){
-   s.supply.parts=Math.min(999,s.supply.parts+2);
-   outcome='traded_parts';msg='식량 1개로 수리 부품 2개를 교환했다.';
+   const gained=awardRepairParts(s,2);
+   if(gained){outcome='traded_parts';msg=`식량 1개로 수리 부품 ${gained}개를 교환했다.`;}
+   else{s.supply.food++;msg='이미 수리 부품이 충분해 교환하지 않고 식량을 돌려받았다.';}
   }else if(r<COMPANION_EXCHANGE_ODDS.tradeParts+COMPANION_EXCHANGE_ODDS.tradeMedicine){
    s.supply.medicine=Math.min(999,s.supply.medicine+1);
    outcome='traded_medicine';msg='식량 1개로 응급 치료제 1개를 교환했다.';

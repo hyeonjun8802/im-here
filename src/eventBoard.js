@@ -1,4 +1,5 @@
 import {scavengeOdds} from './scavengeDirector.js';
+import {REPAIR_PARTS_RESERVE} from './repairPartsBalanceV95.js';
 /* AFTERDAY event notification board — UI only; gameplay changes live in simulation.js.
  * Original illustrations: cropped from approved situation-board concept sheet.
  */
@@ -215,8 +216,11 @@ export class AfterdayEventBoard {
          ?`장비 ${pct(odds.item)}% · 부상 ${pct(odds.injury)}% · 감염 ${pct(odds.sickness)}%`
          :decision==='scout'
          ?`식수 -1 · 장비 ${pct(odds.item)}% · 보급 ${pct(odds.supplies)}%`
-         :`부품 ${pct(odds.supplies)}% · 부상 ${pct(odds.injury)}%`;
-        btn.disabled=decision==='scout'&&(state?.supply?.water||0)<1;
+         :(state?.supply?.parts??0)>=REPAIR_PARTS_RESERVE?
+          `부품 비축 충분 (${REPAIR_PARTS_RESERVE}개 이상) · 회수 불필요`:
+          `부품 ${pct(odds.supplies)}% · 부상 ${pct(odds.injury)}%`;
+        btn.disabled=(decision==='scout'&&(state?.supply?.water||0)<1)||
+         (decision==='salvage'&&(state?.supply?.parts??0)>=REPAIR_PARTS_RESERVE);
       }
     }else if(this.activeKey==='companionInvite'){
       el.querySelector('.afterday-board-companion-invite').disabled=
