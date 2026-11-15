@@ -140,7 +140,7 @@ test('UI changes background at zone switch and connects quest cards and scaled m
  assert.match(ui,/const homeRadius=zone==='far'\?\.045:\.07/);
  assert.match(ui,/const radius=data\.completed\?/);
  assert.match(ui,/const progress=explorationFogStage\(/);
- assert.match(ui,/image\.src=locked\?ASSET\+region\.map/);
+ assert.match(ui,/image\.src=locked\?ASSET\+'markers\/state_unknown\.svg'/);
  assert.match(ui,/quest=explorationQuestProgress\(s\.explorationMap,site\.id\)/);
  assert.match(ui,/quest\.district\.photo/);
  assert.match(ui,/exploration-map__quest-status/);
@@ -159,6 +159,10 @@ test('available region quest does not bypass 17-channel and core travel system',
  assert.equal(mapExpeditionAvailability(s,site,Date.UTC(2026,10,15,9)).ready,false);
  assert.equal(s.explorationMap.sites[site].visibility,'unknown');
  s.explorationMap.tower.phase='channel17';
+ s.explorationMap=sanitizeExplorationMap(s.explorationMap);
+ assert.equal(mapExpeditionAvailability(s,'hypermarket',Date.UTC(2026,10,15,9)).ready,true);
+ assert.equal(mapExpeditionAvailability(s,site,Date.UTC(2026,10,15,9)).ready,false);
+ s.explorationMap.sites.hypermarket={...s.explorationMap.sites.hypermarket,completed:true,visits:1,visibility:'completed'};
  s.explorationMap=sanitizeExplorationMap(s.explorationMap);
  assert.equal(mapExpeditionAvailability(s,site,Date.UTC(2026,10,15,9)).ready,true);
 });

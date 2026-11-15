@@ -82,7 +82,7 @@ test('the player sees the actual story unlock prerequisite and the next uncovere
  assert.match(ui,/phase==='unknown'\?/);
  assert.match(ui,/원거리 미개방 · 근거리 통신실 조사를 완료/);
  assert.match(ui,/원거리 미개방 · 통신탑을 복구하고 단파 무전기로 17번 채널/);
- assert.match(ui,/미발견 지역 · 현재 방문 가능한 장소부터 조사/);
+ assert.match(ui,/미발견 지역 · 지금 열린 장소를 조사 완료/);
  assert.match(ui,/조사 완료 · 다음 장소:/);
  assert.match(ui,/출발하면 오늘의 동네 탐사 1회를 사용합니다/);
  assert.match(ui,/사고 위험은 현장에서 확인/);

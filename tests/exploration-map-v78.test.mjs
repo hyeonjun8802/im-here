@@ -72,7 +72,7 @@ test('a single choice credits real scavenging reward only once and never alters 
  assert.equal(JSON.stringify({kit:s.kit,supply:s.supply,health:s.health,sickness:s.sickness}),after);
 });
 
-test('after return, failed sites remain visited and next region unlocks even without rare loot',()=>{
+test('after return, failed sites remain visited and next region stays locked without a successful completion',()=>{
  let found=null;
  for(let seed=1;seed<1000;seed++){
   const s=state();s.scavenge.seed=seed;
@@ -88,7 +88,7 @@ test('after return, failed sites remain visited and next region unlocks even wit
  assert.equal(returned.completed,false);
  assert.equal(s.explorationMap.sites.ruined_house.visibility,'visited');
  assert.equal(s.explorationMap.sites.ruined_house.visits,1);
- assert.equal(s.explorationMap.sites.convenience_store.visibility,'rumored');
+ assert.equal(s.explorationMap.sites.convenience_store.visibility,'unknown');
  assert.equal(advanceMapExpedition(s,leaveAt+DAY_MS,leavingReal+10000).changed,false);
  assert.equal(s.explorationMap.sites.ruined_house.visits,1);
  assert.ok(['injury','sickness','empty'].includes(outcome.outcome));

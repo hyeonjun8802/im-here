@@ -25,7 +25,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'유리와 무너진 선반에 발이 걸렸다. 창고 조사에 실패했다.',
   sickness:'상한 음식물에서 나온 오염물에 노출됐다. 더 둘러보지 못했다.',
   empty:'배송표에 적힌 상자는 이미 비어 있었다.',
-  trail:'배송표의 약국 납품 주소와 맞은편 화원 표지를 기록했다.'
+  trail:'배송표의 약국 납품 주소를 기록했다. 약국에서 다음 단서를 찾을 수 있다.'
  },
  pharmacy:{
   arrival:'정전된 약국. 쓰러진 진열장 옆에 봉인된 응급 상자와 변색된 약품이 섞여 있다. 선반 뒤로 좁고 어두운 통로가 이어진다.',
@@ -37,7 +37,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'무너진 선반에 부딪혀 다쳤다. 진열장 뒤는 더 살필 수 없었다.',
   sickness:'깨진 용기 주변의 오염물에 노출됐다. 약국을 빠져나왔다.',
   empty:'봉인되지 않은 보관함은 이미 비어 있었다.',
-  trail:'약품 공급 장부에서 구 급수실의 위치를 확인했다.'
+  trail:'약품 공급 장부에 적힌 버려진 화원의 납품 주소를 확인했다.'
  },
  flower_shop:{
   arrival:'무너진 화원 온실. 깨진 유리 아래에 젖은 종자 상자와 말라버린 화분이 뒤섞여 있다.',
@@ -85,7 +85,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'위에서 떨어진 자재에 맞아 더 깊이 들어가지 못했다.',
   sickness:'상한 재고와 먼지에 노출되어 몸이 상했다.',
   empty:'물류 상자 대부분이 뜯겨 있었다. 가져갈 것은 없었다.',
-  trail:'물류 기록에서 도시 바깥쪽 우회 도로의 흔적을 읽었다.'
+  trail:'물류 기록에서 침수 지하차도로 이어지는 외곽 우회 도로의 흔적을 읽었다.'
  },
  underpass:{
   arrival:'지하차도 아래로 검은 물이 고여 있다. 잠긴 차량들 사이에는 상부 도로로 이어지는 표지가 남았다.',
@@ -97,7 +97,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'보이지 않는 장애물에 걸려 부상을 입었다.',
   sickness:'고인 물에 노출된 뒤 몸 상태가 나빠졌다.',
   empty:'차 안의 물건은 이미 젖어 쓸 수 없었다.',
-  trail:'상부 도로의 우회 표지를 기록해 다음 이동에 참고하기로 했다.'
+  trail:'상부 도로의 우회 표지에서 폐병원 응급실로 향하는 경로를 확인했다.'
  },
  hospital:{
   arrival:'병원 응급실에 불이 꺼져 있다. 약품 보관함은 잠겨 있고 격리구역 문은 어긋나 있다.',
@@ -109,7 +109,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'진료실 잔해를 밟아 다쳤다. 격리구역 안쪽은 조사하지 못했다.',
   sickness:'오염된 구역의 공기에 노출되어 몸이 상했다.',
   empty:'남아 있던 보관함은 모두 비어 있었다.',
-  trail:'응급 기록에서 도시의 마지막 대피 상황을 일부 확인했다.'
+  trail:'응급 기록에서 변전소 정전 구획과 다음 이동 경로를 확인했다.'
  },
  substation:{
   arrival:'전원은 끊긴 듯하지만 변전소 케이블에는 잔류 전력이 남아 있을 수 있다. 통제실 문이 반쯤 열려 있다.',
@@ -121,7 +121,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'통제실 철제 구조물에 걸려 부상을 입었다.',
   sickness:'폐쇄된 설비실의 먼지와 오염에 노출됐다.',
   empty:'보관함에는 사용할 부품이 남아 있지 않았다.',
-  trail:'정전 기록을 보고 복구되지 않은 도시 구획을 표시했다.'
+  trail:'정전 기록 속 공동 대피소의 전력 차단 기록과 위치를 확인했다.'
  },
  community_shelter:{
   arrival:'공동 대피소에는 빈 침상과 마지막 배급 장부가 남아 있다. 문턱 너머로 사람의 흔적이 보인다.',
@@ -133,7 +133,7 @@ export const EXPLORATION_STORIES=Object.freeze({
   injury:'무너진 창고 선반에 부딪혀 다쳤다.',
   sickness:'오래된 침상 주변의 오염된 먼지에 노출됐다.',
   empty:'마지막 배급 뒤 남은 물자는 없었다.',
-  trail:'배급 장부에 적힌 마지막 이동 경로를 기록했다.'
+  trail:'배급 장부에 남은 옥상 헬기장으로 향하는 마지막 이동 경로를 기록했다.'
  },
  rooftop_helipad:{
   arrival:'옥상 헬기장에 금이 간 착륙 표시가 남아 있다. 끊어진 신호등 아래, 마지막 구조 흔적을 찾는다.',

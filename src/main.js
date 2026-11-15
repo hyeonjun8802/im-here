@@ -794,11 +794,12 @@ async function boot(){try{
     const returnSummary=result.completed?'조사 완료 · 검은 지도가 밝아졌습니다.':'방문 완료 · 아직 조사할 것이 남았습니다.';
     addEvent(state,name+' 탐험 귀환 · '+returnSummary+
      (result.story?' '+result.story:'')+
-     (result.trail?' 확인한 단서: '+result.trail:''));
+     (result.trail?' 확인한 단서: '+result.trail:'')+
+     (result.nextSite?' · 새 탐사 장소 발견: '+result.nextSite:''));
     narrativeQueue.enqueue({
      key:'map:return:'+result.siteId+':'+gameClock.virtualNow,
      kind:'cinema',priority:2,durationMs:8500,
-     text:name+' · '+(result.story||returnSummary)
+     text:name+' · '+(result.nextSite?'다음 지역 발견: '+result.nextSite+' · ':'')+(result.story||returnSummary)
     });
     // Do not re-start a moving character's route (50× AUTO regression).
     if(world?.life&&['idle','done'].includes(world.life.stage))world.setAction('watch');
