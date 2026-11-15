@@ -314,7 +314,7 @@ test('fallback anchors at actual world survivor when animated GLB is delayed',()
  assert.match(bubble,/world\.survivor\.getWorldPosition\(this\.headPosition\)/);
  assert.match(bubble,/lastHideReason/);
  assert.match(bubble,/no-safe-space/);
- assert.match(bubble,/Math\.max\(top\+4,anchorY-height\/2\)/);
+ assert.match(bubble,/Math\.max\(anchorY\+gap,top\+4\)/);
 });
 
 test('world-space speech prefers centered head alignment with arrow matching its X',()=>{
