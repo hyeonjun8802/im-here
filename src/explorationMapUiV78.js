@@ -439,12 +439,15 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      ['stay','위험을 피하고 즉시 복귀 · 방문 기록 없음']
     ];
     for(const [decision,caption] of actions){
-     choices.appendChild(makeButton(caption,()=>{
-      const result=resolveMapExpedition(getState(),decision,getNow(),Date.now());
-      if(!result.good){stage.textContent=result.msg;return;}
-      onChoice?.(result);
-      save();render();
-     }));
+     const missingWater=decision==='scout'&&(s.supply?.water??0)<1;
+     choices.appendChild(makeButton(
+      missingWater?caption+' · 식수 부족 (1개 필요)':caption,()=>{
+       const result=resolveMapExpedition(getState(),decision,getNow(),Date.now());
+       if(!result.good){stage.textContent=result.msg;return;}
+       onChoice?.(result);
+       save();render();
+      },{disabled:missingWater}
+     ));
     }
    }
   }else{
@@ -468,6 +471,30 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      render();
      markers.querySelector('.exploration-map__marker[data-selected="true"]')?.focus({preventScroll:true});
     },{cls:'exploration-map__primary'}));
+    if(!next&&zone==='near'){
+     const tower=q('#exploration-tower');
+     if(s.explorationMap?.tower?.phase==='channel17'){
+      stage.textContent='근거리 조사 완료 · 17번 채널 연결 완료. 원거리 첫 지역으로 이동하세요.';
+      choices.appendChild(makeButton('원거리 첫 지역 보기',()=>setZone('far'),
+       {cls:'exploration-map__primary'}));
+     }else if(!tower.hidden){
+      stage.textContent='근거리 조사 완료 · 다음 목표는 통신탑 복구와 17번 채널 연결입니다.';
+      choices.appendChild(makeButton('통신탑 복구 단계 보기',()=>{
+       const action=tower.querySelector('button:not(:disabled)');
+       (action||tower).scrollIntoView({block:'center'});
+       action?.focus({preventScroll:true});
+      },{cls:'exploration-map__primary'}));
+     }
+    }
+    if(!next&&zone==='far'&&!q('#exploration-finale').hidden){
+     stage.textContent='원거리 조사 완료 · 모든 지역을 확인했습니다. 마지막 생존 기록을 선택하세요.';
+     choices.appendChild(makeButton('마지막 기록 보기',()=>{
+      const finale=q('#exploration-finale');
+      const action=finale.querySelector('button:not(:disabled)');
+      (action||finale).scrollIntoView({block:'center'});
+      action?.focus({preventScroll:true});
+     },{cls:'exploration-map__primary'}));
+    }
    }else{
     stage.textContent=can.ready?
      '출발하면 오늘의 동네 탐사 1회를 사용합니다. 현장에서 탐사 방법과 사고 확률을 선택할 수 있습니다.':
@@ -510,7 +537,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(visible()){
    if(hasBlockingChoice?.()){close();return progress;}
    const mission=getState().explorationMap?.mission;
-   const identity=mission?mission.siteId+':'+mission.phase:'idle';
+   const identity=mission?mission.siteId+':'+mission.phase+
+    (mission.phase==='encounter'?':scout-'+String((getState().supply?.water??0)>=1):''):'idle';
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
   }else if(getState().explorationMap?.mission?.phase==='encounter'&&
      !isAutoEnabled?.()&&realNow>=snoozeUntil&&!hasBlockingChoice?.()){
