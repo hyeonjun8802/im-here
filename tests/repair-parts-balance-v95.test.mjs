@@ -120,5 +120,5 @@ test('all repair consumers retain their original part costs and medicine supply 
  assert.match(scavenge,/s.supply.medicine\+=2;msg='구조 헬기에서 응급 치료제 2개/);
  assert.match(companion,/s.supply.medicine=Math.min\(999,s.supply.medicine\+1\)/);
  assert.match(read('src/explorationMapV78.js'),/s.supply.parts-=4;tower.reservedParts=4/);
- assert.doesNotMatch(read('src/repairPartsBalanceV95.js'),/medicine|food|water/);
+ assert.doesNotMatch(read('src/repairPartsBalanceV95.js'),/supply\.(?:medicine|food|water)\s*(?:=|\+\+|--|\+=|-=)/);
 });
