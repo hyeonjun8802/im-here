@@ -79,6 +79,7 @@ test('tornado direct, near and distant give different urgent thoughts',()=>{
  s.tornadoApproach='distant';assert.ok(speech(s,'tornadoDistant'));
  s.tornadoEncounterActive=false;
  assert.ok(!speech(s,'tornadoDirectTent'));
+ assert.ok(speech(s,'tornadoDistant'),'tornado weather still triggers a weather-specific response');
 });
 
 test('all extreme-weather branches depend on actual game weather',()=>{
@@ -264,6 +265,11 @@ test('speech bubble hides during modal overlay and never blocks touch controls',
  assert.match(html,/survivorSpeechBubbleV108\.css/);
  assert.match(html,/id="survivor-speech-toggle"/);
  assert.doesNotMatch(module,/<img|srcset|new THREE\.Sprite|setCameraView|\.supply\.\w+\s*=/);
+});
+
+test('speech memory storage access is guarded for restricted/private browsing',()=>{
+ const main=read('src/main.js');
+ assert.match(main,/try\{speechHistoryStorage=window\.sessionStorage;\}catch\{\}/);
 });
 
 test('new speech remains separate from canonical HUD, chapter title and game-save schema',()=>{

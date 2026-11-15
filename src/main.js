@@ -99,7 +99,9 @@ let lastAutoActionReal=0;
 // restart its timeout or leave a permanent black backdrop over the 3D world.
 const narrativeQueue=new NarrativeQueueV76();
 // v108: purely observational character thoughts. Never writes simulation state.
-const survivorSpeech=new SurvivorSpeechDirectorV108({storage:sessionStorage});
+let speechHistoryStorage=null;
+try{speechHistoryStorage=window.sessionStorage;}catch{}
+const survivorSpeech=new SurvivorSpeechDirectorV108({storage:speechHistoryStorage});
 let survivorSpeechBubble=null;
 let survivorSpeechEnabled=true;
 try{survivorSpeechEnabled=localStorage.getItem('AFTERDAY_SPEECH_ENABLED_V108')!=='0';}catch{}

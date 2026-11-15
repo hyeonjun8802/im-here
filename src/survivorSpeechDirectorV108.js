@@ -43,6 +43,9 @@ export function speechCandidates(state,life,gameNow=0){
   if(s.tornadoApproach==='direct')add(items,own('tent')?'tornadoDirectTent':'tornadoDirectNoTent',110,'danger');
   else if(s.tornadoApproach==='near')add(items,'tornadoNear',105,'danger');
   else add(items,'tornadoDistant',98,'danger');
+ }else if(weather==='tornado'){
+  // The weather can persist briefly after the encounter has settled.
+  add(items,'tornadoDistant',90,'danger');
  }else if(weather==='storm'){
   add(items,own('tent')?'stormTent':'stormNoTent',94,'danger');
  }
