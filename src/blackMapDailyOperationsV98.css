@@ -1,0 +1,56 @@
+/* AFTERDAY v98 | Daily operations, optional preparation, return report.
+ * Only styles in Black Map dialog; preserves previous markers and main HUD. */
+.exploration-map-v78 .exploration-map__daily-ops{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;
+ padding:9px 10px;margin-bottom:8px;border:1px solid #666a56;border-left:3px solid #8ea68a;
+ background:linear-gradient(120deg,#1e3432,#151f22);border-radius:4px;
+}
+.exploration-map-v78 .exploration-map__daily-copy{min-width:0;flex:1;display:grid;gap:2px}
+.exploration-map-v78 .exploration-map__daily-copy strong{color:#dfd8bc;font-size:12px;line-height:1.4}
+.exploration-map-v78 .exploration-map__daily-copy p{margin:0;font-size:10px;line-height:1.4;color:#b9cbc2;word-break:keep-all}
+.exploration-map-v78 .exploration-map__daily-copy small{color:#a8bbac;font-size:9px}
+.exploration-map-v78 #exploration-map-daily-shortcut{
+ min-height:44px;flex:0 0 auto;max-width:37%;border-color:#9ba98b;color:#efe6cf;
+ font-weight:750;font-size:11px;padding:8px 9px;white-space:normal;word-break:keep-all;
+}
+.exploration-map-v78 .exploration-map__prep,
+.exploration-map-v78 .exploration-map__return-report{
+ border:1px solid #ae9064;border-radius:5px;background:linear-gradient(#2b302b,#151f20);
+ padding:11px;margin:0 0 9px;display:grid;gap:8px;min-width:0;
+}
+.exploration-map-v78 .exploration-map__prep[hidden],
+.exploration-map-v78 .exploration-map__return-report[hidden]{display:none!important}
+.exploration-map-v78 .exploration-map__prep strong,
+.exploration-map-v78 .exploration-map__return-report strong{
+ color:#f6d8a1;font-weight:850;font-size:14px;
+}
+.exploration-map-v78 .exploration-map__prep p,
+.exploration-map-v78 .exploration-map__return-report p{
+ margin:0;color:#dedfd3;font-size:11px;line-height:1.55;word-break:keep-all;overflow-wrap:anywhere;
+}
+.exploration-map-v78 .exploration-map__prep-metrics{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;
+}
+.exploration-map-v78 .exploration-map__prep-metrics span{
+ padding:7px 5px;border-radius:3px;border:1px solid #69756a;
+ background:#142729;text-align:center;font-size:10px;color:#f1e2c7;
+}
+.exploration-map-v78 .exploration-map__prep-options{color:#bcd4c4;font-size:10px;line-height:1.6}
+.exploration-map-v78 .exploration-map__prep-actions{display:grid;grid-template-columns:2fr 1fr;gap:7px}
+.exploration-map-v78 #exploration-map-prep-confirm{
+ background:linear-gradient(#a77436,#654324);color:#fff2c9;
+ border:1px solid #ebc184;font-weight:850;min-height:46px;
+}
+.exploration-map-v78 #exploration-map-prep-cancel{min-height:46px}
+.exploration-map-v78 .exploration-map__return-report[data-success="true"]{border-left:4px solid #89bb91}
+.exploration-map-v78 .exploration-map__return-report[data-success="false"]{border-left:4px solid #c5a064}
+.exploration-map-v78 .exploration-map__return-report small{font-size:10px;color:#c6d3c4}
+.exploration-map-v78 #exploration-map-return-dismiss{min-height:40px;width:100%;font-size:11px}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__daily-ops{padding:7px 8px;gap:6px}
+ .exploration-map-v78 .exploration-map__daily-copy strong{font-size:11px}
+ .exploration-map-v78 .exploration-map__daily-copy p{font-size:9px}
+ .exploration-map-v78 #exploration-map-daily-shortcut{max-width:37%;font-size:10px;padding:7px}
+ .exploration-map-v78 .exploration-map__prep,.exploration-map-v78 .exploration-map__return-report{padding:9px}
+ .exploration-map-v78 .exploration-map__prep-actions{grid-template-columns:1fr 1fr}
+}
