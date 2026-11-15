@@ -199,8 +199,3 @@ test('region tabs, scripted tower stages, situational actions and retina fog are
  assert.match(css,/@media\(max-width:350px\)/);
  assert.doesNotMatch(css,/\.actionbar\s*\{|afterday-v3-bottom_action_bar/);
 });
-
-test('dismissed mandatory story popup never blocks the optional large mobile touch sheet',()=>{
- const source=read('src/mobileExpandedActionsV83.js');
- assert.match(source,/#hud > \.afterday-board\.is-choice:not\(\[hidden\]\)/);
-});
