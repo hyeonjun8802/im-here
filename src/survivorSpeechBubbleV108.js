@@ -9,7 +9,10 @@ export function chooseSpeechBubblePlacement({
  obstacles=[]
 }={}){
  if(![anchorX,anchorY,width,height,viewWidth,viewHeight,top,bottom].every(Number.isFinite))return null;
- if(anchorX<-12||anchorX>viewWidth+12||anchorY<-12||anchorY>viewHeight+12)return null;
+ // Recover when the head grazes the forecast, but never detach a bubble
+ // from an off-screen character or push it across the entire viewport.
+ if(anchorX<-12||anchorX>viewWidth+12||
+    anchorY<Math.max(-12,top-40)||anchorY>Math.min(viewHeight+12,bottom+40))return null;
  if(width<=0||height<=0||bottom-top<height+12)return null;
  const gap=14,edge=10;
  const positions=[
