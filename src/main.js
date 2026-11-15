@@ -732,7 +732,7 @@ worldCanvas.addEventListener('webglcontextrestored',()=>{
  if(error?.textContent?.includes('3D 렌더링'))error.classList.add('hidden');
 });
 function animation(){
- let last=performance.now(),lastHUD=0,lastSave=Date.now(),lastSpeechTick=0,lastSpeechPosition=0;
+ let last=performance.now(),lastHUD=0,lastSave=Date.now(),lastSpeechTick=0;
  const draw=t=>{
   const realDt=Math.min(Math.max((t-last)/1000,0),.05);last=t;
   const real=Date.now(),foreground=document.visibilityState==='visible';
@@ -779,10 +779,9 @@ function animation(){
      if(thought)survivorSpeechBubble.show(thought,real);
     }
    }
-   if(t-lastSpeechPosition>=80){
-    lastSpeechPosition=t;
-    survivorSpeechBubble.update(world,real,blocked||!survivorSpeechEnabled);
-   }
+   // Track the animated Head each requestAnimationFrame, after world.update.
+   // The old 80ms throttle made the bubble visibly step while walking.
+   survivorSpeechBubble.update(world,real,blocked||!survivorSpeechEnabled);
   }else survivorSpeechBubble?.hide();
   requestAnimationFrame(draw);
  };

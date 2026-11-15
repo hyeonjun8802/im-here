@@ -317,6 +317,109 @@ test('fallback anchors at actual world survivor when animated GLB is delayed',()
  assert.match(bubble,/Math\.max\(top\+4,anchorY-height\/2\)/);
 });
 
+test('world-space speech prefers centered head alignment with arrow matching its X',()=>{
+ const w=134,h=46,ax=181,ay=351;
+ const pos=chooseSpeechBubblePlacement({
+  anchorX:ax,anchorY:ay,width:w,height:h,
+  viewWidth:390,viewHeight:800,top:110,bottom:688
+ });
+ assert.equal(pos.side,'above');
+ assert.ok(Math.abs((pos.x+w/2)-ax)<0.001);
+ assert.ok(Math.abs((pos.y+h+7)-ay)<0.001);
+ const css=read('src/survivorSpeechBubbleV108.css');
+ assert.match(css,/var\(--speech-tail-x,50%\)/);
+ assert.match(css,/translateX\(-50%\) rotate\(45deg\)/);
+ assert.doesNotMatch(css,/left:auto;right:14px/);
+});
+
+test('bubble updates at native render-frame cadence and not at a 80ms interval',()=>{
+ const main=read('src/main.js');
+ const block=main.slice(main.indexOf('// Follow the animated GLB Head'),main.indexOf('requestAnimationFrame(draw);',main.indexOf('// Follow the animated GLB Head')));
+ assert.match(block,/survivorSpeechBubble\.update\(world,real,blocked\|\|!survivorSpeechEnabled\)/);
+ assert.doesNotMatch(main,/lastSpeechPosition|t-lastSpeechPosition>=80/);
+ assert.match(main,/world\.update\(/);
+});
+
+test('subpixel speech placement retains fractional coordinates instead of stepping pixels',()=>{
+ const p=chooseSpeechBubblePlacement({
+  anchorX:187.29,anchorY:368.78,width:131,height:44,
+  viewWidth:390,viewHeight:800,top:110,bottom:688
+ });
+ assert.equal(p.side,'above');
+ assert.ok(Math.abs(p.x-Math.round(p.x))>0.01);
+ assert.ok(Math.abs(p.y-Math.round(p.y))>0.01);
+});
+
+test('speech side does not flip while its previous nearby position remains unobstructed',()=>{
+ const args={anchorX:180,anchorY:340,width:120,height:44,
+  viewWidth:390,viewHeight:800,top:110,bottom:680};
+ const first=chooseSpeechBubblePlacement(args);
+ const kept=chooseSpeechBubblePlacement({...args,anchorX:183,preferredSide:first.side});
+ assert.equal(kept.side,first.side);
+ const alternate=chooseSpeechBubblePlacement({...args,obstacles:[{x:105,y:285,w:150,h:55}],preferredSide:first.side});
+ assert.ok(alternate);
+ assert.notEqual(alternate.side,first.side);
+});
+
+test('RAF motion is smoothed, CSS arrow tracks GLB head and HUD layout cached across frames',()=>{
+ const classList=()=>({add(){},remove(){}});
+ const transforms={};
+ const element={dataset:{},style:{
+  setProperty(k,v){transforms[k]=v;}
+ },hidden:true,textContent:'',offsetWidth:122,offsetHeight:46,
+  classList:classList(),setAttribute(){},remove(){}};
+ const rect=(x,y,w,h)=>({left:x,top:y,width:w,height:h});
+ let layouts=0;
+ const forecast={hidden:false,getBoundingClientRect(){layouts++;return rect(0,0,390,105)}};
+ const actionbar={hidden:false,getBoundingClientRect(){layouts++;return rect(0,692,390,108)}};
+ const nodes={'#disaster-forecast':forecast,'.actionbar':actionbar};
+ const doc={body:{appendChild(){}},defaultView:{innerWidth:390,innerHeight:800},
+  createElement:()=>element,querySelector:k=>nodes[k]||null};
+ const cam=new THREE.PerspectiveCamera(48,390/800,.1,200);
+ cam.position.set(0,6,16);cam.lookAt(0,2,0);cam.updateMatrixWorld();
+ const head=new THREE.Object3D();head.position.set(0,2,0);
+ const world={beardedSurvivor:{status:'ready',nodes:{Head:head}},camera:cam,
+  canvas:{getBoundingClientRect:()=>rect(0,0,390,800)}};
+ const bubble=new SurvivorSpeechBubbleV108({doc});
+ bubble.show({text:'도시가 너무 조용하네.'},100);
+ assert.ok(bubble.update(world,150));
+ const first=bubble.followX;const layoutBefore=layouts;
+ head.position.x=2;
+ assert.ok(bubble.update(world,166));
+ assert.notEqual(bubble.followX,first);
+ assert.ok(bubble.followX>first);
+ assert.equal(layouts,layoutBefore,'no HUD reflow on intermediate RAF');
+ assert.ok(transforms['--speech-tail-x']);
+ assert.ok(element.style.transform.includes('translate3d('));
+ assert.ok(/px,/.test(element.style.transform));
+ assert.ok(bubble.update(world,350));
+ assert.ok(layouts>layoutBefore,'HUD bounding boxes refresh on slow cadence');
+});
+
+test('bubble recovers from a temporary no-space hide without zero-width lock',()=>{
+ const mockStyle={setProperty(){}},mockEl={dataset:{},style:mockStyle,hidden:true,textContent:'',
+  offsetWidth:120,offsetHeight:42,
+  classList:{add(){},remove(){}},setAttribute(){},remove(){}};
+ const doc={body:{appendChild(){}},defaultView:{innerWidth:390,innerHeight:800},
+  createElement:()=>mockEl,querySelector:()=>null};
+ const cam=new THREE.PerspectiveCamera(48,390/800,.1,200);
+ cam.position.set(0,6,16);cam.lookAt(0,2,0);cam.updateMatrixWorld();
+ const head=new THREE.Object3D();head.position.set(0,2,0);
+ const canvas={getBoundingClientRect:()=>({left:0,top:0,width:390,height:800})};
+ const world={beardedSurvivor:{status:'ready',nodes:{Head:head}},camera:cam,canvas};
+ const bubble=new SurvivorSpeechBubbleV108({doc});
+ bubble.show({text:'물탱크를 살펴보자.'},100);
+ bubble.cachedLayout={viewWidth:390,viewHeight:800,width:120,height:42,top:110,bottom:680,
+  obstacles:[{x:0,y:110,w:390,h:570}]};
+ bubble.layoutExpiresAt=400;
+ assert.equal(bubble.update(world,150),false);
+ assert.equal(mockEl.hidden,true);
+ bubble.layoutExpiresAt=0;
+ assert.equal(bubble.update(world,500),true);
+ assert.equal(mockEl.hidden,false);
+ assert.equal(bubble.lastHideReason,null);
+});
+
 test('new speech remains separate from canonical HUD, chapter title and game-save schema',()=>{
  const world=read('src/world.js'),sim=read('src/simulation.js'),main=read('src/main.js');
  assert.match(main,/survivorSpeech\.tick/);

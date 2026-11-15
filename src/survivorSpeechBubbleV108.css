@@ -27,25 +27,24 @@
  opacity:0;
  visibility:hidden;
  transition:opacity .22s ease;
+ will-change:transform;
  contain:layout style;
 }
 #survivor-speech-bubble[hidden]{display:none!important}
 #survivor-speech-bubble.is-positioned{opacity:1;visibility:visible}
 #survivor-speech-bubble::after{
  content:'';
- position:absolute;left:14px;bottom:-5px;
+ position:absolute;left:var(--speech-tail-x,50%);bottom:-5px;
  width:8px;height:8px;
- transform:rotate(45deg);
+ transform:translateX(-50%) rotate(45deg);
  background:rgba(18,24,27,.96);
  border-right:1px solid rgba(202,174,131,.58);
  border-bottom:1px solid rgba(202,174,131,.58);
  pointer-events:none;
 }
+/* Tail position is projected from the living character's head. */
 #survivor-speech-bubble[data-side="left"]{border-radius:10px 10px 4px 10px}
-#survivor-speech-bubble[data-side="left"]::after{
- left:auto;right:14px;
-}
-#survivor-speech-bubble[data-side$="below"]::after{
+#survivor-speech-bubble[data-side*="below"]::after{
  bottom:auto;top:-5px;
  border-right:0;border-bottom:0;
  border-left:1px solid rgba(202,174,131,.58);
