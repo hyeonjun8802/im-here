@@ -1,0 +1,67 @@
+/* AFTERDAY v91 | Each region begins near-black, then clears in six
+ * completion-based stages; old saves are read, never rewritten. */
+.exploration-map-v78 .exploration-map__fog-progress{
+ display:flex;align-items:center;gap:10px;justify-content:space-between;
+ padding:0 3px 7px;min-width:0;
+}
+.exploration-map-v78 .exploration-map__fog-stage{
+ flex:0 0 auto;color:#eed3a6;
+ font:700 10px/1.4 'Noto Sans KR',system-ui,sans-serif;
+ letter-spacing:.03em;white-space:nowrap;
+}
+.exploration-map-v78 .exploration-map__fog-bars{
+ display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+ gap:4px;flex:1;max-width:250px;min-width:55px;
+}
+.exploration-map-v78 .exploration-map__fog-bars span{
+ display:block;height:6px;min-width:0;border-radius:2px;
+ border:1px solid #706a5b;background:#131a1e;
+ box-shadow:0 1px 1px #050908 inset;
+ transition:background .65s ease,border-color .65s ease;
+}
+.exploration-map-v78 .exploration-map__fog-bars span[data-revealed="true"]{
+ background:linear-gradient(180deg,#dbbb7c,#977344);
+ border-color:#e3c68f;box-shadow:0 0 5px #d0a66b5d;
+}
+/* Fade the photo's exposure together with the canvas fog. */
+.exploration-map-v78 .exploration-map__city{
+ transition:filter .9s ease;
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="0"] .exploration-map__city{
+ filter:brightness(.62) saturate(.57);
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="1"] .exploration-map__city{
+ filter:brightness(.72) saturate(.65);
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="2"] .exploration-map__city{
+ filter:brightness(.8) saturate(.73);
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="3"] .exploration-map__city{
+ filter:brightness(.88) saturate(.8);
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="4"] .exploration-map__city{
+ filter:brightness(.94) saturate(.85);
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="5"] .exploration-map__city{
+ filter:brightness(.98) saturate(.92);
+}
+.exploration-map-v78 .exploration-map__map[data-fog-stage="6"] .exploration-map__city{
+ filter:brightness(1) saturate(.98);
+}
+/* Undiscovered pins do not accidentally reveal the layout through the fog. */
+.exploration-map-v78 .exploration-map__map[data-fog-stage="0"] .exploration-map__marker[data-visibility="unknown"]{
+ opacity:.09;
+}
+.exploration-map-v78 .exploration-map__map:not([data-fog-stage="0"]) .exploration-map__marker[data-visibility="unknown"]{
+ opacity:.25;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__fog-progress{gap:7px;padding:0 2px 6px}
+ .exploration-map-v78 .exploration-map__fog-stage{font-size:9.5px}
+ .exploration-map-v78 .exploration-map__fog-bars{gap:3px;max-width:155px}
+ .exploration-map-v78 .exploration-map__fog-bars span{height:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .exploration-map-v78 .exploration-map__city,
+ .exploration-map-v78 .exploration-map__fog-bars span{transition:none}
+}
