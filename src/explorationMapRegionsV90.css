@@ -84,3 +84,10 @@
 @media(prefers-reduced-motion:reduce){
  .exploration-map-v78 .exploration-map__city{transition:none}
 }
+
+/* v92: unrevealed quests must not display the panoramic map without fog. */
+.exploration-map-v78 .exploration-map__card.is-locked .exploration-map__site-image{
+ object-fit:contain;object-position:center;
+ padding:18px;box-sizing:border-box;background:#080d11;
+ filter:brightness(.70);opacity:.8;
+}
