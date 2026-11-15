@@ -101,7 +101,7 @@ test('tornado and raider buttons remain available; only notice display duration 
  assert.match(js,/\.afterday-board-secure'\)\.hidden=!\(key==='raiders'&&options\.raiderActive\)/);
  assert.match(js,/MAX_NON_CHOICE_NOTICE_MS/);
  assert.match(js,/if\(!mandatory\)this\.timer=setTimeout\(\(\)=>this\.dismiss\(\),Math\.min\(/);
- assert.match(main,/#\('take-cover'\)\.hidden=!approaching/);
- assert.match(main,/#\('secure-supplies'\)\.hidden=!approaching/);
+ assert.match(main,/\$\('#take-cover'\)\.hidden=!approaching/);
+ assert.match(main,/\$\('#secure-supplies'\)\.hidden=!approaching/);
  assert.doesNotMatch(js,/advance\(|applyAction\(|\.supply\.[a-z]+\s*[-+=]/);
 });
