@@ -81,3 +81,110 @@ body.afterday-real-ui-v3 #hud #admin-panel #admin-close{
     margin-bottom:1px!important;
   }
 }
+
+
+/* v104 | iPhone/mobile HUD debugging (2026-11-16).
+ * One row for the three existing QA switches, no new game controls.
+ * The v26 equipment scale(.72) shrank all text and the original
+ * panel at once. Restore readable proportions without moving the bottom
+ * 9-slot action rail, forecast artwork, map geometry or gameplay. */
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud .topbar .top-right{
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  align-items:center!important;justify-content:flex-end!important;
+  width:140px!important;min-width:140px!important;max-width:140px!important;
+  height:44px!important;min-height:44px!important;
+  top:calc((100vw - 4px) * 300 / 1647 + 8px + env(safe-area-inset-top))!important;
+  right:8px!important;left:auto!important;
+  gap:4px!important;padding:0!important;margin:0!important;
+  transform:none!important;
+ }
+ body.afterday-real-ui-v3 #hud .topbar .top-right #speed-toggle,
+ body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle,
+ body.afterday-real-ui-v3 #hud .topbar .top-right #admin-toggle{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  flex:0 0 44px!important;align-self:center!important;
+  box-sizing:border-box!important;
+  width:44px!important;min-width:44px!important;max-width:44px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important;
+  margin:0!important;padding:0 1px!important;
+  font-size:11px!important;line-height:1!important;
+  letter-spacing:0!important;white-space:nowrap!important;
+  touch-action:manipulation!important;
+ }
+ body.afterday-real-ui-v3 #hud .topbar .top-right #auto-toggle,
+ body.afterday-real-ui-v3 #hud .topbar .top-right #admin-toggle{
+  font-size:10px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit,
+ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+  transform:none!important;transform-origin:bottom left!important;
+  width:clamp(210px,60vw,242px)!important;
+  max-width:calc(100vw - 20px)!important;
+  height:auto!important;min-height:0!important;
+  aspect-ratio:461 / 308!important;
+  left:10px!important;
+  bottom:calc(max(76px,(100vw - 8px) * 172 / 1148 + 19px) + env(safe-area-inset-bottom))!important;
+  padding:clamp(38px,11vw,45px) 14px 33px clamp(22px,6vw,26px)!important;
+  gap:3px!important;box-sizing:border-box!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
+  left:clamp(22px,6vw,26px)!important;right:39%!important;
+  top:calc(17.2% - .58em)!important;
+  font-size:12px!important;line-height:1.1!important;
+  letter-spacing:.01em!important;
+  white-space:nowrap!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;
+ }
+ body.afterday-real-ui-v3 #hud #inventory-items{
+  font-size:12px!important;line-height:1.24!important;
+  -webkit-line-clamp:2!important;max-height:2.48em!important;
+  overflow:hidden!important;word-break:keep-all!important;
+  overflow-wrap:break-word!important;
+ }
+ body.afterday-real-ui-v3 #hud #sleep-arrangement,
+ body.afterday-real-ui-v3 #hud #companion-status{
+  font-size:10.5px!important;line-height:1.2!important;
+  white-space:nowrap!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit > .premium-equipment-disclosure{
+  min-width:44px!important;min-height:28px!important;
+  font-size:11px!important;top:8.7%!important;right:6%!important;
+ }
+ /* Improve legibility only inside the existing forecast image-safe inset. */
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat{
+  font-size:clamp(7.3px,2.15vw,8.6px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stat strong{
+  font-size:clamp(7.1px,2.05vw,8.2px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .survival-hud-stock strong{
+  font-size:clamp(7.4px,2.1vw,8.3px)!important;
+ }
+ body.afterday-real-ui-v3 .premium-hud-v1000 .premium-hud__forecast{
+  font-size:clamp(7.1px,2vw,8.5px)!important;
+ }
+}
+@media(max-width:340px){
+ body.afterday-real-ui-v3 #hud .topbar .top-right{
+  width:136px!important;min-width:136px!important;max-width:136px!important;
+  gap:2px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit,
+ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+  width:clamp(200px,64vw,218px)!important;
+  padding-left:21px!important;
+ }
+ body.afterday-real-ui-v3 #hud .survival-kit > small:first-child{
+  left:21px!important;font-size:11px!important;
+ }
+}
+@media(max-width:720px) and (max-height:600px){
+ body.afterday-real-ui-v3 #hud .survival-kit,
+ body.afterday-real-ui-v3 #hud .survival-kit:has(> .survival-kit-action){
+  width:clamp(198px,55vw,226px)!important;
+  padding-top:37px!important;
+  padding-bottom:31px!important;
+ }
+}

@@ -3,7 +3,6 @@ import { AfterdayEventBoard } from './eventBoard.js';
 import {installPremiumHudV1000} from './premiumHudV1000.js';
 import {installCommonUiAssetsV3} from './commonUiAssetsV3.js';
 import {installPremiumEquipmentHudV1600} from './premiumEquipmentHudV1600.js';
-import {installMobileExpandedActions} from './mobileExpandedActionsV83.js';
 import {EXPLORATION_SITES} from './explorationMapV78.js';
 import {GameClock,GAME_DAY_REAL_MS} from './gameClock.js';
 import {DeviceCloudSave} from './deviceCloudSave.js';
@@ -815,7 +814,7 @@ async function boot(){try{
    isAutoEnabled:()=>autoSurvivalEnabled
   });
   window.afterday={state,world,save,renderHUD,eventBoard,gameClock,explorationUI};
-  bindEvents();installMobileExpandedActions();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
+  bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
   // Prefer actual locally baked GLB assets before displaying the scene. A 7-second
