@@ -170,7 +170,7 @@ test('weather, ownership and danger changes alter the situation fingerprint',()=
 test('director enforces initial delay, non-spam real-time cooldown and event gap',()=>{
  const s=fresh(),d=new SurvivorSpeechDirectorV108();
  assert.equal(d.tick({state:s,gameNow:start,realNow:1000}),null);
- assert.equal(d.tick({state:s,gameNow:start,realNow:9400}),null);
+ assert.equal(d.tick({state:s,gameNow:start,realNow:4400}),null);
  const one=d.tick({state:s,gameNow:start,realNow:9600});
  assert.ok(one?.text);
  assert.equal(d.tick({state:s,gameNow:start+1000,realNow:9610}),null);
@@ -179,6 +179,13 @@ test('director enforces initial delay, non-spam real-time cooldown and event gap
  assert.equal(d.tick({state:s,gameNow:start,realNow:11000}),null);
  // Critical change can be spoken after the real-time minimum gap.
  assert.ok(d.tick({state:s,gameNow:start,realNow:9600+SPEECH_EVENT_MIN_GAP_MS+500})?.text);
+});
+
+test('first automatic thought becomes eligible after the shortened visible warmup',()=>{
+ const s=fresh(),d=new SurvivorSpeechDirectorV108();
+ assert.equal(d.tick({state:s,gameNow:start,realNow:1000}),null);
+ assert.equal(d.tick({state:s,gameNow:start,realNow:4400}),null);
+ assert.ok(d.tick({state:s,gameNow:start,realNow:4600})?.text);
 });
 
 test('director is session-memory safe, never writes canonical game save',()=>{
