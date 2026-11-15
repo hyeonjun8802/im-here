@@ -31,7 +31,7 @@ test('map photo, fog and route use one physical map aspect ratio with no short-s
  assert.match(ui,/svg\.setAttribute\('preserveAspectRatio','none'\)/);
  assert.match(ui,/ctx\.setTransform\(ratio,0,0,ratio,0,0\)/);
  // Both the home and the dashed route originate from normalized (0.5, 0.5).
- assert.match(ui,/reveal\(\.50,\.50,\.22\)/);
+ assert.match(ui,/reveal\(\.50,\.50,homeRadius\+progress\.stage\*\.009,\.74\)/);
  assert.match(ui,/M 160 106\.5 Q/);
  assert.match(geometry,/\.exploration-map__home\{\s*left:50%;top:50%/);
  for(const [w,h] of [[320,213],[480,319.5],[640,426],[760,505.875]]){
