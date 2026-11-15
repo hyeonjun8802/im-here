@@ -106,8 +106,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   zone=next;
   const current=siteById(selected);
   if(current?.zone!==zone){
-   const available=EXPLORATION_SITES.find(site=>site.zone===zone&&getSiteState(site.id).visibility!=='unknown');
-   selected=available?.id||EXPLORATION_SITES.find(site=>site.zone===zone).id;
+   const local=EXPLORATION_SITES.filter(site=>site.zone===zone);
+   const next=local.find(site=>getSiteState(site.id).visibility!=='unknown'&&!getSiteState(site.id).completed);
+   const visited=local.find(site=>getSiteState(site.id).visibility!=='unknown');
+   selected=next?.id||visited?.id||local[0].id;
   }
   q('#exploration-area-near').setAttribute('aria-pressed',String(zone==='near'));
   q('#exploration-area-far').setAttribute('aria-pressed',String(zone==='far'));
@@ -130,6 +132,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(getState().survivalStatus==='dead')return;
   if(hasBlockingChoice?.())return;
   lastTrigger=trigger||document.activeElement;
+  if(!getState().explorationMap?.mission){
+   const active=EXPLORATION_SITES.find(site=>site.zone===zone&&
+    getSiteState(site.id).visibility!=='unknown'&&!getSiteState(site.id).completed);
+   if(active)selected=active.id; // Reopen at the next playable story stage.
+  }
   root.hidden=false;
   render();
   q('#exploration-map-close').focus({preventScroll:true});
@@ -454,8 +461,13 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    }else if(stateInfo.completed){
     const next=EXPLORATION_SITES.find(entry=>entry.zone===zone&&entry.id!==site.id&&
      getSiteState(entry.id).visibility!=='unknown'&&!getSiteState(entry.id).completed);
-    stage.textContent=next?'조사 완료 · 다음 장소: '+next.label+' · 지도에서 해당 마커를 선택하세요.':
+    stage.textContent=next?'조사 완료 · 다음 장소: '+next.label+' · 탐사 단계를 계속하세요.':
      '이 구역의 발견된 장소 조사를 마쳤습니다. 다른 구역 또는 통신탑 기록을 확인하세요.';
+    if(next)choices.appendChild(makeButton('다음 지역 · '+next.label+' 보기',()=>{
+     selected=next.id;
+     render();
+     markers.querySelector('.exploration-map__marker[data-selected="true"]')?.focus({preventScroll:true});
+    },{cls:'exploration-map__primary'}));
    }else{
     stage.textContent=can.ready?
      '출발하면 오늘의 동네 탐사 1회를 사용합니다. 현장에서 탐사 방법과 사고 확률을 선택할 수 있습니다.':
