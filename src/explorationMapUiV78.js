@@ -9,7 +9,8 @@ import {
 import {scavengeOdds} from './scavengeDirector.js';
 import {explorationScene} from './explorationStoryV85.js';
 import {
- EXPLORATION_REGIONS,explorationQuestProgress,explorationZoneProgress
+ EXPLORATION_REGIONS,explorationQuestProgress,explorationZoneProgress,
+ explorationPinPosition
 } from './explorationQuestRegionsV90.js';
 
 const ASSET='/assets/exploration/';
@@ -151,7 +152,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const data=getSiteState(site.id);
    if(data.visibility==='unknown')continue;
    const radius=zone==='far'?(data.visits>0?.125:.075):(data.visits>0?.2:.11);
-   reveal(site.x,site.y,radius,data.visits>0?1:.72);
+   const pin=explorationPinPosition(zone,site.id)||site;
+   reveal(pin.x,pin.y,radius,data.visits>0?1:.72);
   }
  }
  function updateRoute(){
@@ -166,7 +168,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   svg.setAttribute('aria-hidden','true');
   svg.classList.add('exploration-map__route');
   const path=document.createElementNS(ns,'path');
-  const targetX=site.x*320,targetY=site.y*213;
+  const pin=explorationPinPosition(zone,site.id)||site;
+  const targetX=pin.x*320,targetY=pin.y*213;
   // Soft corner follows nearby ruined streets instead of a straight UI arrow.
   const jointX=160+(targetX-160)*.62;
   path.setAttribute('d',`M 160 106.5 Q ${jointX.toFixed(1)} 106.5 ${jointX.toFixed(1)} ${(106.5+targetY)/2} T ${targetX.toFixed(1)} ${targetY.toFixed(1)}`);
@@ -186,7 +189,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    button.type='button';button.className='exploration-map__marker';
    button.dataset.visibility=data.visibility;button.dataset.selected=String(selected===site.id);
    button.setAttribute('aria-pressed',String(selected===site.id));
-   button.style.left=(site.x*100)+'%';button.style.top=(site.y*100)+'%';
+   const pin=explorationPinPosition(zone,site.id)||site;
+   button.style.left=(pin.x*100)+'%';button.style.top=(pin.y*100)+'%';
    button.disabled=data.visibility==='unknown';
    button.title=data.visibility==='unknown'?'미발견 지역':site.label+' · '+(LABELS[data.visibility]||'탐사');
    button.setAttribute('aria-label',button.title);
