@@ -27,6 +27,33 @@ export const EXPLORATION_DISTRICTS=Object.freeze({
 /** One real, existing location/expedition per quest. A quest does not
  * manufacture rewards, other places, travel mechanics or extra rolls.
  * "done" is the same persisted site.completed flag used by the finale. */
+/** Artwork-aligned marker positions are purely visual. Do not write them
+ * into the player's save or alter authoritative site ID, travel or rewards.
+ * Landmark matching: near map has greenhouse left, pharmacy/store right,
+ * water tanks upper-left and tower upper-right; far map has helipad
+ * upper-left, power grid left, hospital upper-right, market mid-right
+ * and the flooded underpass lower-right. */
+export const EXPLORATION_MAP_PINS=Object.freeze({
+ near:Object.freeze({
+  ruined_house:Object.freeze({x:.20,y:.75}),
+  convenience_store:Object.freeze({x:.86,y:.63}),
+  pharmacy:Object.freeze({x:.85,y:.34}),
+  flower_shop:Object.freeze({x:.17,y:.44}),
+  water_station:Object.freeze({x:.24,y:.24}),
+  communications_room:Object.freeze({x:.79,y:.14})
+ }),
+ far:Object.freeze({
+  hypermarket:Object.freeze({x:.85,y:.45}),
+  underpass:Object.freeze({x:.74,y:.79}),
+  hospital:Object.freeze({x:.71,y:.20}),
+  substation:Object.freeze({x:.14,y:.35}),
+  community_shelter:Object.freeze({x:.25,y:.60}),
+  rooftop_helipad:Object.freeze({x:.15,y:.15})
+ })
+});
+export function explorationPinPosition(zone,id){
+ return EXPLORATION_MAP_PINS[zone]?.[id]||null;
+}
 export const EXPLORATION_QUESTS=Object.freeze({
  ruined_house:Object.freeze({district:null,title:'계단 아래 첫 흔적',objective:'금이 간 계단을 조사해 야전 텐트 흔적과 다음 이동 경로를 확인한다.',lead:'편의점 간판을 따라 다음 생활 물자를 찾는다.'}),
  convenience_store:Object.freeze({district:null,title:'잠긴 창고의 배송표',objective:'창고를 조사해 남아 있는 보급품과 납품 기록을 확인한다.',lead:'배송표에 남은 약국 주소와 화원 표지를 확인한다.'}),
