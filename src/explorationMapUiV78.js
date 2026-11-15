@@ -227,6 +227,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   markers.replaceChildren();
   for(const site of EXPLORATION_SITES.filter(item=>item.zone===zone)){
    const data=getSiteState(site.id);
+   if(data.visibility==='unknown')continue; // Future stages have no visible marker.
    const button=document.createElement('button');
    button.type='button';button.className='exploration-map__marker';
    button.dataset.visibility=data.visibility;button.dataset.selected=String(selected===site.id);
@@ -275,7 +276,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    surveyed:'파손 부위를 확인했습니다. 수리 부품 4개를 확보하면 전원과 배선을 복구할 수 있습니다.',
    parts_ready:'수리 부품 4개를 확보했습니다. 통신탑의 연결 회로를 복구하세요.',
    restored:'통신탑을 복구했습니다. 단파 무전기로 17번 채널을 연결하면 원거리 구역을 찾을 수 있습니다.',
-   channel17:'17번 채널 연결 완료 · 원거리 탐사 구역 6곳이 열렸습니다.'
+   channel17:'17번 채널 연결 완료 · 첫 원거리 지역만 열렸습니다. 각 지역을 조사 완료하면 다음 한 곳이 열립니다.'
   };
   q('#exploration-tower-story').textContent=(stages[phase]||'')+
    (s.explorationMap?.tower?.lastStory?' 지난 작업 기록: '+s.explorationMap.tower.lastStory:'');
@@ -336,8 +337,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    'STAGE '+fogProgress.stage+'/6 · '+fogProgress.name;
   for(const [i,step] of [...q('#exploration-map-fog-bars').children].entries())
    step.dataset.revealed=String(i<fogProgress.stage);
+  const nextPlace=EXPLORATION_SITES.find(entry=>entry.zone===zone&&
+   !getSiteState(entry.id).completed&&getSiteState(entry.id).visibility!=='unknown');
   q('#exploration-map-zone-brief').textContent=region.title+' · '+region.scope+
-   ' · 조사 '+zoneProgress.completed+'/'+zoneProgress.total;
+   ' · 조사 '+zoneProgress.completed+'/'+zoneProgress.total+
+   (nextPlace?' · 다음: '+nextPlace.label:'');
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;
   const visited=EXPLORATION_SITES.filter(site=>getSiteState(site.id).visits>0).length;
   q('#exploration-map-count').textContent=`방문 ${visited}/${EXPLORATION_SITES.length} · 완료 ${completed}/${EXPLORATION_SITES.length}`;
@@ -359,7 +363,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     (stateInfo.visits?' · 방문 '+stateInfo.visits+'회':'')+
     (locked?'':' · 사고 위험은 현장에서 확인');
   const description=document.createElement('p');description.textContent=locked?
-   (site.zone==='far'?'원거리 위치는 통신탑의 17번 채널 연결 후 발견할 수 있습니다.':'이전에 발견한 장소를 방문해 다음 지역의 단서를 확보하세요.'):
+   (site.zone==='far'?(s.explorationMap?.tower?.phase==='channel17'?'이전 원거리 장소를 조사 완료해야 다음 위치가 하나씩 열립니다.':'17번 채널을 연결하면 원거리 첫 장소가 열립니다.'):'앞선 근거리 장소를 조사 완료하면 다음 위치가 열립니다.'):
    site.description;
   const rewards=document.createElement('p');
   rewards.textContent='예상 발견: '+(locked?'확인 전':site.reward);
@@ -390,8 +394,8 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    questTitle.textContent=locked?'발견되지 않은 지역 퀘스트':quest.title;
    const questObjective=document.createElement('p');
    questObjective.textContent=locked?
-    (zone==='far'?'17번 채널로 위치를 발견하면 이 구역의 조사 목표가 열립니다.':
-     '근거리 단서를 찾아 위치를 발견하면 조사 목표가 열립니다.'):
+    (zone==='far'?(s.explorationMap?.tower?.phase==='channel17'?'바로 이전 원거리 장소를 조사 완료하면 목표가 열립니다.':'17번 채널 연결 후 첫 원거리 퀘스트가 열립니다.'):
+     '앞선 근거리 장소를 조사 완료해야 다음 퀘스트가 열립니다.'):
     quest.status==='done'?'조사 기록 완료 · '+quest.lead:
     quest.status==='retry'?'이전 탐사에서 목표를 끝내지 못했습니다. '+quest.objective:
     quest.objective;
@@ -442,9 +446,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     const phase=s.explorationMap?.tower?.phase||'unknown';
     stage.textContent=phase==='unknown'?
      '원거리 미개방 · 근거리 통신실 조사를 완료해 통신탑 단서를 찾으세요.':
-     '원거리 미개방 · 통신탑을 복구하고 단파 무전기로 17번 채널을 연결하세요.';
+     phase==='channel17'?
+      '다음 원거리 단계는 이전 장소의 조사 완료 후 한 곳씩 열립니다.':
+      '원거리 미개방 · 통신탑을 복구하고 단파 무전기로 17번 채널을 연결하세요.';
    }else if(locked){
-    stage.textContent='미발견 지역 · 현재 방문 가능한 장소부터 조사하면 다음 위치가 열립니다.';
+    stage.textContent='미발견 지역 · 지금 열린 장소를 조사 완료하면 다음 하나가 열립니다.';
    }else if(stateInfo.completed){
     const next=EXPLORATION_SITES.find(entry=>entry.zone===zone&&entry.id!==site.id&&
      getSiteState(entry.id).visibility!=='unknown'&&!getSiteState(entry.id).completed);
