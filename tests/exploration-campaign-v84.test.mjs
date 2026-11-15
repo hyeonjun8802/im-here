@@ -38,7 +38,7 @@ test('old house/store save records migrate without losing any recorded visit or 
  assert.equal(upgraded.explorationMap.lastAttemptDay,17);
  assert.equal(upgraded.explorationMap.sites.ruined_house.visits,4);
  assert.equal(upgraded.explorationMap.sites.convenience_store.visits,2);
- assert.equal(upgraded.explorationMap.sites.pharmacy.visibility,'rumored');
+ assert.equal(upgraded.explorationMap.sites.pharmacy.visibility,'unknown','store visited but not completed');
  assert.equal(upgraded.explorationMap.sites.hypermarket.visibility,'unknown');
  assert.equal(upgraded.kit.tent,true);
  assert.equal(upgraded.supply.parts,13);
@@ -48,11 +48,16 @@ test('old house/store save records migrate without losing any recorded visit or 
 test('nearby plot unfolds from the original first two sites through communications room',()=>{
  const map=newExplorationMap();
  assert.equal(map.sites.convenience_store.visibility,'unknown');
- for(const id of ids.slice(0,5)){
+ for(const [i,id] of ids.slice(0,5).entries()){
+  assert.equal(map.sites[id].visibility,'rumored',id+' is the active stage');
   map.sites[id].visits=1;
-  map.sites[id].visibility='visited';
+  map.sites[id].completed=true;
+  map.sites[id].visibility='completed';
   const next=sanitizeExplorationMap(map);
   Object.assign(map,next);
+  assert.equal(map.sites[ids[i+1]].visibility,'rumored','one new stage');
+  for(const future of ids.slice(i+2,6))
+   assert.equal(map.sites[future].visibility,'unknown',future+' locked');
  }
  for(const id of ['convenience_store','pharmacy','flower_shop','water_station','communications_room'])
   assert.notEqual(map.sites[id].visibility,'unknown',id);
@@ -86,7 +91,8 @@ test('tower steps must happen in sequence and reserve parts exactly once',()=>{
  assert.equal(connected.good,true);
  assert.equal(s.explorationMap.tower.phase,'channel17');
  assert.equal(s.supply.parts,1);
- for(const id of ids.slice(6))assert.equal(s.explorationMap.sites[id].visibility,'rumored',id);
+ assert.equal(s.explorationMap.sites.hypermarket.visibility,'rumored');
+ for(const id of ids.slice(7))assert.equal(s.explorationMap.sites[id].visibility,'unknown',id);
  const saved=structuredClone(s);
  assert.equal(sanitize(saved,start).explorationMap.tower.phase,'channel17');
  assert.equal(advanceTowerStory(s,'connect').good,false,'no repeat distant unlock');
@@ -96,7 +102,11 @@ test('medical scenes can only yield medicine on an existing successful single ro
  let win=null,lose=null;
  for(let seed=1;seed<1500;seed++){
   const s=defaults(start);s.scavenge.seed=seed;
-  s.explorationMap.sites.pharmacy.visibility='rumored';
+  for(const id of ['ruined_house','convenience_store']){
+   s.explorationMap.sites[id].visits=1;
+   s.explorationMap.sites[id].completed=true;
+  }
+  s.explorationMap=sanitizeExplorationMap(s.explorationMap);
   const departed=beginMapExpedition(s,'pharmacy',start,real);
   assert.equal(departed.good,true,departed.msg);
   advanceMapExpedition(s,start+EXPLORATION_TRAVEL_GAME_MS,real+EXPLORATION_MIN_REAL_MS);
