@@ -11,17 +11,17 @@ export const EXPLORATION_MIN_REAL_MS=2400;
 export const EXPLORATION_SITES=Object.freeze([
  // Six local scenes. The first two IDs and their progression remain stable.
  {id:'ruined_house',label:'무너진 주택',description:'금이 간 계단 아래 옛 거주자의 흔적이 남았다. 벽장 속 야전 텐트와 다른 장소의 단서를 찾는다.',scene:'기울어진 계단과 떨어진 콘크리트 사이로 생활 흔적이 이어진다.',risk:'낮음',reward:'야전 텐트 · 생활 물자',target:'tent',x:.28,y:.75,zone:'near',unlock:['convenience_store']},
- {id:'convenience_store',label:'버려진 편의점',description:'텅 빈 매대 뒤 잠긴 창고. 식수와 식량 흔적, 약국으로 이어지는 배송표를 조사한다.',scene:'유리 조각이 깔린 편의점 뒤편에서 창고 자물쇠가 흔들린다.',risk:'보통',reward:'식량 · 식수 · 수리 부품',target:'cache',x:.43,y:.31,zone:'near',unlock:['pharmacy','flower_shop']},
- {id:'pharmacy',label:'폐허 약국',description:'부상자를 치료할 약이 부족하다. 오염된 약품과 보관된 의약품을 구분해야 한다.',scene:'부서진 냉장고가 멈춘 약국 안, 봉인된 응급 상자가 보인다.',risk:'보통',reward:'의약품 · 보급 물자',target:'cache',x:.68,y:.30,zone:'near',unlock:['water_station']},
+ {id:'convenience_store',label:'버려진 편의점',description:'텅 빈 매대 뒤 잠긴 창고. 식수와 식량 흔적, 약국으로 이어지는 배송표를 조사한다.',scene:'유리 조각이 깔린 편의점 뒤편에서 창고 자물쇠가 흔들린다.',risk:'보통',reward:'식량 · 식수 · 수리 부품',target:'cache',x:.43,y:.31,zone:'near',unlock:['pharmacy']},
+ {id:'pharmacy',label:'폐허 약국',description:'부상자를 치료할 약이 부족하다. 오염된 약품과 보관된 의약품을 구분해야 한다.',scene:'부서진 냉장고가 멈춘 약국 안, 봉인된 응급 상자가 보인다.',risk:'보통',reward:'의약품 · 보급 물자',target:'cache',x:.68,y:.30,zone:'near',unlock:['flower_shop']},
  {id:'flower_shop',label:'버려진 화원',description:'잡초가 자란 화원에 옥상에서 키울 종자 상자가 있을지 모른다.',scene:'깨진 온실 유리 아래에 씨앗 상자와 젖은 흙이 남아 있다.',risk:'보통',reward:'재배 씨앗 · 생활 물자',target:'seeds',x:.77,y:.69,zone:'near',unlock:['water_station']},
  {id:'water_station',label:'오래된 정수실',description:'침수된 배관실 안에서 정수 장치의 부품과 통신실 설계도를 찾는다.',scene:'허리까지 물이 찬 기계실, 녹슨 밸브 너머로 정수기가 보인다.',risk:'높음',reward:'정수기 · 수리 부품',target:'purifier',x:.17,y:.29,zone:'near',unlock:['communications_room']},
  {id:'communications_room',label:'통신실',description:'꺼진 교환대와 비상 주파수 기록. 단파 무전기와 통신탑의 위치를 확인한다.',scene:'무전기 부품 사이에서 17번 채널과 통신탑 배선 기록을 발견했다.',risk:'높음',reward:'단파 무전기 · 통신탑 단서',target:'radio',x:.84,y:.28,zone:'near',unlock:[]},
  // Six distant sites are revealed only after the repaired tower reaches channel 17.
- {id:'hypermarket',label:'대형 마트',description:'대형 창고의 남은 식량. 무너진 진열대와 잠긴 냉동실이 위험하다.',scene:'폐허가 된 대형 마트 바닥에 흔적이 선명한 손수레가 보인다.',risk:'높음',reward:'식량 · 물자',target:'cache',x:.19,y:.30,zone:'far',unlock:[]},
- {id:'underpass',label:'지하차도',description:'침수와 정체된 차량 사이의 우회 경로. 다음 지역으로 가는 길을 확인한다.',scene:'물에 잠긴 지하차도에서 바닥 배수구와 도로 표지의 흔적을 찾았다.',risk:'높음',reward:'우회 경로 기록 · 수리 부품',target:'cache',x:.46,y:.22,zone:'far',unlock:[]},
- {id:'hospital',label:'병원',description:'구급실에서 약을 찾아야 하지만 유리문 너머 오염된 구역이 기다린다.',scene:'진료실의 오래된 기록과 약품 보관함이 잔해 속에 드러난다.',risk:'높음',reward:'의약품 · 생존 기록',target:'cache',x:.79,y:.33,zone:'far',unlock:[]},
- {id:'substation',label:'변전소',description:'오래된 전기 설비를 조사해 도시의 희미한 송전 흔적을 파악한다.',scene:'전원이 끊긴 변압기 아래 살아 있는 케이블인지 확인해야 한다.',risk:'높음',reward:'수리 부품 · 전력 기록',target:'cache',x:.76,y:.73,zone:'far',unlock:[]},
- {id:'community_shelter',label:'공동 대피소',description:'버려진 침상과 기록 장부. 누가 이곳을 지나갔는지 조사한다.',scene:'체육관을 개조한 대피소 안에 마지막 배급 기록이 남아 있다.',risk:'보통',reward:'생존자 기록 · 식량',target:'cache',x:.48,y:.75,zone:'far',unlock:[]},
+ {id:'hypermarket',label:'대형 마트',description:'대형 창고의 남은 식량. 무너진 진열대와 잠긴 냉동실이 위험하다.',scene:'폐허가 된 대형 마트 바닥에 흔적이 선명한 손수레가 보인다.',risk:'높음',reward:'식량 · 물자',target:'cache',x:.19,y:.30,zone:'far',unlock:['underpass']},
+ {id:'underpass',label:'지하차도',description:'침수와 정체된 차량 사이의 우회 경로. 다음 지역으로 가는 길을 확인한다.',scene:'물에 잠긴 지하차도에서 바닥 배수구와 도로 표지의 흔적을 찾았다.',risk:'높음',reward:'우회 경로 기록 · 수리 부품',target:'cache',x:.46,y:.22,zone:'far',unlock:['hospital']},
+ {id:'hospital',label:'병원',description:'구급실에서 약을 찾아야 하지만 유리문 너머 오염된 구역이 기다린다.',scene:'진료실의 오래된 기록과 약품 보관함이 잔해 속에 드러난다.',risk:'높음',reward:'의약품 · 생존 기록',target:'cache',x:.79,y:.33,zone:'far',unlock:['substation']},
+ {id:'substation',label:'변전소',description:'오래된 전기 설비를 조사해 도시의 희미한 송전 흔적을 파악한다.',scene:'전원이 끊긴 변압기 아래 살아 있는 케이블인지 확인해야 한다.',risk:'높음',reward:'수리 부품 · 전력 기록',target:'cache',x:.76,y:.73,zone:'far',unlock:['community_shelter']},
+ {id:'community_shelter',label:'공동 대피소',description:'버려진 침상과 기록 장부. 누가 이곳을 지나갔는지 조사한다.',scene:'체육관을 개조한 대피소 안에 마지막 배급 기록이 남아 있다.',risk:'보통',reward:'생존자 기록 · 식량',target:'cache',x:.48,y:.75,zone:'far',unlock:['rooftop_helipad']},
  {id:'rooftop_helipad',label:'옥상 헬기장',description:'도시 위 구조 신호를 보낼 높은 옥상. 접근로와 안전한 대피 지점을 찾는다.',scene:'금이 간 착륙 표시와 불빛이 꺼진 신호등. 마지막 구조 흔적을 확인한다.',risk:'높음',reward:'구조 신호 단서 · 장비 부품',target:'cache',x:.21,y:.68,zone:'far',unlock:[]}
 ]);
 const SITE_IDS=new Set(EXPLORATION_SITES.map(site=>site.id));
@@ -32,22 +32,22 @@ const newTower=()=>({phase:'unknown',reservedParts:0,lastStory:''});
 const newEnding=()=>({type:'none',atDay:0});
 const knownSiteIds=new Set(EXPLORATION_SITES.map(site=>site.id));
 const siteEntry=(visibility='unknown')=>({visibility,visits:0,completed:false,lastOutcome:'',lastChoice:'',lastDay:0,lastStory:'',lastTrail:''});
-function revealFollowing(map,site){
- for(const id of site.unlock||[]){
-  if(map.sites[id]?.visibility==='unknown')map.sites[id].visibility='rumored';
- }
-}
+/** Reveal one unfinished location at a time in each zone.
+ * Preserve older visits/completions and any in-flight mission. Unvisited
+ * rumors unlocked under the old rules now obey the sequential chain. */
 function refreshProgression(map){
- const house=map.sites.ruined_house;
- if(house.visits>0||house.completed)revealFollowing(map,EXPLORATION_SITES[0]);
- for(const site of EXPLORATION_SITES.filter(item=>item.zone==='near')){
-  if(map.sites[site.id]?.visits>0||map.sites[site.id]?.completed)revealFollowing(map,site);
- }
  if(map.sites.communications_room?.completed&&map.tower.phase==='unknown')
   map.tower.phase='discovered';
- if(map.tower.phase==='channel17'){
-  for(const site of EXPLORATION_SITES.filter(item=>item.zone==='far'))
-   if(map.sites[site.id].visibility==='unknown')map.sites[site.id].visibility='rumored';
+ for(const zone of ['near','far']){
+  let canDiscover=zone==='near'||map.tower.phase==='channel17';
+  for(const site of EXPLORATION_SITES.filter(entry=>entry.zone===zone)){
+   const record=map.sites[site.id];
+   if(!record)continue;
+   if(record.completed){record.visibility='completed';continue;}
+   if(record.visits>0)record.visibility='visited';
+   else record.visibility=canDiscover||map.mission?.siteId===site.id?'rumored':'unknown';
+   canDiscover=false;
+  }
  }
 }
 function recordTowerNote(tower,msg){
@@ -75,7 +75,7 @@ export function advanceTowerStory(s,action){
  if(action==='connect'&&phase==='restored'){
   if(!s.kit?.radio)return {good:false,msg:'17번 채널에 연결하려면 단파 무전기를 먼저 확보해야 합니다.'};
   tower.phase='channel17';refreshProgression(map);
-  return recordTowerNote(tower,'정비한 무전기로 17번 채널을 연결했다. 먼 지역의 탐사 위치 여섯 곳을 확인했다. 구조 응답이 확인된 것은 아니다.');
+  return recordTowerNote(tower,'정비한 무전기로 17번 채널을 연결했다. 원거리 첫 지역을 발견했다. 한 장소를 조사 완료할 때마다 다음 장소가 열린다. 구조 응답이 확인된 것은 아니다.');
  }
  return {good:false,msg:'현재 진행 단계에서 선택할 수 없는 통신탑 작업입니다.'};
 }
@@ -147,7 +147,7 @@ export function sanitizeExplorationMap(input){
    choice:EXPLORATION_CHOICES.includes(m.choice)?m.choice:'',
    story:String(m.story||'').slice(0,300)};
  }
- // Keep legacy v1 map progress and the old house-to-store unlock intact.
+ // Preserve legacy visits while migrating future discoveries to single-step unlocks.
  refreshProgression(b);
  return b;
 }
@@ -158,6 +158,13 @@ export function mapExpeditionAvailability(s,id,now){
  if(map.mission)return {ready:false,reason:'진행 중인 탐험을 먼저 마쳐야 합니다.'};
  if(!site||site.visibility==='unknown')return {ready:false,reason:'먼저 주변을 탐사해 위치를 확인하세요.'};
  if(site.completed)return {ready:false,reason:'이미 조사를 마친 장소입니다. 다시 방문할 필요가 없습니다.'};
+ const current=EXPLORATION_SITES.find(entry=>entry.id===id);
+ const local=EXPLORATION_SITES.filter(entry=>entry.zone===current.zone);
+ const previous=local[local.findIndex(entry=>entry.id===id)-1];
+ if(current.zone==='far'&&map.tower?.phase!=='channel17')
+  return {ready:false,reason:'17번 채널을 연결해야 첫 원거리 탐사를 시작할 수 있습니다.'};
+ if(previous&&!map.sites[previous.id]?.completed)
+  return {ready:false,reason:'먼저 '+previous.label+' 조사를 완료해야 다음 장소가 열립니다.'};
  if(['tornado','storm','wildfire'].includes(s.weather))
   return {ready:false,reason:'대형 재난 중에는 도시 탐험을 시작할 수 없습니다.'};
  if(s.health<25)return {ready:false,reason:'건강이 너무 나쁩니다. 치료 후 출발하세요.'};
@@ -196,9 +203,7 @@ export function advanceMapExpedition(s,now,realNow=Date.now()){
    }else site.visibility='visited';
    const explored=EXPLORATION_SITES.find(entry=>entry.id===mission.siteId);
    if(explored){
-    revealFollowing(s.explorationMap,explored);
-    // Clues are physical route observations on a real visit, not loot.
-    // Even an injured survivor can have seen the next area's sign.
+    // Even a failed visit can record a clue, but cannot unlock the next stage.
     site.lastTrail=explorationTrail(explored.id).slice(0,180);
    }
    refreshProgression(s.explorationMap);
@@ -207,7 +212,11 @@ export function advanceMapExpedition(s,now,realNow=Date.now()){
   const story=mission.story||'',trail=mission.result==='safe'?'':site?.lastTrail||'';
   const siteId=mission.siteId;
   s.explorationMap.mission=null; // Commit exactly once before the map is redrawn.
-  return {changed:true,kind:'returned',siteId,completed,msg:message,story,trail};
+  const currentSite=EXPLORATION_SITES.find(entry=>entry.id===siteId);
+  const nextSite=completed?EXPLORATION_SITES.find(entry=>
+   entry.zone===currentSite?.zone&&!s.explorationMap.sites[entry.id].completed&&
+   s.explorationMap.sites[entry.id].visibility==='rumored')?.label:null;
+  return {changed:true,kind:'returned',siteId,completed,msg:message,story,trail,nextSite};
  }
  return {changed:false};
 }
