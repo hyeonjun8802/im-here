@@ -14,6 +14,8 @@ import {
  explorationPinPosition
 } from './explorationQuestRegionsV90.js';
 import {buildBlackMapGuide} from './blackMapMissionGuideV97.js';
+import {getDailyOperations,getExpeditionPreparation,getReturnReport} from './blackMapDailyOperationsV98.js';
+import {REPAIR_PARTS_RESERVE} from './repairPartsBalanceV95.js';
 
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
@@ -60,6 +62,29 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    <div class="exploration-map__mission-controls">
     <button type="button" id="exploration-map-guide-action">다음 목표 확인</button>
     <span id="exploration-map-guide-hint"></span>
+   </div>
+  </section>
+  <section class="exploration-map__daily-ops" aria-label="오늘의 생존 과제">
+   <div class="exploration-map__daily-copy">
+    <small id="exploration-map-daily-status"></small>
+    <strong id="exploration-map-daily-title"></strong>
+    <p id="exploration-map-daily-detail"></p>
+   </div>
+   <button type="button" id="exploration-map-daily-shortcut">보급 활동 확인</button>
+  </section>
+  <section class="exploration-map__return-report" id="exploration-map-return-report" role="status" aria-label="귀환 결과" hidden>
+   <strong id="exploration-map-return-title"></strong>
+   <p id="exploration-map-return-detail"></p><small id="exploration-map-return-next"></small>
+   <button id="exploration-map-return-dismiss" type="button">확인 · 다음 목표 보기</button>
+  </section>
+  <section class="exploration-map__prep" id="exploration-map-prep" aria-label="출발 준비" hidden>
+   <strong id="exploration-map-prep-title"></strong>
+   <p id="exploration-map-prep-detail"></p>
+   <div id="exploration-map-prep-metrics" class="exploration-map__prep-metrics"></div>
+   <div id="exploration-map-prep-options" class="exploration-map__prep-options"></div>
+   <div class="exploration-map__prep-actions">
+    <button id="exploration-map-prep-confirm" type="button">준비 확인 · 탐사 출발</button>
+    <button id="exploration-map-prep-cancel" type="button">취소</button>
    </div>
   </section>
   <details class="exploration-map__howto">
@@ -119,10 +144,41 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  let selected='ruined_house',zone='near',lastTrigger=null,lastMissionKey='',snoozeUntil=0;
  let fogLastZone=null,fogLastStage=null,fogLastSignature='',fogFrame=0;
  let latestGuide=null;
+ let preparedSite=null,prepConfirmedFor=null,lastReturnReport=null;
  const visible=()=>!root.hidden;
+ const hidePreparation=()=>{
+  preparedSite=null;q('#exploration-map-prep').hidden=true;
+ };
+ function showPreparation(siteId=selected){
+  const site=siteById(siteId);
+  if(!site||siteId!==selected)return;
+  const data=getExpeditionPreparation(getState(),site.id,getNow());
+  if(!data.ready){stage.textContent=data.reason;hidePreparation();return;}
+  preparedSite=site.id;
+  const panel=q('#exploration-map-prep'),metrics=q('#exploration-map-prep-metrics');
+  q('#exploration-map-prep-title').textContent='출발 전 준비 · '+data.siteName;
+  q('#exploration-map-prep-detail').textContent=
+   '게임 시간 편도 25분 · 오늘 지도 탐사 1회 소모 · 현장 도착 후 탐색 방식 선택. 예상 발견: '+data.expected;
+  metrics.replaceChildren();
+  for(const label of ['건강 '+data.health,'식수 '+data.water,'부품 '+data.parts]){
+   const span=document.createElement('span');span.textContent=label;metrics.append(span);
+  }
+  const odds=action=>{
+   const value=data.odds[action];
+   return Math.round(value.injury*100)+'% / '+Math.round(value.sickness*100)+'%';
+  };
+  q('#exploration-map-prep-options').textContent=
+   '행동별 부상·감염 위험 기준치: 깊이 수색 '+odds('go')+
+   ' · 정찰 '+odds('scout')+(data.scoutReady?' (식수 1개 소모)':' (식수 부족)')+
+   ' · 자재 회수 '+odds('salvage')+(data.salvageReady?'':' (부품 충분)')+
+   ' · 실제 위험은 탐사 판정 결과에 따릅니다.';
+  panel.hidden=false;panel.scrollIntoView({block:'nearest'});
+  q('#exploration-map-prep-confirm').focus({preventScroll:true});
+ }
  const setZone=next=>{
   if(!['near','far'].includes(next)||getState().explorationMap?.mission)return;
   zone=next;
+  hidePreparation();
   const current=siteById(selected);
   if(current?.zone!==zone){
    const local=EXPLORATION_SITES.filter(site=>site.zone===zone);
@@ -142,6 +198,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(getState().explorationMap?.mission?.phase==='encounter')
    snoozeUntil=Date.now()+6000; // Let the player inspect supplies before reopening.
   root.hidden=true;
+  hidePreparation();
   if(fogFrame){window.cancelAnimationFrame(fogFrame);fogFrame=0;}
   // A reopened map always paints its saved stage at the exact final opacity.
   fogLastZone=null;fogLastStage=null;fogLastSignature='';
@@ -151,6 +208,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(getState().survivalStatus==='dead')return;
   if(hasBlockingChoice?.())return;
   lastTrigger=trigger||document.activeElement;
+  hidePreparation();
   if(!getState().explorationMap?.mission){
    const guide=buildBlackMapGuide(getState());
    if(guide.kind==='site'&&guide.targetId)zone=guide.zone;
@@ -277,7 +335,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    stateMark.textContent=data.completed?'✓':data.visibility==='visited'?'•':data.visibility==='unknown'?'?':'!';
    button.append(icon,stateMark);
    button.addEventListener('click',()=>{
-    selected=site.id;render();
+    selected=site.id;hidePreparation();render();
     markers.querySelector('.exploration-map__marker[data-selected="true"]')?.focus({preventScroll:true});
    });
    markers.appendChild(button);
@@ -395,12 +453,31 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   }
   button.dataset.action=action;button.textContent=label;button.disabled=disabled;hint.textContent=reason;
  }
+ function renderDailyOperations(s,now){
+  const data=getDailyOperations(s,now),btn=q('#exploration-map-daily-shortcut');
+  q('#exploration-map-daily-status').textContent=
+   'DAY '+data.day+' · '+data.status+(data.ended?' · 완료 후 생존 루틴':'');
+  q('#exploration-map-daily-title').textContent=data.title;
+  q('#exploration-map-daily-detail').textContent=data.detail;
+  btn.dataset.action=data.action;btn.textContent=data.actionLabel;
+  btn.disabled=Boolean(s.explorationMap?.mission)||s.survivalStatus==='dead';
+ }
+ function renderReturnReport(){
+  const panel=q('#exploration-map-return-report');
+  panel.hidden=!lastReturnReport;
+  if(!lastReturnReport)return;
+  panel.dataset.success=String(lastReturnReport.success);
+  q('#exploration-map-return-title').textContent=lastReturnReport.title;
+  q('#exploration-map-return-detail').textContent=lastReturnReport.detail;
+  q('#exploration-map-return-next').textContent=lastReturnReport.next;
+ }
  function render(){
   if(!visible())return;
   const s=getState(),now=getNow(),mission=s.explorationMap?.mission;
   if(mission){
    selected=mission.siteId;
    zone=siteById(selected)?.zone||zone;
+   hidePreparation();
   }
   q('#exploration-area-near').setAttribute('aria-pressed',String(zone==='near'));
   q('#exploration-area-far').setAttribute('aria-pressed',String(zone==='far'));
@@ -537,6 +614,10 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
       },{disabled:missingWater}
      ));
      choices.lastElementChild.dataset.choice=decision;
+     if(decision==='salvage'&&(s.supply?.parts||0)>=REPAIR_PARTS_RESERVE){
+      choices.lastElementChild.disabled=true;
+      choices.lastElementChild.title='부품 비축이 충분합니다. 다른 탐사 행동을 선택하세요.';
+     }
     }
    }
   }else{
@@ -594,14 +675,18 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    }
    if(!stateInfo.completed&&stateInfo.visibility!=='unknown')
     choices.appendChild(makeButton('탐험 출발',()=>{
+     if(prepConfirmedFor!==site.id){showPreparation(site.id);return;}
      if(hasBlockingChoice?.()){stage.textContent='진행 중인 생존자 선택을 먼저 처리하세요.';return;}
      const result=beginMapExpedition(getState(),site.id,getNow(),Date.now());
      if(!result.good){stage.textContent=result.msg;return;}
+     lastReturnReport=null;
      onDepart?.(result);
      save();close();
     },{disabled:!can.ready,cls:'exploration-map__primary'}));
   }
   renderGuide(s,now);
+  renderDailyOperations(s,now);
+  renderReturnReport();
   q('#exploration-map-daily').disabled=Boolean(mission)||!s.scavenge?.pending;
   q('#exploration-map-emergency').disabled=Boolean(mission)||s.survivalStatus==='dead';
  }
@@ -631,6 +716,30 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    if(!button.disabled)button.click();
   }
  });
+ q('#exploration-map-daily-shortcut').addEventListener('click',()=>{
+  const type=q('#exploration-map-daily-shortcut').dataset.action;
+  const target=q(type==='daily'?'#exploration-map-daily':'#exploration-map-emergency');
+  if(!target.disabled)target.click();
+ });
+ q('#exploration-map-prep-cancel').addEventListener('click',()=>{
+  hidePreparation();q('#exploration-map-guide-action').focus({preventScroll:true});
+ });
+ q('#exploration-map-prep-confirm').addEventListener('click',()=>{
+  const siteId=preparedSite;
+  if(!siteId||siteId!==selected){hidePreparation();return;}
+  const can=mapExpeditionAvailability(getState(),siteId,getNow());
+  if(!can.ready){stage.textContent=can.reason;hidePreparation();render();return;}
+  prepConfirmedFor=siteId;
+  try{
+   const button=[...choices.querySelectorAll('button')].find(b=>b.textContent==='탐험 출발'&&!b.disabled);
+   button?.click();
+  }finally{
+   prepConfirmedFor=null;hidePreparation();
+  }
+ });
+ q('#exploration-map-return-dismiss').addEventListener('click',()=>{
+  lastReturnReport=null;render();q('#exploration-map-guide-action').focus({preventScroll:true});
+ });
  q('#exploration-map-close').addEventListener('click',close);
  q('#exploration-map-daily').addEventListener('click',()=>{close();onDaily?.()});
  q('#exploration-map-emergency').addEventListener('click',()=>{close();onEmergency?.()});
@@ -640,6 +749,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(event.key==='Escape'){event.preventDefault();close();}
  });
  function tick(now=getNow(),realNow=Date.now()){
+  const priorOutcome=getState().explorationMap?.mission?.result||'';
   const progress=advanceMapExpedition(getState(),now,realNow);
   if(progress.changed){
    selected=progress.siteId||selected;
@@ -647,6 +757,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    if(progress.kind==='arrived'){
     if(!isAutoEnabled?.()&&!hasBlockingChoice?.())open();
    }else if(progress.kind==='returned'){
+    lastReturnReport=getReturnReport(getState(),{...progress,outcome:priorOutcome});
     onReturn?.(progress);
     if(!isAutoEnabled?.()&&!hasBlockingChoice?.())open();
    }
@@ -658,7 +769,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     (mission.phase==='encounter'?':scout-'+String((getState().supply?.water??0)>=1):'')+
     ':weather-'+getState().weather:
     'idle:'+currentExplorationDay(getState(),now)+':'+getState().weather+
-    ':health-'+String(getState().health<25)+':parts-'+Math.min(4,getState().supply?.parts??0)+
+    ':health-'+String(getState().health<35)+':sick-'+String(getState().sickness>=35)+
+    ':water-'+Math.min(3,getState().supply?.water??0)+':food-'+Math.min(3,getState().supply?.food??0)+
+    ':parts-'+Math.min(12,getState().supply?.parts??0)+
+    ':pending-'+String(getState().scavenge?.pending?.id||'')+
+    ':resolved-'+String(getState().scavenge?.lastResolvedDay||0)+
     ':radio-'+String(Boolean(getState().kit?.radio));
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
   }else if(getState().explorationMap?.mission?.phase==='encounter'&&
@@ -674,6 +789,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(plan.kind==='depart'){
    const result=beginMapExpedition(getState(),plan.siteId,getNow(),realNow);
    if(!result.good)return result;
+   lastReturnReport=null;
    onDepart?.(result);
    save();
    if(visible())render();
