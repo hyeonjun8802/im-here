@@ -4,7 +4,7 @@
 import {
  EXPLORATION_SITES,mapExpeditionAvailability,beginMapExpedition,
  advanceMapExpedition,resolveMapExpedition,advanceTowerStory,
- mapFinaleAvailability,resolveMapFinale
+ mapFinaleAvailability,resolveMapFinale,currentExplorationDay
 } from './explorationMapV78.js';
 import {scavengeOdds} from './scavengeDirector.js';
 import {explorationScene} from './explorationStoryV85.js';
@@ -13,6 +13,7 @@ import {
  EXPLORATION_REGIONS,explorationQuestProgress,explorationZoneProgress,
  explorationPinPosition
 } from './explorationQuestRegionsV90.js';
+import {buildBlackMapGuide} from './blackMapMissionGuideV97.js';
 
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
@@ -48,6 +49,23 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    <div><small>AFTERDAY · THE BLACK MAP</small><strong>검은 지도</strong><span id="exploration-map-count"></span></div>
    <button id="exploration-map-close" type="button" aria-label="탐사 지도 닫기">✕</button>
   </div>
+  <section class="exploration-map__mission-guide" aria-label="현재 탐사 목표">
+   <div class="exploration-map__mission-meta">
+    <span id="exploration-map-guide-chapter">CHAPTER 01 · 생활권 확보</span>
+    <span id="exploration-map-guide-progress">0 / 12 조사 완료</span>
+   </div>
+   <strong id="exploration-map-guide-title">다음 탐사 목표를 확인하세요</strong>
+   <p id="exploration-map-guide-description">아직 탐사할 장소가 남아 있습니다.</p>
+   <div class="exploration-map__mission-meter" role="progressbar" aria-label="전체 탐사 완료율" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0"><span id="exploration-map-guide-meter"></span></div>
+   <div class="exploration-map__mission-controls">
+    <button type="button" id="exploration-map-guide-action">다음 목표 확인</button>
+    <span id="exploration-map-guide-hint"></span>
+   </div>
+  </section>
+  <details class="exploration-map__howto">
+   <summary>탐사 진행 방법 · 출발 → 현장 선택 → 귀환</summary>
+   <p>① 강조된 다음 목표를 확인하고 출발합니다. ② 현장에서 수색·정찰·회수·복귀를 선택합니다. ③ 귀환 결과를 확인합니다. 물자 확보에 성공하면 해당 장소가 조사 완료되고 다음 장소가 열립니다. 실패 시 방문 기록만 남으며 다음 생존일에 재도전할 수 있습니다.</p>
+  </details>
   <div class="exploration-map__columns">
    <div class="exploration-map__map-wrap">
     <div class="exploration-map__areas" role="group" aria-label="탐사 구역">
@@ -100,6 +118,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  const choices=q('#exploration-map-choices');
  let selected='ruined_house',zone='near',lastTrigger=null,lastMissionKey='',snoozeUntil=0;
  let fogLastZone=null,fogLastStage=null,fogLastSignature='',fogFrame=0;
+ let latestGuide=null;
  const visible=()=>!root.hidden;
  const setZone=next=>{
   if(!['near','far'].includes(next)||getState().explorationMap?.mission)return;
@@ -133,12 +152,18 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(hasBlockingChoice?.())return;
   lastTrigger=trigger||document.activeElement;
   if(!getState().explorationMap?.mission){
+   const guide=buildBlackMapGuide(getState());
+   if(guide.kind==='site'&&guide.targetId)zone=guide.zone;
+   else if(guide.kind==='tower')zone='near';
+   else if(guide.kind==='finale'||guide.kind==='done')zone='far';
    const active=EXPLORATION_SITES.find(site=>site.zone===zone&&
     getSiteState(site.id).visibility!=='unknown'&&!getSiteState(site.id).completed);
    if(active)selected=active.id; // Reopen at the next playable story stage.
+   else if(guide.targetId)selected=guide.targetId;
   }
   root.hidden=false;
   render();
+  q('.exploration-map__panel').scrollTop=0;
   q('#exploration-map-close').focus({preventScroll:true});
  }
  function renderFog(){
@@ -238,6 +263,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    const button=document.createElement('button');
    button.type='button';button.className='exploration-map__marker';
    button.dataset.visibility=data.visibility;button.dataset.selected=String(selected===site.id);
+   button.dataset.goal=String(latestGuide?.kind==='site'&&latestGuide.targetId===site.id);
    button.setAttribute('aria-pressed',String(selected===site.id));
    const pin=explorationPinPosition(zone,site.id)||site;
    button.style.left=(pin.x*100)+'%';button.style.top=(pin.y*100)+'%';
@@ -318,6 +344,57 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   );
  }
 
+ function renderGuide(s,now){
+  const guide=latestGuide||buildBlackMapGuide(s);
+  q('#exploration-map-guide-chapter').textContent='CHAPTER '+guide.chapter+' · '+guide.chapterName;
+  q('#exploration-map-guide-progress').textContent=guide.total+' / 12 조사 완료';
+  q('#exploration-map-guide-title').textContent=guide.title;
+  q('#exploration-map-guide-description').textContent=guide.description;
+  q('#exploration-map-guide-meter').style.width=guide.progress+'%';
+  q('.exploration-map__mission-meter').setAttribute('aria-valuenow',String(guide.total));
+  const button=q('#exploration-map-guide-action'),hint=q('#exploration-map-guide-hint');
+  let action='none',label='진행 상태 확인',reason='',disabled=false;
+  if(guide.kind==='mission'){
+   const phase=s.explorationMap.mission?.phase;
+   if(phase==='encounter'){
+    action='encounter';label='현장 선택으로 이동';reason='위험을 확인한 후 수색·정찰·회수·복귀 중 선택하세요.';
+   }else{
+    disabled=true;label=phase==='returning'?'귀환 중 · 결과 대기':'목표 장소로 이동 중';
+    reason='게임 시간이 흐르면 다음 단계가 열립니다.';
+   }
+  }else if(guide.kind==='site'){
+   if(zone!==guide.zone||selected!==guide.targetId){
+    action='focus';label='다음 목표 · '+(siteById(guide.targetId)?.label||'목표 장소')+' 보기';
+    reason='지도에서 목표 위치를 자동으로 선택합니다.';
+   }else{
+    const ready=mapExpeditionAvailability(s,guide.targetId,now);
+    action=ready.ready?'depart':'none';disabled=!ready.ready;
+    label=ready.ready?'탐사 출발 · '+(siteById(guide.targetId)?.label||'목표 장소'):'출발 대기 · 조건 확인';
+    reason=ready.ready?'하루 1회 탐사를 사용합니다. 현장에서 방법과 위험을 선택합니다.':ready.reason;
+   }
+  }else if(guide.kind==='tower'){
+   action='tower';label='통신탑 복구 단계 보기';
+   const phase=s.explorationMap?.tower?.phase;
+   const missingParts=phase==='surveyed'&&(s.supply?.parts||0)<4;
+   const missingRadio=phase==='restored'&&!s.kit?.radio;
+   reason=missingParts?
+    '수리 부품 '+Math.max(0,4-(s.supply?.parts||0))+'개가 더 필요합니다. 보급 탐색에서 자원을 확보하세요.':
+    missingRadio?'연결하려면 단파 무전기가 필요합니다. 보급 탐색을 확인하세요.':
+    '아래에서 실제 통신탑 작업을 단계별로 진행합니다.';
+   if(missingParts||missingRadio){
+    if(s.scavenge?.pending){action='daily';label='오늘의 보급 탐색 열기';}
+    else {action='emergency';label='긴급 보급 탐색 보기';}
+   }
+  }else if(guide.kind==='finale'){
+   action='finale';label='마지막 생존 기록 선택하기';
+   reason='정착 또는 구조 신호 송신 중 하나를 선택합니다.';
+  }else{
+   if(s.scavenge?.pending){action='daily';label='오늘의 생존 탐색 열기';}
+   else {action='emergency';label='긴급 보급 탐색 보기';}
+   reason='12곳 조사는 끝났지만 생존은 계속됩니다. 기존 보급 탐색을 이어가세요.';
+  }
+  button.dataset.action=action;button.textContent=label;button.disabled=disabled;hint.textContent=reason;
+ }
  function render(){
   if(!visible())return;
   const s=getState(),now=getNow(),mission=s.explorationMap?.mission;
@@ -349,9 +426,12 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   q('#exploration-map-zone-brief').textContent=region.title+' · '+region.scope+
    ' · 조사 '+zoneProgress.completed+'/'+zoneProgress.total+
    (nextPlace?' · 다음: '+nextPlace.label:'');
+  q('#exploration-area-near').textContent='근거리 · '+explorationZoneProgress(s.explorationMap,'near',EXPLORATION_SITES).completed+'/6';
+  q('#exploration-area-far').textContent='원거리 · '+explorationZoneProgress(s.explorationMap,'far',EXPLORATION_SITES).completed+'/6';
   const completed=EXPLORATION_SITES.filter(site=>getSiteState(site.id).completed).length;
   const visited=EXPLORATION_SITES.filter(site=>getSiteState(site.id).visits>0).length;
   q('#exploration-map-count').textContent=`방문 ${visited}/${EXPLORATION_SITES.length} · 완료 ${completed}/${EXPLORATION_SITES.length}`;
+  latestGuide=buildBlackMapGuide(s);
   renderFog();updateMarkers();updateRoute();choices.replaceChildren();mapCard.replaceChildren();
   renderTowerStory(s);
   renderFinale(s,now);
@@ -410,17 +490,25 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    questNode.append(questCopy);
    mapCard.append(questNode);
   }
-  if(!locked&&stateInfo.lastStory){
-   const memory=document.createElement('p');
-   memory.className='exploration-map__last-story';
-   memory.textContent='최근 탐사 기록 · DAY '+(stateInfo.lastDay||'?')+' · '+stateInfo.lastStory;
-   mapCard.append(memory);
-  }
-  if(!locked&&stateInfo.lastTrail){
-   const trail=document.createElement('p');
-   trail.className='exploration-map__last-trail';
-   trail.textContent='확인한 단서 · '+stateInfo.lastTrail;
-   mapCard.append(trail);
+  if(!locked&&(stateInfo.lastStory||stateInfo.lastTrail)){
+   const journal=document.createElement('details');
+   journal.className='exploration-map__journal';
+   const summary=document.createElement('summary');
+   summary.textContent='지난 탐사 기록 보기 · '+(stateInfo.lastDay?'DAY '+stateInfo.lastDay:'단서 확인');
+   journal.append(summary);
+   if(stateInfo.lastStory){
+    const memory=document.createElement('p');
+    memory.className='exploration-map__last-story';
+    memory.textContent='최근 탐사 기록 · DAY '+(stateInfo.lastDay||'?')+' · '+stateInfo.lastStory;
+    journal.append(memory);
+   }
+   if(stateInfo.lastTrail){
+    const trail=document.createElement('p');
+    trail.className='exploration-map__last-trail';
+    trail.textContent='확인한 단서 · '+stateInfo.lastTrail;
+    journal.append(trail);
+   }
+   mapCard.append(journal);
   }
   if(mission){
    stage.textContent=mission.phase==='outbound'?'옥상 계단실을 내려가고 있습니다. '+site.scene:
@@ -448,6 +536,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
        save();render();
       },{disabled:missingWater}
      ));
+     choices.lastElementChild.dataset.choice=decision;
     }
    }
   }else{
@@ -512,11 +601,36 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
      save();close();
     },{disabled:!can.ready,cls:'exploration-map__primary'}));
   }
+  renderGuide(s,now);
   q('#exploration-map-daily').disabled=Boolean(mission)||!s.scavenge?.pending;
   q('#exploration-map-emergency').disabled=Boolean(mission)||s.survivalStatus==='dead';
  }
  const openControl=document.getElementById('exploration-open');
  if(openControl)openControl.addEventListener('click',()=>open(openControl));
+ q('#exploration-map-guide-action').addEventListener('click',()=>{
+  const guide=latestGuide,action=q('#exploration-map-guide-action').dataset.action;
+  if(!guide)return;
+  if(action==='focus'&&guide.targetId){
+   zone=guide.zone;selected=guide.targetId;render();
+   markers.querySelector('.exploration-map__marker[data-selected="true"]')?.focus({preventScroll:true});
+  }else if(action==='depart'){
+   const departure=[...choices.querySelectorAll('button')].find(button=>
+    button.textContent==='탐험 출발'&&!button.disabled);
+   if(departure)departure.click();
+  }else if(action==='encounter'){
+   const option=choices.querySelector('button:not(:disabled)');
+   (option||choices).scrollIntoView({block:'center'});
+   option?.focus({preventScroll:true});
+  }else if(action==='tower'||action==='finale'){
+   const panel=q(action==='tower'?'#exploration-tower':'#exploration-finale');
+   const button=panel.querySelector('button:not(:disabled)');
+   (button||panel).scrollIntoView({block:'center'});
+   button?.focus({preventScroll:true});
+  }else if(action==='daily'||action==='emergency'){
+   const button=q(action==='daily'?'#exploration-map-daily':'#exploration-map-emergency');
+   if(!button.disabled)button.click();
+  }
+ });
  q('#exploration-map-close').addEventListener('click',close);
  q('#exploration-map-daily').addEventListener('click',()=>{close();onDaily?.()});
  q('#exploration-map-emergency').addEventListener('click',()=>{close();onEmergency?.()});
@@ -541,7 +655,11 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    if(hasBlockingChoice?.()){close();return progress;}
    const mission=getState().explorationMap?.mission;
    const identity=mission?mission.siteId+':'+mission.phase+
-    (mission.phase==='encounter'?':scout-'+String((getState().supply?.water??0)>=1):''):'idle';
+    (mission.phase==='encounter'?':scout-'+String((getState().supply?.water??0)>=1):'')+
+    ':weather-'+getState().weather:
+    'idle:'+currentExplorationDay(getState(),now)+':'+getState().weather+
+    ':health-'+String(getState().health<25)+':parts-'+Math.min(4,getState().supply?.parts??0)+
+    ':radio-'+String(Boolean(getState().kit?.radio));
    if(identity!==lastMissionKey){lastMissionKey=identity;render();}
   }else if(getState().explorationMap?.mission?.phase==='encounter'&&
      !isAutoEnabled?.()&&realNow>=snoozeUntil&&!hasBlockingChoice?.()){
