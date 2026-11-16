@@ -111,6 +111,13 @@ test('real controls open and close, delegate existing buttons, and do not touch 
  assert.equal(hub.isOpen(),false);
  assert.equal(s.supply.food,3);
 });
+test('the final More button can close its own menu on a second tap',()=>{
+ const more=read('src/premiumEquipmentHudV1600.js');
+ assert.match(more,/const moreButton=root\.querySelector\('#functions-toggle'\)/);
+ assert.match(more,/!moreButton\?\.contains\(event\.target\)/);
+ assert.match(more,/kit\.classList\.toggle\('premium-equipment-open'\)/);
+});
+
 test('hub CSS is isolated, readable, no backdrop blur, and honors hidden, buttons and safe areas',()=>{
  const css=read('src/explorationHubV115.css');
  assert.match(css,/\.exploration-hub\[hidden\]/);
