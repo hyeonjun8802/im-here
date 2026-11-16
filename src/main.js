@@ -9,6 +9,7 @@ import {DeviceCloudSave} from './deviceCloudSave.js';
 import {survivalDailyBriefing} from './survivalBalance.js';
 import {NarrativeQueueV76} from './narrativeQueueV76.js';
 import {createExplorationMapV78} from './explorationMapUiV78.js';
+import {installExplorationHubV115} from './explorationHubV115.js';
 import {WEATHER_WATER_CAPACITY,describeWeatherEconomy} from './weatherEconomy.js';
 import {ITEM_IDS,ITEM_INFO,offerDailyScavenge} from './scavengeDirector.js';
 import {companionBuffView} from './supportCompanion.js';
@@ -92,6 +93,7 @@ const save=()=>{
 let world;
 let eventBoard=null;
 let explorationUI=null;
+let explorationHub=null;
 let autoLifeCamera=true;
 // QA auto-player is deliberately session-only and OFF after every reload.
 let autoSurvivalEnabled=false;
@@ -126,6 +128,7 @@ function survivorSpeechUiBlocked(){
   Boolean(eventBoard?.element&&!eventBoard.element.hidden&&
     eventBoard.element.classList.contains('is-choice'))||
   Boolean(explorationUI?.isOpen())||
+  Boolean(explorationHub?.isOpen())||
   Boolean($('#survival-kit')?.classList.contains('premium-equipment-open'));
 }
 const CHAPTER_CAPTION_MS=6500;
@@ -294,6 +297,7 @@ function renderHUD(){
  $('#log span').textContent=state.events.at(-1)||'고요한 하루가 이어지고 있다.';
  $('#medicine').classList.toggle('needs-attention',state.health<65&&state.supply.medicine>0);
  $('#explore').classList.toggle('needs-attention',supplyAvailable);
+ explorationHub?.sync();
  eventBoard?.sync(state,{warningAhead});
  syncNarrativeMessage(Date.now(),dead);
 }
@@ -505,6 +509,7 @@ function bindEvents(){
    if(!opening){closeAdmin();return;}
    $('#life-panel')?.classList.add('hidden');
    $('#weather-panel')?.classList.add('hidden');
+   explorationHub?.close();
    const equipmentToggle=$('#equipment-actions-toggle');
    if(equipmentToggle?.getAttribute('aria-expanded')==='true')equipmentToggle.click();
    adminPanel.classList.remove('hidden');
@@ -560,10 +565,13 @@ function bindEvents(){
   if(status&&!status.classList.contains('is-collapsed'))$('#survivor-status-toggle')?.click();
  });
  document.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>{
-    if(btn.dataset.action==='explore'&&state.scavenge?.pending&&eventBoard?.requiresChoice()){
-      eventBoard?.openPendingExpedition(state);return;
+    if(btn.dataset.action==='explore'){
+      // The crate is an immediate supply shortcut; the telescope owns the map.
+      if(state.scavenge?.pending){eventBoard?.openPendingExpedition(state);return;}
+      const availability=emergencyExploreAvailability(state,gameClock.virtualNow);
+      if(!availability.ready){toast(availability.reason);return;}
+      runSurvivalAction('explore');return;
     }
-    if(btn.dataset.action==='explore'){explorationUI?.open(btn);return;}
     runSurvivalAction(btn.dataset.action);
   }));
  $('#expedition-toggle').addEventListener('click',()=>eventBoard?.openPendingExpedition(state));
@@ -577,8 +585,8 @@ function bindEvents(){
   const syncFunctions=()=>{
    const opened=equipmentDisclosure.getAttribute('aria-expanded')==='true';
    functionsButton.setAttribute('aria-expanded',String(opened));
-   functionsButton.setAttribute('aria-label',opened?'장비 기능 닫기':'장비 기능 열기');
-   functionsButton.setAttribute('title',opened?'장비 기능 닫기':'동네 탐사·무전·동료·날씨 설정');
+   functionsButton.setAttribute('aria-label',opened?'더보기 닫기':'더보기 열기');
+   functionsButton.setAttribute('title',opened?'더보기 닫기':'일상생활·카메라·음향·무전·날씨 설정');
   };
   // Prevent overlapping settings panels without altering the existing bridge.
   functionsButton.addEventListener('click',()=>{
@@ -586,6 +594,7 @@ function bindEvents(){
     $('#life-panel')?.classList.add('hidden');
     $('#weather-panel')?.classList.add('hidden');
    }
+   explorationHub?.close();
   });
   functionsButton.addEventListener('click',()=>equipmentDisclosure.click());
   new MutationObserver(syncFunctions).observe(equipmentDisclosure,{
@@ -613,7 +622,21 @@ function bindEvents(){
  // ADMIN reset reuses the existing confirmed fresh-start routine instead
  // of creating a second save/reset path. A cancelled confirmation is harmless.
  $('#admin-reset').addEventListener('click',()=>$('#restart-game').click());
- $('#life-panel-toggle').addEventListener('click',()=>{$('#life-panel').classList.toggle('hidden');$('#weather-panel').classList.add('hidden')});
+ // Existing daily life, camera and audio actions are now reached from More.
+ const showLifeFromMore=section=>{
+  $('#life-panel').classList.remove('hidden');
+  $('#weather-panel').classList.add('hidden');
+  explorationHub?.close();
+  const panel=$('#life-panel');
+  requestAnimationFrame(()=>{
+   const target=section==='camera'?'#follow-survivor-camera':section==='audio'?'#camp-music-toggle':null;
+   const el=target?$(target):null;
+   panel.scrollTop=el?Math.max(0,el.offsetTop-panel.offsetTop-24):0;
+  });
+ };
+ $('#more-life-open').addEventListener('click',()=>showLifeFromMore('life'));
+ $('#more-camera-open').addEventListener('click',()=>showLifeFromMore('camera'));
+ $('#more-audio-open').addEventListener('click',()=>showLifeFromMore('audio'));
  $('#close-life').addEventListener('click',()=>$('#life-panel').classList.add('hidden'));
  document.querySelectorAll('[data-life-action]').forEach(button=>button.addEventListener('click',async()=>{
   const activity=button.dataset.lifeAction;
@@ -902,7 +925,18 @@ async function boot(){try{
     nextSpeechAt:survivorSpeech.nextAt
    })
   };
-  bindEvents();renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
+  bindEvents();
+  explorationHub=installExplorationHubV115({
+   getState:()=>state,getNow:()=>gameClock.virtualNow,
+   onOpen:()=>{
+    $('#life-panel').classList.add('hidden');
+    $('#weather-panel').classList.add('hidden');
+    const d=$('#equipment-actions-toggle');
+    if(d?.getAttribute('aria-expanded')==='true')d.click();
+   },
+   onEmergency:()=>$('#explore').click()
+  });
+  renderHUD();if(new URLSearchParams(location.search).has('showcase')){$('#showcase-sunset').click();}
   if(new URLSearchParams(location.search).has('characterqa')){world.setCameraView('portrait');}
   animation();
   // Prefer actual locally baked GLB assets before displaying the scene. A 7-second

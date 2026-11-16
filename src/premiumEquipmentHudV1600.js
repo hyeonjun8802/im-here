@@ -10,12 +10,12 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.className='premium-equipment-disclosure';
  toggle.setAttribute('aria-controls','equipment-actions-menu');
  toggle.setAttribute('aria-expanded','false');
- toggle.setAttribute('aria-label','생존 장비 기능 열기');
+ toggle.setAttribute('aria-label','더보기 메뉴 열기');
  toggle.hidden=true;
  toggle.tabIndex=-1;
  toggle.setAttribute('aria-hidden','true');
  actions.id='equipment-actions-menu';
- actions.setAttribute('aria-label','추가 장비 기능');
+ actions.setAttribute('aria-label','더보기 · 일상생활, 카메라, 음향과 설정');
  // Keep IDs and listeners, replace informal emoji captions with art-consistent
  // Korean UI copy; the original full label remains in aria-label and title.
  const compactActionNames={
@@ -31,7 +31,7 @@ export function installPremiumEquipmentHudV1600(root=document){
  }
  const menuHeading=root.createElement('strong');
  menuHeading.className='premium-equipment-menu-title';
- menuHeading.textContent='장비 기능';
+ menuHeading.textContent='더보기 · 생활과 설정';
  actions.prepend(menuHeading);
  kit.insertBefore(toggle,actions);
  // Keep the floating menu inside the usable viewport without moving the
@@ -49,7 +49,7 @@ export function installPremiumEquipmentHudV1600(root=document){
  const close=()=>{
   kit.classList.remove('premium-equipment-open');
   toggle.setAttribute('aria-expanded','false');
-  toggle.setAttribute('aria-label','생존 장비 기능 열기');
+  toggle.setAttribute('aria-label','더보기 메뉴 열기');
  };
  const sync=()=>{
   const active=[...actions.querySelectorAll('button')].filter(b=>!b.hidden);
@@ -61,7 +61,7 @@ export function installPremiumEquipmentHudV1600(root=document){
   const isOpen=kit.classList.toggle('premium-equipment-open');
   if(isOpen)updatePopoverSpace();
   toggle.setAttribute('aria-expanded',String(isOpen));
-  toggle.setAttribute('aria-label',isOpen?'생존 장비 기능 닫기':'생존 장비 기능 열기');
+  toggle.setAttribute('aria-label',isOpen?'더보기 메뉴 닫기':'더보기 메뉴 열기');
  });
  actions.addEventListener('click',event=>{if(event.target.closest('button'))close()});
  root.addEventListener('pointerdown',event=>{if(!kit.contains(event.target))close()},true);

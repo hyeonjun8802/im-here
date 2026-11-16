@@ -158,7 +158,7 @@ export function installCommonUiAssetsV3() {
       rest:'icon_moon',medicine:'icon_medical',explore:'icon_radio',
       'take-cover':'icon_tent','secure-supplies':'icon_supply',
       'collect-water':'icon_water','repair-tank':'icon_tools',
-      'life-panel-toggle':'icon_music','functions-toggle':'icon_functions'
+      'exploration-hub-toggle':'icon_spyglass','functions-toggle':'icon_functions'
     };
     for(const [id,sprite] of Object.entries(actionIcons)){
       const button=document.getElementById(id);
@@ -167,7 +167,7 @@ export function installCommonUiAssetsV3() {
       if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',button.textContent.trim());
       const icon=document.createElement('img');
       icon.className='afterday-v3-action-icon';
-      icon.src=completeHudGlyph(id);
+      icon.src=id==='exploration-hub-toggle'?'/assets/ui/exploration_spyglass_v115.webp':completeHudGlyph(id);
       icon.alt='';icon.setAttribute('aria-hidden','true');
       icon.width=30;icon.height=30;icon.decoding='async';
       button.prepend(icon);
@@ -180,7 +180,7 @@ export function installCommonUiAssetsV3() {
     const actionbar=document.querySelector('#hud .actionbar');
     if(actionbar && !actionbar.querySelector('.afterday-v3-standby-slot')) {
       const repairTank=document.getElementById('repair-tank');
-      const lifeButton=document.getElementById('life-panel-toggle');
+      const explorationButton=document.getElementById('exploration-hub-toggle');
       const reserve=document.createElement('span');
       reserve.className='afterday-v3-standby-slot';
       reserve.setAttribute('aria-hidden','true');
@@ -191,7 +191,7 @@ export function installCommonUiAssetsV3() {
       const reserveText=document.createElement('span');
       reserveText.textContent='물탱크 수리';
       reserve.append(reserveIcon,reserveText);
-      actionbar.insertBefore(reserve,lifeButton||null);
+      actionbar.insertBefore(reserve,explorationButton||null);
       installResponsiveActionSlots(actionbar,reserve,repairTank);
     }
 

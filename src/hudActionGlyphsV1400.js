@@ -14,6 +14,7 @@ const GLYPHS={
  medical:'<rect x="10" y="19" width="44" height="37" rx="5" fill="url(#gold)"/><path d="M23 19v-5c0-4 3-6 7-6h4c4 0 7 2 7 6v5" fill="none" stroke="#f5d4a4" stroke-width="5"/><path d="M28 26h8v8h8v8h-8v8h-8v-8h-8v-8h8Z" fill="#303943" stroke="none"/>',
  crate:'<path d="M9 19h46v35H9Z" fill="url(#gold)"/><path d="M9 19l8-9h30l8 9Z" fill="#e7bf84"/><path d="M19 24v26M45 24v26M14 35h36" fill="none" stroke="#684c33" stroke-width="3"/><path d="M27 19h10v12H27Z" fill="#e8bc7c" stroke="none"/>',
  wrench:'<path d="M46 9a16 16 0 0 0-17 20L11 47a6 6 0 0 0 8 8l18-18a16 16 0 0 0 18-18L44 30l-11-10Z" fill="url(#gold)"/><circle cx="17" cy="49" r="2.8" fill="#51402e" stroke="none"/>',
+ spyglass:'<path d="M15 39l10 6 29-23-10-9Z" fill="url(#gold)"/><circle cx="16" cy="42" r="9" fill="none" stroke="#dec39b" stroke-width="5"/><circle cx="48" cy="16" r="5" fill="#7892a5"/><path d="M29 29l9 8" fill="none" stroke="#4e493f" stroke-width="3"/>',
  music:'<path d="M28 13l26-6v32c0 7-5 12-13 12-6 0-10-3-10-8s4-9 10-10l6-1V19l-14 4v25c0 7-5 12-13 12-7 0-11-3-11-8 0-6 6-10 13-10h4Z" fill="url(#gold)" transform="translate(0 -2) scale(.98)"/>',
  cloud:'<path d="M17 51h31c7 0 12-5 12-12s-5-12-12-12c-1-9-8-16-18-16-9 0-16 6-18 14C6 26 3 31 3 38c0 8 6 13 14 13Z" fill="url(#gold)" transform="translate(2 0) scale(.94)"/>',
  functions:'<rect x="10" y="10" width="18" height="18" rx="3" fill="url(#gold)"/><rect x="36" y="10" width="18" height="18" rx="3" fill="url(#gold)"/><rect x="10" y="36" width="18" height="18" rx="3" fill="url(#gold)"/><rect x="36" y="36" width="18" height="18" rx="3" fill="url(#gold)"/><path d="M20 15v8m-4-4h8M40 19h10M19 41v8M15 45h8M41 40l9 10m0-10-9 10" fill="none" stroke="#48443e" stroke-width="3" stroke-linecap="round"/>',
@@ -23,7 +24,7 @@ const GLYPHS={
 };
 const ACTION_TO_GLYPH={
  drink:'water',eat:'food',repair:'hammer',rest:'moon',medicine:'medical',
- explore:'crate','repair-tank':'wrench','life-panel-toggle':'music',
+ explore:'crate','repair-tank':'wrench','life-panel-toggle':'music','exploration-hub-toggle':'spyglass',
  'weather-panel-toggle':'cloud','functions-toggle':'functions','take-cover':'shield','secure-supplies':'supply',
  'collect-water':'water',reserve:'wrench'
 };

@@ -21,7 +21,7 @@ test('existing nine-slot actions remain intact after removing duplicated control
  assert.ok(bar);
  const buttons=[...bar.matchAll(/<button[^>]+id="([^"]+)"[^>]*>/g)]
   .filter(x=>!x[0].includes(' hidden')).map(x=>x[1]);
- assert.deepEqual(buttons,['drink','eat','repair','rest','medicine','explore','life-panel-toggle','functions-toggle']);
+ assert.deepEqual(buttons,['drink','eat','repair','rest','medicine','explore','exploration-hub-toggle','functions-toggle']);
  assert.match(main,/bindEvents\(\);renderHUD\(\)/);
 });
 test('phone uses legible equipment frame and a single adjacent touch-safe top control row',()=>{

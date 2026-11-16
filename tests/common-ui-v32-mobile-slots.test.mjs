@@ -20,7 +20,7 @@ test('compact mobile icon-only cells remain centered, text remains in DOM for ac
   assert.match(css,/actionbar button:not\(\[data-v3-sprite\]\) > span\s*\{[\s\S]*?place-items:center!important;/);
   assert.match(css,/afterday-v3-standby-slot > span[\s\S]{0,180}?display:none!important/);
   assert.match(assetJs,/reserveText\.textContent='물탱크 수리'/);
-  for(const id of ['drink','eat','repair','rest','medicine','explore','life-panel-toggle','weather-panel-toggle']) {
+  for(const id of ['drink','eat','repair','rest','medicine','explore','exploration-hub-toggle','weather-panel-toggle']) {
     assert.match(html,new RegExp('id="'+id+'"'));
   }
 });

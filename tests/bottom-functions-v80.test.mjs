@@ -17,7 +17,7 @@ test('the original nine-slot footer is stable; the old weather simulator is repl
  assert.equal((html.match(/id="functions-toggle"/g)||[]).length,1);
  const ids=[...bar.matchAll(/<button[^>]+id="([^"]+)"[^>]*>/g)]
   .filter(x=>!x[0].includes(' hidden')).map(x=>x[1]);
- assert.deepEqual(ids,['drink','eat','repair','rest','medicine','explore','life-panel-toggle','functions-toggle']);
+ assert.deepEqual(ids,['drink','eat','repair','rest','medicine','explore','exploration-hub-toggle','functions-toggle']);
  assert.equal(ids.length+1,9,'the unfilled tank-repair well is already a passive reserve');
 });
 
@@ -32,8 +32,11 @@ test('the bottom functions button reuses existing equipment popover and is ARIA 
 });
 
 test('weather simulation and important equipment actions remain available under Functions',()=>{
- assert.match(funcs,/id="exploration-open"/);
- assert.match(funcs,/id="expedition-toggle"/);
+ assert.match(html,/<aside id="exploration-hub"[^>]*>[\s\S]*?id="exploration-open"/);
+ assert.match(html,/<aside id="exploration-hub"[^>]*>[\s\S]*?id="expedition-toggle"/);
+ assert.match(funcs,/id="more-life-open"/);
+ assert.match(funcs,/id="more-camera-open"/);
+ assert.match(funcs,/id="more-audio-open"/);
  assert.match(funcs,/id="companion-toggle"/);
  assert.match(funcs,/id="radio-contact"/);
  assert.match(funcs,/id="weather-panel-toggle"/);
@@ -52,6 +55,7 @@ test('the ninth slot uses a newly drawn coherent icon inside the same original b
  assert.doesNotMatch(ui,/'weather-panel-toggle':'icon_cloud'/);
  assert.ok(completeHudGlyph('functions-toggle').startsWith('data:image/svg+xml'));
  assert.match(ui,/installResponsiveActionSlots\(actionbar,reserve,repairTank\)/);
+ assert.match(ui,/exploration_spyglass_v115\.webp/);
 });
 
 test('real map and location art is now embedded in three independent SVG assets, replacing placeholders',()=>{
