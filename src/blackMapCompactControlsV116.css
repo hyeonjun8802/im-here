@@ -1,0 +1,134 @@
+/* AFTERDAY v116 | Three actions at most, INCLUDING close; map pins are
+ * location selection controls and never act as separate gameplay commands.
+ * Original buttons remain mounted for programmatic delegation and old saves.
+ *
+ * normal: close + switch zone + current action
+ * encounter: close + native action select + execute
+ * preparing: close + confirm + cancel
+ * finale: close + settle + signal
+ * travel: close; return: close + acknowledge
+ */
+.exploration-map-v78 .exploration-map__daily-ops,
+.exploration-map-v78 .exploration-map__howto,
+.exploration-map-v78 .exploration-map__routine,
+.exploration-map-v78 .exploration-map__mission-controls,
+.exploration-map-v78 #exploration-area-near,
+.exploration-map-v78 #exploration-area-far,
+.exploration-map-v78 #exploration-map-return-dismiss,
+.exploration-map-v78 .exploration-map__choices,
+.exploration-map-v78 #exploration-tower-actions{
+ display:none!important;
+}
+/* Duplicate district art, quest risk copy and navigation can make a selected
+ * location taller than the actual map. Keep one main image and a quest title. */
+.exploration-map-v78 .exploration-map__district-photo,
+.exploration-map-v78 .exploration-map__quest-status,
+.exploration-map-v78 .exploration-map__quest p{
+ display:none!important;
+}
+.exploration-map-v78 .exploration-map__quest{
+ padding:5px 0!important;
+ border:0!important;
+ background:none!important;
+ box-shadow:none!important;
+}
+.exploration-map-v78 .exploration-map__quest strong{font-size:12px!important}
+.exploration-map-v78 .exploration-map__compact-actions{
+ display:flex;
+ flex-direction:column;
+ gap:8px;
+ padding:8px 0 3px;
+}
+.exploration-map-v78 #exploration-area-switch{
+ display:block!important;
+ width:100%!important;
+ min-height:44px!important;
+ font-size:12px!important;
+}
+.exploration-map-v78 #exploration-map-primary-action{
+ display:block!important;
+ width:100%!important;
+ min-height:46px!important;
+ text-align:center!important;
+ font-size:13px!important;
+}
+.exploration-map-v78 #exploration-map-primary-action[hidden],
+.exploration-map-v78 #exploration-map-choice-picker[hidden]{
+ display:none!important;
+}
+.exploration-map-v78 #exploration-map-choice-picker{
+ display:flex;flex-direction:column;gap:5px;
+ color:#e5d5bd;
+ font:650 12px/1.4 'Noto Sans KR',system-ui,sans-serif;
+}
+.exploration-map-v78 #exploration-map-choice-select{
+ appearance:auto;
+ width:100%;max-width:100%;min-height:46px;
+ color:#eee2d1;background:#202829;
+ border:1px solid #867157;border-radius:5px;
+ padding:8px 10px;
+ font:500 12px/1.4 'Noto Sans KR',system-ui,sans-serif;
+}
+.exploration-map-v78 #exploration-map-choice-select option{
+ background:#202829;color:#eee2d1;
+}
+.exploration-map-v78 #exploration-map-choice-select:focus-visible{
+ outline:2px solid #c4a071;outline-offset:2px;
+}
+.exploration-map-v78[data-simple-mode="encounter"] .exploration-map__areas,
+.exploration-map-v78[data-simple-mode="preparing"] .exploration-map__areas,
+.exploration-map-v78[data-simple-mode="travel"] .exploration-map__areas,
+.exploration-map-v78[data-simple-mode="return"] .exploration-map__areas,
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__areas,
+.exploration-map-v78[data-simple-mode="preparing"] .exploration-map__compact-actions,
+.exploration-map-v78[data-simple-mode="travel"] .exploration-map__compact-actions,
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__compact-actions{
+ display:none!important;
+}
+.exploration-map-v78[data-simple-mode="encounter"] #exploration-area-switch,
+.exploration-map-v78[data-simple-mode="return"] #exploration-area-switch{
+ display:none!important;
+}
+/* Finale: reveal exactly the two ORIGINAL ending choices, not multiple
+ * 'go to ending' CTAs, site cards, extra map tabs and daily supply actions. */
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__mission-guide,
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__map-wrap,
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__card,
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__stage,
+.exploration-map-v78[data-simple-mode="finale"] #exploration-tower,
+.exploration-map-v78[data-simple-mode="finale"] #exploration-map-return-report{
+ display:none!important;
+}
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__columns{
+ display:block!important;
+}
+.exploration-map-v78[data-simple-mode="finale"] .exploration-map__detail{
+ display:flex!important;flex-direction:column!important;
+}
+.exploration-map-v78[data-simple-mode="finale"] #exploration-finale{
+ display:block!important;
+ width:100%!important;margin:0!important;
+}
+.exploration-map-v78[data-simple-mode="finale"] #exploration-finale-actions{
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ gap:8px!important;
+}
+.exploration-map-v78[data-simple-mode="finale"] #exploration-finale-actions>button{
+ min-height:48px!important;
+}
+/* Once 17-channel tower repair is complete, suppress another long history
+ * panel: completion already appears in the progress and zone summary. */
+.exploration-map-v78[data-simple-mode="normal"] #exploration-tower:has(#exploration-tower-actions:empty){
+ display:none!important;
+}
+@media(max-width:720px){
+ .exploration-map-v78 .exploration-map__compact-actions{padding:4px 0 2px}
+ .exploration-map-v78 #exploration-map-primary-action{font-size:12px!important}
+ .exploration-map-v78 #exploration-area-switch{font-size:11px!important}
+ .exploration-map-v78 .exploration-map__quest strong{font-size:11px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .exploration-map-v78 #exploration-map-primary-action,
+ .exploration-map-v78 #exploration-area-switch{transition:none!important}
+}
