@@ -22,7 +22,7 @@ test('ADMIN lives directly below speed and AUTO in the existing top-right contro
 });
 
 test('ADMIN is a non-privileged QA panel that reuses real buttons and local save',()=>{
- for(const id of ['weather-panel-toggle','life-panel-toggle','exploration-open','functions-toggle']){
+ for(const id of ['weather-panel-toggle','more-life-open','exploration-open','functions-toggle']){
   assert.match(html,new RegExp('data-admin-target="'+id+'"'));
  }
  assert.match(main,/const adminButton=\$\('#admin-toggle'\)/);
