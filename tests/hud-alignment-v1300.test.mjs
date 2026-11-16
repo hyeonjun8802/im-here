@@ -42,7 +42,7 @@ test('nine original sprite slots keep centered live controls',()=>{
 test('clock is smaller and all gameplay actions remain accessible',()=>{
  assert.match(css,/font-size:clamp\(18px,1\.5vw,23px\)/);
  assert.match(css,/font-size:clamp\(15px,4vw,18px\)/);
- for(const id of ['clock','speed-toggle','survival-kit-action','drink','eat','repair','rest','medicine','explore','life-panel-toggle','weather-panel-toggle'])assert.ok(html.includes('id="'+id+'"'),id);
+ for(const id of ['clock','speed-toggle','survival-kit-action','drink','eat','repair','rest','medicine','explore','exploration-hub-toggle','weather-panel-toggle'])assert.ok(html.includes('id="'+id+'"'),id);
 });
 
 test('mobile header cannot revert to old collapsed 13px padding',()=>{
