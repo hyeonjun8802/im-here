@@ -1,0 +1,29 @@
+/* AFTERDAY v114 | Weather-aligned non-modal warning & event notices.
+ * Read CSS variable is measured from the real weather/temperature and
+ * 50x/AUTO/ADMIN HUD edges. Keep decisions centered, HUD and save untouched. */
+body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
+ top:var(--afterday-notice-top,calc(clamp(146px,22vw,260px) + env(safe-area-inset-top)))!important;
+ bottom:auto!important;
+ max-height:max(84px,min(220px,calc(100dvh - var(--afterday-notice-top,146px) - 92px - env(safe-area-inset-bottom))))!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+}
+body.afterday-real-ui-v3 #hud > #warning.warning:not(.hidden){
+ top:var(--afterday-notice-top,calc(clamp(146px,22vw,260px) + env(safe-area-inset-top)))!important;
+ bottom:auto!important;
+ max-height:max(60px,min(170px,calc(100dvh - var(--afterday-notice-top,146px) - 92px - env(safe-area-inset-bottom))))!important;
+ overflow-y:auto!important;
+}
+/* Preserve the artwork and tap targets; only Y axis/available scroll height
+ * changes. Bottom rail and left equipment captions stay where they are. */
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
+  max-height:max(84px,min(190px,calc(100dvh - var(--afterday-notice-top,146px) - 85px - env(safe-area-inset-bottom))))!important;
+ }
+}
+@media(max-height:480px){
+ body.afterday-real-ui-v3 #hud > .afterday-board:not(.is-choice){
+  max-height:max(70px,min(160px,calc(100dvh - var(--afterday-notice-top,146px) - 58px - env(safe-area-inset-bottom))))!important;
+ }
+}
