@@ -363,7 +363,7 @@ function runSurvivalAction(action,isAuto=false){
        result.outcome==='declined'?'다시 혼자가 된 옥상':
        result.outcome?.startsWith('traded')?'식량 한 개의 교환':'스쳐 간 구조 신호',
      description:joined?
-       '“저도 일할 수 있어요. 함께 버텨요.” 정수·재배 설비가 있으면 작업 속도 +30%. 대신 매 게임 하루 식량과 식수 각각 1개가 필요하다.':
+       '“저도 일할 수 있어요. 함께 버텨요.” 지역 탐사가 활성화되었습니다! 하단 망원경 버튼에서 검은 지도를 열어보세요. 정수·재배 설비 작업 속도 +30%, 매 게임 하루 식량·식수 각 1개 필요.':
        result.msg,
      silent:true,duration:10500
    });

@@ -7,6 +7,7 @@
 import {emergencyExploreAvailability,getDay} from './simulation.js';
 import {WEATHER_WATER_CAPACITY} from './weatherEconomy.js';
 import {EXPLORATION_SITES,mapExpeditionAvailability} from './explorationMapV78.js';
+import {hasExplorationCompanion} from './explorationCompanionGateV117.js';
 
 export const AUTO_ACTION_INTERVAL_MS=1250;
 
@@ -54,6 +55,7 @@ export function selectAutoMapAction(s,now){
   return {kind:'choice',choice:(s.supply?.water||0)>=3?'scout':'go'};
  }
  if(mission)return null;
+ if(!hasExplorationCompanion(s))return null;
  for(const site of EXPLORATION_SITES){
   if(mapExpeditionAvailability(s,site.id,now).ready)
    return {kind:'depart',siteId:site.id};

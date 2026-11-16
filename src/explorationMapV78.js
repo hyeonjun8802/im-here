@@ -3,6 +3,7 @@
  * resolveScavengeChoice roll is used for resources, equipment and risks.
  * Location, mission phase and reward receipt are persisted together. */
 import {hash32,resolveScavengeChoice} from './scavengeDirector.js';
+import {hasExplorationCompanion,EXPLORATION_COMPANION_LOCK_TEXT} from './explorationCompanionGateV117.js';
 import {explorationOutcomeStory,explorationTrail,EXPLORATION_CHOICES,EXPLORATION_OUTCOMES} from './explorationStoryV85.js';
 
 const DAY_MS=86400000;
@@ -154,6 +155,7 @@ export function sanitizeExplorationMap(input){
 export function mapExpeditionAvailability(s,id,now){
  if(!SITE_IDS.has(id))return {ready:false,reason:'아직 탐험할 수 없는 지역입니다.'};
  if(s.survivalStatus==='dead')return {ready:false,reason:'생존이 종료됐습니다.'};
+ if(!hasExplorationCompanion(s))return {ready:false,reason:EXPLORATION_COMPANION_LOCK_TEXT};
  const map=s.explorationMap||newExplorationMap(),site=map.sites[id];
  if(map.mission)return {ready:false,reason:'진행 중인 탐험을 먼저 마쳐야 합니다.'};
  if(!site||site.visibility==='unknown')return {ready:false,reason:'먼저 주변을 탐사해 위치를 확인하세요.'};

@@ -3,6 +3,7 @@
  * No new resource rolls, simulation changes, additional HUD slots or duplicates.
  */
 import {EXPLORATION_SITES} from './explorationMapV78.js';
+import {canAccessExplorationMap,EXPLORATION_COMPANION_LOCK_TEXT} from './explorationCompanionGateV117.js';
 
 export function explorationHubSummary(state){
  const map=state?.explorationMap;
@@ -44,6 +45,12 @@ export function installExplorationHubV115({
  const isOpen=()=>!panel.hidden;
  const sync=()=>{
   const s=getState();
+  const unlocked=canAccessExplorationMap(s)&&s?.survivalStatus!=='dead';
+  toggle.disabled=!unlocked;
+  toggle.setAttribute('aria-disabled',String(!unlocked));
+  toggle.title=unlocked?'검은 지도 · 지역 탐사 · 보급':EXPLORATION_COMPANION_LOCK_TEXT;
+  toggle.setAttribute('aria-label',unlocked?'탐사 메뉴 열기':'지역 탐사 잠김 · 동료 합류 후 활성화');
+  if(!unlocked)close();
   progress.textContent=explorationHubSummary(s);
   const pending=Boolean(s?.scavenge?.pending);
   emergency.hidden=pending;
@@ -77,6 +84,7 @@ export function installExplorationHubV115({
   toggle.setAttribute('aria-label','탐사 메뉴 열기');
  };
  const open=()=>{
+  if(!canAccessExplorationMap(getState())||getState()?.survivalStatus==='dead')return;
   onOpen();
   panel.hidden=false;
   toggle.setAttribute('aria-expanded','true');
@@ -84,6 +92,7 @@ export function installExplorationHubV115({
   sync();position();
  };
  toggle.addEventListener('click',()=>isOpen()?close():open());
+ sync();
  closeButton.addEventListener('click',()=>{close();toggle.focus?.();});
  emergency.addEventListener('click',()=>{if(!emergency.disabled)onEmergency();});
  panel.addEventListener('click',event=>{

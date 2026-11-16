@@ -16,6 +16,7 @@ import {
 import {buildBlackMapGuide} from './blackMapMissionGuideV97.js';
 import {getDailyOperations,getExpeditionPreparation,getReturnReport} from './blackMapDailyOperationsV98.js';
 import {REPAIR_PARTS_RESERVE} from './repairPartsBalanceV95.js';
+import {canAccessExplorationMap} from './explorationCompanionGateV117.js';
 import {blackMapCompactMode} from './blackMapCompactActionsV116.js';
 
 const ASSET='/assets/exploration/';
@@ -215,7 +216,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(lastTrigger?.isConnected)lastTrigger.focus({preventScroll:true});
  };
  function open(trigger=null){
-  if(getState().survivalStatus==='dead')return;
+  if(getState().survivalStatus==='dead'||!canAccessExplorationMap(getState()))return;
   if(hasBlockingChoice?.())return;
   lastTrigger=trigger||document.activeElement;
   hidePreparation();
@@ -878,6 +879,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   * a modal every 1.25 seconds or awarding any extra resources. */
  function autoStep(plan,realNow=Date.now()){
   if(!plan||hasBlockingChoice?.())return {good:false,msg:'다른 필수 알림이 진행 중입니다.'};
+  if(!canAccessExplorationMap(getState()))return {good:false,msg:'동료 합류 후 지역 탐사가 가능합니다.'};
   if(plan.kind==='depart'){
    const result=beginMapExpedition(getState(),plan.siteId,getNow(),realNow);
    if(!result.good)return result;

@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {explorationHubSummary,explorationHubPosition,installExplorationHubV115} from '../src/explorationHubV115.js';
 import {EXPLORATION_SITES,newExplorationMap} from '../src/explorationMapV78.js';
 import {completeHudGlyph} from '../src/hudActionGlyphsV1400.js';
+import {hasExplorationCompanion,canAccessExplorationMap,EXPLORATION_COMPANION_LOCK_TEXT} from '../src/explorationCompanionGateV117.js';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const html=read('index.html');
 const main=read('src/main.js');
@@ -92,7 +93,7 @@ test('real controls open and close, delegate existing buttons, and do not touch 
  els['exploration-hub'].hidden=true;
  els.explore.dataset.supplyReady='true';
  els.explore.title='지금 보급 가능';
- const s={explorationMap:newExplorationMap(),supply:{food:3},scavenge:{pending:null}};
+ const s={explorationMap:newExplorationMap(),companion:{present:true,lost:false},supply:{food:3},scavenge:{pending:null}};
  const root={events:{},getElementById:k=>els[k],addEventListener(k,fn){this.events[k]=fn;}};
  const win={innerWidth:390,innerHeight:844,events:{},addEventListener(k,fn){this.events[k]=fn;}};
  let opened=0,supplyAction=0;

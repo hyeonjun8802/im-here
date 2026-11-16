@@ -95,3 +95,15 @@ body.afterday-real-ui-v3 #hud .actionbar #exploration-hub-toggle
   filter:none;
  }
 }
+
+/* v117 | Solo survivor: preserve icon slot and bronze frame, visibly locked.
+ * Do not disable the separate supply crate, radio, or companion-choice entry. */
+body.afterday-real-ui-v3 #hud .actionbar #exploration-hub-toggle:disabled{
+ opacity:.68!important;
+ filter:grayscale(.8) brightness(.66)!important;
+ cursor:not-allowed!important;
+}
+body.afterday-real-ui-v3 #hud .actionbar #exploration-hub-toggle:disabled
+ > img.afterday-v3-action-icon{
+ filter:grayscale(1) brightness(.72)!important;
+}
