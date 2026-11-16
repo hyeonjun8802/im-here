@@ -21,7 +21,7 @@ test('daily priority respects dangerous weather and urgent health',()=>{
  assert.match(getDailyOperations(s,now).title,/건강 관리/);
 });
 test('preparation reports actual gates, scout water and salvage reserve',()=>{
- const s=defaults(now);
+ const s=defaults(now);s.companion.present=true;
  s.supply.parts=12;s.supply.water=0;
  const before=JSON.stringify(s);
  const p=getExpeditionPreparation(s,'ruined_house',now);

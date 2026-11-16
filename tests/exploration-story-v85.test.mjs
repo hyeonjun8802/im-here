@@ -17,9 +17,11 @@ import {survivalDailyBriefing,explorationChapterContext} from '../src/survivalBa
 const start=Date.UTC(2026,10,14,12);
 const real=start+5000;
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
-const make=()=>{const s=defaults(start);s.companion.present=true;return s;};
+const make=()=>defaults(start);
 
 function encounter(s,site='ruined_house',choice='go'){
+ // The scene test exercises an unlocked region; other storyline fixtures stay solo.
+ s.companion.present=true;
  const departed=beginMapExpedition(s,site,start,real);
  assert.equal(departed.good,true,departed.msg);
  const arrived=advanceMapExpedition(s,start+EXPLORATION_TRAVEL_GAME_MS,real+EXPLORATION_MIN_REAL_MS);
