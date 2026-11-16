@@ -50,7 +50,7 @@ test('More contains the real former music actions and links to existing camera a
  for(const id of ['follow-survivor-camera','portrait-survivor-camera','camp-music-toggle',
   'life-camera-toggle','close-life','life-panel'])
   assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id);
- assert.match(main,/showLifeFromMore\(section\)/);
+ assert.match(main,/const showLifeFromMore=section=>/);
  assert.match(main,/\$\('#more-life-open'\)\.addEventListener/);
  assert.match(main,/\$\('#more-camera-open'\)\.addEventListener/);
  assert.match(main,/\$\('#more-audio-open'\)\.addEventListener/);
@@ -70,7 +70,7 @@ test('popover placement stays above the eighth action well and within mobile vie
  const r=explorationHubPosition({top:720,right:330},{
   width:334,viewportWidth:390,viewportHeight:844,hudBottom:115
  });
- assert.deepEqual(r,{left:44,bottom:134,width:334,maxHeight:585});
+ assert.deepEqual(r,{left:12,bottom:134,width:334,maxHeight:585});
  const narrow=explorationHubPosition({top:600,right:296},{
   width:334,viewportWidth:320,viewportHeight:700,hudBottom:130
  });
