@@ -33,7 +33,7 @@ test('ADMIN reset uses existing confirmed restart rather than a competing save p
  assert.match(restart,/persistFreshRestart\(localStorage,Date\.now\(\)\)/);
  assert.match(restart,/void deviceCloud\.save\(fresh\)/);
  assert.match(restart,/window\.location\.reload\(\)/);
- const bridge=main.slice(end,main.indexOf("$('#life-panel-toggle')",end));
+ const bridge=main.slice(end,main.indexOf("const showLifeFromMore=",end));
  assert.doesNotMatch(bridge,/localStorage|deviceCloud|persistFreshRestart|window\.location\.reload/);
 });
 
