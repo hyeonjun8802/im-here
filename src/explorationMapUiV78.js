@@ -16,6 +16,7 @@ import {
 import {buildBlackMapGuide} from './blackMapMissionGuideV97.js';
 import {getDailyOperations,getExpeditionPreparation,getReturnReport} from './blackMapDailyOperationsV98.js';
 import {REPAIR_PARTS_RESERVE} from './repairPartsBalanceV95.js';
+import {blackMapCompactMode} from './blackMapCompactActionsV116.js';
 
 const ASSET='/assets/exploration/';
 const LABELS={unknown:'미발견',rumored:'위치 발견',visited:'방문함',completed:'조사 완료'};
@@ -97,6 +98,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     <div class="exploration-map__areas" role="group" aria-label="탐사 구역">
      <button id="exploration-area-near" class="exploration-map__control exploration-map__control--tab" type="button" aria-pressed="true">근거리 · 6곳</button>
      <button id="exploration-area-far" class="exploration-map__control exploration-map__control--tab" type="button" aria-pressed="false">원거리 · 6곳</button>
+     <button id="exploration-area-switch" class="exploration-map__control exploration-map__control--secondary" type="button" aria-label="다른 탐사 구역으로 전환">다른 구역 보기</button>
     </div>
     <p id="exploration-map-zone-brief" class="exploration-map__zone-brief">근거리 · 옥상 주변 생활권</p>
     <div class="exploration-map__fog-progress" role="group" aria-label="지도 탐사 단계">
@@ -117,6 +119,12 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
     <div id="exploration-map-card" class="exploration-map__card"></div>
     <div id="exploration-map-stage" class="exploration-map__stage" role="status" aria-live="polite"></div>
     <div id="exploration-map-choices" class="exploration-map__choices"></div>
+    <div id="exploration-map-compact-actions" class="exploration-map__compact-actions">
+     <label id="exploration-map-choice-picker" for="exploration-map-choice-select" hidden>현장 행동 선택
+      <select id="exploration-map-choice-select"><option value="">행동을 선택하세요</option></select>
+     </label>
+     <button id="exploration-map-primary-action" type="button" class="exploration-map__control exploration-map__control--primary" hidden>탐사 진행</button>
+    </div>
     <section id="exploration-tower" class="exploration-map__tower" aria-label="통신탑 복구 이야기" hidden>
      <img class="exploration-map__narrative-photo" src="/assets/exploration/photos/tower_story.webp" loading="lazy" decoding="async" alt="황혼의 폐허 속 통신탑과 17번 채널 복구 장면"/>
      <strong id="exploration-tower-title">통신탑 · 끊긴 신호</strong>
@@ -173,7 +181,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
    ' · 정찰 '+odds('scout')+(data.scoutReady?' (식수 1개 소모)':' (식수 부족)')+
    ' · 자재 회수 '+odds('salvage')+(data.salvageReady?'':' (부품 충분)')+
    ' · 실제 위험은 탐사 판정 결과에 따릅니다.';
-  panel.hidden=false;panel.scrollIntoView({block:'nearest'});
+  panel.hidden=false;root.dataset.simpleMode='preparing';panel.scrollIntoView({block:'nearest'});
   q('#exploration-map-prep-confirm').focus({preventScroll:true});
  }
  const setZone=next=>{
@@ -193,6 +201,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
  };
  q('#exploration-area-near').addEventListener('click',()=>setZone('near'));
  q('#exploration-area-far').addEventListener('click',()=>setZone('far'));
+ q('#exploration-area-switch').addEventListener('click',()=>setZone(zone==='near'?'far':'near'));
  const getSiteState=id=>getState().explorationMap?.sites?.[id]||{visibility:'unknown',visits:0,completed:false};
  const close=()=>{
   if(!visible())return;
@@ -480,7 +489,80 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   q('#exploration-map-return-detail').textContent=lastReturnReport.detail;
   q('#exploration-map-return-next').textContent=lastReturnReport.next;
  }
- function render(){
+ /* v116: three contextual actions instead of duplicate navigation and
+  * daily controls. Actual quest buttons are reused, never rerolled. */
+ let compactTarget=null;
+ const compactPrimary=q('#exploration-map-primary-action');
+ const choiceSelect=q('#exploration-map-choice-select');
+ const choicePicker=q('#exploration-map-choice-picker');
+ compactPrimary.addEventListener('click',()=>{
+  if(root.dataset.simpleMode==='encounter'){
+   const choice=[...choices.querySelectorAll('button[data-choice]')]
+    .find(b=>b.dataset.choice===choiceSelect.value&&!b.disabled);
+   choice?.click();
+  }else if(compactTarget&&!compactTarget.disabled)compactTarget.click();
+ });
+ choiceSelect.addEventListener('change',()=>{
+  compactPrimary.disabled=!choiceSelect.value;
+ });
+ function syncCompactControls(s,now,mission){
+  const preparing=!q('#exploration-map-prep').hidden;
+  const finaleReady=!mission&&mapFinaleAvailability(s).ready;
+  const mode=blackMapCompactMode({
+   preparing,report:Boolean(lastReturnReport),missionPhase:mission?.phase||'',finaleReady
+  });
+  root.dataset.simpleMode=mode;
+  const switchButton=q('#exploration-area-switch');
+  const other=zone==='near'?'far':'near';
+  const otherName=other==='far'?'원거리':'근거리';
+  const progress=explorationZoneProgress(s.explorationMap,other,EXPLORATION_SITES);
+  switchButton.textContent=otherName+' 지도 보기 · '+progress.completed+'/6';
+  switchButton.setAttribute('aria-label',otherName+' 구역으로 전환');
+  switchButton.disabled=Boolean(mission);
+  compactTarget=null;
+  compactPrimary.hidden=true;
+  compactPrimary.disabled=true;
+  choicePicker.hidden=true;
+  if(mode==='encounter'){
+   const previous=choiceSelect.value;
+   choiceSelect.replaceChildren();
+   const empty=document.createElement('option');
+   empty.value='';empty.textContent='탐사 방식 선택';
+   choiceSelect.append(empty);
+   for(const button of choices.querySelectorAll('button[data-choice]')){
+    const option=document.createElement('option');
+    option.value=button.dataset.choice;
+    option.textContent=button.textContent;
+    option.disabled=button.disabled;
+    choiceSelect.append(option);
+   }
+   const previousOption=[...choiceSelect.options].find(o=>o.value===previous&&!o.disabled);
+   choiceSelect.value=previousOption?.value||'';
+   choicePicker.hidden=false;
+   compactPrimary.hidden=false;
+   compactPrimary.textContent='선택한 행동 실행';
+   compactPrimary.disabled=!choiceSelect.value;
+   return;
+  }
+  if(mode==='preparing'||mode==='travel'||mode==='finale')return;
+  let target=null;
+  if(mode==='return')target=q('#exploration-map-return-dismiss');
+  else{
+   const tower=q('#exploration-tower-actions button:not(:disabled)');
+   const next=choices.querySelector('button:not(:disabled)');
+   const guide=q('#exploration-map-guide-action');
+   if(latestGuide?.kind==='tower'&&tower)target=tower;
+   else if(next)target=next;
+   else if(latestGuide?.kind==='site'&&guide.dataset.action==='focus')target=guide;
+  }
+  if(target&&!target.disabled){
+   compactTarget=target;
+   compactPrimary.textContent=mode==='return'?'귀환 기록 확인':target.textContent;
+   compactPrimary.hidden=false;
+   compactPrimary.disabled=false;
+  }
+ }
+  function render(){
   if(!visible())return;
   const s=getState(),now=getNow(),mission=s.explorationMap?.mission;
   if(mission){
@@ -698,6 +780,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   renderReturnReport();
   q('#exploration-map-daily').disabled=Boolean(mission)||!s.scavenge?.pending;
   q('#exploration-map-emergency').disabled=Boolean(mission)||s.survivalStatus==='dead';
+  syncCompactControls(s,now,mission);
  }
  const openControl=document.getElementById('exploration-open');
  if(openControl)openControl.addEventListener('click',()=>open(openControl));
@@ -731,7 +814,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   if(!target.disabled)target.click();
  });
  q('#exploration-map-prep-cancel').addEventListener('click',()=>{
-  hidePreparation();q('#exploration-map-guide-action').focus({preventScroll:true});
+  hidePreparation();render();q('#exploration-map-primary-action').focus({preventScroll:true});
  });
  q('#exploration-map-prep-confirm').addEventListener('click',()=>{
   const siteId=preparedSite;
@@ -747,7 +830,7 @@ export function createExplorationMapV78({getState,getNow,save,onDepart,onReturn,
   }
  });
  q('#exploration-map-return-dismiss').addEventListener('click',()=>{
-  lastReturnReport=null;render();q('#exploration-map-guide-action').focus({preventScroll:true});
+  lastReturnReport=null;render();q('#exploration-map-primary-action').focus({preventScroll:true});
  });
  q('#exploration-map-close').addEventListener('click',close);
  q('#exploration-map-daily').addEventListener('click',()=>{close();onDaily?.()});
