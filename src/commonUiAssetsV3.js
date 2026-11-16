@@ -167,7 +167,10 @@ export function installCommonUiAssetsV3() {
       if(!button.getAttribute('aria-label'))button.setAttribute('aria-label',button.textContent.trim());
       const icon=document.createElement('img');
       icon.className='afterday-v3-action-icon';
-      icon.src=id==='exploration-hub-toggle'?'/assets/ui/exploration_spyglass_v115.webp':completeHudGlyph(id);
+      icon.src=completeHudGlyph(id);
+      // Keep the original scalable glyph as fallback; replace only the new
+      // telescope slot with its generated transparent WebP art resource.
+      if(id==='exploration-hub-toggle')icon.src='/assets/ui/exploration_spyglass_v115.webp';
       icon.alt='';icon.setAttribute('aria-hidden','true');
       icon.width=30;icon.height=30;icon.decoding='async';
       button.prepend(icon);
