@@ -101,7 +101,7 @@ test('tower steps must happen in sequence and reserve parts exactly once',()=>{
 test('medical scenes can only yield medicine on an existing successful single roll',()=>{
  let win=null,lose=null;
  for(let seed=1;seed<1500;seed++){
-  const s=defaults(start);s.scavenge.seed=seed;
+  const s=defaults(start);s.companion.present=true;s.scavenge.seed=seed;
   for(const id of ['ruined_house','convenience_store']){
    s.explorationMap.sites[id].visits=1;
    s.explorationMap.sites[id].completed=true;

@@ -61,7 +61,7 @@ test('food ration decisions are automatic but use exact manual cost and morale i
 });
 
 test('AUTO map follows visibility/visit/date limits and chooses the next new location',()=>{
- const s=fresh();
+ const s=fresh();s.companion.present=true;
  assert.deepEqual(selectAutoMapAction(s,started),{kind:'depart',siteId:'ruined_house'});
  const depart=beginMapExpedition(s,'ruined_house',started,real);
  assert.equal(depart.good,true);
@@ -83,7 +83,7 @@ test('AUTO map follows visibility/visit/date limits and chooses the next new loc
 });
 
 test('AUTO map pauses in critical storms and while injured, no unsafe fallback loops',()=>{
- const s=fresh();
+ const s=fresh();s.companion.present=true;
  s.weather='tornado';assert.equal(selectAutoMapAction(s,started),null);
  s.weather='clear';s.health=20;assert.equal(selectAutoMapAction(s,started),null);
  s.health=60;

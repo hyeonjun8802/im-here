@@ -9,7 +9,7 @@ import {
 } from '../src/explorationMapV78.js';
 
 const start=Date.UTC(2026,10,14);
-const state=()=>defaults(start);
+const state=()=>{const s=defaults(start);s.companion.present=true;return s;};
 const real=Date.UTC(2026,10,14,4,10);
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const depart=(s,id='ruined_house',now=start,actual=real)=>{

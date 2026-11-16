@@ -79,6 +79,7 @@ test('radio 17 opens only the first far site; the remaining five are opened one 
 
 test('manually spoofing a rumored site does not bypass previous completion or 17-channel gating',()=>{
  const s=defaults(start),now=start+86400000;
+ s.companion.present=true;
  s.explorationMap.sites.pharmacy.visibility='rumored';
  let blocked=mapExpeditionAvailability(s,'pharmacy',now);
  assert.equal(blocked.ready,false);
@@ -98,7 +99,7 @@ test('manually spoofing a rumored site does not bypass previous completion or 17
 test('one failed house visit records injury/scavenge but does not unlock or increase stage',()=>{
  let found=null;
  for(let seed=1;seed<1000;seed++){
-  const s=defaults(start);s.scavenge.seed=seed;
+  const s=defaults(start);s.companion.present=true;s.scavenge.seed=seed;
   assert.equal(beginMapExpedition(s,'ruined_house',start,real).good,true);
   advanceMapExpedition(s,start+EXPLORATION_TRAVEL_GAME_MS,real+EXPLORATION_MIN_REAL_MS);
   const result=resolveMapExpedition(s,'go',start+EXPLORATION_TRAVEL_GAME_MS,real+EXPLORATION_MIN_REAL_MS);

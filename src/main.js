@@ -359,11 +359,11 @@ function runSurvivalAction(action,isAuto=false){
  if(result.good&&action.startsWith('companion_')&&!action.startsWith('companion_rations_')&&!eventBoard?.activeKey){
    const joined=result.outcome==='joined';
    eventBoard?.show(joined?'companionJoined':'companionOutcome',{
-     title:joined?'두 사람이 함께 지키는 옥상':
+     title:joined?'동료 합류 · 지역 탐사 활성화':
        result.outcome==='declined'?'다시 혼자가 된 옥상':
        result.outcome?.startsWith('traded')?'식량 한 개의 교환':'스쳐 간 구조 신호',
      description:joined?
-       '“저도 일할 수 있어요. 함께 버텨요.” 지역 탐사가 활성화되었습니다! 하단 망원경 버튼에서 검은 지도를 열어보세요. 정수·재배 설비 작업 속도 +30%, 매 게임 하루 식량·식수 각 1개 필요.':
+       '지역 탐사가 활성화되었습니다! 하단 망원경 버튼에서 검은 지도를 열어보세요. 정수·재배 +30%, 매 게임 하루 식량·식수 각 1개 필요.':
        result.msg,
      silent:true,duration:10500
    });

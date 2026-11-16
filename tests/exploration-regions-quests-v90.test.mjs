@@ -152,7 +152,7 @@ test('UI changes background at zone switch and connects quest cards and scaled m
 });
 
 test('available region quest does not bypass 17-channel and core travel system',()=>{
- const s=defaults(Date.UTC(2026,10,15,9));
+ const s=defaults(Date.UTC(2026,10,15,9));s.companion.present=true;
  const site='underpass';
  const metadata=questBySite(site);
  assert.equal(metadata.district,'waterfront');

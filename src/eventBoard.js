@@ -18,7 +18,7 @@ export const EVENT_STYLES = Object.freeze({
   expeditionResult:{ category:'탐색의 결과',title:'옥상으로 돌아왔다',description:'이번 선택의 결과가 다음 생존에 영향을 줍니다.',image:'supply_cache.webp',severity:'social',duration:3500 },
   helicopter:   { category:'구조 신호',title:'구조 헬기 보급품 투하!',description:'무전기에 응답한 헬기가 생존 물자를 떨어뜨렸습니다.',image:'supply_cache.webp',severity:'opportunity',duration:4000 },
   companionInvite:{ category:'구조 요청',title:'“혼자 버티는 것보다 둘이 나을까요?”',description:'무전 속 생존자가 옥상 계단실에 도착했다. “정수기와 화단을 도울 수 있어요. 대신 오늘부터 먹을 것과 물을 나눠주세요.” 함께하기 선택 시 지역 탐사가 활성화됩니다. 정수·재배 작업속도 +30%(설비 필요), 하루 식량·식수 각 1개 소비.',image:'stranger.webp',severity:'social',duration:300000 },
-  companionJoined:{ category:'동료 합류',title:'두 사람이 함께 지키는 옥상',description:'“저도 일할 수 있어요. 함께 버텨요.” 지역 탐사가 활성화되었습니다. 하단 망원경 버튼으로 검은 지도를 열 수 있습니다.',image:'stranger.webp',severity:'social',duration:4000 },
+  companionJoined:{ category:'동료 합류',title:'동료 합류 · 지역 탐사 활성화',description:'지역 탐사가 활성화되었습니다. 하단 망원경 버튼으로 검은 지도를 열 수 있습니다. 정수·재배 +30%, 매일 식량·식수 각 1개 필요.',image:'stranger.webp',severity:'social',duration:4000 },
   companionOutcome:{ category:'구조 선택의 결과',title:'다시 고요해진 계단실',description:'누군가 떠나고, 옥상에는 선택의 결과가 남았다.',image:'stranger.webp',severity:'social',duration:4000 },
   companionRations:{ category:'동료의 부탁',title:'“우리 둘이 먹을 물자는 충분할까요?”',description:'동료가 남은 물과 식량을 앞에 두고 묻는다. 지금 한 몫을 나누면 건강을 회복하고, 나중에 동료가 폐자재를 찾아 보답한다. 비축을 지키면 3일간 협업이 느려진다.',image:'stranger.webp',severity:'social',duration:300000 },
   companionRationResult:{ category:'함께한 선택의 결과',title:'두 사람의 내일',description:'오늘의 식량 배분이 다음 작업에 영향을 준다.',image:'stranger.webp',severity:'social',duration:4000 },
