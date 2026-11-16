@@ -64,7 +64,12 @@ export function installPremiumEquipmentHudV1600(root=document){
   toggle.setAttribute('aria-label',isOpen?'더보기 메뉴 닫기':'더보기 메뉴 열기');
  });
  actions.addEventListener('click',event=>{if(event.target.closest('button'))close()});
- root.addEventListener('pointerdown',event=>{if(!kit.contains(event.target))close()},true);
+ // The last actionbar cell is OUTSIDE kit. Do not close on its
+ // pointerdown or a second tap would close then instantly reopen More.
+ const moreButton=root.querySelector('#functions-toggle');
+ root.addEventListener('pointerdown',event=>{
+  if(!kit.contains(event.target)&&!moreButton?.contains(event.target))close();
+ },true);
  root.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&kit.classList.contains('premium-equipment-open')){
    close();toggle.focus();
