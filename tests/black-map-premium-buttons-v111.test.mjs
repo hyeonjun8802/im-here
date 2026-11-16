@@ -41,13 +41,25 @@ test('each user action style has distinct dark and readable physical states',()=
  assert.match(css,/:disabled/);
  assert.match(css,/:focus-visible/);
 });
-test('close has only one artwork and masks the legacy painted housing',()=>{
- assert.match(css,/\.exploration-map__heading::after/);
- assert.match(css,/z-index:1/);
+test('title stops painting the legacy close housing and retains only the approved X asset',()=>{
+ assert.match(css,/v112 design debug/);
+ assert.match(css,/\.exploration-map__heading\{\s*position:relative!important;/);
+ assert.match(css,/border-image:none!important/);
+ assert.match(css,/\.exploration-map__heading::after\{\s*content:none!important;\s*display:none!important;/);
+ assert.doesNotMatch(css,/width:clamp\(60px,17vw,78px\)/);
  assert.match(css,/z-index:3!important/);
  assert.match(css,/border:0!important;border-image:none!important/);
  assert.match(css,/--blackmap-v111-close/);
  assert.match(css,/#exploration-map-close::before/);
+});
+test('mobile UI keeps button states muted, legible, and physically tappable',()=>{
+ assert.match(css,/@media\(hover:hover\) and \(pointer:fine\)/);
+ assert.match(css,/@media\(hover:none\) and \(pointer:coarse\)/);
+ assert.match(css,/:hover:not\(:active\)/);
+ assert.match(css,/#exploration-map-daily-shortcut\{\s*min-height:48px!important;\s*font-size:12px!important/);
+ assert.match(css,/\.exploration-map__mission-controls\{\s*margin-top:10px!important/);
+ assert.match(css,/\.exploration-map__areas\{\s*gap:8px!important/);
+ assert.match(css,/width:44px!important;height:44px!important/);
 });
 test('button visuals are isolated from map geometry, state and nine-slot HUD',()=>{
  const rulesOnly=css.replace(/\/\*[\s\S]*?\*\//g,'');

@@ -69,8 +69,17 @@
  background:transparent!important;
  filter:none!important;
 }
-.exploration-map-v78 button.exploration-map__control:not(#exploration-map-close):not(:disabled):hover{
- filter:brightness(1.075)!important;
+/* Mobile Safari can latch :hover after tapping. Highlight only actual
+ * hover-capable devices; keep the approved muted palette on touch screens. */
+@media(hover:hover) and (pointer:fine){
+ .exploration-map-v78 button.exploration-map__control:not(#exploration-map-close):not(:disabled):hover{
+  filter:brightness(1.055)!important;
+ }
+}
+@media(hover:none) and (pointer:coarse){
+ .exploration-map-v78 button.exploration-map__control:not(#exploration-map-close):not(:disabled):hover:not(:active){
+  filter:none!important;
+ }
 }
 .exploration-map-v78 button.exploration-map__control:not(#exploration-map-close):not(:disabled):active{
  filter:brightness(.85)!important;
@@ -83,31 +92,56 @@
 .exploration-map-v78 button.exploration-map__control:focus-visible{
  outline:2px solid #c7a477!important;outline-offset:2px!important;
 }
-/* The title texture used to paint an ornate close housing behind the icon,
- * leading to stacked/double borders. Mask only the painted right-hand inset,
- * preserving the outer header trim and the rest of its original artwork. */
+/* Separate button surfaces from the read-only ornate frames and ensure
+ * wrapped Korean labels remain comfortable to tap at iPhone widths. */
+.exploration-map-v78 .exploration-map__mission-controls{
+ margin-top:10px!important;
+ gap:7px!important;
+}
+.exploration-map-v78 #exploration-map-return-dismiss{
+ margin-top:8px!important;
+}
+.exploration-map-v78 .exploration-map__areas{
+ gap:8px!important;
+}
+.exploration-map-v78 #exploration-map-daily-shortcut{
+ min-height:48px!important;
+ font-size:12px!important;
+ line-height:1.35!important;
+ text-align:center!important;
+}
+
+/* v112 design debug: v101's title picture already contained an ornate close
+ * housing. A gradient mask merely hid part of it, producing seams and stacked
+ * metal. Use one quiet rectangular information header; let the existing
+ * approved close.webp be the SINGLE physical button on the right. */
 .exploration-map-v78 .exploration-map__heading{
  position:relative!important;
- isolation:isolate;
+ isolation:auto!important;
+ border:1px solid #725a3e!important;
+ border-image:none!important;
+ border-radius:2px!important;
+ background:linear-gradient(180deg,#1d2222,#14191a)!important;
+ box-shadow:inset 0 1px 0 rgba(237,196,142,.10)!important;
+ min-height:72px!important;
+ padding:9px 11px!important;
+ gap:9px!important;
+ align-items:center!important;
 }
 .exploration-map-v78 .exploration-map__heading::after{
- content:"";
- display:block;
- position:absolute;
- pointer-events:none;
- top:4px;right:3px;bottom:4px;
- width:clamp(60px,17vw,78px);
- background:linear-gradient(90deg,rgba(19,22,23,0),rgba(19,22,23,.97) 32%,#131617 100%);
- border:0;
- z-index:1;
+ content:none!important;
+ display:none!important;
 }
 .exploration-map-v78 .exploration-map__heading>div{
  position:relative;
- z-index:2;
+ z-index:1;
+ min-width:0;
 }
 .exploration-map-v78 #exploration-map-close.exploration-map__control{
  position:relative!important;z-index:3!important;
  flex:0 0 44px!important;
+ align-self:center!important;
+ margin:0!important;
  display:grid!important;place-items:center!important;
  width:44px!important;height:44px!important;
  min-width:44px!important;min-height:44px!important;
