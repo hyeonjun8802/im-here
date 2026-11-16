@@ -1,0 +1,97 @@
+/* AFTERDAY v115 | Compact exploration hub near the new spyglass HUD slot.
+ * Original 9-cell metal action frame and all other menu layouts unchanged. */
+body.afterday-real-ui-v3 #hud #exploration-hub.exploration-hub{
+ position:fixed!important;
+ z-index:85!important;
+ display:flex!important;
+ flex-direction:column!important;
+ gap:9px!important;
+ box-sizing:border-box!important;
+ margin:0!important;
+ padding:12px!important;
+ border:1px solid rgba(145,113,73,.78)!important;
+ border-radius:9px!important;
+ background:linear-gradient(160deg,rgba(27,31,33,.98),rgba(12,17,19,.98))!important;
+ box-shadow:0 9px 26px rgba(0,0,0,.65),inset 0 1px 0 rgba(207,175,125,.14)!important;
+ color:#e8dfd1!important;
+ font:500 12px/1.45 'Noto Sans KR',system-ui,sans-serif!important;
+ pointer-events:auto!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+ backdrop-filter:none!important;
+ -webkit-backdrop-filter:none!important;
+}
+body.afterday-real-ui-v3 #hud #exploration-hub.exploration-hub[hidden]{
+ display:none!important;pointer-events:none!important;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__head{
+ display:flex;align-items:center;justify-content:space-between;
+ gap:10px;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__head strong{
+ color:#efcf99;font-size:14px;font-weight:800;letter-spacing:.01em;
+}
+body.afterday-real-ui-v3 #hud #exploration-hub-close{
+ display:grid;place-items:center;
+ min-width:34px;min-height:34px;
+ border:1px solid #63543f;border-radius:7px;
+ color:#e6d8c2;background:#21292d;cursor:pointer;
+}
+body.afterday-real-ui-v3 #hud #exploration-hub-progress{
+ margin:0;padding:7px 8px;
+ border:1px solid rgba(167,137,94,.3);
+ background:rgba(8,13,15,.35);
+ color:#c7c4bc;font-size:11px;line-height:1.4;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__actions{
+ display:grid;grid-template-columns:1fr;gap:7px;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__actions button:not([hidden]){
+ display:block!important;box-sizing:border-box!important;
+ width:100%!important;min-height:44px!important;
+ margin:0!important;padding:10px 12px!important;
+ border:1px solid rgba(153,122,83,.78)!important;border-radius:7px!important;
+ color:#efdfc5!important;
+ background:linear-gradient(180deg,#39352f,#252a2b)!important;
+ text-shadow:0 1px 2px #0b0d0e!important;
+ font:750 12px/1.3 'Noto Sans KR',system-ui,sans-serif!important;
+ text-align:left;cursor:pointer;touch-action:manipulation;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__actions button[hidden]{
+ display:none!important;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__actions button:disabled{
+ opacity:.5!important;filter:grayscale(.65)!important;cursor:not-allowed!important;
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__actions button:not(:disabled):active{
+ filter:brightness(.85);transform:translateY(1px);
+}
+body.afterday-real-ui-v3 #hud .exploration-hub__actions button:focus-visible,
+body.afterday-real-ui-v3 #hud #exploration-hub-close:focus-visible{
+ outline:2px solid #dab77c;outline-offset:2px;
+}
+body.afterday-real-ui-v3 #hud #exploration-hub>small{
+ color:#b7b6af;font-size:10px;line-height:1.4;
+}
+/* The 76px transparent spyglass artwork has no background/frame. */
+body.afterday-real-ui-v3 #hud .actionbar #exploration-hub-toggle
+ > img.afterday-v3-action-icon{
+ object-fit:contain!important;
+ image-rendering:auto!important;
+ filter:drop-shadow(0 1px 1px rgba(0,0,0,.70)) brightness(.93)!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud #exploration-hub.exploration-hub{
+  padding:10px!important;gap:7px!important;
+ }
+ body.afterday-real-ui-v3 #hud #exploration-hub-progress{font-size:10px;}
+ body.afterday-real-ui-v3 #hud .exploration-hub__actions button:not([hidden]){
+  min-height:44px!important;font-size:11px!important;
+ }
+}
+@media(hover:none) and (pointer:coarse){
+ body.afterday-real-ui-v3 #hud .exploration-hub__actions button:not(:active){
+  filter:none;
+ }
+}
