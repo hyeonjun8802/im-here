@@ -17,7 +17,7 @@ import {survivalDailyBriefing,explorationChapterContext} from '../src/survivalBa
 const start=Date.UTC(2026,10,14,12);
 const real=start+5000;
 const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
-const make=()=>defaults(start);
+const make=()=>{const s=defaults(start);s.companion.present=true;return s;};
 
 function encounter(s,site='ruined_house',choice='go'){
  const departed=beginMapExpedition(s,site,start,real);
