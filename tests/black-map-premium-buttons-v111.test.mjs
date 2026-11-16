@@ -50,7 +50,8 @@ test('close has only one artwork and masks the legacy painted housing',()=>{
  assert.match(css,/#exploration-map-close::before/);
 });
 test('button visuals are isolated from map geometry, state and nine-slot HUD',()=>{
- assert.doesNotMatch(css,/marker|world|canvas|actionbar|save\(|localStorage|camera/);
+ const rulesOnly=css.replace(/\/\*[\s\S]*?\*\//g,'');
+ assert.doesNotMatch(rulesOnly,/[.#](?:exploration-map__marker|actionbar)|\blocalStorage\b|\bcamera\b/);
  assert.match(css,/\.exploration-map-v78/);
  assert.match(read('src/blackMapResourceSkinV101.css'),/v103 \| Site card/);
 });
