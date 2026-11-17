@@ -1,4 +1,4 @@
-/* AFTERDAY premium equipment: one baked action well, optional controls in a popover. */
+/* AFTERDAY premium equipment: one baked action well; More opens a native modal. */
 export function installPremiumEquipmentHudV1600(root=document){
  const kit=root.querySelector('#survival-kit');
  const actions=kit?.querySelector('.survival-kit-controls');
@@ -43,29 +43,17 @@ export function installPremiumEquipmentHudV1600(root=document){
  menuClose.setAttribute('aria-label','더보기 메뉴 닫기');
  actions.insertBefore(menuClose,menuHeading.nextSibling);
  kit.insertBefore(toggle,actions);
+ // The same existing button nodes and listeners are moved into a native
+ // top-layer dialog so no HUD stacking context can cover the menu.
+ const modal=root.createElement('dialog');
+ modal.id='equipment-more-dialog';
+ modal.setAttribute('aria-label','더보기 · 생활과 설정');
+ modal.setAttribute('aria-modal','true');
+ modal.append(actions);
+ (root.querySelector('#hud')||root.body).append(modal);
  const moreButton=root.querySelector('#functions-toggle');
- // Keep the floating menu inside the usable viewport without moving the
- // original equipment bitmap or its baked-in action well.
- const updatePopoverSpace=()=>{
-  if(typeof window==='undefined')return;
-  const trigger=moreButton?.getBoundingClientRect();
-  const top=trigger?.top??kit.getBoundingClientRect().top;
-  const forecast=document.getElementById('disaster-forecast');
-  const forecastBottom=forecast?.getBoundingClientRect().bottom||0;
-  const upperClearance=window.matchMedia('(max-width:720px)').matches
-   ?Math.max(12,forecastBottom+8):12;
-  const available=Math.max(80,Math.floor(top-upperClearance-10));
-  actions.style.setProperty('--afterday-equipment-menu-space',available+'px');
-  // Position the popup over the button that ACTUALLY opened it (right-hand
-  // ninth slot), not the unrelated equipment caption at bottom left.
-  if(trigger){
-   const bottom=Math.max(0,window.innerHeight-trigger.top+9);
-   const right=Math.max(12,window.innerWidth-trigger.right);
-   actions.style.setProperty('--afterday-more-menu-bottom',Math.round(bottom)+'px');
-   actions.style.setProperty('--afterday-more-menu-right',Math.round(right)+'px');
-  }
- };
  const close=()=>{
+  if(modal.open)modal.close();
   kit.classList.remove('premium-equipment-open');
   toggle.setAttribute('aria-expanded','false');
   toggle.setAttribute('aria-label','더보기 메뉴 열기');
@@ -78,33 +66,37 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.addEventListener('click',event=>{
   event.stopPropagation();
   const isOpen=kit.classList.toggle('premium-equipment-open');
-  if(isOpen)updatePopoverSpace();
+  if(isOpen){
+   if(!modal.open)modal.showModal();
+   menuClose.focus?.({preventScroll:true});
+  }else if(modal.open)modal.close();
   toggle.setAttribute('aria-expanded',String(isOpen));
   toggle.setAttribute('aria-label',isOpen?'더보기 메뉴 닫기':'더보기 메뉴 열기');
  });
  actions.addEventListener('click',event=>{if(event.target.closest('button'))close()});
  menuClose.addEventListener('click',()=>moreButton?.focus?.({preventScroll:true}));
+ // A backdrop click targets <dialog>; inner buttons retain their own handlers.
+ modal.addEventListener('click',event=>{
+  if(event.target===modal){close();moreButton?.focus?.({preventScroll:true});}
+ });
+ modal.addEventListener('cancel',event=>{
+  event.preventDefault();close();moreButton?.focus?.({preventScroll:true});
+ });
+ modal.addEventListener('close',()=>{
+  kit.classList.remove('premium-equipment-open');
+  toggle.setAttribute('aria-expanded','false');
+  toggle.setAttribute('aria-label','더보기 메뉴 열기');
+ });
  // The last actionbar cell is OUTSIDE kit. Do not close on its
  // pointerdown or a second tap would close then instantly reopen More.
  root.addEventListener('pointerdown',event=>{
-  if(!kit.contains(event.target)&&!moreButton?.contains(event.target))close();
+  if(modal.open&&!modal.contains(event.target)&&!moreButton?.contains(event.target))close();
  },true);
  root.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&kit.classList.contains('premium-equipment-open')){
-   close();toggle.focus();
+   close();moreButton?.focus?.({preventScroll:true});
   }
  });
  new MutationObserver(sync).observe(actions,{subtree:true,attributes:true,attributeFilter:['hidden']});
- if(typeof window!=='undefined'){
-  window.addEventListener('resize',()=>{
-   if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
-  });
-  document.addEventListener('afterday:common-ui-ready',()=>{
-   if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
-  });
-  window.visualViewport?.addEventListener('resize',()=>{
-   if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
-  },{passive:true});
- }
  sync();
 }
