@@ -55,7 +55,7 @@ test('previous four actions keep their live IDs, handlers and hidden dynamic act
 });
 test('opening, second tap, outside tap and Escape retain existing behavior',()=>{
  assert.match(js,/kit\.classList\.toggle\('premium-equipment-open'\)/);
- assert.match(js,/!kit\.contains\(event\.target\)&&!moreButton\?\.contains\(event\.target\)/);
+ assert.match(js,/!modal\.contains\(event\.target\)&&!moreButton\?\.contains\(event\.target\)/);
  assert.match(js,/event\.key==='Escape'/);
  assert.match(js,/actions\.addEventListener\('click'/);
  assert.match(main,/functionsButton\.addEventListener\('click',\(\)=>equipmentDisclosure\.click\(\)\)/);
