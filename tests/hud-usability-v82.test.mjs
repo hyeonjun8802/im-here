@@ -29,14 +29,18 @@ test('speed, AUTO and ADMIN have individually sized 44px touch boxes on phones',
  assert.match(css,/@media\(max-height:460px\) and \(pointer:coarse\)/);
 });
 
-test('equipment popover adapts to the real available vertical space and offers full-height rows',()=>{
- assert.match(equipment,/const updatePopoverSpace=\(\)=>/);
- assert.match(equipment,/kit\.getBoundingClientRect\(\)\.top/);
- assert.match(equipment,/forecast\?\.getBoundingClientRect\(\)\.bottom/);
- assert.match(equipment,/actions\.style\.setProperty\('--afterday-equipment-menu-space'/);
- assert.match(equipment,/if\(isOpen\)updatePopoverSpace\(\)/);
- assert.match(css,/max-height:min\(40dvh,var\(--afterday-equipment-menu-space,40dvh\)\)!important/);
- assert.match(css,/\.survival-kit\.premium-equipment-open > \.survival-kit-controls > button:not\(\[hidden\]\)/);
+test('equipment More uses centered top-layer modal and preserves touch-safe actions',()=>{
+ const modal=read('src/moreMenuModalV120.css');
+ assert.match(equipment,/const modal=root\.createElement\('dialog'\)/);
+ assert.match(equipment,/modal\.showModal\(\)/);
+ assert.match(equipment,/modal\.append\(actions\)/);
+ assert.match(equipment,/modal\.addEventListener\('cancel'/);
+ assert.match(modal,/position:fixed!important/);
+ assert.match(modal,/inset:0!important/);
+ assert.match(modal,/#equipment-more-dialog::backdrop/);
+ assert.match(modal,/max-height:min\(76dvh/);
+ assert.match(modal,/min-height:54px!important/);
+ assert.match(modal,/overflow-y:auto!important/);
  assert.match(css,/min-height:44px!important/);
 });
 
