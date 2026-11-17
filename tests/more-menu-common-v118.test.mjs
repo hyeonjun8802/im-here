@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {morePopupPlacement} from '../src/premiumEquipmentHudV1600.js';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
@@ -7,12 +8,12 @@ const css=read('src/moreMenuCommonV118.css');
 const html=read('index.html');
 const main=read('src/main.js');
 
-test('the More popup reuses original v3 metal-frame and bronze-button atlas, not new gradients',()=>{
- assert.match(css,/border-image-source:var\(--afterday-v3-wide_panel_02,none\)/);
- assert.match(css,/border-image-slice:36 39 35 39 fill/);
- assert.match(css,/border-image-source:var\(--afterday-v3-small_button_01,none\)/);
- assert.match(css,/border-image-slice:29 29 29 29 fill/);
- assert.doesNotMatch(css,/linear-gradient|blur\(/);
+test('More popup uses the same dark-bronze Black Map button resource without cropped corners',()=>{
+ assert.match(css,/ui-v111\/button_secondary\.webp/);
+ assert.match(css,/border-image-slice:17 21 17 21 fill/);
+ assert.match(css,/border-image-width:8px 10px 8px 10px/);
+ assert.match(css,/border-image:none!important/);
+ assert.doesNotMatch(css,/wide_panel_02|small_button_01|linear-gradient|blur\(/);
  assert.match(html,/commonUiAssetsV3\.css/);
  assert.ok(html.indexOf('moreMenuCommonV118.css')>html.indexOf('hudUsabilityV82.css'));
  assert.ok(html.indexOf('moreMenuCommonV118.css')>html.indexOf('explorationHubV115.css'));
@@ -20,13 +21,15 @@ test('the More popup reuses original v3 metal-frame and bronze-button atlas, not
 test('mobile menu is a compact two-column popup anchored over ninth HUD control',()=>{
  assert.match(js,/const moreButton=root\.querySelector\('#functions-toggle'\)/);
  assert.match(js,/const trigger=moreButton\?\.getBoundingClientRect\(\)/);
- assert.match(js,/window\.innerHeight-trigger\.top\+9/);
- assert.match(js,/window\.innerWidth-trigger\.right/);
+ assert.match(js,/const urgent=root\.querySelector\('\.afterday-v3-urgent-actions\.has-urgent'\)/);
+ assert.match(js,/urgentVisible\?urgentRect\.top:null/);
  assert.match(js,/--afterday-more-menu-bottom/);
  assert.match(js,/--afterday-more-menu-right/);
  assert.match(css,/position:fixed!important/);
  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)!important/);
  assert.match(css,/max-height:min\(42dvh,var\(--afterday-equipment-menu-space,42dvh\)\)/);
+ assert.match(js,/urgentObserver\.observe\(tray,/);
+ assert.match(js,/attributeFilter:\['class','hidden'\]/);
  assert.match(css,/env\(safe-area-inset-bottom\)/);
 });
 test('more screen has semantic title, explicit close button and touch-safe controls',()=>{
@@ -65,4 +68,26 @@ test('design-only fix does not alter simulation, survival UI frame or local save
  assert.doesNotMatch(js,/localStorage|sessionStorage|applyAction|resolveScavengeChoice|save\(/);
  assert.match(html,/id="exploration-hub-toggle"/);
  assert.match(html,/id="functions-toggle"/);
+});
+
+test('rain recovery action never overlaps More popup: moving the tray shifts menu above it',()=>{
+ const rect={triggerTop:710,triggerRight:368,viewportHeight:800,viewportWidth:390,forecastBottom:180,isMobile:true};
+ const ordinary=morePopupPlacement(rect);
+ const raining=morePopupPlacement({...rect,urgentTop:650});
+ assert.equal(ordinary.right,22);
+ assert.equal(ordinary.bottom,100);
+ assert.equal(raining.bottom,160);
+ assert.ok(raining.bottom>ordinary.bottom);
+ // Menu top must be at least 10px above the actual rain action.
+ const estimatedMenuHeight=Math.min(220,raining.maxHeight);
+ assert.ok(rect.viewportHeight-raining.bottom-estimatedMenuHeight<650);
+ assert.equal(morePopupPlacement({...rect,urgentTop:null}).bottom,ordinary.bottom);
+});
+test('compact popup never paints a huge bright atlas frame or clips button bottoms',()=>{
+ assert.match(css,/background:#151d20!important/);
+ assert.match(css,/border:1px solid rgba\(149,116,75,\.82\)!important/);
+ assert.match(css,/border-image-source:url\('\/assets\/exploration\/ui-v111\/button_secondary\.webp'\)/);
+ assert.match(css,/border-image-repeat:stretch!important/);
+ assert.match(css,/min-height:47px!important/);
+ assert.match(css,/height:44px!important;min-height:44px!important/);
 });
