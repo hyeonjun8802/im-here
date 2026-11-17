@@ -39,6 +39,7 @@ test('more screen has semantic title, explicit close button and touch-safe contr
  assert.match(css,/min-height:47px!important/);
  assert.match(css,/#equipment-actions-close\{/);
  assert.match(css,/width:44px!important/);
+ assert.match(css,/height:44px!important;min-height:44px!important;max-height:44px!important/);
  assert.match(css,/button:focus-visible/);
 });
 test('previous four actions keep their live IDs, handlers and hidden dynamic actions',()=>{

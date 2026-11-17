@@ -65,7 +65,7 @@ body.afterday-real-ui-v3 #hud #equipment-actions-menu
  flex:0 0 auto!important;
  box-sizing:border-box!important;
  width:44px!important;min-width:44px!important;max-width:44px!important;
- height:40px!important;min-height:40px!important;max-height:40px!important;
+ height:44px!important;min-height:44px!important;max-height:44px!important;
  margin:0!important;padding:0!important;
  border:7px solid rgba(112,88,60,.7)!important;
  border-image-source:var(--afterday-v3-small_button_01,none)!important;
