@@ -1,16 +1,4 @@
 /* AFTERDAY premium equipment: one baked action well, optional controls in a popover. */
-/** v119: keep the 9th-slot menu clear of the mobile emergency action tray. */
-export function morePopupPlacement({triggerTop,triggerRight,viewportHeight,viewportWidth,
- forecastBottom=0,urgentTop=null,isMobile=false}={}){
- const anchorTop=Number.isFinite(urgentTop)?Math.min(triggerTop,urgentTop):triggerTop;
- const upperClearance=isMobile?Math.max(12,forecastBottom+8):12;
- return {
-  bottom:Math.round(Math.max(0,viewportHeight-anchorTop+10)),
-  right:Math.round(Math.max(12,viewportWidth-triggerRight)),
-  maxHeight:Math.max(80,Math.floor(anchorTop-upperClearance-10))
- };
-}
-
 export function installPremiumEquipmentHudV1600(root=document){
  const kit=root.querySelector('#survival-kit');
  const actions=kit?.querySelector('.survival-kit-controls');
@@ -61,33 +49,21 @@ export function installPremiumEquipmentHudV1600(root=document){
  const updatePopoverSpace=()=>{
   if(typeof window==='undefined')return;
   const trigger=moreButton?.getBoundingClientRect();
-  if(!trigger)return;
-  const forecastBottom=root.querySelector('#disaster-forecast')?.getBoundingClientRect().bottom||0;
-  // Rain, storm and tornado controls are REAL playable actions, not toasts.
-  // Anchor the menu above the tray whenever at least one action is visible.
-  const urgent=root.querySelector('.afterday-v3-urgent-actions.has-urgent');
-  const urgentRect=urgent?.getBoundingClientRect();
-  const urgentVisible=Boolean(urgentRect?.height&&urgent?.querySelector('button:not([hidden])'));
-  const place=morePopupPlacement({
-   triggerTop:trigger.top,triggerRight:trigger.right,
-   viewportHeight:window.innerHeight,viewportWidth:window.innerWidth,
-   forecastBottom,urgentTop:urgentVisible?urgentRect.top:null,
-   isMobile:window.matchMedia('(max-width:720px)').matches
-  });
-  actions.style.setProperty('--afterday-equipment-menu-space',place.maxHeight+'px');
-  actions.style.setProperty('--afterday-more-menu-bottom',place.bottom+'px');
-  actions.style.setProperty('--afterday-more-menu-right',place.right+'px');
- };
- const urgentObserver=new MutationObserver(()=>{
-  if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
- });
- let observedUrgent=null;
- const observeUrgentTray=()=>{
-  const tray=root.querySelector('.afterday-v3-urgent-actions');
-  if(!tray||tray===observedUrgent)return;
-  urgentObserver.disconnect();
-  urgentObserver.observe(tray,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
-  observedUrgent=tray;
+  const top=trigger?.top??kit.getBoundingClientRect().top;
+  const forecast=document.getElementById('disaster-forecast');
+  const forecastBottom=forecast?.getBoundingClientRect().bottom||0;
+  const upperClearance=window.matchMedia('(max-width:720px)').matches
+   ?Math.max(12,forecastBottom+8):12;
+  const available=Math.max(80,Math.floor(top-upperClearance-10));
+  actions.style.setProperty('--afterday-equipment-menu-space',available+'px');
+  // Position the popup over the button that ACTUALLY opened it (right-hand
+  // ninth slot), not the unrelated equipment caption at bottom left.
+  if(trigger){
+   const bottom=Math.max(0,window.innerHeight-trigger.top+9);
+   const right=Math.max(12,window.innerWidth-trigger.right);
+   actions.style.setProperty('--afterday-more-menu-bottom',Math.round(bottom)+'px');
+   actions.style.setProperty('--afterday-more-menu-right',Math.round(right)+'px');
+  }
  };
  const close=()=>{
   kit.classList.remove('premium-equipment-open');
@@ -102,7 +78,7 @@ export function installPremiumEquipmentHudV1600(root=document){
  toggle.addEventListener('click',event=>{
   event.stopPropagation();
   const isOpen=kit.classList.toggle('premium-equipment-open');
-  if(isOpen){observeUrgentTray();updatePopoverSpace();}
+  if(isOpen)updatePopoverSpace();
   toggle.setAttribute('aria-expanded',String(isOpen));
   toggle.setAttribute('aria-label',isOpen?'더보기 메뉴 닫기':'더보기 메뉴 열기');
  });
@@ -124,7 +100,6 @@ export function installPremiumEquipmentHudV1600(root=document){
    if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
   });
   document.addEventListener('afterday:common-ui-ready',()=>{
-   observeUrgentTray();
    if(kit.classList.contains('premium-equipment-open'))updatePopoverSpace();
   });
   window.visualViewport?.addEventListener('resize',()=>{
