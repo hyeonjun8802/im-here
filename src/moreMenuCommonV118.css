@@ -1,0 +1,147 @@
+/* AFTERDAY v118 | More popup common-resource alignment
+ * The existing v3 48-sprite metal panel/button assets also paint this popup.
+ * No new bitmap, status layer, actionbar slot, game rule or save field.
+ * iPhone: two compact columns anchored to the actual 9th HUD button.
+ */
+body.afterday-real-ui-v3 #hud #survival-kit.premium-equipment-open
+ > #equipment-actions-menu.survival-kit-controls{
+ position:fixed!important;
+ top:auto!important;left:auto!important;
+ right:var(--afterday-more-menu-right,12px)!important;
+ bottom:var(--afterday-more-menu-bottom,calc(80px + env(safe-area-inset-bottom)))!important;
+ width:min(328px,calc(100vw - 24px))!important;
+ max-width:min(328px,calc(100vw - 24px))!important;
+ min-width:0!important;min-height:0!important;
+ max-height:min(42dvh,var(--afterday-equipment-menu-space,42dvh))!important;
+ box-sizing:border-box!important;
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ grid-auto-flow:row!important;
+ align-items:stretch!important;
+ justify-content:stretch!important;
+ gap:7px 9px!important;
+ margin:0!important;
+ padding:11px 12px 12px!important;
+ border:12px solid rgba(133,101,65,.78)!important;
+ border-image-source:var(--afterday-v3-wide_panel_02,none)!important;
+ border-image-slice:36 39 35 39 fill!important;
+ border-image-width:12px 13px 12px 13px!important;
+ border-image-repeat:stretch!important;
+ border-radius:0!important;
+ background-color:#111a1d!important;
+ background-image:none!important;
+ box-shadow:0 14px 26px rgba(0,0,0,.72)!important;
+ filter:none!important;backdrop-filter:none!important;
+ -webkit-backdrop-filter:none!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ overscroll-behavior:contain!important;
+ -webkit-overflow-scrolling:touch!important;
+ scrollbar-width:thin;
+ pointer-events:auto!important;
+ touch-action:pan-y!important;
+ z-index:80!important;
+ color:#e5d9c5!important;
+}
+body.afterday-real-ui-v3 #hud #equipment-actions-menu
+ > .premium-equipment-menu-title{
+ display:block!important;
+ grid-column:1 / 2!important;grid-row:1!important;
+ align-self:center!important;justify-self:start!important;
+ max-width:100%!important;
+ margin:0!important;padding:5px 0!important;
+ border:0!important;
+ color:#d7b78c!important;
+ font:800 12px/1.3 'Noto Sans KR',system-ui,sans-serif!important;
+ letter-spacing:.015em!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;
+ text-shadow:0 1px 2px rgba(0,0,0,.85)!important;
+}
+body.afterday-real-ui-v3 #hud #equipment-actions-menu
+ > #equipment-actions-close{
+ display:grid!important;place-items:center!important;
+ grid-column:2 / 3!important;grid-row:1!important;
+ justify-self:end!important;
+ flex:0 0 auto!important;
+ box-sizing:border-box!important;
+ width:44px!important;min-width:44px!important;max-width:44px!important;
+ height:40px!important;min-height:40px!important;max-height:40px!important;
+ margin:0!important;padding:0!important;
+ border:7px solid rgba(112,88,60,.7)!important;
+ border-image-source:var(--afterday-v3-small_button_01,none)!important;
+ border-image-slice:29 29 29 29 fill!important;
+ border-image-width:7px!important;
+ border-image-repeat:stretch!important;
+ border-radius:0!important;
+ background:#172022!important;background-image:none!important;
+ color:#e6d6bd!important;font-size:16px!important;
+ font-weight:650!important;line-height:1!important;
+ text-shadow:0 1px 2px #000!important;
+ box-shadow:none!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+body.afterday-real-ui-v3 #hud #equipment-actions-menu
+ > button:not([hidden]):not(#equipment-actions-close){
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;
+ width:100%!important;min-width:0!important;
+ min-height:48px!important;max-height:none!important;
+ margin:0!important;padding:6px 7px!important;
+ border:9px solid rgba(111,88,57,.72)!important;
+ border-image-source:var(--afterday-v3-small_button_01,none)!important;
+ border-image-slice:29 29 29 29 fill!important;
+ border-image-width:9px!important;
+ border-image-repeat:stretch!important;
+ border-radius:0!important;
+ background-color:#172022!important;background-image:none!important;
+ box-shadow:none!important;
+ color:#dcd3c0!important;
+ font:750 12px/1.28 'Noto Sans KR',system-ui,sans-serif!important;
+ letter-spacing:0!important;
+ text-shadow:0 1px 2px rgba(0,0,0,.78)!important;
+ text-align:center!important;
+ white-space:normal!important;word-break:keep-all!important;
+ overflow-wrap:break-word!important;overflow:visible!important;
+ text-overflow:clip!important;
+ cursor:pointer!important;touch-action:manipulation!important;
+}
+body.afterday-real-ui-v3 #hud #equipment-actions-menu > button[hidden]{
+ display:none!important;
+}
+body.afterday-real-ui-v3 #hud #equipment-actions-menu > button:not(:disabled):active{
+ filter:brightness(1.17)!important;
+}
+body.afterday-real-ui-v3 #hud #equipment-actions-menu > button:focus-visible{
+ outline:2px solid #d4af77!important;outline-offset:1px!important;
+}
+@media(max-width:720px){
+ body.afterday-real-ui-v3 #hud #survival-kit.premium-equipment-open
+ > #equipment-actions-menu.survival-kit-controls{
+  width:min(316px,calc(100vw - 24px))!important;
+  max-width:min(316px,calc(100vw - 24px))!important;
+  max-height:min(42dvh,var(--afterday-equipment-menu-space,42dvh))!important;
+  padding:8px 9px 9px!important;
+  gap:5px 6px!important;
+  border-width:11px!important;
+  border-image-width:11px 12px 11px 12px!important;
+ }
+ body.afterday-real-ui-v3 #hud #equipment-actions-menu
+ > button:not([hidden]):not(#equipment-actions-close){
+  min-height:47px!important;
+  padding:5px 6px!important;
+  font-size:11px!important;
+ }
+}
+@media(max-width:350px){
+ body.afterday-real-ui-v3 #hud #survival-kit.premium-equipment-open
+ > #equipment-actions-menu.survival-kit-controls{
+  width:calc(100vw - 20px)!important;
+  max-width:calc(100vw - 20px)!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ body.afterday-real-ui-v3 #hud #equipment-actions-menu > button{
+  transition:none!important;
+ }
+}
