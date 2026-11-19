@@ -37,7 +37,7 @@ test('broken tank cannot harvest rain until repaired; moderately damaged tank ha
  assert.equal(broken.supply.water,0);
  assert.ok(damaged.supply.water<healthy.supply.water);
  assert.match(describeWeatherEconomy(broken),/정수 불가/);
- assert.equal(applyAction(broken,'collect_water',start).good,false);
+ assert.equal(applyAction(broken,'collect_water',start).good,false,'retired manual action is unavailable');
  // Repair takes parts and makes the rain filter functional again.
  assert.equal(applyAction(broken,'repair',start).good,true);
  assert.ok(broken.facilities.tank>=40);
@@ -94,12 +94,27 @@ test('auto rain collection is deterministic with minute tick batching and persis
  assert.deepEqual(restored.weatherEconomy,a.weatherEconomy);
 });
 
-test('manual rain filtering is additional but cannot bypass tank capacity',()=>{
- const s=defaults(start);s.weather='rain';s.supply.water=WEATHER_WATER_CAPACITY-1;
- const action=applyAction(s,'collect_water',start);
- assert.equal(action.good,true);
+test('rain is collected automatically; retired manual action cannot bypass tank capacity',()=>{
+ const s=defaults(start);s.weather='rain';s.kit.purifier=true;s.facilities.tank=90;
+ s.supply.water=WEATHER_WATER_CAPACITY-1;
+ const parts=s.supply.parts;
+ assert.equal(applyAction(s,'collect_water',start).good,false);
+ assert.equal(s.supply.water,WEATHER_WATER_CAPACITY-1);
+ tick(s,'rain',24);
  assert.equal(s.supply.water,WEATHER_WATER_CAPACITY);
- assert.equal(applyAction(s,'collect_water',start+1).good,false);
+ tick(s,'rain',200);
+ assert.equal(s.supply.water,WEATHER_WATER_CAPACITY);
+ assert.equal(s.supply.parts,parts);
+});
+test('without purifier rain is not potable; after acquiring one it is collected automatically',()=>{
+ const s=defaults(start);s.weather='storm';s.supply.water=0;s.facilities.tank=90;
+ const parts=s.supply.parts;
+ tick(s,'storm',60);
+ assert.equal(s.supply.water,0);
+ s.kit.purifier=true;
+ tick(s,'storm',15);
+ assert.equal(s.supply.water,1);
+ assert.equal(s.supply.parts,parts);
 });
 
 test('automatic gains and losses never go negative or exceed capacity',()=>{

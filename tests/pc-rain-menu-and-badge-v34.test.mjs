@@ -13,7 +13,7 @@ function classes(){
   };
 }
 
-test('PC rain/disaster actions never displace the original nine dock cells',()=>{
+test('PC disaster actions never displace the original nine dock cells',()=>{
   const oldDocument=globalThis.document;
   const oldWindow=globalThis.window;
   const oldObserver=globalThis.MutationObserver;
@@ -40,7 +40,7 @@ test('PC rain/disaster actions never displace the original nine dock cells',()=>
   const base=['drink','eat','repair','rest','medicine','explore',
     'life-panel-toggle','weather-panel-toggle'];
   for(const id of base)button(id);
-  for(const id of ['take-cover','secure-supplies','collect-water'])button(id,true);
+  for(const id of ['take-cover','secure-supplies'])button(id,true);
   const repairTank=button('repair-tank',true);
   const reserve={hidden:false};
   const tray={
@@ -76,26 +76,20 @@ test('PC rain/disaster actions never displace the original nine dock cells',()=>
   try{
     const result=installResponsiveActionSlots(actionbar,reserve,repairTank);
     assert.equal(result.tray,tray);
-    assert.equal(tray.children.length,3);
+    assert.equal(tray.children.length,2);
     assert.equal(count(),9);
     assert.equal(actionbar.dataset.visibleSlots,'9');
     assert.equal(reserve.hidden,false);
     assert.equal(tray.classList.contains('has-urgent'),false);
     assert.equal(actionbar.classList.contains('v3-has-extra-actions'),false);
 
-    all['collect-water'].hidden=false;
-    observer();
-    assert.equal(count(),9);
-    assert.equal(tray.classList.contains('has-urgent'),true);
-    assert.equal(all['collect-water'].parentNode,tray);
-    all['collect-water'].click();
-    assert.equal(all['collect-water'].clicks,1);
-
+    // Rain is passive, no extra third emergency control or wasted click.
+    assert.equal(tray.classList.contains('has-urgent'),false);
     all['take-cover'].hidden=false;
     all['secure-supplies'].hidden=false;
     observer();
     assert.equal(count(),9);
-    assert.equal(tray.children.length,3);
+    assert.equal(tray.children.length,2);
     assert.equal(actionbar.classList.contains('v3-has-extra-actions'),false);
 
     repairTank.hidden=false;
@@ -103,13 +97,13 @@ test('PC rain/disaster actions never displace the original nine dock cells',()=>
     assert.equal(reserve.hidden,true);
     assert.equal(count(),9);
 
-    for(const id of ['take-cover','secure-supplies','collect-water'])all[id].hidden=true;
+    for(const id of ['take-cover','secure-supplies'])all[id].hidden=true;
     observer();
     assert.equal(count(),9);
     assert.equal(tray.classList.contains('has-urgent'),false);
 
     resizeHandler();
-    assert.equal(tray.children.length,3,'resize must not duplicate or reorder buttons');
+    assert.equal(tray.children.length,2,'resize must not duplicate or reorder buttons');
     assert.equal(count(),9);
   }finally{
     if(oldDocument===undefined)delete globalThis.document;else globalThis.document=oldDocument;

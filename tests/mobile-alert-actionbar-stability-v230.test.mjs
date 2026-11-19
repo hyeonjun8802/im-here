@@ -35,9 +35,9 @@ class FakeNode {
    return this.children.filter(node=>node.tagName==='BUTTON');
  }
 }
-const ids=['drink','eat','take-cover','secure-supplies','repair','rest','medicine','explore','collect-water','repair-tank','life-panel-toggle','weather-panel-toggle'];
-const urgent=['take-cover','secure-supplies','collect-water'];
-test('rain warning adds a separate emergency control but keeps nine painted menu cells unchanged',()=>{
+const ids=['drink','eat','take-cover','secure-supplies','repair','rest','medicine','explore','repair-tank','life-panel-toggle','weather-panel-toggle'];
+const urgent=['take-cover','secure-supplies'];
+test('tornado warning keeps two emergency controls and nine painted menu cells unchanged',()=>{
  const old={document:globalThis.document,window:globalThis.window,MutationObserver:globalThis.MutationObserver};
  const nodes=Object.fromEntries(ids.map(id=>[id,new FakeNode(id,'button')]));
  for(const id of [...urgent,'repair-tank'])nodes[id].hidden=true;
@@ -66,13 +66,9 @@ test('rain warning adds a separate emergency control but keeps nine painted menu
    assert.ok(!bar.classList.contains('v3-has-extra-actions'));
    assert.ok(!api.tray.classList.contains('has-urgent'));
    for(const id of urgent)assert.equal(nodes[id].parentNode,api.tray);
-   nodes['collect-water'].hidden=false;
-   api.syncSlots(); // MutationObserver delivers this callback in the browser.
-   assert.deepEqual(stable(),initial,'rain cannot move or reflow primary icons');
-   assert.equal(bar.dataset.visibleSlots,'9');
-   assert.ok(api.tray.classList.contains('has-urgent'));
-   assert.ok(!bar.classList.contains('v3-has-extra-actions'));
-   nodes['collect-water'].hidden=true;
+   // Rainfall never adds an urgent button; it is collected by game-minute ticks.
+   assert.equal(api.tray.children.length,2);
+   assert.ok(!api.tray.classList.contains('has-urgent'));
    nodes['take-cover'].hidden=false;
    nodes['secure-supplies'].hidden=false;
    api.syncSlots();
@@ -109,7 +105,7 @@ test('popup styling cannot replace the nine-slot background or force flex on mob
  assert.match(section,/\.afterday-v3-urgent-actions\.has-urgent/);
  assert.match(section,/> button\[hidden\]\{\s*display:none!important/);
  assert.match(section,/button > img\.afterday-v3-action-icon\{[\s\S]*?position:static!important/);
- assert.match(js,/const emergencyIds=\['take-cover','secure-supplies','collect-water'\]/);
+ assert.match(js,/const emergencyIds=\['take-cover','secure-supplies'\]/);
  assert.match(js,/compactQuery\.addEventListener\('change',placeEmergency\)/);
  assert.match(js,/visible>9/);
 });

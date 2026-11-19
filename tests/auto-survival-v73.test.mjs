@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {defaults,applyAction,emergencyExploreAvailability,DAY_MS} from '../src/simulation.js';
 import {offerDailyScavenge} from '../src/scavengeDirector.js';
+import {applyWeatherEconomyMinute} from '../src/weatherEconomy.js';
 import {AUTO_ACTION_INTERVAL_MS,planAutoSurvivalAction,selectAutoScavenge} from '../src/autoSurvivalV73.js';
 
 const startedAt=Date.UTC(2026,10,14,0,0,0);
@@ -107,15 +108,17 @@ test('real radio gear gives at most one daily contact; later days may try again'
  assert.equal(s.scavenge.radioLastDay,2);
 });
 
-test('rain collection and rest never ignore cooldown, weather or tool costs',()=>{
+test('rainwater is passive during AUTO and rest respects its own cooldown',()=>{
  const s=fresh();
  s.weather='rain';s.supply.water=2;s.supply.parts=1;
  s.exploreCooldownAt=startedAt+DAY_MS; // Scavenging has its own independent cooldown.
- assert.equal(plan(s),null,'do not spend the final emergency part on improvised filtration');
- s.kit.purifier=true;
- assert.equal(plan(s),'collect_water');
- assert.equal(applyAction(s,'collect_water',startedAt).good,true);
- assert.notEqual(plan(s),'collect_water','collect water cooldown applies');
+ assert.equal(plan(s),null,'manual rainwater collection is retired');
+ s.kit.purifier=true;s.facilities.tank=90;
+ assert.equal(plan(s),null,'AUTO must not schedule a redundant manual claim');
+ const parts=s.supply.parts;
+ for(let i=0;i<24;i++)applyWeatherEconomyMinute(s,'rain',1);
+ assert.equal(s.supply.water,3);
+ assert.equal(s.supply.parts,parts,'auto-collection does not consume parts');
  const rest=fresh();rest.health=67;
  assert.equal(plan(rest),'rest');
  assert.equal(applyAction(rest,'rest',startedAt).good,true);
