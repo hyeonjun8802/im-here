@@ -26,7 +26,7 @@ const ACTION_TO_GLYPH={
  drink:'water',eat:'food',repair:'hammer',rest:'moon',medicine:'medical',
  explore:'crate','repair-tank':'wrench','life-panel-toggle':'music','exploration-hub-toggle':'spyglass',
  'weather-panel-toggle':'cloud','functions-toggle':'functions','take-cover':'shield','secure-supplies':'supply',
- 'collect-water':'water',reserve:'wrench'
+ reserve:'wrench'
 };
 const cache=new Map();
 export function completeHudGlyph(name){

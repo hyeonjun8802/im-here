@@ -202,7 +202,6 @@ function renderHUD(){
    state.tornadoRoofImpactEncounter!==state.tornadoEncounter;
  $('#take-cover').hidden=!approaching||state.tornadoCoverActive||dead;
  $('#secure-supplies').hidden=!approaching||state.tornadoSuppliesSecured||dead;
- $('#collect-water').hidden=!['rain','storm'].includes(state.weather)||dead;
  const open=state.scavenge?.pending;
  const emergency=emergencyExploreAvailability(state,t);
  const supplyAvailable=!dead&&(Boolean(open)||emergency.ready);

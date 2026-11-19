@@ -5,7 +5,6 @@
  * mapped expeditions) use real simulation validation and costs.
  */
 import {emergencyExploreAvailability,getDay} from './simulation.js';
-import {WEATHER_WATER_CAPACITY} from './weatherEconomy.js';
 import {EXPLORATION_SITES,mapExpeditionAvailability} from './explorationMapV78.js';
 import {hasExplorationCompanion} from './explorationCompanionGateV117.js';
 
@@ -89,12 +88,8 @@ export function planAutoSurvivalAction(s,now){
   if(mission)return mission;
   if(emergencyExploreAvailability(s,now).ready)return 'explore';
 
-  if(['rain','storm'].includes(s.weather)&&
-      (supply.water??0)<=Math.min(3,WEATHER_WATER_CAPACITY-2)&&
-      (facilities.tank??0)>=40&&
-      now>=(s.collectWaterCooldownAt??0)&&
-      (kit.purifier||(supply.parts??0)>=3))
-    return 'collect_water';
+  // Automatic rain harvest is handled by the saved game-minute weather economy.
+  // AUTO never spends parts or triggers an extra collection action.
 
   // Existing radio limit is once per game day. A new survivor request remains
   // a human decision; the controller will defer its dialog, not choose for them.

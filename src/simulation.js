@@ -478,21 +478,6 @@ export function applyAction(s,action,now=Date.now()){
    addEvent(s,'보관함에 고정끈을 묶었다. 이번 토네이도 식량 손실이 줄어든다.');
    return out(true,'물자 고정 완료 · 식량·식수 피해 감소');
  }
- if(action==='collect_water'){
-   if(!['rain','storm'].includes(s.weather))return out(false,'실제 비가 내릴 때만 빗물을 정수해 모을 수 있다.');
-   if(s.facilities.tank<40)return out(false,'물탱크 정수 시설이 너무 파손돼 수리가 필요하다.');
-   if(s.supply.water>=WEATHER_WATER_CAPACITY)return out(false,'식수 저장소가 가득 차 더 모을 수 없다.');
-   if(now<s.collectWaterCooldownAt)return out(false,'수동 정수 설비를 다시 사용하려면 기다려야 한다.');
-   // Without a permanent purifier, improvised filtration is still possible
-   // but costs scarce parts. No free drinking water from untreated rain.
-   if(!s.kit.purifier&&s.supply.parts<1)
-     return out(false,'정수기가 없어 임시 정수에 부품 1개가 필요하다.');
-   if(!s.kit.purifier)s.supply.parts--;
-   const gained=Math.min(2,WEATHER_WATER_CAPACITY-s.supply.water);
-   s.supply.water+=gained;s.collectWaterCooldownAt=now+SURVIVAL_BALANCE.collectWaterCooldownMs;
-   addEvent(s,`수동 빗물 정수를 마쳐 식수 ${gained}개를 확보했다.`);
-   return out(true,`빗물 수집 완료 · 식수 +${gained}`);
- }
  if(action==='secure_storage'){
    if(!s.raiderAlert)return out(false,'현재 침입 경보가 없다.');
    if(s.supply.parts<1)return out(false,'보관함 잠금에 필요한 수리 부품이 부족하다.');

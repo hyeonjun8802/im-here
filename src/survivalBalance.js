@@ -15,7 +15,6 @@ export const SURVIVAL_BALANCE=Object.freeze({
   healthyRestRecoveryMinute:.002,
   restCooldownMs:4*3600000,
   exploreCooldownMs:20*3600000,
-  collectWaterCooldownMs:6*3600000,
   firstDaySafeUntilDay:2,
   tornado:Object.freeze({
     near:Object.freeze({food:2,water:1,health:13,shelter:12,storage:11}),

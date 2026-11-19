@@ -60,7 +60,7 @@ function setAsset(name, crop) {
  * nine-slot bitmap. Move the existing button nodes; preserve game listeners. */
 export function installResponsiveActionSlots(actionbar,reserve,repairTank){
   const compactQuery=window.matchMedia('(max-width:720px)');
-  const emergencyIds=['take-cover','secure-supplies','collect-water'];
+  const emergencyIds=['take-cover','secure-supplies'];
   const emergency=emergencyIds.map(id=>document.getElementById(id)).filter(Boolean);
   const tray=document.createElement('div');
   tray.className='afterday-v3-urgent-actions';
@@ -157,7 +157,7 @@ export function installCommonUiAssetsV3() {
       drink:'icon_water',eat:'icon_food',repair:'icon_tools',
       rest:'icon_moon',medicine:'icon_medical',explore:'icon_radio',
       'take-cover':'icon_tent','secure-supplies':'icon_supply',
-      'collect-water':'icon_water','repair-tank':'icon_tools',
+      'repair-tank':'icon_tools',
       'exploration-hub-toggle':'icon_spyglass','functions-toggle':'icon_functions'
     };
     for(const [id,sprite] of Object.entries(actionIcons)){
