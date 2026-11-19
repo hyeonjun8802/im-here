@@ -65,8 +65,10 @@ test('exploration is an emergency response, not spam farming',()=>{
  assert.equal(applyAction(s,'rest',start).good,true);
  assert.equal(applyAction(s,'rest',start+60000).good,false);
  s.weather='rain';
- assert.equal(applyAction(s,'collect_water',start).good,true);
- assert.equal(applyAction(s,'collect_water',start+60000).good,false);
+ const waterBefore=s.supply.water,partsBefore=s.supply.parts;
+ assert.equal(applyAction(s,'collect_water',start).good,false,'manual water claim is retired');
+ assert.equal(s.supply.water,waterBefore);
+ assert.equal(s.supply.parts,partsBefore);
 });
 
 test('neglecting food and water ends survival within approximately five active days',()=>{
@@ -86,7 +88,7 @@ test('existing fully equipped survivors can still sustain a 30-day strategy',()=
    const now=start+hour*3600000;
    advance(s,now,false);
    if(s.survivalStatus==='dead')break;
-   if(s.weather==='rain'||s.weather==='storm')applyAction(s,'collect_water',now);
+   // Filtered rainfall is collected by the game-minute simulation automatically.
    // Prepared survivors deliberately repair the water filter before rainfall,
    // rather than relying only on the generic "repair weakest facility" action.
    if(s.facilities.tank<70&&s.supply.parts>=2)applyAction(s,'repair_tank',now);
